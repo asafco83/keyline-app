@@ -1,0 +1,56 @@
+// Keyline — core/history
+import { $, H, HINTS, baseOf, clamp, clone, r3, setBase } from './constants';
+import { LP, WRAP } from './dom';
+import { S, doc, layerById, selLayer, setDoc, sortTrack, syncIdc } from './state';
+import { markDirty } from '../io/file-state';
+import { ancestors, treeRows } from '../model/tree';
+import { frame, renderAll, renderStage } from '../render/stage';
+import { finishPen } from '../tools/edit-tools';
+import { renderInspector } from '../ui/inspector';
+import { renderLayers } from '../ui/layers-panel';
+import { renderTimeline } from '../ui/timeline';
+import { renderTools } from '../ui/tools-rail';
+
+export function trackSig() { const l=selLayer(); return (S.sel||'')+'|'+S.selSet.size+'|'+doc.layers.length+'|'+(l?Object.keys(l.t).filter((k?)=>l.t[k].length).join(',')+l.type:''); }
+export function beginEdit() { const snap=JSON.stringify(doc), sig=trackSig();
+  return {end(o?){ o=o||{}; if(JSON.stringify(doc)!==snap){ S.undo.push(snap); if(S.undo.length>150) S.undo.shift(); S.redo=[]; }
+    commit({insp:o.insp||trackSig()!==sig}); }}; }
+export function commit(o?) { save(); renderStage(); renderLayers(); renderTimeline(); if(o&&o.insp) renderInspector(); frame(); }
+export function undo() { if(!S.undo.length) return; S.redo.push(JSON.stringify(doc)); setDoc(JSON.parse(S.undo.pop())); afterSwap(); }
+export function redo() { if(!S.redo.length) return; S.undo.push(JSON.stringify(doc)); setDoc(JSON.parse(S.redo.pop())); afterSwap(); }
+export function afterSwap() { S.keys.clear(); S.node=null; if(S.sel&&!layerById(S.sel)) S.sel=null; S.selSet=new Set<any>([...S.selSet].filter((id?)=>layerById(id))); syncIdc(); save(); renderAll(); }
+export let saveT = 0;
+export function save() { clearTimeout(saveT); saveT=setTimeout(()=>{ try{ localStorage.setItem('keyline:doc',JSON.stringify(doc)); }catch(e){} },300); $('#pname').value=doc.name; markDirty(); }
+export function setProp(l?, k?, v?) {
+  const tr=l.t[k];
+  if(tr&&tr.length){ const kf=tr.find((q?)=>Math.abs(q[0]-S.time)<0.005); if(kf) kf[1]=v; else { tr.push([r3(S.time),v,'ease']); sortTrack(tr); } return; }
+  if(S.autokey&&S.time>0.004&&k!=='org'){ l.t[k]=[[0,clone(baseOf(l,k)),'ease'],[r3(S.time),v,'ease']]; S.exp[l.id]=true; return; }
+  setBase(l,k,v);
+}
+export function toggleKey(l?, k?) {
+  const ed=beginEdit(), tr=l.t[k], cur=clone(H.get(l,k,S.time));
+  if(!tr||!tr.length) l.t[k]=[[r3(S.time),cur,'ease']];
+  else { const i=tr.findIndex((q?)=>Math.abs(q[0]-S.time)<0.005);
+    if(i>=0){ S.keys.delete(tr[i]); tr.splice(i,1); if(!tr.length){ delete l.t[k]; setBase(l,k,cur); } }
+    else { tr.push([r3(S.time),cur,'ease']); sortTrack(tr); } }
+  S.exp[l.id]=true; ed.end({insp:true});
+}
+export function removeTrack(l?, k?) { const ed=beginEdit(); const v=clone(H.get(l,k,S.time)); (l.t[k]||[]).forEach((q?)=>S.keys.delete(q)); delete l.t[k]; setBase(l,k,v); ed.end({insp:true}); }
+export function deleteKeys() {
+  if(!S.keys.size) return; const ed=beginEdit();
+  doc.layers.forEach((l?)=>{ for(const k of Object.keys(l.t)){ const tr=l.t[k]; const removed=tr.filter((q?)=>S.keys.has(q)); if(!removed.length) continue;
+    l.t[k]=tr.filter((q?)=>!S.keys.has(q)); if(!l.t[k].length){ delete l.t[k]; setBase(l,k,clone(removed[removed.length-1][1])); } } });
+  S.keys.clear(); ed.end({insp:true});
+}
+export function select(id?, mode?) {
+  if(id!==S.sel&&mode!=='toggle'&&mode!=='range') S.keys.clear();
+  if(!id){ S.sel=null; S.selSet.clear(); }
+  else if(mode==='toggle'){ if(S.selSet.has(id)){ S.selSet.delete(id); if(S.sel===id) S.sel=[...S.selSet].pop()||null; } else { S.selSet.add(id); S.sel=id; } }
+  else if(mode==='range'&&S.sel){ const rows=treeRows(null,0,[],true).map((r?)=>r[0].id), a=rows.indexOf(S.sel), b=rows.indexOf(id); if(a>=0&&b>=0) rows.slice(Math.min(a,b),Math.max(a,b)+1).forEach((x?)=>S.selSet.add(x)); S.sel=id; }
+  else { S.sel=id; S.selSet=new Set<any>([id]); }
+  if(S.sel){ const l=selLayer(); if(l) ancestors(l).forEach((a?)=>S.lexp[a.id]=true); }
+  S.node=null; renderLayers(); renderTimeline(); renderInspector(); frame();
+  if(S.sel){ const row=LP.querySelector(`[data-lid="${S.sel}"]`); if(row) row.scrollIntoView({block:'nearest'}); }
+}
+export function setTime(t?) { S.time=clamp(r3(t),0,doc.dur); S.ptime=S.time; frame(); }
+export function setTool(t?) { if(S.pen&&t!=='pen') finishPen(false); S.tool=t; renderTools(); WRAP.className='t-'+t; $('#hint').textContent=HINTS[t]; frame(); }

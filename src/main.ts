@@ -1,0 +1,38 @@
+// Keyline — entry point
+import './styles/app.css';
+import { init as init0 } from './ui/tools-rail';
+import { init as init1 } from './tools/stage-input';
+import { init as init2 } from './ui/layers-panel';
+import { init as init3 } from './ui/timeline';
+import { init as init4 } from './core/keyframes';
+import { init as init5 } from './ui/inspector';
+import { init as init6 } from './io/assets';
+import { init as init7 } from './export/snippets';
+import { init as init8 } from './export/size';
+import { init as init9 } from './export/images';
+import { init as init10 } from './ui/topbar';
+import { init as init11 } from './ui/file-menu';
+import { init as init12 } from './io/save';
+import { init as init13 } from './io/guard';
+import { init as init14 } from './io/open';
+import { init as init15 } from './ui/keyboard';
+import { init as init16 } from './app/boot';
+
+// Same order as the original single-file build
+init0(); // ui/tools-rail
+init1(); // tools/stage-input
+init2(); // ui/layers-panel
+init3(); // ui/timeline
+init4(); // core/keyframes
+init5(); // ui/inspector
+init6(); // io/assets
+init7(); // export/snippets
+init8(); // export/size
+init9(); // export/images
+init10(); // ui/topbar
+init11(); // ui/file-menu
+init12(); // io/save
+init13(); // io/guard
+init14(); // io/open
+init15(); // ui/keyboard
+init16(); // app/boot

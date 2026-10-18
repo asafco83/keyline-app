@@ -1,0 +1,114 @@
+// Keyline — tools/edit-tools
+import { $, FONTS, H, HINTS, byId, clone, fmt, r2, r3, xfp } from '../core/constants';
+import { INSP, WRAP } from '../core/dom';
+import { beginEdit, setProp } from '../core/history';
+import { S, doc, mkLayer, nextColor, selLayer } from '../core/state';
+import { N, isSmooth, starNodes } from '../geometry/nodes';
+import { parentMatrix } from '../model/tree';
+import { drawOverlay, gMatrix, localMatrix } from '../render/overlay';
+import { frame, renderStage } from '../render/stage';
+import { reOrigin, toHex } from '../ui/inspector';
+import { renderTools } from '../ui/tools-rail';
+
+export function cursorFor(dx?, dy?) { let a=Math.atan2(dy,dx)*180/Math.PI; a=((a%180)+180)%180; return a<22.5||a>=157.5?'ew-resize':a<67.5?'nwse-resize':a<112.5?'ns-resize':'nesw-resize'; }
+export const H9 = [[0,0],[.5,0],[1,0],[0,.5],[.5,.5],[1,.5],[0,1],[.5,1],[1,1]];
+export function originDrag(l?) {
+  const g=byId('e-'+l.id); if(!g) return; const Mi=gMatrix(l).inverse(), b=g.getBBox(), ed=beginEdit();
+  const pts=H9.map(([u,v])=>[b.x+b.width*u,b.y+b.height*v]);
+  S.drag={move(p?,e?){ const q=xfp(Mi,p.x,p.y); let o=[q.x,q.y];
+      const near: any=pts.map((pt?)=>[pt,Math.hypot(pt[0]-o[0],pt[1]-o[1])]).sort((x?: any,y?: any)=>x[1]-y[1])[0];
+      if(e.shiftKey||near[1]*S.scale<8) o=near[0].slice();
+      reOrigin(l,o); const oo=H.get(l,'org',S.time); S.drag.lbl=`Origin ${fmt(oo[0],1)}, ${fmt(oo[1],1)}`; S.drag.lp=p; frame(); },
+    up(){ ed.end(); }};
+}
+export function setAnchor(l?, u?, v?) { const g=byId('e-'+l.id); if(!g) return; const b=g.getBBox(), ed=beginEdit(); reOrigin(l,[b.x+b.width*u,b.y+b.height*v]); ed.end(); }
+export function handleDrag(kind?, p0?) {
+  const l=selLayer(); if(!l) return;
+  if(kind==='org') return originDrag(l);
+  const PMi=parentMatrix(l).inverse(), L=(p?)=>xfp(PMi,p.x,p.y), c=H.comp(l,S.time), C={x:c.x,y:c.y}, ed=beginEdit(), q0=L(p0);
+  if(kind==='rot'){ const r0=H.get(l,'rot',S.time), a0=Math.atan2(q0.y-C.y,q0.x-C.x);
+    S.drag={rot:true,move(p?,e?){ const q=L(p); let r=r0+(Math.atan2(q.y-C.y,q.x-C.x)-a0)*180/Math.PI; if(e.shiftKey) r=Math.round(r/15)*15; setProp(l,'rot',r2(r)); frame(); }, up(){ ed.end(); }}; return; }
+  /* Photoshop-style scaling: drag a handle; the opposite side stays put.
+     Shift keeps proportions · Alt scales from the box center · Ctrl/Cmd scales around the origin · drag past the anchor to mirror */
+  const g=byId('e-'+l.id), b=g.getBBox();
+  const UV={nw:[0,0],n:[.5,0],ne:[1,0],e:[1,.5],se:[1,1],s:[.5,1],sw:[0,1],w:[0,.5]}[kind]; if(!UV) return;
+  const at=(u?,v?)=>[b.x+b.width*u,b.y+b.height*v], Hl=at(UV[0],UV[1]), ax=UV[0]!==.5, ay=UV[1]!==.5;
+  const o=clone(H.get(l,'org',S.time)), s0=clone(H.get(l,'scl',S.time)), t0=clone(H.get(l,'pos',S.time)), rad=c.r*Math.PI/180, cs=Math.cos(rad), sn=Math.sin(rad);
+  const T=(pt?,s?,t?)=>{ const dx=(pt[0]-o[0])*s[0], dy=(pt[1]-o[1])*s[1]; return [t[0]+o[0]+dx*cs-dy*sn, t[1]+o[1]+dx*sn+dy*cs]; };
+  S.drag={move(p?,e?){
+      const A=(e.ctrlKey||e.metaKey)?o:e.altKey?at(.5,.5):at(1-UV[0],1-UV[1]), TA=T(A,s0,t0), P=L(p);
+      const vx=P.x-TA[0], vy=P.y-TA[1], rx=vx*cs+vy*sn, ry=-vx*sn+vy*cs, hx=Hl[0]-A[0], hy=Hl[1]-A[1];
+      let sx=s0[0], sy=s0[1];
+      if(ax&&Math.abs(hx)>1e-6) sx=rx/hx; if(ay&&Math.abs(hy)>1e-6) sy=ry/hy;
+      if(e.shiftKey){ const fx=s0[0]?sx/s0[0]:1, fy=s0[1]?sy/s0[1]:1; let f=ax&&ay?(Math.abs(fx)>Math.abs(fy)?fx:fy):ax?fx:fy; if(!isFinite(f)) f=1; sx=s0[0]*f; sy=s0[1]*f; }
+      const mn=0.001; if(Math.abs(sx)<mn) sx=sx<0?-mn:mn; if(Math.abs(sy)<mn) sy=sy<0?-mn:mn;
+      const s=[r3(sx),r3(sy)], TA2=T(A,s,[0,0]);
+      setProp(l,'scl',s); setProp(l,'pos',[r2(TA[0]-TA2[0]),r2(TA[1]-TA2[1])]);
+      S.drag.lbl=`W ${fmt(s[0]*100,0)}%  H ${fmt(s[1]*100,0)}%${s[0]<0||s[1]<0?'  (mirrored)':''}`; S.drag.lp=p; frame(); },
+    up(){ ed.end(); }};
+}
+export function newShape(t?) {
+  const col=nextColor(), base=t==='rect'?'Rectangle':t==='ellipse'?'Ellipse':'Star', n=doc.layers.filter((l?)=>l.name.startsWith(base)).length+1;
+  if(t==='rect') return mkLayer('rect',base+' '+n,{x:0,y:0,w:0,h:0,rx:0},{fill:col});
+  if(t==='ellipse') return mkLayer('ellipse',base+' '+n,{cx:0,cy:0,rx:0,ry:0},{fill:col});
+  return mkLayer('path',base+' '+n,{},{fill:col,d:[]});
+}
+export function setGeo(l?, t?, x?, y?, w?, h?, p0?, p?) {
+  if(t==='rect') Object.assign(l.geo,{x:r2(x),y:r2(y),w:r2(w),h:r2(h)});
+  else if(t==='ellipse') Object.assign(l.geo,{cx:r2(x+w/2),cy:r2(y+h/2),rx:r2(w/2),ry:r2(h/2)});
+  else { const R=Math.max(4,Math.hypot(p.x-p0.x,p.y-p0.y)); l.b.d=starNodes(r2(p0.x),r2(p0.y),r2(R),r2(R*.45),5); }
+}
+export function addLayer(l?) { doc.layers.push(l); S.sel=l.id; S.selSet=new Set<any>([l.id]); }
+export function backToSelect() { S.tool='select'; WRAP.className='t-select'; $('#hint').textContent=HINTS.select; renderTools(); }
+export function createDrag(t?, p0?) {
+  const ed=beginEdit(); let l=null;
+  S.drag={move(p?,e?){ let x=Math.min(p0.x,p.x), y=Math.min(p0.y,p.y), w=Math.abs(p.x-p0.x), h=Math.abs(p.y-p0.y);
+      if(e.shiftKey){ w=h=Math.max(w,h); if(p.x<p0.x) x=p0.x-w; if(p.y<p0.y) y=p0.y-h; }
+      if(!l&&w*S.scale<3&&h*S.scale<3) return;
+      if(!l){ l=newShape(t); addLayer(l); }
+      setGeo(l,t,x,y,w,h,p0,p); l.o=null; renderStage(); frame(); },
+    up(){ if(!l){ l=newShape(t); addLayer(l); setGeo(l,t,p0.x-50,p0.y-50,100,100,p0,{x:p0.x+50,y:p0.y}); }
+      l.o=null; backToSelect(); ed.end({insp:true}); }};
+}
+export function createText(p?) {
+  const ed=beginEdit(); const l=mkLayer('text','Text',{x:r2(p.x),y:r2(p.y),text:'Text',size:48,family:FONTS[0][0],weight:'600',anchor:'start'},{fill:doc.bg&&lum(doc.bg)<.45?'#F3EEE4':'#1A2030'});
+  addLayer(l); backToSelect(); ed.end({insp:true});
+  setTimeout(()=>{ const ta=INSP.querySelector('[data-g="text"]'); if(ta){ ta.focus(); ta.select(); } },0);
+}
+export function lum(c?) { const h=toHex(c); if(!h) return 1; const v=[1,3,5].map((i?)=>parseInt(h.substr(i,2),16)/255); return .2126*v[0]+.7152*v[1]+.0722*v[2]; }
+export function penDown(p?) {
+  if(!S.pen) S.pen={nodes:[],hover:p};
+  const n=S.pen.nodes;
+  if(n.length>=2&&Math.hypot(p.x-n[0][0],p.y-n[0][1])*S.scale<9){ finishPen(true); return; }
+  const q=N(r2(p.x),r2(p.y)); n.push(q);
+  S.drag={move(m?){ if(Math.hypot(m.x-q[0],m.y-q[1])*S.scale<3) return; q[4]=r2(m.x); q[5]=r2(m.y); q[2]=r2(2*q[0]-m.x); q[3]=r2(2*q[1]-m.y); drawOverlay(); }, up(){ drawOverlay(); }};
+  drawOverlay();
+}
+export function finishPen(closed?) {
+  const P=S.pen; S.pen=null;
+  if(!P||P.nodes.length<2){ drawOverlay(); return; }
+  const ed=beginEdit(), col=nextColor();
+  const l=mkLayer('path',closed?'Shape':'Line',{},{fill:closed?col:'none',stk:closed?'none':col,sw:closed?0:4,d:[{c:closed,n:P.nodes}]});
+  l.extra={'stroke-linecap':'round','stroke-linejoin':'round'};
+  addLayer(l); backToSelect(); ed.end({insp:true});
+}
+export function nodeDrag([i,j,part], p0?) {
+  const l=selLayer(); if(!l||l.type!=='path') return;
+  const Mi=localMatrix(l).inverse(), base=clone(H.get(l,'d',S.time)), lp0=xfp(Mi,p0.x,p0.y), ed=beginEdit();
+  S.node=[i,j]; const smooth=isSmooth(base[i].n[j]);
+  S.drag={move(p?,e?){ const lp=xfp(Mi,p.x,p.y), dx=lp.x-lp0.x, dy=lp.y-lp0.y, d=clone(base), n=d[i].n[j], b=base[i].n[j];
+      if(part===0){ for(let k=0;k<6;k+=2){ n[k]=r2(b[k]+dx); n[k+1]=r2(b[k+1]+dy); } }
+      else { const k=part===1?2:4, o=part===1?4:2; n[k]=r2(b[k]+dx); n[k+1]=r2(b[k+1]+dy);
+        if(smooth&&!e.altKey){ const len=Math.hypot(b[o]-b[0],b[o+1]-b[1]), vx=n[0]-n[k], vy=n[1]-n[k+1], vl=Math.hypot(vx,vy)||1; n[o]=r2(n[0]+vx/vl*len); n[o+1]=r2(n[1]+vy/vl*len); } }
+      setProp(l,'d',d); frame(); }, up(){ ed.end(); }};
+  frame();
+}
+export function toggleSmooth(i?, j?) {
+  const l=selLayer(); if(!l) return; const ed=beginEdit(), d=clone(H.get(l,'d',S.time)), sp=d[i], q=sp.n[j], len=sp.n.length;
+  const collapsed=q[2]===q[0]&&q[3]===q[1]&&q[4]===q[0]&&q[5]===q[1];
+  if(collapsed){ const pv=sp.n[(j-1+len)%len], nx=sp.n[(j+1)%len]; let vx=nx[0]-pv[0], vy=nx[1]-pv[1]; const vl=Math.hypot(vx,vy)||1; vx/=vl; vy/=vl;
+    const a=Math.hypot(q[0]-pv[0],q[1]-pv[1])/3, b=Math.hypot(nx[0]-q[0],nx[1]-q[1])/3;
+    q[2]=r2(q[0]-vx*a); q[3]=r2(q[1]-vy*a); q[4]=r2(q[0]+vx*b); q[5]=r2(q[1]+vy*b); }
+  else { q[2]=q[4]=q[0]; q[3]=q[5]=q[1]; }
+  setProp(l,'d',d); ed.end();
+}

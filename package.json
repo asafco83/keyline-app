@@ -1,0 +1,21 @@
+{
+  "name": "keyline",
+  "version": "0.1.0",
+  "description": "Keyline: browser-based SVG animation editor that exports a single self-contained animated SVG.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc"
+  },
+  "devDependencies": {
+    "happy-dom": "^15.11.7",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.8"
+  },
+  "private": true,
+  "type": "module"
+}

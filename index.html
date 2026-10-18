@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Keyline Animator</title>
+  <meta name="description" content="Browser-based SVG animation editor that exports a single self-contained animated SVG.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
+</head>
+<body>
+<div id="app">
+  <header class="panel top">
+    <button class="btn ghost ib" id="bMenu" aria-label="File menu" aria-haspopup="menu" aria-expanded="false" title="File menu"></button>
+    <div class="brand"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 19C7 19 9 5 22 5" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/><rect x="8.5" y="8.5" width="7" height="7" rx="1" transform="rotate(45 12 12)" fill="var(--key)"/></svg>Keyline</div>
+    <input class="pname" id="pname" aria-label="Project name" spellcheck="false">
+    <span class="fileinfo" id="fileInfo"></span>
+    <div class="sp"></div>
+    <button class="btn ghost ib" id="bUndo" aria-label="Undo" title="Undo (Ctrl+Z)"></button>
+    <button class="btn ghost ib" id="bRedo" aria-label="Redo" title="Redo (Ctrl+Shift+Z)"></button>
+    <button class="btn ghost ib" id="bKeys" aria-label="Keyboard shortcuts" title="Shortcuts">?</button>
+    <button class="btn pri" id="bExport">Export SVG</button>
+  </header>
+
+  <nav class="panel tools" id="tools" aria-label="Tools"></nav>
+
+  <aside class="panel side" aria-label="Layers and assets">
+    <div class="side-tabs"><div class="segc" id="sideTabs"><button data-v="layers" class="on">Layers</button><button data-v="assets">Assets</button></div></div>
+    <div class="pane" id="paneLayers">
+      <div class="side-act">
+        <button class="btn" id="lGroup" title="Group the selected layers (Ctrl+G), or add an empty group">Group</button>
+        <button class="btn" id="lUngroup" title="Ungroup (Ctrl+Shift+G)">Ungroup</button>
+        <button class="btn ib danger" id="lDel" aria-label="Delete selected layers" title="Delete selected layers"></button>
+        <span class="rl" id="lCount"></span>
+      </div>
+      <div class="lp" id="lp" role="tree" aria-label="Layers"></div>
+    </div>
+    <div class="pane" id="paneAssets" hidden>
+      <div class="side-act"><button class="btn" id="aAdd">Add files</button><span class="rl" id="aInfo"></span></div>
+      <div class="ag" id="ag"></div>
+    </div>
+  </aside>
+
+  <main class="panel stage">
+    <div id="wrap">
+      <div id="artboard">
+        <svg id="stage" xmlns="http://www.w3.org/2000/svg">
+          <defs id="docdefs"></defs><clipPath id="abclip"><rect id="abrect"></rect></clipPath>
+          <rect id="bgrect"></rect>
+          <g clip-path="url(#abclip)"><g id="content"></g></g>
+          <g id="overlay"></g>
+        </svg>
+      </div>
+    </div>
+    <div class="badge-rec" id="recBadge" hidden>Recording keyframes</div>
+    <div class="hud">
+      <div class="hint" id="hint"></div>
+      <div class="zoom">
+        <button class="btn ib" id="zOut" aria-label="Zoom out">−</button>
+        <span id="zVal">100%</span>
+        <button class="btn ib" id="zIn" aria-label="Zoom in">+</button>
+        <button class="btn" id="zFit">Fit</button>
+        <button class="btn on" id="zBones" title="Show or hide bones on the canvas">Bones</button>
+      </div>
+    </div>
+  </main>
+
+  <aside class="panel insp" id="insp" aria-label="Inspector"></aside>
+
+  <section class="panel tl" aria-label="Timeline">
+    <div class="tl-ctrl">
+      <button class="btn ghost ib" id="tStart" aria-label="Go to start" title="Go to start (Home)"></button>
+      <button class="btn ib" id="tPlay" aria-label="Play" title="Play / pause (Space)"></button>
+      <button class="btn ghost ib on" id="tLoop" aria-label="Loop preview" title="Loop preview"></button>
+      <span class="tc" id="tc">0:00.00</span>
+      <span class="sep"></span>
+      <label class="nf" title="Animation length"><span>Length</span><input id="tDur" data-doc="dur" inputmode="decimal"><em>s</em></label>
+      <button class="btn rec on" id="tRec" title="When on, changing a property after 0s records a keyframe">Auto-key</button>
+      <button class="btn ghost on" id="tSnap" title="Snap dragged keyframes to the playhead, other keyframes and 0.05s steps. Hold Shift while dragging to invert.">Snap</button>
+      <span class="sp"></span>
+      <label class="lbl" for="tZoom">Zoom <input type="range" id="tZoom" min="40" max="420" value="140"></label>
+    </div>
+    <div class="tl-scroll" id="tlscroll"><div class="tl-body" id="tlbody"></div></div>
+  </section>
+</div>
+
+<div class="modal" id="mExport" hidden>
+  <div class="dlg wide" role="dialog" aria-modal="true" aria-labelledby="xTitle">
+    <header><h2 id="xTitle">Export animated SVG</h2><button class="btn ghost ib" data-close aria-label="Close">✕</button></header>
+    <div class="xgrid">
+      <div class="xopts">
+        <div class="row"><span class="rl">Animation</span><div class="segc" id="xMode"><button data-v="js">JavaScript</button><button data-v="css">CSS only</button></div></div>
+        <div class="row"><span class="rl">Starts</span><select class="sel" id="xTrig"><option value="load">On load</option><option value="hover">On mouse over</option><option value="click">On click</option><option value="scroll">On scroll into view</option><option value="api">Programmatic</option></select></div>
+        <div class="row" id="xOutRow"><span class="rl" id="xOutLbl">On mouse out</span><select class="sel" id="xOut"><option value="pause">Pause</option><option value="reverse">Reverse back to start</option><option value="start">Jump to start</option><option value="restart">Restart</option><option value="none">Keep playing</option></select></div>
+        <div class="row"><span class="rl">Repeat</span><select class="sel" id="xIt"><option value="0">Loop forever</option><option value="1">Play once</option><option value="2">2 times</option><option value="3">3 times</option><option value="5">5 times</option></select></div>
+        <div class="row"><span class="rl">Direction</span><select class="sel" id="xDir"><option value="normal">Normal</option><option value="alternate">Alternate (ping-pong)</option><option value="reverse">Reverse</option><option value="alternate-reverse">Reverse, then alternate</option></select></div>
+        <div class="row"><span class="rl">After the end</span><select class="sel" id="xFill"><option value="forwards">Stay on the last frame</option><option value="backwards">Return to the first frame</option></select></div>
+        <div class="row"><span class="rl">Speed</span><label class="nf"><span>×</span><input id="xSpeed" inputmode="decimal"></label></div>
+        <div class="row" id="xFpsRow"><span class="rl">Frame rate</span><select class="sel" id="xFps"><option value="0">Smooth (screen rate)</option><option value="60">60 fps</option><option value="30">30 fps</option><option value="24">24 fps</option><option value="12">12 fps</option></select></div>
+        <div class="row"><span class="rl">Size</span><div class="segc" id="xSize"><button data-v="resp">Responsive</button><button data-v="fixed">Fixed</button></div></div>
+        <div class="row" id="xDimRow"><span class="rl">Dimensions</span><div class="rf"><label class="nf"><span>W</span><input id="xW" inputmode="numeric"></label><label class="nf"><span>H</span><input id="xH" inputmode="numeric"></label><button class="btn ib on" id="xLink" title="Keep proportions" aria-label="Keep proportions" aria-pressed="true"></button></div></div>
+        <div class="row" id="xPctRow"><span class="rl">Scale</span><div class="rf"><label class="nf" style="flex:0 0 96px"><span>%</span><input id="xPct" inputmode="decimal"></label><select class="sel" id="xPreset" aria-label="Scale presets"><option value="">Presets</option><option value="25">25%</option><option value="50">50%</option><option value="75">75%</option><option value="100">100%</option><option value="150">150%</option><option value="200">200%</option><option value="300">300%</option></select></div></div>
+        <div class="row" id="xMaxRow"><span class="rl">Largest width</span><label class="nf" title="The widest the animation will be shown on your site. Images are sized for it."><span>W</span><input id="xMaxW" inputmode="numeric"><em>px</em></label></div>
+        <div class="xgrp" id="xImgGrp">
+          <h4 class="xsub">Images</h4>
+          <p class="note" id="xImgNone">Your images are in Assets but not on the canvas, so there is nothing to optimize yet.</p>
+          <label class="check" id="xOptRow"><input type="checkbox" id="xOpt"> Resize and compress for this size</label>
+          <div class="row" id="xFmtRow"><span class="rl">Format</span><select class="sel" id="xFmt"></select></div>
+          <div class="row" id="xQRow"><span class="rl">Quality</span><div class="rf"><input type="range" id="xQ" min="30" max="100" step="1" aria-label="Image quality"><span class="chip" id="xQv"></span></div></div>
+          <label class="check" id="xHiRow"><input type="checkbox" id="xHi"> Sharp on high-density screens (2×)</label>
+          <details id="xImgDet"><summary id="xImgSum">Image sizes</summary><div class="imglist" id="xImgList"></div></details>
+        </div>
+        <div class="row"><span class="rl">Element IDs</span><div class="segc" id="xIds"><button data-v="gen">Generated</button><button data-v="names">From names</button></div></div>
+        <div class="row"><span class="rl">ID prefix</span><input class="txt mono" id="xPre" spellcheck="false"></div>
+        <p class="note" id="xNote"></p>
+      </div>
+      <div class="xside">
+        <div class="segc" id="xTab"><button data-v="preview" class="on">Preview</button><button data-v="embed">Embed in your site</button></div>
+        <div id="xPanePrev" class="xpane">
+          <div class="prevbar"><span id="xPrevLbl"></span><div class="segc" id="xPrevZoom"><button data-v="fit">Fit</button><button data-v="actual">Actual size</button></div></div>
+          <div id="xprev"></div>
+          <div class="stats" id="xStats"></div>
+          <details><summary>View SVG code</summary><textarea class="code" id="xCode" readonly spellcheck="false"></textarea></details>
+        </div>
+        <div id="xPaneEmbed" class="xpane" hidden>
+          <div class="segc" id="xFw"><button data-v="html" class="on">HTML</button><button data-v="react">React</button><button data-v="next">Next.js</button><button data-v="vue">Vue</button><button data-v="angular">Angular</button><button data-v="svelte">Svelte</button><button data-v="api">Player API</button></div>
+          <p class="note" id="xFwNote"></p>
+          <textarea class="code tall" id="xSnip" readonly spellcheck="false" aria-label="Embed code"></textarea>
+          <div class="btns"><button class="btn" id="xSnipCopy">Copy snippet</button></div>
+        </div>
+      </div>
+    </div>
+    <footer><button class="btn" id="xCopy">Copy SVG code</button><button class="btn pri" id="xDl">Download .svg</button></footer>
+  </div>
+</div>
+
+<div class="modal" id="mImport" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="iTitle">
+    <header><h2 id="iTitle">Import</h2><button class="btn ghost ib" data-close aria-label="Close">✕</button></header>
+    <div class="body">
+      <div class="drop" id="iDrop"><span>Drop SVG or image files here</span><span class="note">PNG, JPG, GIF, WebP, AVIF, BMP, ICO, TIFF and HEIC. SVG files become editable layers; images are kept in Assets.</span><button class="btn" id="iPick">Choose files</button></div>
+      <label class="rl" for="iText">Or paste SVG markup (from Figma: Copy as SVG)</label>
+      <textarea class="ta" id="iText" rows="6" spellcheck="false" placeholder="&lt;svg …&gt;…&lt;/svg&gt;"></textarea>
+      <label class="check"><input type="checkbox" id="iReplace"> Replace the current project (SVG only)</label>
+    </div>
+    <footer><button class="btn" data-close>Cancel</button><button class="btn pri" id="iGo">Import</button></footer>
+  </div>
+</div>
+
+<div class="modal" id="mNew" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="nTitle">
+    <header><h2 id="nTitle">New project</h2><button class="btn ghost ib" data-close aria-label="Close">✕</button></header>
+    <div class="body">
+      <p class="note">This closes the current project and its assets. You’ll be asked to save first if there are unsaved changes.</p>
+      <div class="row nk"><span class="rl">Canvas</span><div class="rf"><label class="nf"><span>W</span><input id="nW" value="640" inputmode="numeric"></label><label class="nf"><span>H</span><input id="nH" value="400" inputmode="numeric"></label></div></div>
+    </div>
+    <footer><button class="btn" data-close>Cancel</button><button class="btn" id="nSample">Open sample scene</button><button class="btn pri" id="nBlank">Blank canvas</button></footer>
+  </div>
+</div>
+
+<div class="modal" id="mKeys" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="kTitle">
+    <header><h2 id="kTitle">Shortcuts</h2><button class="btn ghost ib" data-close aria-label="Close">✕</button></header>
+    <div class="body"><dl class="keys">
+      <dt>V A R E S P T B</dt><dd>Select, Nodes, Rectangle, Ellipse, Star, Pen, Text, Bone</dd>
+      <dt>Drag bone · drag tip</dt><dd>Rotate one bone (FK) · pose the chain (IK; Alt+drag a bone does the same)</dd>
+      <dt>Space</dt><dd>Play / pause</dd>
+      <dt>Home · , .</dt><dd>Go to start · step back / forward one frame</dd>
+      <dt>Del</dt><dd>Delete selected keyframes, node, or layer</dd>
+      <dt>Ctrl S · Ctrl ⇧ S</dt><dd>Save · save as (.klp project file)</dd>
+      <dt>Ctrl O · Ctrl I · Ctrl E</dt><dd>Open project · import files · export SVG</dd>
+      <dt>Ctrl Z · Ctrl ⇧ Z</dt><dd>Undo · redo</dd>
+      <dt>Ctrl D</dt><dd>Duplicate layer</dd>
+      <dt>Ctrl G · Ctrl ⇧ G</dt><dd>Group · ungroup</dd>
+      <dt>Ctrl + click</dt><dd>Select a layer inside a group on the canvas</dd>
+      <dt>Ctrl [ · Ctrl ]</dt><dd>Send backward · bring forward</dd>
+      <dt>Arrows</dt><dd>Nudge 1px (Shift: 10px)</dd>
+      <dt>Shift + drag</dt><dd>Constrain move, keep proportions, 15° rotation</dd>
+      <dt>Alt / Ctrl + scale</dt><dd>Scale from the center · around the origin (drag past the edge to mirror)</dd>
+      <dt>Drag the origin</dt><dd>Move the pivot point (Shift snaps to corners, edges, center)</dd>
+      <dt>Drag empty lane</dt><dd>Box-select keyframes (Shift or Ctrl adds)</dd>
+      <dt>Shift / Ctrl + click</dt><dd>Toggle / add keyframes to the selection</dd>
+      <dt>Drag keys</dt><dd>Move selected keyframes (Shift turns snapping off or on)</dd>
+      <dt>Alt + drag key</dt><dd>Stretch or squeeze the selection from its other end</dd>
+      <dt>Ctrl + drag key</dt><dd>Copy the selected keyframes while dragging</dd>
+      <dt>Ctrl C · Ctrl V</dt><dd>Copy keyframes · paste at the playhead</dd>
+      <dt>Ctrl D</dt><dd>Duplicate selected keyframes (or the layer)</dd>
+      <dt>Ctrl A</dt><dd>Select every keyframe</dd>
+      <dt>← → with keys</dt><dd>Nudge keyframes one frame (Shift: 10 frames)</dd>
+      <dt>J · K</dt><dd>Jump to previous · next keyframe</dd>
+      <dt>F9 · ⇧F9 · Ctrl⇧F9</dt><dd>Ease in-out · ease in · ease out</dd>
+      <dt>Export → Embed</dt><dd>Ready code for HTML, React, Next.js, Vue, Angular, Svelte and the player API</dd>
+      <dt>Right-click key</dt><dd>Copy, paste, easing, reverse, distribute, move to playhead</dd>
+      <dt>Double-click lane</dt><dd>Add a keyframe at that time</dd>
+      <dt>Enter / Esc</dt><dd>Finish the pen path</dd>
+    </dl></div>
+  </div>
+</div>
+
+<input type="file" id="fSvg" multiple accept="image/*,.svg,.tif,.tiff,.heic,.heif,.avif,.bmp,.ico,.jxl,.apng" hidden>
+<input type="file" id="fProj" accept=".klp,.zip,.json" hidden>
+<div class="ctx filemenu" id="fileMenu" role="menu" aria-label="File" hidden>
+  <button role="menuitem" id="bNew"><span>New project…</span><kbd></kbd></button>
+  <button role="menuitem" id="bOpen"><span>Open…</span><kbd>Ctrl O</kbd></button>
+  <hr>
+  <button role="menuitem" id="bSave"><span>Save</span><kbd>Ctrl S</kbd></button>
+  <button role="menuitem" id="bSaveAs"><span>Save as…</span><kbd>Ctrl ⇧ S</kbd></button>
+  <hr>
+  <button role="menuitem" id="bImport"><span>Import files…</span><kbd>Ctrl I</kbd></button>
+  <button role="menuitem" id="bExport2"><span>Export SVG…</span><kbd>Ctrl E</kbd></button>
+</div>
+<div class="modal" id="mSave" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="sTitle">
+    <header><h2 id="sTitle">Save project</h2><button class="btn ghost ib" data-close aria-label="Close">✕</button></header>
+    <div class="body">
+      <div class="row nk"><span class="rl">File name</span><div class="rf"><input class="txt" id="sName" spellcheck="false"><span class="chip" style="align-self:center">.klp</span></div></div>
+      <label class="check"><input type="checkbox" id="sAll" checked> Include assets that no layer uses yet</label>
+      <div class="stats" id="sStats"></div>
+      <p class="note" id="sNote"></p>
+    </div>
+    <footer><button class="btn" data-close>Cancel</button><button class="btn pri" id="sGo">Save</button></footer>
+  </div>
+</div>
+<div class="modal" id="mDiscard" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dTitle">
+    <header><h2 id="dTitle">Save changes first?</h2><button class="btn ghost ib" data-close aria-label="Close">✕</button></header>
+    <div class="body"><p class="note" id="dMsg">This project has changes that aren’t saved to a .klp file.</p></div>
+    <footer><button class="btn" id="dCancel">Cancel</button><button class="btn danger" id="dDiscard">Don’t save</button><button class="btn pri" id="dSave">Save</button></footer>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+<div class="tl-marq" id="tlmarq" hidden></div>
+<div class="tl-tip" id="tltip" hidden></div>
+<div class="ctx" id="ctxmenu" role="menu" hidden></div>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
