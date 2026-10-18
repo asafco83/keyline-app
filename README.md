@@ -122,6 +122,14 @@ The migration also left a few patterns in the code:
 3. Turn on `noImplicitAny` one folder at a time: geometry, io, export, then ui.
 4. Turn on `strictNullChecks` last.
 
+## Deploying (GitHub Pages)
+
+`.github/workflows/pages.yml` tests, builds and publishes `dist/` on every push to `master` (or on demand from the Actions tab).
+
+One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**. Pages on a private repository needs a paid GitHub plan; otherwise make the repository public.
+
+The site is served at `https://<user>.github.io/<repo>/`. The Vite `base: './'` setting makes asset paths relative, so no extra configuration is needed.
+
 ## Toward a desktop app (Tauri)
 
 The code is ready for a Tauri shell without changes. When it gets wrapped:
