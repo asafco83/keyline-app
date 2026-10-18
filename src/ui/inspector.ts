@@ -1,4 +1,5 @@
 // Keyline — ui/inspector
+import type { Ease } from '../model/types';
 import { $, EZFAM, FONTS, H, PROPS, byId, clamp, clone, esc, fmt, r2, r3, xfp } from '../core/constants';
 import { INSP } from '../core/dom';
 import { beginEdit, deleteKeys, setProp, setTool, toggleKey } from '../core/history';
@@ -88,10 +89,10 @@ export function renderInspector() {
   if (l.type === 'ellipse')
     h += `<section class="sec"><h3>Ellipse</h3>${nrow('Center', gnum('cx', 'X') + gnum('cy', 'Y'))}${nrow('Radius', gnum('rx', 'X') + gnum('ry', 'Y'))}<div class="btns"><button class="btn" data-act="topath">Convert to path</button></div></section>`;
   if (l.type === 'text') {
-    const fams = FONTS.some((f?) => f[0] === G.family) ? FONTS : FONTS.concat([[G.family, G.family.split(',')[0]]]);
+    const fams = FONTS.some(f => f[0] === G.family) ? FONTS : FONTS.concat([[G.family, G.family.split(',')[0]]]);
     h += `<section class="sec"><h3>Text</h3><textarea class="ta" data-g="text" id="g-text" rows="2" aria-label="Text">${esc(G.text)}</textarea>
-    ${nrow('Font', `<select class="sel" data-g="family" id="g-family">${fams.map((f?) => `<option value="${esc(f[0])}"${f[0] === G.family ? ' selected' : ''}>${esc(f[1])}</option>`).join('')}</select>`)}
-    ${nrow('Size', gnum('size', 'pt') + `<select class="sel" data-g="weight" id="g-weight">${['300', '400', '500', '600', '700', '800'].map((w?) => `<option${String(G.weight) === w ? ' selected' : ''}>${w}</option>`).join('')}</select>`)}
+    ${nrow('Font', `<select class="sel" data-g="family" id="g-family">${fams.map(f => `<option value="${esc(f[0])}"${f[0] === G.family ? ' selected' : ''}>${esc(f[1])}</option>`).join('')}</select>`)}
+    ${nrow('Size', gnum('size', 'pt') + `<select class="sel" data-g="weight" id="g-weight">${['300', '400', '500', '600', '700', '800'].map(w => `<option${String(G.weight) === w ? ' selected' : ''}>${w}</option>`).join('')}</select>`)}
     ${nrow(
       'Align',
       `<select class="sel" data-g="anchor" id="g-anchor">${[
@@ -99,18 +100,18 @@ export function renderInspector() {
         ['middle', 'Center'],
         ['end', 'Right'],
       ]
-        .map((a?) => `<option value="${a[0]}"${G.anchor === a[0] ? ' selected' : ''}>${a[1]}</option>`)
+        .map(a => `<option value="${a[0]}"${G.anchor === a[0] ? ' selected' : ''}>${a[1]}</option>`)
         .join('')}</select>`,
     )}
     ${nrow('Position', gnum('x', 'X') + gnum('y', 'Y'))}</section>`;
   }
   if (l.type === 'path') {
-    const others = doc.layers.filter((o?) => o !== l && ['path', 'rect', 'ellipse'].includes(o.type));
-    const cnt = (H.get(l, 'd', S.time) || []).reduce((s?, p?) => s + p.n.length, 0);
+    const others = doc.layers.filter(o => o !== l && ['path', 'rect', 'ellipse'].includes(o.type));
+    const cnt = (H.get(l, 'd', S.time) || []).reduce((s, p) => s + p.n.length, 0);
     h += `<section class="sec"><h3>Path & morph <small>${cnt} nodes</small></h3>
       ${krow('d', 'Morph', `<button class="btn" data-act="nodes" style="flex:1">${S.tool === 'node' ? 'Done editing' : 'Edit nodes'}</button>`)}
       <p>Add a Morph keyframe, move the playhead, then edit nodes. The shape blends between keyframes.</p>
-      ${nrow('Morph into', `<select class="sel" id="morphTo" aria-label="Morph into another shape"><option value="">Choose a shape…</option>${others.map((o?) => `<option value="${o.id}">${esc(o.name)}</option>`).join('')}</select>`)}
+      ${nrow('Morph into', `<select class="sel" id="morphTo" aria-label="Morph into another shape"><option value="">Choose a shape…</option>${others.map(o => `<option value="${o.id}">${esc(o.name)}</option>`).join('')}</select>`)}
       <div class="btns"><button class="btn" data-act="subdiv">Add nodes (subdivide)</button></div></section>`;
   }
   if (l.type === 'bone') {
@@ -122,11 +123,11 @@ export function renderInspector() {
       <div class="btns"><button class="btn" data-act="childbone">Add child bone</button></div>
       <p>Drag a bone to rotate it (forward kinematics). Drag its tip, or Alt+drag the bone, to pull the chain into place (inverse kinematics). Attach artwork by dragging layers onto the bone in the Layers panel, or with “Attach to bone” on the layer.</p></section>`;
   } else {
-    const bones = doc.layers.filter((b?) => b.type === 'bone' && !descendants(l).includes(b));
+    const bones = doc.layers.filter(b => b.type === 'bone' && !descendants(l).includes(b));
     if (bones.length) {
       const pb = l.parent && layerById(l.parent),
         cur = pb && pb.type === 'bone' ? pb.id : '';
-      h += `<section class="sec"><h3>Rig</h3>${nrow('Attach to bone', `<select class="sel" id="attachBone"><option value="">Not attached</option>${bones.map((b?) => `<option value="${b.id}"${b.id === cur ? ' selected' : ''}>${esc(b.name)}</option>`).join('')}</select>`)}</section>`;
+      h += `<section class="sec"><h3>Rig</h3>${nrow('Attach to bone', `<select class="sel" id="attachBone"><option value="">Not attached</option>${bones.map(b => `<option value="${b.id}"${b.id === cur ? ' selected' : ''}>${esc(b.name)}</option>`).join('')}</select>`)}</section>`;
     }
   }
   h += `<section class="sec"><h3>Arrange</h3><div class="btns"><button class="btn" data-act="fwd">Bring forward</button><button class="btn" data-act="back">Send backward</button><button class="btn" data-act="dup">Duplicate</button><button class="btn danger" data-act="del">Delete</button></div></section>`;
@@ -149,7 +150,7 @@ export function docPanel() {
       <li><b>Export</b> one animated .svg with a built-in player or pure CSS. Images are embedded inside it.</li></ol></section>`;
 }
 export function refreshDocFields() {
-  const set = (id?, v?) => {
+  const set = (id, v) => {
     const e = byId(id);
     if (e && e !== document.activeElement) e.value = v;
   };
@@ -167,7 +168,7 @@ export function refreshInspector(full?) {
   if (td !== document.activeElement) td.value = fmt(doc.dur);
   const l = selLayer();
   if (!l) return;
-  INSP.querySelectorAll('[data-f]').forEach((inp?) => {
+  INSP.querySelectorAll('[data-f]').forEach(inp => {
     if (inp === document.activeElement) return;
     const [k, i, m] = inp.dataset.f.split(':');
     let v = H.get(l, k, S.time);
@@ -177,17 +178,17 @@ export function refreshInspector(full?) {
       else inp.value = v == null ? '' : v;
     } else inp.value = fmt(m ? v * +m : v);
   });
-  INSP.querySelectorAll('[data-kb]').forEach((b?) => {
+  INSP.querySelectorAll('[data-kb]').forEach(b => {
     const tr = l.t[b.dataset.kb],
       has = !!(tr && tr.length);
     b.classList.toggle('has', has);
-    b.classList.toggle('on', has && tr.some((q?) => Math.abs(q[0] - S.time) < 0.005));
+    b.classList.toggle('on', has && tr.some(q => Math.abs(q[0] - S.time) < 0.005));
   });
   if (full)
-    INSP.querySelectorAll('input[data-g]').forEach((inp?) => {
+    INSP.querySelectorAll('input[data-g]').forEach(inp => {
       inp.value = fmt(l.geo[inp.dataset.g]);
     });
-  INSP.querySelectorAll('[data-o]').forEach((inp?) => {
+  INSP.querySelectorAll('[data-o]').forEach(inp => {
     if (full || inp !== document.activeElement) inp.value = fmt((l.o || [0, 0])[+inp.dataset.o]);
   });
   const ab = INSP.querySelectorAll('[data-anchor]');
@@ -197,7 +198,7 @@ export function refreshInspector(full?) {
     try {
       bb = g && g.getBBox();
     } catch (e) {}
-    ab.forEach((btn?) => {
+    ab.forEach(btn => {
       const [u, v] = btn.dataset.anchor.split(',').map(Number);
       btn.classList.toggle(
         'on',
@@ -223,7 +224,7 @@ export function toHex(c?) {
       '#' +
       a
         .slice(0, 3)
-        .map((v?) => clamp(Math.round(v), 0, 255).toString(16).padStart(2, '0'))
+        .map(v => clamp(Math.round(v), 0, 255).toString(16).padStart(2, '0'))
         .join('')
     );
   }
@@ -276,13 +277,13 @@ export function reOrigin(l?, o?) {
     rx = mx * Math.cos(rad) - my * Math.sin(rad),
     ry = mx * Math.sin(rad) + my * Math.cos(rad);
   const fix = [rx - d0, ry - d1],
-    shift = (v?) => [r2(v[0] + fix[0]), r2(v[1] + fix[1])];
+    shift = v => [r2(v[0] + fix[0]), r2(v[1] + fix[1])];
   if (l.t.org && l.t.org.length) {
     setProp(l, 'org', [r2(o[0]), r2(o[1])]);
     setProp(l, 'pos', shift(H.get(l, 'pos', S.time)));
     return;
   }
-  if (l.t.pos && l.t.pos.length) l.t.pos.forEach((q?) => (q[1] = shift(q[1])));
+  if (l.t.pos && l.t.pos.length) l.t.pos.forEach(q => (q[1] = shift(q[1])));
   else l.b.pos = shift(l.b.pos);
   l.o = [r2(o[0]), r2(o[1])];
 }
@@ -309,7 +310,7 @@ export function docField(t?) {
 }
 
 export function init(): void {
-  INSP.addEventListener('input', (e?) => {
+  INSP.addEventListener('input', e => {
     const t = e.target,
       l = selLayer();
     if (t.dataset.col !== undefined && l) {
@@ -327,7 +328,7 @@ export function init(): void {
       frame();
     }
   });
-  INSP.addEventListener('change', (e?) => {
+  INSP.addEventListener('change', e => {
     const t = e.target,
       l = selLayer();
     if (S.colorEd && (t.dataset.col !== undefined || t.id === 'd-bgc')) {
@@ -452,7 +453,7 @@ export function init(): void {
       const ed = beginEdit();
       const k = [...S.keys][0];
       k[0] = r3(clamp(v, 0, doc.dur));
-      doc.layers.forEach((L?) => Object.values<any>(L.t).forEach(sortTrack));
+      doc.layers.forEach(L => Object.values<any>(L.t).forEach(sortTrack));
       S.time = k[0];
       ed.end({ insp: true });
       return;
@@ -462,7 +463,7 @@ export function init(): void {
       if (tg) morphTo(l, tg);
     }
   });
-  INSP.addEventListener('click', (e?) => {
+  INSP.addEventListener('click', e => {
     const kbt = (e.target as any).closest('[data-kb]'),
       l = selLayer();
     if (kbt && l) return toggleKey(l, kbt.dataset.kb);
@@ -548,22 +549,22 @@ export function init(): void {
     } else if (a === 'ezdelp') {
       const k0 = [...S.keys][0];
       const ed = beginEdit();
-      doc.ezPresets = (doc.ezPresets || []).filter((p?) => !sameEase(p.v, k0[2]));
+      doc.ezPresets = (doc.ezPresets || []).filter(p => !sameEase(p.v, k0[2]));
       ed.end({ insp: true });
     } else if (a === 'ezall') {
       const k0 = [...S.keys][0];
       if (!k0) return;
       const ed = beginEdit();
-      doc.layers.forEach((L?) =>
-        Object.values<any>(L.t).forEach((tr?) => {
-          if (tr.some((q?) => S.keys.has(q))) tr.forEach((q?) => (q[2] = clone(k0[2])));
+      doc.layers.forEach(L =>
+        Object.values<any>(L.t).forEach(tr => {
+          if (tr.some(q => S.keys.has(q))) tr.forEach(q => (q[2] = clone(k0[2])));
         }),
       );
       ed.end({ insp: true });
       toast('Easing applied to every keyframe in this animator.');
     }
   });
-  INSP.addEventListener('pointerdown', (e?) => {
+  INSP.addEventListener('pointerdown', e => {
     const hd = (e.target as any).closest('[data-hd]');
     if (hd && S.keys.size) {
       e.preventDefault();
@@ -573,11 +574,11 @@ export function init(): void {
         base = (bezOf(k0[2]) || [0.25, 0.1, 0.25, 1]).slice(),
         ed = beginEdit();
       dragWin(
-        (ev?) => {
+        ev => {
           const p = xfp(svg.getScreenCTM().inverse(), ev.clientX, ev.clientY);
           base[idx * 2] = r2(clamp((p.x - 20) / 200, 0, 1));
           base[idx * 2 + 1] = r2(clamp((190 - p.y) / 90 - 0.5, -0.5, 1.5));
-          S.keys.forEach((k?) => (k[2] = base.slice()));
+          S.keys.forEach(k => (k[2] = base.slice() as Ease));
           drawEz();
           frame();
         },
@@ -597,7 +598,7 @@ export function init(): void {
       x0 = e.clientX,
       ed = beginEdit();
     dragWin(
-      (ev?) => {
+      ev => {
         inp.value = fmt(start + (ev.clientX - x0) * step * (ev.shiftKey ? 10 : 1));
         const r = parseField(l, inp);
         if (r) {

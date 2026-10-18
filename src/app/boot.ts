@@ -23,7 +23,7 @@ export async function boot() {
     S.dirty = localStorage.getItem('keyline:dirty') === '1';
   } catch (e) {}
   try {
-    const fi = await Promise.race([IDB.get('file'), new Promise<any>((r?) => setTimeout(() => r(null), 1200))]);
+    const fi = await Promise.race([IDB.get('file'), new Promise<any>(r => setTimeout(() => r(null), 1200))]);
     if (fi && fi.name) S.file = fi;
   } catch (e) {}
   let saved = null;
@@ -39,9 +39,9 @@ export async function boot() {
   }
   if (!doc) setDoc(sampleDoc());
   try {
-    const a = await Promise.race([IDB.get('assets'), new Promise<any>((r?) => setTimeout(() => r(null), 1500))]);
+    const a = await Promise.race([IDB.get('assets'), new Promise<any>(r => setTimeout(() => r(null), 1500))]);
     if (a)
-      Object.values<any>(a).forEach((x?) => {
+      Object.values<any>(a).forEach(x => {
         if (x && x.id) {
           ASSETS[x.id] = x;
           try {
@@ -67,7 +67,7 @@ export async function boot() {
     frame();
   }).observe(WRAP);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => frame());
-  requestAnimationFrame((t?) => {
+  requestAnimationFrame(t => {
     S.last = t;
     loop(t);
   });

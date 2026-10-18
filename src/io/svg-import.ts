@@ -11,7 +11,7 @@ export function parseStyle(s?) {
   const o: any = {};
   String(s || '')
     .split(';')
-    .forEach((p?) => {
+    .forEach(p => {
       const i = p.indexOf(':');
       if (i > 0) o[p.slice(0, i).trim()] = p.slice(i + 1).trim();
     });
@@ -110,7 +110,7 @@ export function importSVG(text?, replace?, name?) {
         count++;
         const st = parseStyle(el.getAttribute('style')),
           ni = Object.assign({}, inh);
-        PRES.forEach((p?) => {
+        PRES.forEach(p => {
           const v = st[p] || el.getAttribute(p);
           if (v) ni[p] = v;
         });
@@ -163,8 +163,8 @@ export function groupFromEl(el?) {
     extra[k] = at[k];
   }
   const rest = Object.keys(st)
-    .filter((k?) => k !== 'opacity')
-    .map((k?) => `${k}:${st[k]}`)
+    .filter(k => k !== 'opacity')
+    .map(k => `${k}:${st[k]}`)
     .join(';');
   if (rest) extra.style = rest;
   g.extra = extra;
@@ -176,25 +176,25 @@ export function elToLayer(el?, inh?, ser?) {
   for (const a of Array.from<any>(el.attributes)) at[a.name] = a.value;
   const st = parseStyle(at.style);
   delete at.style;
-  const pv = (n?) => (st[n] != null ? st[n] : at[n] != null ? at[n] : inh[n]);
+  const pv = n => (st[n] != null ? st[n] : at[n] != null ? at[n] : inh[n]);
   const name = at.id || at['inkscape:label'] || at['data-name'] || tag;
   const used = new Set<any>(['id', 'style', 'fill', 'stroke', 'stroke-width', 'opacity', 'transform']);
   let type = null,
     geo: any = {},
     d = null;
-  const nf = (v?) => parseFloat(v) || 0;
+  const nf = v => parseFloat(v) || 0;
   if (tag === 'rect') {
     type = 'rect';
     geo = { x: nf(at.x), y: nf(at.y), w: nf(at.width), h: nf(at.height), rx: nf(at.rx || at.ry) };
-    ['x', 'y', 'width', 'height', 'rx', 'ry'].forEach((k?) => used.add(k));
+    ['x', 'y', 'width', 'height', 'rx', 'ry'].forEach(k => used.add(k));
   } else if (tag === 'circle') {
     type = 'ellipse';
     geo = { cx: nf(at.cx), cy: nf(at.cy), rx: nf(at.r), ry: nf(at.r) };
-    ['cx', 'cy', 'r'].forEach((k?) => used.add(k));
+    ['cx', 'cy', 'r'].forEach(k => used.add(k));
   } else if (tag === 'ellipse') {
     type = 'ellipse';
     geo = { cx: nf(at.cx), cy: nf(at.cy), rx: nf(at.rx), ry: nf(at.ry) };
-    ['cx', 'cy', 'rx', 'ry'].forEach((k?) => used.add(k));
+    ['cx', 'cy', 'rx', 'ry'].forEach(k => used.add(k));
   } else if (tag === 'path') {
     type = 'path';
     d = parsePath(at.d);
@@ -203,7 +203,7 @@ export function elToLayer(el?, inh?, ser?) {
   } else if (tag === 'line') {
     type = 'path';
     d = [{ c: false, n: [N(nf(at.x1), nf(at.y1)), N(nf(at.x2), nf(at.y2))] }];
-    ['x1', 'y1', 'x2', 'y2'].forEach((k?) => used.add(k));
+    ['x1', 'y1', 'x2', 'y2'].forEach(k => used.add(k));
   } else if (tag === 'polygon' || tag === 'polyline') {
     type = 'path';
     const v = (at.points || '')
@@ -226,7 +226,7 @@ export function elToLayer(el?, inh?, ser?) {
       weight: String(pv('font-weight') || '400'),
       anchor: pv('text-anchor') || 'start',
     };
-    ['x', 'y', 'font-size', 'font-family', 'font-weight', 'text-anchor'].forEach((k?) => used.add(k));
+    ['x', 'y', 'font-size', 'font-family', 'font-weight', 'text-anchor'].forEach(k => used.add(k));
   }
   if (!type) return mkLayer('raw', name, { markup: ser.serializeToString(el) }, NOFILL);
   const stroke = pv('stroke') || 'none',
@@ -247,7 +247,7 @@ export function elToLayer(el?, inh?, ser?) {
   }
   const restStyle = Object.keys(st)
     .filter(
-      (k?) =>
+      k =>
         ![
           'fill',
           'stroke',
@@ -259,7 +259,7 @@ export function elToLayer(el?, inh?, ser?) {
           'text-anchor',
         ].includes(k),
     )
-    .map((k?) => `${k}:${st[k]}`)
+    .map(k => `${k}:${st[k]}`)
     .join(';');
   if (restStyle) extra.style = restStyle;
   l.extra = extra;

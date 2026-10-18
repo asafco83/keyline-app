@@ -31,11 +31,11 @@ export function renderStage() {
     pre: 'e-',
     editor: true,
     t: S.time,
-    href: (id?) => URLS[id] || (ASSETS[id] && ASSETS[id].data) || '',
+    href: id => URLS[id] || (ASSETS[id] && ASSETS[id].data) || '',
   });
   const vis = visibleLayers();
   setEng(KLEngine({ p: 'e-', L: vis, dur: doc.dur }, CONTENT));
-  const measure = (l?) => {
+  const measure = l => {
     const g = byId('e-' + l.id);
     if (!g) return;
     try {
@@ -45,13 +45,13 @@ export function renderStage() {
       l.o = [0, 0];
     }
   };
-  vis.forEach((l?) => {
+  vis.forEach(l => {
     if (!l.o && !isBox(l)) measure(l);
   });
-  const groups = vis.filter((l?) => !l.o && isBox(l)).sort((a?, b?) => ancestors(b).length - ancestors(a).length);
+  const groups = vis.filter(l => !l.o && isBox(l)).sort((a, b) => ancestors(b).length - ancestors(a).length);
   if (groups.length) {
     eng.apply(S.time);
-    groups.forEach((g?) => {
+    groups.forEach(g => {
       measure(g);
       eng.apply(S.time);
     });

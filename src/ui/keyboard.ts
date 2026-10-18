@@ -18,7 +18,7 @@ import { FRAME, MENU, renderTimeline } from './timeline';
 import { closeModal } from './topbar';
 
 export function init(): void {
-  window.addEventListener('keydown', (e?) => {
+  window.addEventListener('keydown', e => {
     const tg: any = e.target,
       typing = tg.closest && tg.closest('input,textarea,select');
     if (e.key === 'Escape') {
@@ -26,7 +26,7 @@ export function init(): void {
         closeMenu();
         return;
       }
-      const m = [...(document.querySelectorAll as any)('.modal')].find((x?) => !x.hidden);
+      const m = [...(document.querySelectorAll as any)('.modal')].find(x => !x.hidden);
       if (m) {
         closeModal(m);
         return;
@@ -60,7 +60,7 @@ export function init(): void {
       return;
     }
     if (typing) return;
-    if ([...(document.querySelectorAll as any)('.modal')].some((x?) => !x.hidden)) return;
+    if ([...(document.querySelectorAll as any)('.modal')].some(x => !x.hidden)) return;
     const mod = e.ctrlKey || e.metaKey,
       l = selLayer(),
       k = e.key;

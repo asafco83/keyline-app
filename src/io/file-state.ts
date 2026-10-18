@@ -36,7 +36,7 @@ export function updateFileInfo() {
         : 'Use Save to keep this project as a .klp file';
 }
 export function persistFile() {
-  IDB.set('file', S.file ? { name: S.file.name, handle: S.file.handle || null } : null).then((ok?) => {
+  IDB.set('file', S.file ? { name: S.file.name, handle: S.file.handle || null } : null).then(ok => {
     if (!ok && S.file && S.file.handle) IDB.set('file', { name: S.file.name, handle: null });
   });
 }

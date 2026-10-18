@@ -1,4 +1,5 @@
 // Keyline — core/history
+import type { Layer, PropKey, Tool } from '../model/types';
 import { $, H, HINTS, baseOf, clamp, clone, r3, setBase } from './constants';
 import { LP, WRAP } from './dom';
 import { S, doc, layerById, selLayer, setDoc, sortTrack, syncIdc } from './state';
@@ -22,7 +23,7 @@ export function trackSig() {
     '|' +
     (l
       ? Object.keys(l.t)
-          .filter((k?) => l.t[k].length)
+          .filter(k => l.t[k].length)
           .join(',') + l.type
       : '')
   );
@@ -31,7 +32,7 @@ export function beginEdit() {
   const snap = JSON.stringify(doc),
     sig = trackSig();
   return {
-    end(o?) {
+    end(o?: { insp?: boolean }) {
       o = o || {};
       if (JSON.stringify(doc) !== snap) {
         S.undo.push(snap);
@@ -42,7 +43,7 @@ export function beginEdit() {
     },
   };
 }
-export function commit(o?) {
+export function commit(o?: { insp?: boolean }) {
   save();
   renderStage();
   renderLayers();
@@ -66,7 +67,7 @@ export function afterSwap() {
   S.keys.clear();
   S.node = null;
   if (S.sel && !layerById(S.sel)) S.sel = null;
-  S.selSet = new Set<any>([...S.selSet].filter((id?) => layerById(id)));
+  S.selSet = new Set<any>([...S.selSet].filter(id => layerById(id)));
   syncIdc();
   save();
   renderAll();
@@ -82,10 +83,10 @@ export function save() {
   $('#pname').value = doc.name;
   markDirty();
 }
-export function setProp(l?, k?, v?) {
+export function setProp(l: Layer, k: PropKey, v: any) {
   const tr = l.t[k];
   if (tr && tr.length) {
-    const kf = tr.find((q?) => Math.abs(q[0] - S.time) < 0.005);
+    const kf = tr.find(q => Math.abs(q[0] - S.time) < 0.005);
     if (kf) kf[1] = v;
     else {
       tr.push([r3(S.time), v, 'ease']);
@@ -103,13 +104,13 @@ export function setProp(l?, k?, v?) {
   }
   setBase(l, k, v);
 }
-export function toggleKey(l?, k?) {
+export function toggleKey(l: Layer, k: PropKey) {
   const ed = beginEdit(),
     tr = l.t[k],
     cur = clone(H.get(l, k, S.time));
   if (!tr || !tr.length) l.t[k] = [[r3(S.time), cur, 'ease']];
   else {
-    const i = tr.findIndex((q?) => Math.abs(q[0] - S.time) < 0.005);
+    const i = tr.findIndex(q => Math.abs(q[0] - S.time) < 0.005);
     if (i >= 0) {
       S.keys.delete(tr[i]);
       tr.splice(i, 1);
@@ -125,10 +126,10 @@ export function toggleKey(l?, k?) {
   S.exp[l.id] = true;
   ed.end({ insp: true });
 }
-export function removeTrack(l?, k?) {
+export function removeTrack(l: Layer, k: PropKey) {
   const ed = beginEdit();
   const v = clone(H.get(l, k, S.time));
-  (l.t[k] || []).forEach((q?) => S.keys.delete(q));
+  (l.t[k] || []).forEach(q => S.keys.delete(q));
   delete l.t[k];
   setBase(l, k, v);
   ed.end({ insp: true });
@@ -136,12 +137,12 @@ export function removeTrack(l?, k?) {
 export function deleteKeys() {
   if (!S.keys.size) return;
   const ed = beginEdit();
-  doc.layers.forEach((l?) => {
-    for (const k of Object.keys(l.t)) {
+  doc.layers.forEach(l => {
+    for (const k of Object.keys(l.t) as PropKey[]) {
       const tr = l.t[k];
-      const removed = tr.filter((q?) => S.keys.has(q));
+      const removed = tr.filter(q => S.keys.has(q));
       if (!removed.length) continue;
-      l.t[k] = tr.filter((q?) => !S.keys.has(q));
+      l.t[k] = tr.filter(q => !S.keys.has(q));
       if (!l.t[k].length) {
         delete l.t[k];
         setBase(l, k, clone(removed[removed.length - 1][1]));
@@ -151,7 +152,7 @@ export function deleteKeys() {
   S.keys.clear();
   ed.end({ insp: true });
 }
-export function select(id?, mode?) {
+export function select(id: string | null, mode?: 'add' | 'toggle' | string) {
   if (id !== S.sel && mode !== 'toggle' && mode !== 'range') S.keys.clear();
   if (!id) {
     S.sel = null;
@@ -165,10 +166,10 @@ export function select(id?, mode?) {
       S.sel = id;
     }
   } else if (mode === 'range' && S.sel) {
-    const rows = treeRows(null, 0, [], true).map((r?) => r[0].id),
+    const rows = treeRows(null, 0, [], true).map(r => r[0].id),
       a = rows.indexOf(S.sel),
       b = rows.indexOf(id);
-    if (a >= 0 && b >= 0) rows.slice(Math.min(a, b), Math.max(a, b) + 1).forEach((x?) => S.selSet.add(x));
+    if (a >= 0 && b >= 0) rows.slice(Math.min(a, b), Math.max(a, b) + 1).forEach(x => S.selSet.add(x));
     S.sel = id;
   } else {
     S.sel = id;
@@ -176,7 +177,7 @@ export function select(id?, mode?) {
   }
   if (S.sel) {
     const l = selLayer();
-    if (l) ancestors(l).forEach((a?) => (S.lexp[a.id] = true));
+    if (l) ancestors(l).forEach(a => (S.lexp[a.id] = true));
   }
   S.node = null;
   renderLayers();
@@ -188,12 +189,12 @@ export function select(id?, mode?) {
     if (row) row.scrollIntoView({ block: 'nearest' });
   }
 }
-export function setTime(t?) {
+export function setTime(t: number) {
   S.time = clamp(r3(t), 0, doc.dur);
   S.ptime = S.time;
   frame();
 }
-export function setTool(t?) {
+export function setTool(t: Tool) {
   if (S.pen && t !== 'pen') finishPen(false);
   S.tool = t;
   renderTools();

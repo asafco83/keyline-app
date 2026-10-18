@@ -61,13 +61,13 @@ export function limitRot(b?, r?) {
   return b.lim ? clamp(r, b.lmin != null ? b.lmin : -90, b.lmax != null ? b.lmax : 90) : r;
 }
 export function newBoneName() {
-  return 'Bone ' + (doc.layers.filter((x?) => x.type === 'bone').length + 1);
+  return 'Bone ' + (doc.layers.filter(x => x.type === 'bone').length + 1);
 }
 export function boneCreate(p0?) {
   const u = 1 / S.scale;
   let best = null,
     bd = 10 * u;
-  doc.layers.forEach((b?) => {
+  doc.layers.forEach(b => {
     if (b.type !== 'bone' || isHidden(b)) return;
     const bp = bonePts(b);
     if (!bp) return;
@@ -185,17 +185,17 @@ export function ikDrag(b?, p0?) {
   const ch = ikChain(b),
     PM = parentMatrix(ch[0]),
     t = S.time,
-    rots = ch.map((x?) => H.get(x, 'rot', t)),
+    rots = ch.map(x => H.get(x, 'rot', t)),
     tip = boneTipL(b.geo),
     ed = beginEdit();
   let moved = false;
-  const solve = (tg?) => {
+  const solve = tg => {
     for (let it = 0; it < 20; it++) {
       let err = 0;
       for (let i = ch.length - 1; i >= 0; i--) {
         const W = [];
         let M = PM;
-        ch.forEach((x?, k?) => {
+        ch.forEach((x, k) => {
           M = M.multiply(localMat(x, t, rots[k]));
           W.push(M);
         });
@@ -217,7 +217,7 @@ export function ikDrag(b?, p0?) {
       if (!moved && Math.hypot(p.x - p0.x, p.y - p0.y) * S.scale < 3) return;
       moved = true;
       solve(p);
-      ch.forEach((x?, k?) => setProp(x, 'rot', r2(rots[k])));
+      ch.forEach((x, k) => setProp(x, 'rot', r2(rots[k])));
       S.drag.lbl = `IK · ${ch.length} bone${ch.length > 1 ? 's' : ''}`;
       S.drag.lp = p;
       frame();
@@ -232,9 +232,9 @@ export function shiftChildBones(l?, oldTip?) {
     dx = nt[0] - oldTip[0],
     dy = nt[1] - oldTip[1];
   if (Math.abs(dx) < 1e-6 && Math.abs(dy) < 1e-6) return;
-  kids(l.id).forEach((c?) => {
+  kids(l.id).forEach(c => {
     if (c.type !== 'bone' || Math.hypot(c.geo.x - oldTip[0], c.geo.y - oldTip[1]) > 0.6) return;
-    if (c.t.pos && c.t.pos.length) c.t.pos.forEach((q?) => (q[1] = [r2(q[1][0] + dx), r2(q[1][1] + dy)]));
+    if (c.t.pos && c.t.pos.length) c.t.pos.forEach(q => (q[1] = [r2(q[1][0] + dx), r2(q[1][1] + dy)]));
     else c.b.pos = [r2(c.b.pos[0] + dx), r2(c.b.pos[1] + dy)];
   });
 }

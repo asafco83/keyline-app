@@ -11,15 +11,15 @@ import { KLEngine } from '../runtime/engine';
 export function roundV(v?) {
   if (typeof v === 'number') return r3(v);
   if (Array.isArray(v)) return v.map(roundV);
-  if (v && typeof v === 'object' && v.n) return { c: v.c, n: v.n.map((q?) => q.map(r3)) };
+  if (v && typeof v === 'object' && v.n) return { c: v.c, n: v.n.map(q => q.map(r3)) };
   return v;
 }
 export function cssTf(c?) {
   return `translate(${r3(c.x)}px,${r3(c.y)}px) rotate(${r3(c.r)}deg) scale(${r3(c.sx)},${r3(c.sy)}) translate(${r3(-c.ox)}px,${r3(-c.oy)}px)`;
 }
 export function kfBlock(name?, stops?, N?) {
-  const keep = stops.map((s?, i?) => i === 0 || i === N || s !== stops[i - 1] || s !== stops[i + 1]);
-  return `@keyframes ${name}{` + stops.map((s?, i?) => (keep[i] ? `${r3((i / N) * 100)}%{${s}}` : '')).join('') + '}';
+  const keep = stops.map((s, i) => i === 0 || i === N || s !== stops[i - 1] || s !== stops[i + 1]);
+  return `@keyframes ${name}{` + stops.map((s, i) => (keep[i] ? `${r3((i / N) * 100)}%{${s}}` : '')).join('') + '}';
 }
 export function cssFor(anim?, pre?, svgId?) {
   const N = Math.max(2, Math.round(doc.dur * 30)),
@@ -28,7 +28,7 @@ export function cssFor(anim?, pre?, svgId?) {
     spd = doc.ex.speed > 0 ? doc.ex.speed : 1,
     run = `${r3(doc.dur / spd)}s linear ${it} ${dir} ${doc.ex.fill === 'backwards' ? 'backwards' : 'both'}`;
   let css = '';
-  anim.forEach((l?) => {
+  anim.forEach(l => {
     const id = pre + l.id,
       T = l.t,
       fr = [];
@@ -39,17 +39,17 @@ export function cssFor(anim?, pre?, svgId?) {
       css +=
         kfBlock(
           id + '-g',
-          fr.map((c?) => (gt ? `transform:${cssTf(c)};` : '') + (go ? `opacity:${r3(c.op)}` : '')),
+          fr.map(c => (gt ? `transform:${cssTf(c)};` : '') + (go ? `opacity:${r3(c.op)}` : '')),
           N,
         ) + `#${id}{transform-box:view-box;transform-origin:0 0;animation:${id}-g ${run}}`;
-    const sk = ['fill', 'stk', 'sw', 'draw', 'd'].filter((k?) => T[k]);
+    const sk = ['fill', 'stk', 'sw', 'draw', 'd'].filter(k => T[k]);
     if (sk.length)
       css +=
         kfBlock(
           id + '-s',
-          fr.map((c?) =>
+          fr.map(c =>
             sk
-              .map((k?) =>
+              .map(k =>
                 k === 'fill'
                   ? `fill:${c.fill}`
                   : k === 'stk'
@@ -94,7 +94,7 @@ export function triggerJS(t?, out?, base?) {
 export function idMapFor(prep?) {
   const map: any = {},
     used = new Set<any>();
-  prep.forEach((l?) => {
+  prep.forEach(l => {
     let b =
       String(l.name || 'layer')
         .toLowerCase()
@@ -120,27 +120,27 @@ export function buildExport(imgs?) {
     svgId = pre + 'svg';
   if (ex.mode === 'css' && (ex.trigger === 'click' || ex.trigger === 'scroll' || ex.trigger === 'api'))
     ex.trigger = 'load';
-  const prep = doc.layers.map((l?) => {
+  const prep = doc.layers.map(l => {
     const c = clone(l);
     for (const k in c.t) {
       if (!c.t[k].length) {
         delete c.t[k];
         continue;
       }
-      c.t[k] = c.t[k].map((q?) => [r3(q[0]), roundV(q[1]), q[2]]);
+      c.t[k] = c.t[k].map(q => [r3(q[0]), roundV(q[1]), q[2]]);
     }
     return c;
   });
   if (ex.ids === 'names') {
     const m = idMapFor(prep);
-    prep.forEach((l?) => {
+    prep.forEach(l => {
       l.id = m[l.id];
       if (l.parent) l.parent = m[l.parent];
     });
   }
   const byId: any = {};
-  prep.forEach((l?) => (byId[l.id] = l));
-  const hiddenUp = (l?) => {
+  prep.forEach(l => (byId[l.id] = l));
+  const hiddenUp = l => {
     let p = l,
       g = 0;
     while (p && g++ < 100) {
@@ -149,13 +149,13 @@ export function buildExport(imgs?) {
     }
     return false;
   };
-  const anim = prep.filter((l?) => !hiddenUp(l) && Object.keys(l.t).length);
+  const anim = prep.filter(l => !hiddenUp(l) && Object.keys(l.t).length);
   const used: any = {};
   const ctx = {
     pre,
     editor: false,
     t: 0,
-    useImg: (id?) => {
+    useImg: id => {
       if (!ASSETS[id]) return null;
       used[id] = 1;
       return pre + 'img-' + id;
@@ -163,7 +163,7 @@ export function buildExport(imgs?) {
   };
   const body = markup(prep, null, ctx);
   const syms = Object.keys(used)
-    .map((id?) => {
+    .map(id => {
       const a = ASSETS[id];
       return `<symbol id="${pre}img-${id}" viewBox="0 0 ${a.w} ${a.h}" preserveAspectRatio="none"><image href="${imgs && imgs[id] ? imgs[id].data : a.data}" width="${a.w}" height="${a.h}" preserveAspectRatio="none"/></symbol>`;
     })
@@ -187,7 +187,7 @@ export function buildExport(imgs?) {
         speed: doc.ex.speed > 0 ? doc.ex.speed : 1,
         fps: doc.ex.fps || 0,
         fill: doc.ex.fill === 'backwards' ? -1 : 1,
-        L: anim.map((l?) => {
+        L: anim.map(l => {
           const b = {
             pos: l.b.pos,
             rot: l.b.rot,
@@ -211,7 +211,7 @@ export function buildExport(imgs?) {
     code: out + '</svg>',
     svgId,
     anim: anim.length,
-    tracks: anim.reduce((s?, l?) => s + Object.keys(l.t).length, 0),
+    tracks: anim.reduce((s, l) => s + Object.keys(l.t).length, 0),
     images: Object.keys(used).length,
   };
 }

@@ -65,7 +65,7 @@ export function layerSVG(l?, ctx?, c?, children?) {
 }
 export function markup(list?, pid?, ctx?) {
   return kids(pid, list)
-    .filter((l?) => !l.hid)
-    .map((l?) => layerSVG(l, ctx, H.comp(l, ctx.t), isBox(l) ? markup(list, l.id, ctx) : ''))
+    .filter(l => !l.hid)
+    .map(l => layerSVG(l, ctx, H.comp(l, ctx.t), isBox(l) ? markup(list, l.id, ctx) : ''))
     .join('');
 }

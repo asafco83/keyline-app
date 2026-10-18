@@ -5,7 +5,7 @@ import { S, doc } from '../core/state';
 import { nrow } from './inspector';
 
 export function easeLabel(e?) {
-  if (Array.isArray(e)) return 'cubic-bezier(' + e.map((v?) => r3(v)).join(', ') + ')';
+  if (Array.isArray(e)) return 'cubic-bezier(' + e.map(v => r3(v)).join(', ') + ')';
   const m = { linear: 'Linear', ease: 'Ease', in: 'Ease in', out: 'Ease out', inOut: 'Ease in-out', hold: 'Hold' };
   if (!e) return 'Ease';
   if (m[e]) return m[e];
@@ -54,24 +54,24 @@ export function keyPanel() {
     k0 = ks[0],
     cur = k0[2] || 'ease';
   S.ezDir = easeDir(cur);
-  const allSame = ks.every((k?) => sameEase(k[2], cur)),
+  const allSame = ks.every(k => sameEase(k[2], cur)),
     dir = S.ezDir;
-  const tile = (e?, label?, extra?) =>
+  const tile = (e, label, extra?) =>
     `<button class="ezb${allSame && sameEase(e, cur) ? ' on' : ''}" data-ez="${esc(JSON.stringify(e))}" title="${esc(easeLabel(e))}"${extra || ''}>${thumb(e)}<span>${esc(label)}</span></button>`;
   let grid = tile('linear', 'Linear') + tile('ease', 'Ease') + tile('hold', 'Hold');
-  EZFAM.forEach((f?) => {
+  EZFAM.forEach(f => {
     grid += tile(famName(f, dir), f === 'Standard' ? 'Basic' : f);
   });
   const pre = doc.ezPresets || [];
-  pre.forEach((p?, i?) => {
+  pre.forEach((p, i) => {
     grid += tile(p.v, p.name, ` data-ezp="${i}"`);
   });
-  const isPreset = pre.some((p?) => sameEase(p.v, cur));
+  const isPreset = pre.some(p => sameEase(p.v, cur));
   if (Array.isArray(cur) && !isPreset)
     grid += `<button class="ezb on" data-ez="${esc(JSON.stringify(cur))}" title="${esc(easeLabel(cur))}">${thumb(cur)}<span>Custom</span></button>`;
   const lines =
-    [0, 1].map((v?) => `<line class="gb" x1="20" x2="220" y1="${EZY(v)}" y2="${EZY(v)}"/>`).join('') +
-    [0, 0.25, 0.5, 0.75, 1].map((x?) => `<line class="gl" x1="${EZX(x)}" x2="${EZX(x)}" y1="10" y2="190"/>`).join('');
+    [0, 1].map(v => `<line class="gb" x1="20" x2="220" y1="${EZY(v)}" y2="${EZY(v)}"/>`).join('') +
+    [0, 0.25, 0.5, 0.75, 1].map(x => `<line class="gl" x1="${EZX(x)}" x2="${EZX(x)}" y1="10" y2="190"/>`).join('');
   return `<section class="sec" id="kfsec"><h3>${ks.length > 1 ? `${ks.length} keyframes` : 'Keyframe'} <small>easing to the next key</small></h3>
     ${ks.length === 1 ? nrow('Time', `<label class="nf"><span>t</span><input id="kf-time" inputmode="decimal" value="${fmt(k0[0])}"><em>s</em></label>`) : ''}
     ${nrow(
@@ -81,7 +81,7 @@ export function keyPanel() {
         ['out', 'Out'],
         ['inOut', 'In-Out'],
       ]
-        .map((d?) => `<button data-v="${d[0]}" class="${dir === d[0] ? 'on' : ''}">${d[1]}</button>`)
+        .map(d => `<button data-v="${d[0]}" class="${dir === d[0] ? 'on' : ''}">${d[1]}</button>`)
         .join('')}</div>`,
     )}
     <div class="ezfam" id="ezGrid">${grid}</div>
@@ -90,7 +90,7 @@ export function keyPanel() {
       <line class="arm" id="ezA0"/><line class="arm" id="ezA1"/><path class="cv" id="ezCurve"/>
       <circle class="end" cx="${EZX(0)}" cy="${EZY(0)}" r="3"/><circle class="end" cx="${EZX(1)}" cy="${EZY(1)}" r="3"/>
       <circle class="hd" id="ezH0" data-hd="0" r="7"/><circle class="hd" id="ezH1" data-hd="1" r="7"/></svg>
-    <div class="ezrow">${['x1', 'y1', 'x2', 'y2'].map((n?, i?) => `<label class="nf"><span>${n}</span><input id="ez-${i}" data-ezv="${i}" inputmode="decimal"></label>`).join('')}</div>
+    <div class="ezrow">${['x1', 'y1', 'x2', 'y2'].map((n, i) => `<label class="nf"><span>${n}</span><input id="ez-${i}" data-ezv="${i}" inputmode="decimal"></label>`).join('')}</div>
     <input class="txt mono" id="ezCss" spellcheck="false" placeholder="Paste cubic-bezier(.17,.67,.83,.67)" aria-label="CSS cubic-bezier value">
     <p>Drag to move · Alt+drag to stretch · Ctrl+drag to copy · right-click for more.</p>
     <div class="btns">${Array.isArray(cur) && !isPreset ? '<button class="btn" data-act="ezsave">Save as preset</button>' : ''}
@@ -131,17 +131,17 @@ export function drawEz() {
   H0.setAttribute('cy', P1[1]);
   H1.setAttribute('cx', P2[0]);
   H1.setAttribute('cy', P2[1]);
-  [A0, A1, H0, H1].forEach((x?) => x.classList.toggle('dim', !bz));
+  [A0, A1, H0, H1].forEach(x => x.classList.toggle('dim', !bz));
   for (let i = 0; i < 4; i++) {
     const inp = $('#ez-' + i);
     if (inp !== document.activeElement) inp.value = bz ? fmt(b[i], 3) : '';
   }
   const css = $('#ezCss');
-  if (css !== document.activeElement) css.value = bz ? `cubic-bezier(${b.map((v?) => r3(v)).join(', ')})` : '';
+  if (css !== document.activeElement) css.value = bz ? `cubic-bezier(${b.map(v => r3(v)).join(', ')})` : '';
 }
 export function applyEase(v?) {
   const ed = beginEdit();
-  S.keys.forEach((k?) => (k[2] = clone(v)));
+  S.keys.forEach(k => (k[2] = clone(v)));
   ed.end({ insp: true });
 }
 export const CSSKW = {

@@ -28,11 +28,11 @@ export function snippet(fw?) {
         .replace(/^[^a-z]+/, '') || 'kl') + '-',
     id = pre + 'svg';
   const label = doc.name.replace(/"/g, ''),
-    comp = (slug(doc.name).replace(/(^|-)(\w)/g, (m?, a?, b?) => b.toUpperCase()) || 'Animation').replace(/^\d/, 'A$&');
+    comp = (slug(doc.name).replace(/(^|-)(\w)/g, (m, a, b) => b.toUpperCase()) || 'Animation').replace(/^\d/, 'A$&');
   const [DW, DH] = outDims(),
     ratio = `width="${DW}" height="${DH}"`;
   if (css && fw !== 'api') {
-    const tag = (p?) => `<img src="${p}${file}" alt="${label}" ${ratio} />`;
+    const tag = p => `<img src="${p}${file}" alt="${label}" ${ratio} />`;
     return {
       html: `<!-- CSS-only export: works as a normal image -->\n${tag('')}\n\n<!-- or as a background -->\n<div style="background:url(${file}) center/contain no-repeat;aspect-ratio:${DW}/${DH}"></div>`,
       react: `export default function ${comp}() {\n  return ${tag('/')};\n}`,
@@ -44,7 +44,7 @@ export function snippet(fw?) {
   }
   const use = `player.ready((p) => {\n      p.on('end', () => console.log('finished'));\n      // p.play(); p.pause(); p.reverse(); p.seek(50); p.set('speed', 2);\n    });`;
   if (fw === 'html')
-    return `<object id="${pre}anim" type="image/svg+xml" data="${file}" aria-label="${label}" style="width:100%;max-width:${DW}px"></object>\n\n<script>\n  document.getElementById('${pre}anim').addEventListener('load', (e) => {\n    const player = e.target.contentDocument.getElementById('${id}').player;\n    ${use}\n  });\n<\/script>`;
+    return `<object id="${pre}anim" type="image/svg+xml" data="${file}" aria-label="${label}" style="width:100%;max-width:${DW}px"></object>\n\n<script>\n  document.getElementById('${pre}anim').addEventListener('load', e => {\n    const player = e.target.contentDocument.getElementById('${id}').player;\n    ${use}\n  });\n<\/script>`;
   if (fw === 'react' || fw === 'next')
     return `${fw === 'next' ? '"use client";\n\n' : ''}import { useEffect, useRef } from "react";\n\nexport default function ${comp}({ onReady }) {\n  const ref = useRef(null);\n\n  useEffect(() => {\n    const el = ref.current;\n    const handleLoad = () => {\n      const player = el.contentDocument?.getElementById("${id}")?.player;\n      if (player) player.ready((p) => onReady?.(p));\n    };\n    el.addEventListener("load", handleLoad);\n    return () => {\n      el.removeEventListener("load", handleLoad);\n      el.contentDocument?.getElementById("${id}")?.player?.destruct();\n    };\n  }, [onReady]);\n\n  return (\n    <object ref={ref} type="image/svg+xml" data="/${file}" aria-label="${label}"\n      style={{ width: "100%", maxWidth: ${DW} }} />\n  );\n}\n\n// Usage: <${comp} onReady={(player) => player.play()} />`;
   if (fw === 'vue')
@@ -59,7 +59,7 @@ export let fwSel = 'html';
 export function renderSnippet() {
   $('#xFw')
     .querySelectorAll('button')
-    .forEach((b?) => b.classList.toggle('on', b.dataset.v === fwSel));
+    .forEach(b => b.classList.toggle('on', b.dataset.v === fwSel));
   $('#xSnip').value = snippet(fwSel);
   $('#xFwNote').innerHTML =
     doc.ex.mode === 'css' && fwSel !== 'api'
@@ -72,16 +72,16 @@ export function setLastExport(c?) {
 }
 
 export function init(): void {
-  $('#xTab').addEventListener('click', (e?) => {
+  $('#xTab').addEventListener('click', e => {
     const b = (e.target as any).closest('button');
     if (!b) return;
     $('#xTab')
       .querySelectorAll('button')
-      .forEach((x?) => x.classList.toggle('on', x === b));
+      .forEach(x => x.classList.toggle('on', x === b));
     $('#xPanePrev').hidden = b.dataset.v !== 'preview';
     $('#xPaneEmbed').hidden = b.dataset.v !== 'embed';
   });
-  $('#xFw').addEventListener('click', (e?) => {
+  $('#xFw').addEventListener('click', e => {
     const b = (e.target as any).closest('button');
     if (!b) return;
     fwSel = b.dataset.v;
@@ -102,29 +102,29 @@ export function init(): void {
       toast('Press Ctrl+C to copy the selected code.');
     }
   });
-  $('#xOut').addEventListener('change', (e?) => {
+  $('#xOut').addEventListener('change', e => {
     doc.ex.out = (e.target as any).value;
     save();
     updateExport();
   });
-  $('#xFill').addEventListener('change', (e?) => {
+  $('#xFill').addEventListener('change', e => {
     doc.ex.fill = (e.target as any).value;
     save();
     updateExport();
   });
-  $('#xFps').addEventListener('change', (e?) => {
+  $('#xFps').addEventListener('change', e => {
     doc.ex.fps = parseInt((e.target as any).value) || 0;
     save();
     updateExport();
   });
-  $('#xSpeed').addEventListener('change', (e?) => {
+  $('#xSpeed').addEventListener('change', e => {
     const v = parseFloat((e.target as any).value);
     doc.ex.speed = isFinite(v) && v > 0 ? r3(clamp(v, 0.05, 20)) : 1;
     save();
     syncExportUI();
     updateExport();
   });
-  $('#xIds').addEventListener('click', (e?) => {
+  $('#xIds').addEventListener('click', e => {
     const b = (e.target as any).closest('button');
     if (!b) return;
     doc.ex.ids = b.dataset.v;

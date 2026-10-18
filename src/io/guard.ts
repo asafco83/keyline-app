@@ -6,7 +6,7 @@ import { saveProject } from './save';
 export let discardResolve = null;
 export function confirmDiscard(msg?) {
   if (!S.dirty || !doc.layers.length) return Promise.resolve(true);
-  return new Promise<any>((res?) => {
+  return new Promise<any>(res => {
     discardResolve = res;
     $('#dMsg').textContent = msg || 'This project has changes that aren’t saved to a .klp file.';
     $('#mDiscard').hidden = false;
@@ -30,7 +30,7 @@ export function init(): void {
   });
   $('#mDiscard').addEventListener(
     'click',
-    (e?) => {
+    e => {
       if ((e.target as any).id === 'mDiscard' || (e.target as any).closest('[data-close]')) endDiscard(false);
     },
     true,

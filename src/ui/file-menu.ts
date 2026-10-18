@@ -19,14 +19,14 @@ export function closeFileMenu() {
 }
 
 export function init(): void {
-  BM.addEventListener('click', (e?) => {
+  BM.addEventListener('click', e => {
     e.stopPropagation();
     FM.hidden ? openFileMenu() : closeFileMenu();
   });
-  FM.addEventListener('click', (e?) => {
+  FM.addEventListener('click', e => {
     if ((e.target as any).closest('button')) closeFileMenu();
   });
-  FM.addEventListener('keydown', (e?) => {
+  FM.addEventListener('keydown', e => {
     const bs = [...FM.querySelectorAll('button')],
       i = bs.indexOf(document.activeElement);
     if (e.key === 'ArrowDown') {
@@ -43,7 +43,7 @@ export function init(): void {
       BM.focus();
     }
   });
-  document.addEventListener('pointerdown', (e?) => {
+  document.addEventListener('pointerdown', e => {
     if (!FM.hidden && !FM.contains(e.target) && e.target !== BM && !BM.contains(e.target)) closeFileMenu();
   });
   $('#bExport2').addEventListener('click', openExport);

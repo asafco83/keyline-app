@@ -14,11 +14,11 @@ import { kb } from '../ui/inspector';
 
 export const ENC: any = {};
 export function toBlobP(cv?, type?, q?) {
-  return new Promise<any>((r?) => {
+  return new Promise<any>(r => {
     const t = setTimeout(() => r(null), 8000);
     try {
       cv.toBlob(
-        (b?) => {
+        b => {
           clearTimeout(t);
           r(b);
         },
@@ -35,7 +35,7 @@ export let encP = null;
 export function detectEnc() {
   return (
     encP ||
-    (encP = Promise.race([detectEnc0(), new Promise<any>((r?) => setTimeout(r, 1500))]).then(() => {
+    (encP = Promise.race([detectEnc0(), new Promise<any>(r => setTimeout(r, 1500))]).then(() => {
       ENC.done = true;
     }))
   );
@@ -51,7 +51,7 @@ export async function detectEnc0() {
   ENC.done = true;
 }
 export function loadImg(src?) {
-  return new Promise<any>((res?, rej?) => {
+  return new Promise<any>((res, rej) => {
     const im = new Image();
     im.onload = () => res(im);
     im.onerror = () => rej(new Error('decode'));
@@ -94,7 +94,7 @@ export function hasAlpha(cv?) {
 }
 export function worldMatAt(l?, t?) {
   let M = new DOMMatrix();
-  [...ancestors(l).reverse(), l].forEach((x?) => {
+  [...ancestors(l).reverse(), l].forEach(x => {
     M = M.multiply(localMat(x, t));
     if (x.xf) {
       const el = byId('e-' + x.id + '-s'),
@@ -112,13 +112,13 @@ export function imageNeeds() {
     N = Math.max(24, Math.round(doc.dur * 20)),
     ts = new Set<any>();
   for (let i = 0; i <= N; i++) ts.add((i / N) * doc.dur);
-  doc.layers.forEach((l?) => Object.values<any>(l.t).forEach((tr?) => tr.forEach((q?) => ts.add(q[0]))));
+  doc.layers.forEach(l => Object.values<any>(l.t).forEach(tr => tr.forEach(q => ts.add(q[0]))));
   const need: any = {};
-  doc.layers.forEach((l?) => {
+  doc.layers.forEach(l => {
     if (l.type !== 'image' || isHidden(l) || !ASSETS[l.geo.asset]) return;
     let mx = 0,
       my = 0;
-    ts.forEach((t?) => {
+    ts.forEach(t => {
       const M = worldMatAt(l, t);
       mx = Math.max(mx, Math.hypot(M.a, M.b));
       my = Math.max(my, Math.hypot(M.c, M.d));
@@ -155,7 +155,7 @@ export function optimizeAsset(a?, need?, fmt?, q?) {
           : ['image/' + fmt];
     let note = '';
     if (alpha && types.includes('image/jpeg')) {
-      types = types.filter((t?) => t !== 'image/jpeg');
+      types = types.filter(t => t !== 'image/jpeg');
       if (!types.length) types = [ENC.webp ? 'image/webp' : 'image/png'];
       note = 'has transparency, so not JPEG';
     }
@@ -194,14 +194,14 @@ export function fmtName(m?) {
 export function renderImgList(imgs?) {
   const ids = usedImageIds();
   if (!ids.length) return;
-  const rows = ids.map((id?) => {
+  const rows = ids.map(id => {
     const a = ASSETS[id],
       o = imgs && imgs[id];
     return `<div><b>${esc(a.name)}</b><br>${a.w}×${a.h} ${fmtName(a.mime)} ${kb(a.size || 0)}${o ? ` → <span class="ok">${o.tw}×${o.th} ${fmtName(o.mime)} ${kb(o.size || 0)}</span>${o.note ? ` · ${esc(o.note)}` : ''}` : ''}</div>`;
   });
   $('#xImgList').innerHTML = rows.join('');
-  const before = ids.reduce((s?, id?) => s + (ASSETS[id].size || 0), 0),
-    after = imgs ? ids.reduce((s?, id?) => s + (imgs[id].size || 0), 0) : before;
+  const before = ids.reduce((s, id) => s + (ASSETS[id].size || 0), 0),
+    after = imgs ? ids.reduce((s, id) => s + (imgs[id].size || 0), 0) : before;
   $('#xImgSum').textContent = imgs
     ? `${ids.length} image${ids.length > 1 ? 's' : ''}: ${kb(before)} → ${kb(after)} (sized for ${Math.round(exportPxScale() * doc.w)}px wide${doc.ex.hi !== false ? ' at 2×' : ''})`
     : `${ids.length} image${ids.length > 1 ? 's' : ''}: ${kb(before)}`;
@@ -227,7 +227,7 @@ export function sizePreview() {
     : `Responsive · fills its container · ${rw} px wide shown at ${pct}%`;
   $('#xPrevZoom')
     .querySelectorAll('button')
-    .forEach((b?) => b.classList.toggle('on', b.dataset.v === prevMode));
+    .forEach(b => b.classList.toggle('on', b.dataset.v === prevMode));
 }
 export let expSeq = 0;
 export let expPending = Promise.resolve();
@@ -254,7 +254,7 @@ export async function runExport() {
     old = box.querySelector('svg');
   if (old && old.player) old.player.destruct();
   box.innerHTML = r.code;
-  box.querySelectorAll('script').forEach((sc?) => {
+  box.querySelectorAll('script').forEach(sc => {
     const n = document.createElement('script');
     n.textContent = sc.textContent.replace('<![CDATA[', '').replace(']]>', '');
     sc.remove();
@@ -268,7 +268,7 @@ export async function runExport() {
       : r.code;
   const [w, h] = outDims();
   $('#xStats').innerHTML =
-    `<span>Size <b>${kb(new Blob([r.code]).size)}</b></span>${doc.ex.size === 'fixed' ? `<span>Output <b>${w}×${h}</b></span>` : ''}<span>Layers <b>${doc.layers.filter((l?) => !isHidden(l)).length}</b></span><span>Animated <b>${r.anim}</b></span><span>Animators <b>${r.tracks}</b></span>${r.images ? `<span>Images <b>${r.images}</b></span>` : ''}<span>Length <b>${fmt(doc.dur)}s</b></span>`;
+    `<span>Size <b>${kb(new Blob([r.code]).size)}</b></span>${doc.ex.size === 'fixed' ? `<span>Output <b>${w}×${h}</b></span>` : ''}<span>Layers <b>${doc.layers.filter(l => !isHidden(l)).length}</b></span><span>Animated <b>${r.anim}</b></span><span>Animators <b>${r.tracks}</b></span>${r.images ? `<span>Images <b>${r.images}</b></span>` : ''}<span>Length <b>${fmt(doc.dur)}s</b></span>`;
   renderImgList(imgs);
 }
 export function slug(s?) {
@@ -314,13 +314,13 @@ export async function saveFile(name?, data?, type?) {
 }
 
 export function init(): void {
-  $('#xPrevZoom').addEventListener('click', (e?) => {
+  $('#xPrevZoom').addEventListener('click', e => {
     const b = (e.target as any).closest('button');
     if (!b) return;
     prevMode = b.dataset.v;
     sizePreview();
   });
-  $('#xMode').addEventListener('click', (e?) => {
+  $('#xMode').addEventListener('click', e => {
     const b = (e.target as any).closest('button');
     if (!b) return;
     doc.ex.mode = b.dataset.v;
@@ -328,7 +328,7 @@ export function init(): void {
     syncExportUI();
     updateExport();
   });
-  $('#xSize').addEventListener('click', (e?) => {
+  $('#xSize').addEventListener('click', e => {
     const b = (e.target as any).closest('button');
     if (!b) return;
     doc.ex.size = b.dataset.v;
@@ -336,24 +336,24 @@ export function init(): void {
     syncExportUI();
     updateExport();
   });
-  $('#xTrig').addEventListener('change', (e?) => {
+  $('#xTrig').addEventListener('change', e => {
     doc.ex.trigger = (e.target as any).value;
     save();
     syncExportUI();
     updateExport();
   });
-  $('#xIt').addEventListener('change', (e?) => {
+  $('#xIt').addEventListener('change', e => {
     doc.it = parseInt((e.target as any).value) || 0;
     save();
     updateExport();
   });
-  $('#xDir').addEventListener('change', (e?) => {
+  $('#xDir').addEventListener('change', e => {
     doc.dir = (e.target as any).value;
     save();
     updateExport();
   });
   $('#xIt').addEventListener('change', () => renderSnippet());
-  $('#xPre').addEventListener('change', (e?) => {
+  $('#xPre').addEventListener('change', e => {
     doc.ex.prefix = (e.target as any).value.trim() || randPre();
     save();
     syncExportUI();

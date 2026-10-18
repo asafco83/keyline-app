@@ -46,14 +46,14 @@ export function obbOf(l?) {
   ].map(([x, y]) => xfp(M, x, y));
 }
 export function quadPts(q?) {
-  return q.map((p?) => r2(p.x) + ',' + r2(p.y)).join(' ');
+  return q.map(p => r2(p.x) + ',' + r2(p.y)).join(' ');
 }
 export function drawOverlay() {
   OV.replaceChildren();
   const u = 1 / S.scale;
   if (S.pen) drawPen(u);
   if (S.showBones && ['select', 'bone', 'node'].includes(S.tool))
-    doc.layers.forEach((b?) => {
+    doc.layers.forEach(b => {
       if (b.type === 'bone' && !isHidden(b)) drawBone(b, u, S.selSet.has(b.id));
     });
   if (S.boneDraft) {
@@ -62,7 +62,7 @@ export function drawOverlay() {
     OV.append(svgEl('line', { x1: A.x, y1: A.y, x2: B.x, y2: B.y, class: 'ov-bdraft' }));
     OV.append(svgEl('circle', { cx: A.x, cy: A.y, r: 4.5 * u, class: 'ov-bj is-sel' }));
   }
-  S.selSet.forEach((id?) => {
+  S.selSet.forEach(id => {
     if (id === S.sel) return;
     const o = layerById(id);
     const q = o && !isHidden(o) && obbOf(o);
@@ -73,7 +73,7 @@ export function drawOverlay() {
   const Q = obbOf(l);
   if (!Q) return;
   const PM = parentMatrix(l),
-    mp = (x?, y?) => xfp(PM, x, y),
+    mp = (x, y) => xfp(PM, x, y),
     tr = l.t.pos,
     o = H.get(l, 'org', S.time) || [0, 0];
   if (tr && tr.length > 1) {
@@ -86,7 +86,7 @@ export function drawOverlay() {
       pts.push(r2(q.x) + ',' + r2(q.y));
     }
     OV.append(svgEl('polyline', { points: pts.join(' '), class: 'ov-path' }));
-    tr.forEach((k?) => {
+    tr.forEach(k => {
       const q = mp(k[1][0] + o[0], k[1][1] + o[1]);
       OV.append(svgEl('circle', { cx: q.x, cy: q.y, r: 3.5 * u, class: 'ov-kdot' }));
     });
@@ -121,7 +121,7 @@ export function drawOverlay() {
   const ang = (Math.atan2(Q[1].y - Q[0].y, Q[1].x - Q[0].x) * 180) / Math.PI,
     mx = (Q[0].x + Q[2].x) / 2,
     my = (Q[0].y + Q[2].y) / 2;
-  const mid2 = (a?, b?) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+  const mid2 = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
   const H8: any[] = [
     ['nw', Q[0]],
     ['n', mid2(Q[0], Q[1])],
@@ -192,9 +192,9 @@ export function drawOverlay() {
 export function drawNodes(l?, u?) {
   const M = localMatrix(l),
     d = H.get(l, 'd', S.time) || [],
-    P = (x?, y?) => xfp(M, x, y);
-  d.forEach((sp?, i?) =>
-    sp.n.forEach((q?, j?) => {
+    P = (x, y) => xfp(M, x, y);
+  d.forEach((sp, i) =>
+    sp.n.forEach((q, j) => {
       const A = P(q[0], q[1]),
         I = P(q[2], q[3]),
         O = P(q[4], q[5]);
@@ -232,7 +232,7 @@ export function drawPen(u?) {
   const l = n[n.length - 1],
     hv = S.pen.hover;
   if (hv && !S.drag) OV.append(svgEl('line', { x1: l[0], y1: l[1], x2: hv.x, y2: hv.y, class: 'ov-rub' }));
-  n.forEach((q?, j?) => {
+  n.forEach((q, j) => {
     if (q[4] !== q[0] || q[5] !== q[1])
       OV.append(svgEl('line', { x1: q[2], y1: q[3], x2: q[4], y2: q[5], class: 'ov-hl' }));
     OV.append(

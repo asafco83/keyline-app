@@ -47,7 +47,7 @@ export function renameInline(el?, l?) {
   inp.focus();
   inp.select();
   let done = false;
-  const finish = (ok?) => {
+  const finish = ok => {
     if (done) return;
     done = true;
     if (ok && inp.value.trim() && inp.value.trim() !== l.name) {
@@ -59,7 +59,7 @@ export function renameInline(el?, l?) {
       renderTimeline();
     }
   };
-  inp.addEventListener('keydown', (ev?) => {
+  inp.addEventListener('keydown', ev => {
     ev.stopPropagation();
     if (ev.key === 'Enter') finish(true);
     if (ev.key === 'Escape') finish(false);
@@ -70,13 +70,13 @@ export let dragIds = null;
 export function dropMode(r?, e?) {
   const tgt = layerById(r.dataset.lid);
   if (!tgt || !dragIds) return null;
-  if (dragIds.some((id?) => id === tgt.id || ancestors(tgt).some((a?) => a.id === id))) return null;
+  if (dragIds.some(id => id === tgt.id || ancestors(tgt).some(a => a.id === id))) return null;
   const rc = r.getBoundingClientRect(),
     y = (e.clientY - rc.top) / rc.height;
   return isBox(tgt) ? (y < 0.28 ? 'before' : y > 0.72 ? 'after' : 'into') : y < 0.5 ? 'before' : 'after';
 }
 export function clearDrop() {
-  return LP.querySelectorAll('.d-before,.d-after,.d-into').forEach((x?) =>
+  return LP.querySelectorAll('.d-before,.d-after,.d-into').forEach(x =>
     x.classList.remove('d-before', 'd-after', 'd-into'),
   );
 }
@@ -86,11 +86,11 @@ export function moveLayers(ids?, tgt?, mode?) {
   const ed = beginEdit();
   const newPid = mode === 'into' ? tgt.id : mode === 'root' ? null : pidOf(tgt),
     PM = pmOf(newPid);
-  ls.forEach((l?) => {
+  ls.forEach(l => {
     if (pidOf(l) !== newPid) reparentKeep(l, PM);
   });
   const order = mode === 'before' ? ls : ls.slice().reverse();
-  order.forEach((l?) => {
+  order.forEach(l => {
     doc.layers.splice(doc.layers.indexOf(l), 1);
     l.parent = newPid;
     if (mode === 'into' || mode === 'root') doc.layers.push(l);
@@ -105,7 +105,7 @@ export function moveLayers(ids?, tgt?, mode?) {
 export function groupSel() {
   const roots = selectedRoots(),
     ed = beginEdit();
-  const cnt = doc.layers.filter((l?) => l.type === 'group').length + 1;
+  const cnt = doc.layers.filter(l => l.type === 'group').length + 1;
   const g = mkLayer('group', 'Group ' + cnt, {}, NOFILL);
   if (!roots.length) {
     doc.layers.push(g);
@@ -113,12 +113,12 @@ export function groupSel() {
     const pid = pidOf(selLayer() || roots[0]);
     g.parent = pid;
     const PM = pmOf(pid);
-    const maxI = Math.max(...roots.map((l?) => doc.layers.indexOf(l)));
+    const maxI = Math.max(...roots.map(l => doc.layers.indexOf(l)));
     doc.layers.splice(maxI + 1, 0, g);
     roots
       .slice()
       .reverse()
-      .forEach((l?) => {
+      .forEach(l => {
         if (pidOf(l) !== pid) reparentKeep(l, PM);
         l.parent = g.id;
       });
@@ -135,7 +135,7 @@ export function ungroup(g?) {
     PM = pmOf(pidOf(g)),
     anim = isAnim(g),
     gc = H.comp(g, S.time);
-  ch.forEach((c?) => {
+  ch.forEach(c => {
     reparentKeep(c, PM);
     if (!anim) {
       if (!(c.t.rot && c.t.rot.length)) c.b.rot = r2(c.b.rot + gc.r);
@@ -144,9 +144,9 @@ export function ungroup(g?) {
     }
     c.parent = pidOf(g);
   });
-  ch.forEach((c?) => doc.layers.splice(doc.layers.indexOf(c), 1));
+  ch.forEach(c => doc.layers.splice(doc.layers.indexOf(c), 1));
   doc.layers.splice(doc.layers.indexOf(g), 1, ...ch);
-  S.selSet = new Set<any>(ch.map((c?) => c.id));
+  S.selSet = new Set<any>(ch.map(c => c.id));
   S.sel = ch.length ? ch[ch.length - 1].id : null;
   S.keys.clear();
   ed.end({ insp: true });
@@ -156,8 +156,8 @@ export function deleteSel() {
   const roots = selectedRoots();
   if (!roots.length) return;
   const ed = beginEdit();
-  roots.forEach((l?) => {
-    [l, ...descendants(l)].forEach((x?) => {
+  roots.forEach(l => {
+    [l, ...descendants(l)].forEach(x => {
       const i = doc.layers.indexOf(x);
       if (i >= 0) doc.layers.splice(i, 1);
     });
@@ -171,19 +171,19 @@ export function duplicate(l?) {
   const ed = beginEdit(),
     list = [l, ...descendants(l)],
     map: any = {};
-  const clones = list.map((x?) => {
+  const clones = list.map(x => {
     const c = clone(x);
     c.id = uid();
     map[x.id] = c.id;
     return c;
   });
-  clones.forEach((c?, i?) => {
+  clones.forEach((c, i) => {
     if (i > 0) c.parent = map[list[i].parent] || c.parent;
   });
   const root = clones[0];
   root.name = l.name + ' copy';
   root.hid = false;
-  if (root.t.pos && root.t.pos.length) root.t.pos.forEach((q?) => (q[1] = [q[1][0] + 16, q[1][1] + 16]));
+  if (root.t.pos && root.t.pos.length) root.t.pos.forEach(q => (q[1] = [q[1][0] + 16, q[1][1] + 16]));
   else root.b.pos = [root.b.pos[0] + 16, root.b.pos[1] + 16];
   doc.layers.splice(doc.layers.indexOf(l) + 1, 0, root);
   doc.layers.push(...clones.slice(1));
@@ -206,7 +206,7 @@ export function arrange(l?, dir?) {
 }
 
 export function init(): void {
-  LP.addEventListener('click', (e?) => {
+  LP.addEventListener('click', e => {
     const r = (e.target as any).closest('.lp-row');
     if (!r) {
       if (e.target === LP) select(null);
@@ -235,7 +235,7 @@ export function init(): void {
     if ((e.target as any).closest('input')) return;
     select(l.id, e.shiftKey ? 'range' : e.ctrlKey || e.metaKey ? 'toggle' : undefined);
   });
-  LP.addEventListener('keydown', (e?) => {
+  LP.addEventListener('keydown', e => {
     const r = (e.target as any).closest('.lp-row');
     if (!r || (e.target as any).tagName === 'INPUT') return;
     if (e.key === 'Enter' || e.key === ' ') {
@@ -254,22 +254,22 @@ export function init(): void {
       }
     }
   });
-  LP.addEventListener('dblclick', (e?) => {
+  LP.addEventListener('dblclick', e => {
     const nm = (e.target as any).closest('.lp-name');
     if (nm) renameInline(nm, layerById(nm.closest('[data-lid]').dataset.lid));
   });
-  LP.addEventListener('dragstart', (e?) => {
+  LP.addEventListener('dragstart', e => {
     const r = (e.target as any).closest('.lp-row');
     if (!r) return;
     const id = r.dataset.lid;
     if (!S.selSet.has(id)) select(id);
-    dragIds = selectedRoots().map((l?) => l.id);
+    dragIds = selectedRoots().map(l => l.id);
     e.dataTransfer.effectAllowed = 'move';
     try {
       e.dataTransfer.setData('text/x-keyline-layer', id);
     } catch (_) {}
   });
-  LP.addEventListener('dragover', (e?) => {
+  LP.addEventListener('dragover', e => {
     if (!dragIds) return;
     e.preventDefault();
     clearDrop();
@@ -279,10 +279,10 @@ export function init(): void {
     if (m) r.classList.add('d-' + m);
     else e.dataTransfer.dropEffect = 'none';
   });
-  LP.addEventListener('dragleave', (e?) => {
+  LP.addEventListener('dragleave', e => {
     if (e.target === LP) clearDrop();
   });
-  LP.addEventListener('drop', (e?) => {
+  LP.addEventListener('drop', e => {
     if (!dragIds) return;
     e.preventDefault();
     clearDrop();
@@ -303,13 +303,13 @@ export function init(): void {
   $('#lGroup').addEventListener('click', groupSel);
   $('#lUngroup').addEventListener('click', () => ungroup(selLayer()));
   $('#lDel').addEventListener('click', deleteSel);
-  $('#sideTabs').addEventListener('click', (e?) => {
+  $('#sideTabs').addEventListener('click', e => {
     const b = (e.target as any).closest('button');
     if (!b) return;
     S.tab = b.dataset.v;
     $('#sideTabs')
       .querySelectorAll('button')
-      .forEach((x?) => x.classList.toggle('on', x === b));
+      .forEach(x => x.classList.toggle('on', x === b));
     $('#paneLayers').hidden = S.tab !== 'layers';
     $('#paneAssets').hidden = S.tab !== 'assets';
   });

@@ -1,36 +1,37 @@
 // Keyline — core/constants
+import type { Layer, PropKey } from '../model/types';
 import { KLEngine } from '../runtime/engine';
 
-export function $(s?): any {
+export function $(s: string): any {
   return document.querySelector(s);
 }
-export function byId(id?): any {
+export function byId(id: string): any {
   return document['getElementById'](id);
 }
 export const NS = 'http://www.w3.org/2000/svg';
-export function clone(o?) {
+export function clone<T>(o: T): T {
   return o == null ? o : JSON.parse(JSON.stringify(o));
 }
-export function r2(n?) {
+export function r2(n: number) {
   return Math.round(n * 100) / 100;
 }
-export function r3(n?) {
+export function r3(n: number) {
   return Math.round(n * 1000) / 1000;
 }
-export function fmt(n?, d = 2) {
+export function fmt(n: number, d = 2) {
   return n == null || !isFinite(n) ? '' : String(Math.round(n * Math.pow(10, d)) / Math.pow(10, d));
 }
-export function esc(s?) {
-  return String(s).replace(/[&<>"]/g, (c?) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+export function esc(s: unknown) {
+  return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 }
-export function clamp(v?, a?, b?) {
+export function clamp(v: number, a: number, b: number) {
   return Math.max(a, Math.min(b, v));
 }
 export const H = KLEngine({ L: [] }, null);
-export function xfp(M?, x?, y?) {
+export function xfp(M: DOMMatrixInit, x: number, y: number) {
   return new DOMPoint(x, y).matrixTransform(M);
 }
-export const PROPS = {
+export const PROPS: Record<PropKey, [label: string, kind: 'v' | 'n' | 'c' | 'm']> = {
   pos: ['Position', 'v'],
   org: ['Origin', 'v'],
   rot: ['Rotate', 'n'],
@@ -42,13 +43,13 @@ export const PROPS = {
   draw: ['Draw', 'n'],
   d: ['Morph', 'm'],
 };
-export const PORDER = ['pos', 'org', 'rot', 'scl', 'op', 'fill', 'stk', 'sw', 'draw', 'd'];
-export function baseOf(l?, k?) {
+export const PORDER: PropKey[] = ['pos', 'org', 'rot', 'scl', 'op', 'fill', 'stk', 'sw', 'draw', 'd'];
+export function baseOf(l: Layer, k: PropKey) {
   return k === 'org' ? l.o || [0, 0] : l.b[k];
 }
-export function setBase(l?, k?, v?) {
+export function setBase(l: Layer, k: PropKey, v: any) {
   if (k === 'org') l.o = v;
-  else l.b[k] = v;
+  else (l.b as Record<string, any>)[k] = v;
 }
 export const EZFAM = [
   'Standard',
@@ -71,8 +72,8 @@ export const FONTS = [
 ];
 export const SWATCH = ['#5B7CFA', '#F2B63D', '#2EC4A6', '#F25F5C', '#A07BFF', '#FF8A3D'];
 export const KAPPA = 0.5523;
-export const NOFILL = { fill: null, stk: null, sw: null, draw: null };
-export function ic(p?, s = 16) {
+export const NOFILL: Record<'fill' | 'stk' | 'sw' | 'draw', null> = { fill: null, stk: null, sw: null, draw: null };
+export function ic(p: string, s = 16) {
   return `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 }
 export const ICON = {
@@ -130,7 +131,7 @@ export const TOOLS = [
   null,
   ['bone', 'Bone', 'B'],
 ];
-export const HINTS = {
+export const HINTS: Record<string, string> = {
   select: 'Drag to move · corners scale · top dot rotates · Ctrl+click picks inside groups',
   node: 'Drag nodes and handles · double-click a node for smooth/corner · Del removes a node',
   rect: 'Drag to draw · Shift for a square',

@@ -81,7 +81,7 @@ export async function makeZip(files?) {
     central.push(new Uint8Array(ch.buffer), nm);
     off += 30 + nm.length + body.length;
   }
-  const cs = central.reduce((s?, x?) => s + x.length, 0),
+  const cs = central.reduce((s, x) => s + x.length, 0),
     end = new DataView(new ArrayBuffer(22));
   end.setUint32(0, 0x06054b50, true);
   end.setUint16(8, files.length, true);
@@ -117,7 +117,7 @@ export async function readZip(buf?) {
     ent[name] = { method, data: u8.subarray(start, start + csz) };
     p += 46 + nl + xl + cl;
   }
-  const get = async (name?) => {
+  const get = async name => {
     const f = ent[name];
     if (!f) return null;
     if (f.method === 0) return f.data;
@@ -127,7 +127,7 @@ export async function readZip(buf?) {
   return {
     names: Object.keys(ent),
     get,
-    text: async (name?) => {
+    text: async name => {
       const d = await get(name);
       return d ? dec.decode(d) : null;
     },
@@ -160,15 +160,15 @@ export function dataToBytes(d?) {
   return new TextEncoder().encode(decodeURIComponent(d.slice(i + 1)));
 }
 export function usedAssetIds() {
-  return new Set<any>(doc.layers.filter((l?) => l.type === 'image').map((l?) => l.geo.asset));
+  return new Set<any>(doc.layers.filter(l => l.type === 'image').map(l => l.geo.asset));
 }
 export async function buildKLP(includeAll?) {
   const enc = new TextEncoder(),
     used = usedAssetIds(),
-    ids = Object.keys(ASSETS).filter((id?) => includeAll || used.has(id)),
+    ids = Object.keys(ASSETS).filter(id => includeAll || used.has(id)),
     index = [],
     files = [];
-  ids.forEach((id?) => {
+  ids.forEach(id => {
     const a = ASSETS[id],
       ext = a.kind === 'svg' ? 'svg' : EXT_OF[a.mime] || 'bin',
       file = `assets/${id}-${slug(a.name).slice(0, 40)}.${ext}`;

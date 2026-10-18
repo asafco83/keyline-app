@@ -13,7 +13,7 @@ import { kb } from '../ui/inspector';
 export const IDB = {
   db: null,
   open() {
-    return new Promise<any>((res?) => {
+    return new Promise<any>(res => {
       try {
         const r = indexedDB.open('keyline', 1);
         r.onupgradeneeded = () => r.result.createObjectStore('kv');
@@ -31,7 +31,7 @@ export const IDB = {
   async get(k?) {
     const db = IDB.db || (await IDB.open());
     if (!db) return null;
-    return new Promise<any>((res?) => {
+    return new Promise<any>(res => {
       try {
         const q = db.transaction('kv').objectStore('kv').get(k);
         q.onsuccess = () => res(q.result);
@@ -44,7 +44,7 @@ export const IDB = {
   async set(k?, v?) {
     const db = IDB.db || (await IDB.open());
     if (!db) return false;
-    return new Promise<any>((res?) => {
+    return new Promise<any>(res => {
       try {
         const tx = db.transaction('kv', 'readwrite');
         tx.objectStore('kv').put(v, k);
@@ -77,7 +77,7 @@ export const loadedLibs: any = {};
 export function loadScript(u?) {
   return (
     loadedLibs[u] ||
-    (loadedLibs[u] = new Promise<any>((res?, rej?) => {
+    (loadedLibs[u] = new Promise<any>((res, rej) => {
       const s = document.createElement('script');
       s.src = u;
       s.onload = res;
@@ -99,7 +99,7 @@ export function dataToBlob(d?) {
   return new Blob([a], { type: mime });
 }
 export function blobToData(b?) {
-  return new Promise<any>((res?, rej?) => {
+  return new Promise<any>((res, rej) => {
     const r = new FileReader();
     r.onload = () => res(r.result);
     r.onerror = () => rej(new Error('could not be read'));
@@ -107,7 +107,7 @@ export function blobToData(b?) {
   });
 }
 export function imgDims(blob?) {
-  return new Promise<any>((res?, rej?) => {
+  return new Promise<any>((res, rej) => {
     const u = URL.createObjectURL(blob),
       im = new Image();
     im.onload = () => {
@@ -159,8 +159,8 @@ export async function tiffToPng(f?) {
     0,
     0,
   );
-  return new Promise<any>((res?, rej?) =>
-    cv.toBlob((b?) => (b ? res(b) : rej(new Error('could not be converted'))), 'image/png'),
+  return new Promise<any>((res, rej) =>
+    cv.toBlob(b => (b ? res(b) : rej(new Error('could not be converted'))), 'image/png'),
   );
 }
 export async function heicToJpeg(f?) {
@@ -257,15 +257,15 @@ export function placeAsset(a?, at?) {
   ed.end({ insp: true });
 }
 export function usage(id?) {
-  return doc.layers.filter((l?) => l.type === 'image' && l.geo.asset === id).length;
+  return doc.layers.filter(l => l.type === 'image' && l.geo.asset === id).length;
 }
 export function renderAssets() {
   const ids = Object.keys(ASSETS),
-    total = ids.reduce((s?, id?) => s + (ASSETS[id].size || 0), 0);
+    total = ids.reduce((s, id) => s + (ASSETS[id].size || 0), 0);
   $('#aInfo').textContent = ids.length ? `${ids.length} file${ids.length > 1 ? 's' : ''} · ${kb(total)}` : '';
   AG.innerHTML = ids.length
     ? ids
-        .map((id?) => {
+        .map(id => {
           const a = ASSETS[id],
             u = usage(id),
             type =
@@ -279,7 +279,7 @@ export function renderAssets() {
 }
 
 export function init(): void {
-  AG.addEventListener('click', (e?) => {
+  AG.addEventListener('click', e => {
     const b = (e.target as any).closest('[data-aact]');
     if (!b) return;
     const id = b.closest('[data-aid]').dataset.aid,
@@ -301,20 +301,20 @@ export function init(): void {
       renderAssets();
     }
   });
-  AG.addEventListener('dragstart', (e?) => {
+  AG.addEventListener('dragstart', e => {
     const t = (e.target as any).closest('[data-aid]');
     if (!t) return;
     e.dataTransfer.effectAllowed = 'copy';
     e.dataTransfer.setData('text/x-keyline-asset', t.dataset.aid);
   });
-  AG.addEventListener('dragover', (e?) => {
+  AG.addEventListener('dragover', e => {
     if ([...e.dataTransfer.types].includes('Files')) {
       e.preventDefault();
       AG.classList.add('over');
     }
   });
   AG.addEventListener('dragleave', () => AG.classList.remove('over'));
-  AG.addEventListener('drop', (e?) => {
+  AG.addEventListener('drop', e => {
     AG.classList.remove('over');
     if (!e.dataTransfer.files.length) return;
     e.preventDefault();

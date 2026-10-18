@@ -18,7 +18,7 @@ export function togglePlay() {
   }
   updatePlayBtn();
 }
-export function loop(now?) {
+export function loop(now: number) {
   if (S.playing) {
     const dt = Math.min(0.1, (now - S.last) / 1000);
     S.last = now;

@@ -87,12 +87,12 @@ export async function saveProject() {
 }
 export let saveResolve = null;
 export function saveProjectAs() {
-  return new Promise<any>((res?) => {
+  return new Promise<any>(res => {
     saveResolve = res;
     const all = Object.keys(ASSETS).length,
       used = usedAssetIds(),
-      unused = Object.keys(ASSETS).filter((id?) => !used.has(id)),
-      size = (ids?) => ids.reduce((s?, id?) => s + (ASSETS[id].size || 0), 0);
+      unused = Object.keys(ASSETS).filter(id => !used.has(id)),
+      size = ids => ids.reduce((s, id) => s + (ASSETS[id].size || 0), 0);
     $('#sName').value = S.file && S.file.name ? S.file.name.replace(/\.klp(\.zip)?$/i, '') : slug(doc.name);
     $('#sAll').checked = S.saveAll !== false;
     $('#sAll').closest('label').hidden = !unused.length;
@@ -120,12 +120,12 @@ export function endSave(v?) {
 export function init(): void {
   $('#mSave').addEventListener(
     'click',
-    (e?) => {
+    e => {
       if ((e.target as any).id === 'mSave' || (e.target as any).closest('[data-close]')) endSave(false);
     },
     true,
   );
-  $('#sName').addEventListener('keydown', (e?) => {
+  $('#sName').addEventListener('keydown', e => {
     if (e.key === 'Enter') $('#sGo').click();
   });
   $('#sGo').addEventListener('click', async () => {

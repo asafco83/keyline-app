@@ -103,24 +103,24 @@ A `.klp` file is a standard zip archive:
 
 ## Typing
 
-**Fully typed:** `src/runtime/engine.ts` has the public player interface (`KLPlayer`) and the engine data types.
+The document model lives in `src/model/types.ts`: `Doc`, `Layer`, `Geometry`, `BaseValues`, `Tracks`, `ExportSettings`, `Asset`, plus the transient `EditorState` (`S`). The runtime's `EngineLayer` is the exported subset of `Layer`.
 
-**Loosely typed:** the editor modules came from the original single-file JavaScript version. They compile under `strict` with two settings relaxed in `tsconfig.json`:
+`tsconfig.json` is `strict` with `noImplicitAny` and `strictNullChecks` relaxed, so the older UI code still compiles. `noImplicitAny` is being switched on folder by folder:
 
-- `noImplicitAny` is off;
-- `strictNullChecks` is off.
+```bash
+npm run typecheck:strict
+```
 
-The migration also left a few patterns in the code:
+This runs the compiler with `noImplicitAny` on and fails only on errors inside the folders listed in `scripts/typecheck-strict.mjs` (CI runs it too). It also prints how many spots are left elsewhere.
 
-- parameters marked optional (`x?`);
-- `any` on DOM lookups (`$`, `byId`) and on the editor state object `S`.
+| Folder                                  | `noImplicitAny` |
+| --------------------------------------- | --------------- |
+| `runtime`, `geometry`, `model`, `core`  | clean, enforced |
+| `render`, `io`, `export`, `tools`, `ui` | to do           |
 
-**Suggested order for tightening:**
+**To migrate a folder:** run `npm run typecheck:strict`, fix that folder's errors, then add it to the `STRICT` list. The main jobs in UI code are annotating event handlers (`(e: MouseEvent) =>`) and narrowing `e.target`. When every folder is clean, turn `noImplicitAny` on in `tsconfig.json`, then `strictNullChecks`.
 
-1. Add a `Doc` / `Layer` / `Track` model in `src/model/types.ts`, starting from the runtime's `EngineLayer`.
-2. Type `core/state.ts` and `core/history.ts` against it.
-3. Turn on `noImplicitAny` one folder at a time: geometry, io, export, then ui.
-4. Turn on `strictNullChecks` last.
+DOM lookups (`$`, `byId`) and most panel elements in `core/dom.ts` are still `any`. Typing them is part of the UI pass.
 
 ## Deploying (GitHub Pages)
 

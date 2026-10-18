@@ -1,15 +1,18 @@
 // Keyline — geometry/nodes
 import { KAPPA, r2 } from '../core/constants';
+import type { Geometry, Layer, PathData, PathNode, SubPath } from '../model/types';
 
-export function N(x?, y?) {
+type Pt = number[];
+
+export function N(x: number, y: number): PathNode {
   return [x, y, x, y, x, y];
 }
-export function radial(cx?, cy?, rads?, ks?, rot?) {
+export function radial(cx: number, cy: number, rads: number[], ks: number[], rot?: number): PathData {
   rot = rot || 0;
   return [
     {
       c: true,
-      n: rads.map((r?, i?) => {
+      n: rads.map((r, i) => {
         const a = ((-90 + (i * 360) / rads.length + rot) * Math.PI) / 180,
           x = cx + r * Math.cos(a),
           y = cy + r * Math.sin(a),
@@ -21,8 +24,8 @@ export function radial(cx?, cy?, rads?, ks?, rot?) {
     },
   ];
 }
-export function starNodes(cx?, cy?, ro?, ri?, pts?) {
-  const n = [];
+export function starNodes(cx: number, cy: number, ro: number, ri: number, pts: number): PathData {
+  const n: PathNode[] = [];
   for (let i = 0; i < pts * 2; i++) {
     const a = ((-90 + (i * 180) / pts) * Math.PI) / 180,
       r = i % 2 ? ri : ro;
@@ -30,7 +33,7 @@ export function starNodes(cx?, cy?, ro?, ri?, pts?) {
   }
   return [{ c: true, n }];
 }
-export function rectNodes(G?) {
+export function rectNodes(G: Geometry): PathData {
   const { x, y, w, h } = G,
     r = Math.min(G.rx || 0, w / 2, h / 2),
     k = r * KAPPA;
@@ -47,11 +50,11 @@ export function rectNodes(G?) {
         [x + r, y + h, x + r, y + h, x + r - k, y + h],
         [x, y + h - r, x, y + h - r + k, x, y + h - r],
         [x, y + r, x, y + r, x, y + r - k],
-      ].map((q?) => q.map(r2)),
+      ].map(q => q.map(r2)),
     },
   ];
 }
-export function ellNodes(G?) {
+export function ellNodes(G: Geometry): PathData {
   const { cx, cy, rx, ry } = G,
     kx = rx * KAPPA,
     ky = ry * KAPPA;
@@ -63,20 +66,20 @@ export function ellNodes(G?) {
         [cx + rx, cy, cx + rx, cy - ky, cx + rx, cy + ky],
         [cx, cy + ry, cx + kx, cy + ry, cx - kx, cy + ry],
         [cx - rx, cy, cx - rx, cy + ky, cx - rx, cy - ky],
-      ].map((q?) => q.map(r2)),
+      ].map(q => q.map(r2)),
     },
   ];
 }
-export function mid(a?, b?) {
+export function mid(a: Pt, b: Pt): Pt {
   return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
 }
-export function dist(a?, b?) {
+export function dist(a: Pt, b: Pt) {
   return Math.hypot(a[0] - b[0], a[1] - b[1]);
 }
-export function segLen(a?, b?) {
+export function segLen(a: PathNode, b: PathNode) {
   return dist([a[0], a[1]], [a[4], a[5]]) + dist([a[4], a[5]], [b[2], b[3]]) + dist([b[2], b[3]], [b[0], b[1]]);
 }
-export function splitSeg(sp?, j?) {
+export function splitSeg(sp: SubPath, j: number) {
   const len = sp.n.length,
     a = sp.n[j],
     b = sp.n[(j + 1) % len];
@@ -96,7 +99,7 @@ export function splitSeg(sp?, j?) {
   b[3] = r2(p23[1]);
   sp.n.splice(j + 1, 0, [r2(m[0]), r2(m[1]), r2(p012[0]), r2(p012[1]), r2(p123[0]), r2(p123[1])]);
 }
-export function splitTo(sp?, target?) {
+export function splitTo(sp: SubPath, target: number) {
   let guard = 0;
   while (sp.n.length < target && guard++ < 2000) {
     const segs = sp.c ? sp.n.length : sp.n.length - 1;
@@ -116,35 +119,35 @@ export function splitTo(sp?, target?) {
     splitSeg(sp, best);
   }
 }
-export function padSubpaths(v?, count?) {
+export function padSubpaths(v: PathData, count: number) {
   while (v.length < count) {
     const ref = v[v.length - 1] || { c: true, n: [N(0, 0)] };
     const q = ref.n[ref.n.length - 1];
     v.push({ c: true, n: [N(q[0], q[1])] });
   }
 }
-export function equalizeValues(vals?) {
-  const sc = Math.max(...vals.map((v?) => v.length));
-  vals.forEach((v?) => padSubpaths(v, sc));
+export function equalizeValues(vals: PathData[]) {
+  const sc = Math.max(...vals.map(v => v.length));
+  vals.forEach(v => padSubpaths(v, sc));
   for (let i = 0; i < sc; i++) {
-    const t = Math.max(...vals.map((v?) => v[i].n.length));
-    vals.forEach((v?) => splitTo(v[i], t));
+    const t = Math.max(...vals.map(v => v[i].n.length));
+    vals.forEach(v => splitTo(v[i], t));
   }
 }
-export function equalizeTrack(l?) {
-  const vals = [l.b.d].concat((l.t.d || []).map((k?) => k[1])).filter(Boolean);
+export function equalizeTrack(l: Layer) {
+  const vals: PathData[] = [l.b.d].concat((l.t.d || []).map(k => k[1])).filter(Boolean);
   equalizeValues(vals);
 }
-export function revSp(sp?) {
-  return { c: sp.c, n: sp.n.map((q?) => [q[0], q[1], q[4], q[5], q[2], q[3]]).reverse() };
+export function revSp(sp: SubPath): SubPath {
+  return { c: sp.c, n: sp.n.map(q => [q[0], q[1], q[4], q[5], q[2], q[3]]).reverse() };
 }
-export function alignTo(A?, B?) {
-  return B.map((sp?, i?) => {
+export function alignTo(A: PathData, B: PathData): PathData {
+  return B.map((sp, i) => {
     const a = A[i];
     if (!a || a.n.length !== sp.n.length) return sp;
     let best = sp,
       bc = Infinity;
-    [sp, revSp(sp)].forEach((c?) => {
+    [sp, revSp(sp)].forEach(c => {
       const n = c.n.length,
         rots = c.c ? n : 1;
       for (let k = 0; k < rots; k++) {
@@ -163,28 +166,28 @@ export function alignTo(A?, B?) {
     return best;
   });
 }
-export function eachShapeValue(l?, fn?) {
+export function eachShapeValue(l: Layer, fn: (v: PathData) => void) {
   if (l.b.d) fn(l.b.d);
-  (l.t.d || []).forEach((k?) => fn(k[1]));
+  (l.t.d || []).forEach(k => fn(k[1]));
 }
-export function subdivideAll(l?) {
-  eachShapeValue(l, (v?) =>
-    v.forEach((sp?) => {
+export function subdivideAll(l: Layer) {
+  eachShapeValue(l, v =>
+    v.forEach(sp => {
       const segs = sp.c ? sp.n.length : sp.n.length - 1;
       for (let j = segs - 1; j >= 0; j--) splitSeg(sp, j);
     }),
   );
 }
-export function removeNodeAll(l?, i?, j?) {
+export function removeNodeAll(l: Layer, i: number, j: number) {
   let ok = true;
-  eachShapeValue(l, (v?) => {
+  eachShapeValue(l, v => {
     if (!v[i] || v[i].n.length <= 2) ok = false;
   });
   if (!ok) return false;
-  eachShapeValue(l, (v?) => v[i].n.splice(j, 1));
+  eachShapeValue(l, v => v[i].n.splice(j, 1));
   return true;
 }
-export function isSmooth(q?) {
+export function isSmooth(q: PathNode) {
   const ix = q[2] - q[0],
     iy = q[3] - q[1],
     ox = q[4] - q[0],

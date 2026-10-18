@@ -13,7 +13,7 @@ import { renderTimeline } from '../ui/timeline';
 import { resetView } from '../ui/topbar';
 
 export function clearAssets() {
-  Object.keys(ASSETS).forEach((id?) => {
+  Object.keys(ASSETS).forEach(id => {
     try {
       URL.revokeObjectURL(URLS[id]);
     } catch (_) {}
@@ -24,7 +24,7 @@ export function clearAssets() {
 export function applyProject(d?, assets?, file?) {
   S.loading = true;
   clearAssets();
-  Object.values<any>(assets || {}).forEach((a?) => {
+  Object.values<any>(assets || {}).forEach(a => {
     if (!a || !a.id) return;
     ASSETS[a.id] = a;
     try {
@@ -119,8 +119,8 @@ export function normalizeDoc(d?): any {
   const o = Object.assign(blankDoc(d.w || 640, d.h || 400), d);
   o.ex = Object.assign(blankDoc(1, 1).ex, d.ex || {});
   o.ezPresets = d.ezPresets || [];
-  const ids = new Set<any>(o.layers.map((l?) => l.id));
-  o.layers.forEach((l?) => {
+  const ids = new Set<any>(o.layers.map(l => l.id));
+  o.layers.forEach(l => {
     l.t = l.t || {};
     l.b = Object.assign({ pos: [0, 0], rot: 0, scl: [1, 1], op: 1 }, l.b || {});
     l.extra = l.extra || {};
@@ -140,7 +140,7 @@ export function toast(m?) {
 
 export function init(): void {
   $('#bOpen').addEventListener('click', openFlow);
-  $('#fProj').addEventListener('change', (e?) => {
+  $('#fProj').addEventListener('change', e => {
     const f = (e.target as any).files[0];
     (e.target as any).value = '';
     if (f) loadProjectFile(f, null);
@@ -150,7 +150,7 @@ export function init(): void {
   $('#bKeys').addEventListener('click', () => {
     $('#mKeys').hidden = false;
   });
-  $('#pname').addEventListener('change', (e?) => {
+  $('#pname').addEventListener('change', e => {
     doc.name = (e.target as any).value.trim() || 'Untitled animation';
     save();
   });
@@ -158,11 +158,11 @@ export function init(): void {
   $('#tStart').addEventListener('click', () => {
     setTime(0);
   });
-  $('#tLoop').addEventListener('click', (e?) => {
+  $('#tLoop').addEventListener('click', e => {
     S.loop = !S.loop;
     e.currentTarget.classList.toggle('on', S.loop);
   });
-  $('#tRec').addEventListener('click', (e?) => {
+  $('#tRec').addEventListener('click', e => {
     S.autokey = !S.autokey;
     e.currentTarget.classList.toggle('on', S.autokey);
     frame();
@@ -172,8 +172,8 @@ export function init(): void {
         : 'Auto-key off: edits change the static value unless the property already has keyframes.',
     );
   });
-  $('#tDur').addEventListener('change', (e?) => docField(e.target));
-  $('#tZoom').addEventListener('input', (e?) => {
+  $('#tDur').addEventListener('change', e => docField(e.target));
+  $('#tZoom').addEventListener('input', e => {
     S.pps = +(e.target as any).value;
     renderTimeline();
   });
@@ -192,7 +192,7 @@ export function init(): void {
     fit();
     frame();
   });
-  $('#zBones').addEventListener('click', (e?) => {
+  $('#zBones').addEventListener('click', e => {
     S.showBones = !S.showBones;
     e.currentTarget.classList.toggle('on', S.showBones);
     frame();

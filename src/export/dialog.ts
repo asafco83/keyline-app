@@ -19,8 +19,8 @@ export const XOUT = [
   ['none', 'Keep playing'],
 ];
 export function setOpts(sel?, list?, val?) {
-  sel.innerHTML = list.map((o?) => `<option value="${o[0]}">${o[1]}</option>`).join('');
-  sel.value = list.some((o?) => o[0] === val) ? val : list[0][0];
+  sel.innerHTML = list.map(o => `<option value="${o[0]}">${o[1]}</option>`).join('');
+  sel.value = list.some(o => o[0] === val) ? val : list[0][0];
 }
 export function syncExportUI() {
   const ex = doc.ex,
@@ -28,23 +28,23 @@ export function syncExportUI() {
   if (css && ['click', 'scroll', 'api'].includes(ex.trigger)) ex.trigger = 'load';
   $('#xMode')
     .querySelectorAll('button')
-    .forEach((b?) => b.classList.toggle('on', b.dataset.v === ex.mode));
+    .forEach(b => b.classList.toggle('on', b.dataset.v === ex.mode));
   $('#xSize')
     .querySelectorAll('button')
-    .forEach((b?) => b.classList.toggle('on', b.dataset.v === (ex.size || 'resp')));
+    .forEach(b => b.classList.toggle('on', b.dataset.v === (ex.size || 'resp')));
   syncSizeUI();
   $('#xIds')
     .querySelectorAll('button')
-    .forEach((b?) => b.classList.toggle('on', b.dataset.v === (ex.ids || 'gen')));
+    .forEach(b => b.classList.toggle('on', b.dataset.v === (ex.ids || 'gen')));
   setOpts(
     $('#xTrig'),
-    XTRIG.filter((o?) => !css || ['load', 'hover'].includes(o[0])),
+    XTRIG.filter(o => !css || ['load', 'hover'].includes(o[0])),
     ex.trigger,
   );
   if (css && !['pause', 'start'].includes(ex.out)) ex.out = 'pause';
   setOpts(
     $('#xOut'),
-    XOUT.filter((o?) => (css ? ['pause', 'start'].includes(o[0]) : ex.trigger === 'click' || o[0] !== 'restart')),
+    XOUT.filter(o => (css ? ['pause', 'start'].includes(o[0]) : ex.trigger === 'click' || o[0] !== 'restart')),
     ex.out,
   );
   if ($('#xOut').value !== ex.out) ex.out = $('#xOut').value;
