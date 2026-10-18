@@ -77,6 +77,7 @@ tests/                   Vitest: runtime player and easing, zip container, path 
 ## How the pieces fit
 
 **The runtime is embedded by serialising a function.** `export/build.ts` writes `KLEngine.toString()` into each exported SVG.
+
 - **Keep it self-contained.** `src/runtime/engine.ts` must not import anything or touch module scope.
 - **The test guards this.** `tests/engine.test.ts` rebuilds the function from its source text and runs it.
 - **The build target protects it.** Vite builds for ES2019, so the bundler never injects helper functions into it.
@@ -91,12 +92,12 @@ tests/                   Vitest: runtime player and easing, zip container, path 
 
 A `.klp` file is a standard zip archive:
 
-| Entry | Contents |
-|---|---|
-| `manifest.json` | `format: "keyline-project"`, version, name, save time, canvas size, counts |
-| `project.json` | The document: layers, keyframes, easing presets, export settings |
-| `assets/index.json` | One entry per asset: id, name, kind, MIME type, size in pixels and bytes, file path |
-| `assets/<id>-<name>.<ext>` | Each image as its original file |
+| Entry                      | Contents                                                                            |
+| -------------------------- | ----------------------------------------------------------------------------------- |
+| `manifest.json`            | `format: "keyline-project"`, version, name, save time, canvas size, counts          |
+| `project.json`             | The document: layers, keyframes, easing presets, export settings                    |
+| `assets/index.json`        | One entry per asset: id, name, kind, MIME type, size in pixels and bytes, file path |
+| `assets/<id>-<name>.<ext>` | Each image as its original file                                                     |
 
 `project.json` references assets by id, so images are stored once.
 
@@ -105,14 +106,17 @@ A `.klp` file is a standard zip archive:
 **Fully typed:** `src/runtime/engine.ts` has the public player interface (`KLPlayer`) and the engine data types.
 
 **Loosely typed:** the editor modules came from the original single-file JavaScript version. They compile under `strict` with two settings relaxed in `tsconfig.json`:
+
 - `noImplicitAny` is off;
 - `strictNullChecks` is off.
 
 The migration also left a few patterns in the code:
+
 - parameters marked optional (`x?`);
 - `any` on DOM lookups (`$`, `byId`) and on the editor state object `S`.
 
 **Suggested order for tightening:**
+
 1. Add a `Doc` / `Layer` / `Track` model in `src/model/types.ts`, starting from the runtime's `EngineLayer`.
 2. Type `core/state.ts` and `core/history.ts` against it.
 3. Turn on `noImplicitAny` one folder at a time: geometry, io, export, then ui.
@@ -121,6 +125,7 @@ The migration also left a few patterns in the code:
 ## Toward a desktop app (Tauri)
 
 The code is ready for a Tauri shell without changes. When it gets wrapped:
+
 - **Files:** replace the browser file APIs in `io/save.ts` and `io/open.ts` with Tauri's dialog and fs plugins. This gives true overwrite-on-save, recent files and `.klp` file associations.
 - **Image encoding:** add native encoders (mozjpeg, oxipng, ravif) behind the same `optimizeAsset` interface in `export/images.ts`.
 - **Video and GIF export:** these become practical with native libraries.
@@ -128,6 +133,7 @@ The code is ready for a Tauri shell without changes. When it gets wrapped:
 ## Browser support
 
 Keyline targets current Chrome, Edge, Firefox and Safari.
+
 - **Save overwriting the same file** needs the File System Access API (Chrome and Edge). Other browsers download a fresh copy.
 - **AVIF export** appears only where the browser can encode it.
 - **CSS-only morph** uses `d: path()`, which Safari does not support.
