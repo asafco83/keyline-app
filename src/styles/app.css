@@ -2183,3 +2183,47 @@ details summary {
   box-sizing: content-box;
   font-kerning: normal;
 }
+
+/* frozen tracks */
+.tl-fz {
+  opacity: 0;
+}
+.tl-prop:hover .tl-fz,
+.tl-fz:focus-visible,
+.tl-fz.on {
+  opacity: 1;
+}
+.tl-fz.on {
+  color: var(--accent);
+}
+.tl-prop.frozen .tl-pname {
+  opacity: 0.55;
+}
+.tl-prop.frozen .kb:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.kfz {
+  position: absolute;
+  top: 13px;
+  width: 11px;
+  height: 11px;
+  margin: -5.5px 0 0 -5.5px;
+  transform: rotate(45deg);
+  border-radius: 2px;
+  background: var(--muted);
+  opacity: 0.45;
+  pointer-events: none;
+}
+.segz {
+  position: absolute;
+  top: 12px;
+  height: 2px;
+  background: var(--muted);
+  opacity: 0.3;
+  pointer-events: none;
+}
+.kb.fz {
+  opacity: 0.35;
+  cursor: default;
+}

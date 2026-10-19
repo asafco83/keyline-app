@@ -53,6 +53,10 @@ export function isLocked(l: Layer) {
 export function isAnim(l: Layer) {
   return Object.keys(l.t).some(k => l.t[k] && l.t[k].length);
 }
+/** Has tracks to show in the timeline, frozen ones included. */
+export function hasTracks(l: Layer) {
+  return isAnim(l) || (!!l.ft && Object.keys(l.ft).some(k => l.ft[k] && l.ft[k].length));
+}
 export function visibleLayers() {
   return doc.layers.filter(l => !isHidden(l));
 }

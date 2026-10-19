@@ -1,6 +1,7 @@
 // Keyline — core/history
 import type { Layer, PropKey, Tool } from '../model/types';
-import { $, H, HINTS, baseOf, clamp, clone, r3, setBase, valueAt } from './constants';
+import { $, H, HINTS, baseOf, clamp, clone, isFrozen, propLabel, r3, setBase, valueAt } from './constants';
+import { toast } from '../io/open';
 import { LP, WRAP } from './dom';
 import { S, doc, layerById, selLayer, setDoc, sortTrack, syncIdc } from './state';
 import { markDirty } from '../io/file-state';
@@ -96,7 +97,26 @@ export function setProp(l: Layer, k: PropKey, v: any) {
   }
   setBase(l, k, v);
 }
+/** Freeze a track: its keyframes are kept but not used, and the property holds its current value.
+ *  Unfreezing brings the keyframes back. */
+export function toggleFreeze(l: Layer, k: PropKey) {
+  const ed = beginEdit();
+  if (isFrozen(l, k)) {
+    l.t[k] = l.ft[k];
+    delete l.ft[k];
+    if (!Object.keys(l.ft).length) delete l.ft;
+  } else if (l.t[k] && l.t[k].length) {
+    const v = clone(valueAt(l, k, S.time));
+    l.t[k].forEach(q => S.keys.delete(q));
+    l.ft = l.ft || {};
+    l.ft[k] = l.t[k];
+    delete l.t[k];
+    setBase(l, k, v);
+  }
+  ed.end({ insp: true });
+}
 export function toggleKey(l: Layer, k: PropKey) {
+  if (isFrozen(l, k)) return toast(`${propLabel(l, k)} is frozen. Unfreeze it in the timeline to add keyframes.`);
   const ed = beginEdit(),
     tr = l.t[k],
     cur = clone(valueAt(l, k, S.time));
@@ -123,6 +143,10 @@ export function removeTrack(l: Layer, k: PropKey) {
   const v = clone(valueAt(l, k, S.time));
   (l.t[k] || []).forEach(q => S.keys.delete(q));
   delete l.t[k];
+  if (l.ft) {
+    delete l.ft[k];
+    if (!Object.keys(l.ft).length) delete l.ft;
+  }
   setBase(l, k, v);
   ed.end({ insp: true });
 }

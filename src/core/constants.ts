@@ -86,8 +86,14 @@ export function propKind(l: Layer, k: string): 'v' | 'n' | 'c' | 'm' {
   return f && typeof f.param.def === 'string' ? 'c' : 'n';
 }
 /** A layer's animated tracks in display order: standard properties, then filter parameters. */
+/** Tracks shown in the timeline: active ones and frozen ones, in property order. */
 export function layerTracks(l: Layer): PropKey[] {
-  return [...PORDER, ...(fxKeys(l) as PropKey[])].filter(k => l.t[k] && l.t[k].length);
+  return [...PORDER, ...(fxKeys(l) as PropKey[])].filter(
+    k => (l.t[k] && l.t[k].length) || (l.ft && l.ft[k] && l.ft[k].length),
+  );
+}
+export function isFrozen(l: Layer, k: string) {
+  return !!(l.ft && l.ft[k] && l.ft[k].length);
 }
 /** Values of properties a layer may never have set. */
 export const PDEF: Partial<Record<string, any>> = { skw: [0, 0], fo: 1, so: 1, dof: 0 };
@@ -203,6 +209,9 @@ export const ICON: Record<string, string> = {
   undo: ic('<path d="M8 6l-4 4 4 4"/><path d="M4 10h10.5a5 5 0 010 10H11"/>'),
   redo: ic('<path d="M16 6l4 4-4 4"/><path d="M20 10H9.5a5 5 0 000 10H13"/>'),
   x: ic('<path d="M6 6l12 12M18 6L6 18"/>'),
+  freeze: ic(
+    '<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/><path d="M9.5 4.5L12 7l2.5-2.5M9.5 19.5L12 17l2.5 2.5M4.6 10.4L7.9 9.5 7 6.2M19.4 13.6l-3.3.9.9 3.3M4.6 13.6l3.3.9-.9 3.3M19.4 10.4l-3.3-.9.9-3.3"/>',
+  ),
   moveUp: ic('<path d="M5 4.5h14M12 20V9M7.5 13.5L12 9l4.5 4.5"/>'),
   moveDown: ic('<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/>'),
   duplicate: ic(

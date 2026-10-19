@@ -1,11 +1,11 @@
 // Keyline — ui/timeline
 import type { Keyframe, Layer, PropKey } from '../model/types';
-import { $, ICON, clamp, clone, esc, fmt, layerTracks, propLabel, r3 } from '../core/constants';
+import { $, ICON, clamp, clone, esc, fmt, isFrozen, layerTracks, propLabel, r3 } from '../core/constants';
 import { TLB, TLS } from '../core/dom';
 import { beginEdit, setTime } from '../core/history';
 import { closeMenu } from '../core/keyframes';
 import { S, doc, layerById, sortTrack } from '../core/state';
-import { ancestors, isAnim, isHidden, treeRows } from '../model/tree';
+import { ancestors, hasTracks, isHidden, treeRows } from '../model/tree';
 import { frame } from '../render/stage';
 import { easeLabel } from './easing';
 import { renderInspector } from './inspector';
@@ -30,14 +30,15 @@ export function renderTimeline() {
     LW = W + 48,
     list = treeRows()
       .map(r => r[0])
-      .filter(isAnim);
+      .filter(hasTracks);
   let h = `<div class="tl-row tl-ruler"><div class="tl-name">Animated layers</div><div class="tl-lane" id="ruler" style="width:${LW}px">${ticks(W)}</div></div>`;
   if (!list.length)
     h += `<div class="tl-empty">Layers with keyframes appear here. Click ◆ beside a property in the inspector, or use Animate in the Layers panel, to start animating it. After that, changing it at any point in time adds a keyframe there.</div>`;
   for (const l of list) {
     const tracks = layerTracks(l),
       ex = S.exp[l.id] !== false;
-    const times = [...new Set<any>(tracks.flatMap(k => l.t[k].map(q => q[0])))],
+    const live = tracks.filter(k => !isFrozen(l, k)),
+      times = [...new Set<any>(live.flatMap(k => l.t[k].map(q => q[0])))],
       par = l.parent && layerById(l.parent);
     h += `<div class="tl-row tl-layer${S.selSet.has(l.id) ? ' sel' : ''}${isHidden(l) ? ' hid' : ''}" data-lid="${l.id}">
       <div class="tl-name"><button class="tl-ic" data-act="exp" aria-label="${ex ? 'Hide' : 'Show'} animators">${ex ? ICON.down : ICON.right}</button>
@@ -54,32 +55,42 @@ export function renderTimeline() {
       <span class="tl-lname" data-act="sel" title="Double-click to rename">${esc(l.name)}</span><span class="tl-type">${l.type}</span></div>
       <div class="tl-lane" data-act="lane" style="width:${LW}px"><div class="tl-bar" style="width:${W}px"></div>${times
         .map(t => {
-          const kat = tracks.flatMap(k => l.t[k].filter(q => Math.abs(q[0] - t) < 0.004));
+          const kat = live.flatMap(k => l.t[k].filter(q => Math.abs(q[0] - t) < 0.004));
           return `<button class="sdot${kat.length && kat.every(q => S.keys.has(q)) ? ' sel' : ''}" data-lid="${l.id}" data-t="${t}" style="left:${t * S.pps}px" aria-label="All ${esc(l.name)} keyframes at ${fmt(t)}s" title="${fmt(t)}s · all keyframes"></button>`;
         })
         .join('')}</div></div>`;
     if (ex)
       for (const k of tracks) {
-        const tr = l.t[k];
+        const fz = isFrozen(l, k),
+          tr = fz ? l.ft[k] : l.t[k];
         let segs = '',
           keys = '';
         for (let i = 0; i < tr.length; i++) {
           const q = tr[i],
             nx = tr[i + 1];
+          // frozen: drawn greyed, without the classes the keyframe interactions look for
+          if (fz) {
+            if (nx && JSON.stringify(q[1]) !== JSON.stringify(nx[1]))
+              segs += `<i class="segz" style="left:${q[0] * S.pps}px;width:${(nx[0] - q[0]) * S.pps}px"></i>`;
+            keys += `<span class="kfz" style="left:${q[0] * S.pps}px" title="${propLabel(l, k)} · ${fmt(q[0])}s (frozen)"></span>`;
+            continue;
+          }
           if (nx && JSON.stringify(q[1]) !== JSON.stringify(nx[1]))
             segs += `<i class="seg${q[2] === 'hold' ? ' hold' : ''}" data-lid="${l.id}" data-prop="${k}" data-i="${i}" style="left:${q[0] * S.pps}px;width:${(nx[0] - q[0]) * S.pps}px" title="${esc(easeLabel(q[2]))} · click to edit easing"></i>`;
           keys += `<button class="kf${S.keys.has(q) ? ' sel' : ''}${q[2] === 'hold' ? ' hold' : ''}" data-lid="${l.id}" data-prop="${k}" data-i="${i}" style="left:${q[0] * S.pps}px" aria-label="${propLabel(l, k)} keyframe at ${fmt(q[0])}s" title="${propLabel(l, k)} · ${fmt(q[0])}s · ${esc(easeLabel(q[2]))}"></button>`;
         }
-        h += `<div class="tl-row tl-prop" data-lid="${l.id}" data-prop="${k}"><div class="tl-name"><span class="tl-pname">${propLabel(l, k)}</span>
-        <button class="kb" data-act="key" aria-label="Add or remove ${propLabel(l, k)} keyframe at playhead"></button>
-        <button class="tl-ic tl-x" data-act="rmtrack" aria-label="Remove ${propLabel(l, k)} animation">${ICON.x}</button></div>
+        const nm = propLabel(l, k);
+        h += `<div class="tl-row tl-prop${fz ? ' frozen' : ''}" data-lid="${l.id}" data-prop="${k}"><div class="tl-name"><span class="tl-pname">${nm}</span>
+        <button class="tl-ic tl-fz${fz ? ' on' : ''}" data-act="freeze" aria-pressed="${fz}" aria-label="${fz ? 'Unfreeze' : 'Freeze'} ${nm}" title="${fz ? `Frozen: ${nm} holds its value and its keyframes are not used. Click to unfreeze.` : `Freeze ${nm}: hold its current value and set the keyframes aside`}">${ICON.freeze}</button>
+        <button class="kb" data-act="key" ${fz ? 'disabled ' : ''}aria-label="Add or remove ${nm} keyframe at playhead"></button>
+        <button class="tl-ic tl-x" data-act="rmtrack" aria-label="Remove ${nm} animation">${ICON.x}</button></div>
         <div class="tl-lane" data-act="lane" style="width:${LW}px">${segs}${keys}</div></div>`;
       }
   }
   TLB.innerHTML = h + '<div class="tl-ph" id="playhead"></div>';
   TLB.querySelectorAll('.kf,.seg').forEach((el: KfEl) => {
     const l = layerById(el.dataset.lid);
-    el._k = l.t[el.dataset.prop][+el.dataset.i];
+    el._k = (l.t[el.dataset.prop] || (l.ft && l.ft[el.dataset.prop]))[+el.dataset.i];
   });
   TLB.querySelectorAll('.sdot').forEach((el: KfEl) => {
     const l = layerById(el.dataset.lid),
