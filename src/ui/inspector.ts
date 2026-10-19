@@ -1,5 +1,5 @@
 // Keyline — ui/inspector
-import type { Ease } from '../model/types';
+import type { Ease, Layer, PathData, PropKey, Vec2 } from '../model/types';
 import { $, EZFAM, FONTS, H, PROPS, byId, clamp, clone, esc, fmt, r2, r3, xfp } from '../core/constants';
 import { INSP } from '../core/dom';
 import { beginEdit, deleteKeys, setProp, setTool, toggleKey } from '../core/history';
@@ -15,22 +15,22 @@ import { applyEase, bezOf, drawEz, easeFam, famName, keyPanel, parseBez, sameEas
 import { arrange, deleteSel, duplicate, groupSel, moveLayers, ungroup } from './layers-panel';
 import { dragWin } from './timeline';
 
-export function num(f?, lab?, unit?) {
+export function num(f: string, lab: string, unit?: string) {
   return `<label class="nf"><span data-scrub="${f}">${lab}</span><input id="i-${f.replace(/:/g, '_')}" data-f="${f}" inputmode="decimal" spellcheck="false" aria-label="${lab}">${unit ? `<em>${unit}</em>` : ''}</label>`;
 }
-export function gnum(g?, lab?, unit?) {
+export function gnum(g: string, lab: string, unit?: string) {
   return `<label class="nf"><span>${lab}</span><input id="g-${g}" data-g="${g}" inputmode="decimal" spellcheck="false" aria-label="${lab}">${unit ? `<em>${unit}</em>` : ''}</label>`;
 }
-export function colf(f?) {
+export function colf(f: string) {
   return `<div class="cf"><input type="color" data-f="${f}" data-col id="c-${f}" aria-label="Pick color"><input class="txt mono" data-f="${f}" id="t-${f}" spellcheck="false" aria-label="Color value"></div>`;
 }
-export function krow(k?, label?, body?) {
+export function krow(k: string, label: string, body: string) {
   return `<div class="row"><button class="kb" data-kb="${k}" aria-label="Keyframe ${label}" title="Add / remove keyframe at playhead"></button><span class="rl">${label}</span><div class="rf">${body}</div></div>`;
 }
-export function nrow(label?, body?) {
+export function nrow(label: string, body: string) {
   return `<div class="row nk"><span class="rl">${label}</span><div class="rf">${body}</div></div>`;
 }
-export function kb(n?) {
+export function kb(n: number) {
   return n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
 }
 export function renderInspector() {
@@ -107,7 +107,7 @@ export function renderInspector() {
   }
   if (l.type === 'path') {
     const others = doc.layers.filter(o => o !== l && ['path', 'rect', 'ellipse'].includes(o.type));
-    const cnt = (H.get(l, 'd', S.time) || []).reduce((s, p) => s + p.n.length, 0);
+    const cnt = ((H.get(l, 'd', S.time) || []) as PathData).reduce((s, p) => s + p.n.length, 0);
     h += `<section class="sec"><h3>Path & morph <small>${cnt} nodes</small></h3>
       ${krow('d', 'Morph', `<button class="btn" data-act="nodes" style="flex:1">${S.tool === 'node' ? 'Done editing' : 'Edit nodes'}</button>`)}
       <p>Add a Morph keyframe, move the playhead, then edit nodes. The shape blends between keyframes.</p>
@@ -150,7 +150,7 @@ export function docPanel() {
       <li><b>Export</b> one animated .svg with a built-in player or pure CSS. Images are embedded inside it.</li></ol></section>`;
 }
 export function refreshDocFields() {
-  const set = (id, v) => {
+  const set = (id: string, v: string | number) => {
     const e = byId(id);
     if (e && e !== document.activeElement) e.value = v;
   };
@@ -163,14 +163,14 @@ export function refreshDocFields() {
   set('d-dir', doc.dir);
   set('tDur', fmt(doc.dur));
 }
-export function refreshInspector(full?) {
+export function refreshInspector(full?: boolean) {
   const td = $('#tDur');
   if (td !== document.activeElement) td.value = fmt(doc.dur);
   const l = selLayer();
   if (!l) return;
-  INSP.querySelectorAll('[data-f]').forEach(inp => {
+  INSP.querySelectorAll('[data-f]').forEach((inp: HTMLInputElement) => {
     if (inp === document.activeElement) return;
-    const [k, i, m] = inp.dataset.f.split(':');
+    const [k, i, m] = inp.dataset.f.split(':') as [PropKey, string, string];
     let v = H.get(l, k, S.time);
     if (i !== undefined && i !== '') v = v ? v[+i] : 0;
     if (PROPS[k][1] === 'c') {
@@ -178,17 +178,17 @@ export function refreshInspector(full?) {
       else inp.value = v == null ? '' : v;
     } else inp.value = fmt(m ? v * +m : v);
   });
-  INSP.querySelectorAll('[data-kb]').forEach(b => {
+  INSP.querySelectorAll('[data-kb]').forEach((b: HTMLElement) => {
     const tr = l.t[b.dataset.kb],
       has = !!(tr && tr.length);
     b.classList.toggle('has', has);
     b.classList.toggle('on', has && tr.some(q => Math.abs(q[0] - S.time) < 0.005));
   });
   if (full)
-    INSP.querySelectorAll('input[data-g]').forEach(inp => {
+    INSP.querySelectorAll('input[data-g]').forEach((inp: HTMLInputElement) => {
       inp.value = fmt(l.geo[inp.dataset.g]);
     });
-  INSP.querySelectorAll('[data-o]').forEach(inp => {
+  INSP.querySelectorAll('[data-o]').forEach((inp: HTMLInputElement) => {
     if (full || inp !== document.activeElement) inp.value = fmt((l.o || [0, 0])[+inp.dataset.o]);
   });
   const ab = INSP.querySelectorAll('[data-anchor]');
@@ -198,7 +198,7 @@ export function refreshInspector(full?) {
     try {
       bb = g && g.getBBox();
     } catch (e) {}
-    ab.forEach(btn => {
+    ab.forEach((btn: HTMLElement) => {
       const [u, v] = btn.dataset.anchor.split(',').map(Number);
       btn.classList.toggle(
         'on',
@@ -210,9 +210,9 @@ export function refreshInspector(full?) {
     });
   }
 }
-export function toHex(c?) {
-  if (typeof c !== 'string') return null;
-  c = c.trim();
+export function toHex(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null;
+  const c = raw.trim();
   let m = /^#([0-9a-f]{3})$/i.exec(c);
   if (m) return '#' + m[1].replace(/./g, '$&$&').toLowerCase();
   m = /^#([0-9a-f]{6})([0-9a-f]{2})?$/i.exec(c);
@@ -228,7 +228,7 @@ export function toHex(c?) {
         .join('')
     );
   }
-  const named = {
+  const named: Record<string, string> = {
     white: '#ffffff',
     black: '#000000',
     red: '#ff0000',
@@ -241,10 +241,10 @@ export function toHex(c?) {
   };
   return named[c.toLowerCase()] || null;
 }
-export function parseField(l?, inp?) {
-  const [k, i, m] = inp.dataset.f.split(':');
+export function parseField(l: Layer, inp: HTMLInputElement): [PropKey, any] | null {
+  const [k, i, m] = inp.dataset.f.split(':') as [PropKey, string, string];
   const kind = PROPS[k][1];
-  let v;
+  let v: any;
   if (kind === 'c') {
     v = inp.value.trim() || 'none';
   } else {
@@ -263,10 +263,10 @@ export function parseField(l?, inp?) {
   }
   return [k, v];
 }
-export function setField(l?, k?, v?) {
+export function setField(l: Layer, k: PropKey, v: any) {
   return k === 'org' ? reOrigin(l, v) : setProp(l, k, v);
 }
-export function reOrigin(l?, o?) {
+export function reOrigin(l: Layer, o: number[]) {
   const old = H.get(l, 'org', S.time) || [0, 0],
     c = H.comp(l, S.time),
     rad = (c.r * Math.PI) / 180,
@@ -277,7 +277,7 @@ export function reOrigin(l?, o?) {
     rx = mx * Math.cos(rad) - my * Math.sin(rad),
     ry = mx * Math.sin(rad) + my * Math.cos(rad);
   const fix = [rx - d0, ry - d1],
-    shift = v => [r2(v[0] + fix[0]), r2(v[1] + fix[1])];
+    shift = (v: number[]): Vec2 => [r2(v[0] + fix[0]), r2(v[1] + fix[1])];
   if (l.t.org && l.t.org.length) {
     setProp(l, 'org', [r2(o[0]), r2(o[1])]);
     setProp(l, 'pos', shift(H.get(l, 'pos', S.time)));
@@ -287,12 +287,12 @@ export function reOrigin(l?, o?) {
   else l.b.pos = shift(l.b.pos);
   l.o = [r2(o[0]), r2(o[1])];
 }
-export function docField(t?) {
-  const k = t.dataset.doc,
+export function docField(t: HTMLInputElement) {
+  const k = t.dataset.doc as 'w' | 'h' | 'dur' | string,
     ed = beginEdit();
   if (k === 'w' || k === 'h') {
     const v = parseInt(t.value);
-    if (v > 0) doc[k] = Math.min(8000, v);
+    if (v > 0) doc[k as 'w' | 'h'] = Math.min(8000, v);
   } else if (k === 'dur') {
     const v = parseFloat(t.value);
     if (v > 0) {
@@ -310,8 +310,8 @@ export function docField(t?) {
 }
 
 export function init(): void {
-  INSP.addEventListener('input', e => {
-    const t = e.target,
+  INSP.addEventListener('input', (e: Event) => {
+    const t = e.target as HTMLInputElement,
       l = selLayer();
     if (t.dataset.col !== undefined && l) {
       if (!S.colorEd) S.colorEd = beginEdit();
@@ -328,8 +328,8 @@ export function init(): void {
       frame();
     }
   });
-  INSP.addEventListener('change', e => {
-    const t = e.target,
+  INSP.addEventListener('change', (e: Event) => {
+    const t = e.target as HTMLInputElement,
       l = selLayer();
     if (S.colorEd && (t.dataset.col !== undefined || t.id === 'd-bgc')) {
       const ed = S.colorEd;
@@ -393,7 +393,7 @@ export function init(): void {
     }
     if (t.dataset.flag) {
       const ed = beginEdit();
-      l[t.dataset.flag] = t.checked;
+      (l as any)[t.dataset.flag] = t.checked;
       if (t.dataset.flag === 'lim' && t.checked) {
         if (l.lmin == null) l.lmin = -90;
         if (l.lmax == null) l.lmax = 90;
@@ -405,7 +405,7 @@ export function init(): void {
       const v = parseFloat(t.value);
       if (!isFinite(v)) return;
       const ed = beginEdit();
-      l[t.dataset.bl] = v;
+      (l as any)[t.dataset.bl] = v;
       if (l.lmin > l.lmax) {
         const x = l.lmin;
         l.lmin = l.lmax;
@@ -463,7 +463,7 @@ export function init(): void {
       if (tg) morphTo(l, tg);
     }
   });
-  INSP.addEventListener('click', e => {
+  INSP.addEventListener('click', (e: MouseEvent) => {
     const kbt = (e.target as any).closest('[data-kb]'),
       l = selLayer();
     if (kbt && l) return toggleKey(l, kbt.dataset.kb);
@@ -556,7 +556,7 @@ export function init(): void {
       if (!k0) return;
       const ed = beginEdit();
       doc.layers.forEach(L =>
-        Object.values<any>(L.t).forEach(tr => {
+        Object.values(L.t).forEach(tr => {
           if (tr.some(q => S.keys.has(q))) tr.forEach(q => (q[2] = clone(k0[2])));
         }),
       );
@@ -564,7 +564,7 @@ export function init(): void {
       toast('Easing applied to every keyframe in this animator.');
     }
   });
-  INSP.addEventListener('pointerdown', e => {
+  INSP.addEventListener('pointerdown', (e: PointerEvent) => {
     const hd = (e.target as any).closest('[data-hd]');
     if (hd && S.keys.size) {
       e.preventDefault();
@@ -593,7 +593,7 @@ export function init(): void {
     const f = sc.dataset.scrub,
       inp = sc.parentElement.querySelector('input'),
       [k] = f.split(':');
-    const step = { pos: 1, org: 1, rot: 1, scl: 0.5, op: 0.5, sw: 0.1, draw: 0.5 }[k] || 1,
+    const step = (<Record<string, number>>{ pos: 1, org: 1, rot: 1, scl: 0.5, op: 0.5, sw: 0.1, draw: 0.5 })[k] || 1,
       start = parseFloat(inp.value) || 0,
       x0 = e.clientX,
       ed = beginEdit();

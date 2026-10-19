@@ -1,4 +1,8 @@
 // Keyline — export/build
+import type { Composite } from '../runtime/engine';
+import type { Layer } from '../model/types';
+import type { MarkupCtx } from '../render/markup';
+import type { OptImage } from './images';
 import { $, H, clone, esc, r3 } from '../core/constants';
 import { togglePlay } from '../core/playback';
 import { ASSETS, S, doc } from '../core/state';
@@ -8,20 +12,20 @@ import { outDims, syncSizeUI } from './size';
 import { markup } from '../render/markup';
 import { KLEngine } from '../runtime/engine';
 
-export function roundV(v?) {
+export function roundV(v: any): any {
   if (typeof v === 'number') return r3(v);
   if (Array.isArray(v)) return v.map(roundV);
-  if (v && typeof v === 'object' && v.n) return { c: v.c, n: v.n.map(q => q.map(r3)) };
+  if (v && typeof v === 'object' && v.n) return { c: v.c, n: v.n.map((q: number[]) => q.map(r3)) };
   return v;
 }
-export function cssTf(c?) {
+export function cssTf(c: Composite) {
   return `translate(${r3(c.x)}px,${r3(c.y)}px) rotate(${r3(c.r)}deg) scale(${r3(c.sx)},${r3(c.sy)}) translate(${r3(-c.ox)}px,${r3(-c.oy)}px)`;
 }
-export function kfBlock(name?, stops?, N?) {
+export function kfBlock(name: string, stops: string[], N: number) {
   const keep = stops.map((s, i) => i === 0 || i === N || s !== stops[i - 1] || s !== stops[i + 1]);
   return `@keyframes ${name}{` + stops.map((s, i) => (keep[i] ? `${r3((i / N) * 100)}%{${s}}` : '')).join('') + '}';
 }
-export function cssFor(anim?, pre?, svgId?) {
+export function cssFor(anim: Layer[], pre: string, svgId: string) {
   const N = Math.max(2, Math.round(doc.dur * 30)),
     it = doc.it > 0 ? doc.it : 'infinite',
     dir = ['alternate', 'reverse', 'alternate-reverse'].includes(doc.dir) ? doc.dir : 'normal',
@@ -31,7 +35,7 @@ export function cssFor(anim?, pre?, svgId?) {
   anim.forEach(l => {
     const id = pre + l.id,
       T = l.t,
-      fr = [];
+      fr: Composite[] = [];
     for (let i = 0; i <= N; i++) fr.push(H.comp(l, (i / N) * doc.dur));
     const gt = !!(T.pos || T.rot || T.scl || T.org),
       go = !!T.op;
@@ -72,7 +76,7 @@ export function cssFor(anim?, pre?, svgId?) {
         : `#${svgId}:not(:hover) *{animation-play-state:paused!important}`;
   return css;
 }
-export function triggerJS(t?, out?, base?) {
+export function triggerJS(t: string, out: string, base: number) {
   const pre =
     'P._cleanup=[];function L(t,e,f){t.addEventListener(e,f);P._cleanup.push(function(){t.removeEventListener(e,f);});}' +
     `function fwd(){if(P.direction!==${base}||P.isRollingBack)P.set("direction",${base});P.play();}` +
@@ -91,9 +95,9 @@ export function triggerJS(t?, out?, base?) {
   if (t === 'api') return pre;
   return pre + 'P.play();';
 }
-export function idMapFor(prep?) {
-  const map: any = {},
-    used = new Set<any>();
+export function idMapFor(prep: Layer[]) {
+  const map: Record<string, string> = {},
+    used = new Set<string>();
   prep.forEach(l => {
     let b =
       String(l.name || 'layer')
@@ -110,7 +114,7 @@ export function idMapFor(prep?) {
   });
   return map;
 }
-export function buildExport(imgs?) {
+export function buildExport(imgs: Record<string, OptImage> | null) {
   const ex = doc.ex,
     pre =
       (String(ex.prefix || 'kl')
@@ -138,9 +142,9 @@ export function buildExport(imgs?) {
       if (l.parent) l.parent = m[l.parent];
     });
   }
-  const byId: any = {};
+  const byId: Record<string, Layer> = {};
   prep.forEach(l => (byId[l.id] = l));
-  const hiddenUp = l => {
+  const hiddenUp = (l: Layer) => {
     let p = l,
       g = 0;
     while (p && g++ < 100) {
@@ -150,12 +154,12 @@ export function buildExport(imgs?) {
     return false;
   };
   const anim = prep.filter(l => !hiddenUp(l) && Object.keys(l.t).length);
-  const used: any = {};
-  const ctx = {
+  const used: Record<string, 1> = {};
+  const ctx: MarkupCtx = {
     pre,
     editor: false,
     t: 0,
-    useImg: id => {
+    useImg: (id: string) => {
       if (!ASSETS[id]) return null;
       used[id] = 1;
       return pre + 'img-' + id;
@@ -188,7 +192,7 @@ export function buildExport(imgs?) {
         fps: doc.ex.fps || 0,
         fill: doc.ex.fill === 'backwards' ? -1 : 1,
         L: anim.map(l => {
-          const b = {
+          const b: Record<string, any> = {
             pos: l.b.pos,
             rot: l.b.rot,
             scl: l.b.scl,

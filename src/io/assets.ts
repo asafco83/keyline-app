@@ -1,4 +1,5 @@
 // Keyline — io/assets
+import type { Asset } from '../model/types';
 import { $, ICON, NOFILL, esc, r2 } from '../core/constants';
 import { AG } from '../core/dom';
 import { beginEdit } from '../core/history';
@@ -11,9 +12,9 @@ import { addLayer } from '../tools/edit-tools';
 import { kb } from '../ui/inspector';
 
 export const IDB = {
-  db: null,
+  db: null as IDBDatabase | null,
   open() {
-    return new Promise<any>(res => {
+    return new Promise<IDBDatabase | null>(res => {
       try {
         const r = indexedDB.open('keyline', 1);
         r.onupgradeneeded = () => r.result.createObjectStore('kv');
@@ -28,7 +29,7 @@ export const IDB = {
       }
     });
   },
-  async get(k?) {
+  async get(k: string): Promise<any> {
     const db = IDB.db || (await IDB.open());
     if (!db) return null;
     return new Promise<any>(res => {
@@ -41,7 +42,7 @@ export const IDB = {
       }
     });
   },
-  async set(k?, v?) {
+  async set(k: string, v: unknown): Promise<boolean> {
     const db = IDB.db || (await IDB.open());
     if (!db) return false;
     return new Promise<any>(res => {
@@ -58,7 +59,7 @@ export const IDB = {
   },
 };
 export let assetWarned = false;
-export let assetT = 0;
+export let assetT: ReturnType<typeof setTimeout> | undefined;
 export function saveAssets() {
   clearTimeout(assetT);
   assetT = setTimeout(async () => {
@@ -73,11 +74,11 @@ export const LIB = {
   utif: 'https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js',
   heic: 'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js',
 };
-export const loadedLibs: any = {};
-export function loadScript(u?) {
+export const loadedLibs: Record<string, Promise<unknown>> = {};
+export function loadScript(u: string) {
   return (
     loadedLibs[u] ||
-    (loadedLibs[u] = new Promise<any>((res, rej) => {
+    (loadedLibs[u] = new Promise<unknown>((res, rej) => {
       const s = document.createElement('script');
       s.src = u;
       s.onload = res;
@@ -89,7 +90,7 @@ export function loadScript(u?) {
     }))
   );
 }
-export function dataToBlob(d?) {
+export function dataToBlob(d: string) {
   const i = d.indexOf(','),
     meta = d.slice(5, i),
     mime = meta.split(';')[0] || 'application/octet-stream';
@@ -98,16 +99,16 @@ export function dataToBlob(d?) {
   for (let j = 0; j < raw.length; j++) a[j] = raw.charCodeAt(j);
   return new Blob([a], { type: mime });
 }
-export function blobToData(b?) {
-  return new Promise<any>((res, rej) => {
+export function blobToData(b: Blob) {
+  return new Promise<string>((res, rej) => {
     const r = new FileReader();
-    r.onload = () => res(r.result);
+    r.onload = () => res(r.result as string);
     r.onerror = () => rej(new Error('could not be read'));
     r.readAsDataURL(b);
   });
 }
-export function imgDims(blob?) {
-  return new Promise<any>((res, rej) => {
+export function imgDims(blob: Blob) {
+  return new Promise<{ w: number; h: number }>((res, rej) => {
     const u = URL.createObjectURL(blob),
       im = new Image();
     im.onload = () => {
@@ -121,7 +122,7 @@ export function imgDims(blob?) {
     im.src = u;
   });
 }
-export const EXTMIME = {
+export const EXTMIME: Record<string, string> = {
   png: 'image/png',
   apng: 'image/apng',
   jpg: 'image/jpeg',
@@ -143,7 +144,7 @@ export const EXTMIME = {
   jxl: 'image/jxl',
   svg: 'image/svg+xml',
 };
-export async function tiffToPng(f?) {
+export async function tiffToPng(f: Blob): Promise<Blob> {
   await loadScript(LIB.utif);
   const buf = await f.arrayBuffer();
   const ifds = (window as any).UTIF.decode(buf);
@@ -159,16 +160,16 @@ export async function tiffToPng(f?) {
     0,
     0,
   );
-  return new Promise<any>((res, rej) =>
+  return new Promise<Blob>((res, rej) =>
     cv.toBlob(b => (b ? res(b) : rej(new Error('could not be converted'))), 'image/png'),
   );
 }
-export async function heicToJpeg(f?) {
+export async function heicToJpeg(f: Blob): Promise<Blob> {
   await loadScript(LIB.heic);
   const out = await (window as any).heic2any({ blob: f, toType: 'image/jpeg', quality: 0.92 });
   return Array.isArray(out) ? out[0] : out;
 }
-export async function fileToAsset(f?) {
+export async function fileToAsset(f: File): Promise<Omit<Asset, 'id'>> {
   const ext = (f.name.split('.').pop() || '').toLowerCase(),
     mime = f.type && f.type !== 'application/octet-stream' ? f.type : EXTMIME[ext] || '';
   const name = f.name.replace(/\.[^.]+$/, '') || 'image';
@@ -201,10 +202,11 @@ export async function fileToAsset(f?) {
     );
   return { kind: 'image', name, mime: blob.type, data: await blobToData(blob), w: dims.w, h: dims.h, size: blob.size };
 }
-export function assetURL(a?) {
+export function assetURL(a: Asset) {
   return URL.createObjectURL(a.kind === 'svg' ? new Blob([a.text], { type: 'image/svg+xml' }) : dataToBlob(a.data));
 }
-export function addAsset(a?) {
+export function addAsset(src: Omit<Asset, 'id'>): Asset {
+  const a = src as Asset;
   a.id = nextAid();
   ASSETS[a.id] = a;
   try {
@@ -216,9 +218,9 @@ export function addAsset(a?) {
   markDirty();
   return a;
 }
-export async function importFiles(files?, at?, place?) {
+export async function importFiles(files: File[], at: { x: number; y: number } | null, place: boolean) {
   let n = 0;
-  const errs = [];
+  const errs: string[] = [];
   for (const f of files) {
     if (/\.(klp|zip|json)$/i.test(f.name)) {
       if (await confirmDiscard('Opening another project closes this one. Save your changes first?'))
@@ -241,7 +243,7 @@ export async function importFiles(files?, at?, place?) {
       place ? `Added ${n} file${n > 1 ? 's' : ''} to the canvas.` : `Added ${n} file${n > 1 ? 's' : ''} to Assets.`,
     );
 }
-export function placeAsset(a?, at?) {
+export function placeAsset(a: Asset, at: { x: number; y: number } | null) {
   if (a.kind === 'svg') {
     importSVG(a.text, false, a.name);
     return;
@@ -256,7 +258,7 @@ export function placeAsset(a?, at?) {
   addLayer(l);
   ed.end({ insp: true });
 }
-export function usage(id?) {
+export function usage(id: string) {
   return doc.layers.filter(l => l.type === 'image' && l.geo.asset === id).length;
 }
 export function renderAssets() {
@@ -279,7 +281,7 @@ export function renderAssets() {
 }
 
 export function init(): void {
-  AG.addEventListener('click', e => {
+  AG.addEventListener('click', (e: MouseEvent) => {
     const b = (e.target as any).closest('[data-aact]');
     if (!b) return;
     const id = b.closest('[data-aid]').dataset.aid,
@@ -301,20 +303,20 @@ export function init(): void {
       renderAssets();
     }
   });
-  AG.addEventListener('dragstart', e => {
+  AG.addEventListener('dragstart', (e: DragEvent) => {
     const t = (e.target as any).closest('[data-aid]');
     if (!t) return;
     e.dataTransfer.effectAllowed = 'copy';
     e.dataTransfer.setData('text/x-keyline-asset', t.dataset.aid);
   });
-  AG.addEventListener('dragover', e => {
+  AG.addEventListener('dragover', (e: DragEvent) => {
     if ([...e.dataTransfer.types].includes('Files')) {
       e.preventDefault();
       AG.classList.add('over');
     }
   });
   AG.addEventListener('dragleave', () => AG.classList.remove('over'));
-  AG.addEventListener('drop', e => {
+  AG.addEventListener('drop', (e: DragEvent) => {
     AG.classList.remove('over');
     if (!e.dataTransfer.files.length) return;
     e.preventDefault();

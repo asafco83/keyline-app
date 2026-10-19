@@ -7,7 +7,7 @@ import { slug, updateExport } from './images';
 import { outDims } from './size';
 import { toast } from '../io/open';
 
-export const FW_NOTES = {
+export const FW_NOTES: Record<string, string> = {
   html: 'Put the .svg file next to your page. <code>&lt;object&gt;</code> keeps the player working. Pasting the SVG code straight into your HTML works too, but inserting it with <code>innerHTML</code> does not run its script.',
   react:
     'Put the .svg in your public folder. React does not run scripts inside markup set with <code>dangerouslySetInnerHTML</code>, so use <code>&lt;object&gt;</code>.',
@@ -17,7 +17,7 @@ export const FW_NOTES = {
   svelte: 'Put the .svg in <code>static/</code> (SvelteKit) or <code>public/</code>.',
   api: 'Every method returns the player, so calls can be chained. The player is also available as <code>svgatorPlayer</code>, so code written for SVGator exports works unchanged.',
 };
-export function snippet(fw?) {
+export function snippet(fw: string): string {
   const ex = doc.ex,
     css = ex.mode === 'css',
     file = slug(doc.name) + '.svg',
@@ -32,19 +32,21 @@ export function snippet(fw?) {
   const [DW, DH] = outDims(),
     ratio = `width="${DW}" height="${DH}"`;
   if (css && fw !== 'api') {
-    const tag = p => `<img src="${p}${file}" alt="${label}" ${ratio} />`;
-    return {
-      html: `<!-- CSS-only export: works as a normal image -->\n${tag('')}\n\n<!-- or as a background -->\n<div style="background:url(${file}) center/contain no-repeat;aspect-ratio:${DW}/${DH}"></div>`,
-      react: `export default function ${comp}() {\n  return ${tag('/')};\n}`,
-      next: `import Image from "next/image";\n\nexport default function ${comp}() {\n  // unoptimized keeps the SVG animation intact\n  return <Image src="/${file}" alt="${label}" width={${DW}} height={${DH}} unoptimized />;\n}`,
-      vue: `<template>\n  ${tag('/')}\n</template>`,
-      angular: `<!-- ${comp.toLowerCase()}.component.html -->\n${tag('assets/')}`,
-      svelte: tag('/'),
-    }[fw];
+    const tag = (p: string) => `<img src="${p}${file}" alt="${label}" ${ratio} />`;
+    return (
+      {
+        html: `<!-- CSS-only export: works as a normal image -->\n${tag('')}\n\n<!-- or as a background -->\n<div style="background:url(${file}) center/contain no-repeat;aspect-ratio:${DW}/${DH}"></div>`,
+        react: `export default function ${comp}() {\n  return ${tag('/')};\n}`,
+        next: `import Image from "next/image";\n\nexport default function ${comp}() {\n  // unoptimized keeps the SVG animation intact\n  return <Image src="/${file}" alt="${label}" width={${DW}} height={${DH}} unoptimized />;\n}`,
+        vue: `<template>\n  ${tag('/')}\n</template>`,
+        angular: `<!-- ${comp.toLowerCase()}.component.html -->\n${tag('assets/')}`,
+        svelte: tag('/'),
+      } as Record<string, string>
+    )[fw];
   }
   const use = `player.ready((p) => {\n      p.on('end', () => console.log('finished'));\n      // p.play(); p.pause(); p.reverse(); p.seek(50); p.set('speed', 2);\n    });`;
   if (fw === 'html')
-    return `<object id="${pre}anim" type="image/svg+xml" data="${file}" aria-label="${label}" style="width:100%;max-width:${DW}px"></object>\n\n<script>\n  document.getElementById('${pre}anim').addEventListener('load', e => {\n    const player = e.target.contentDocument.getElementById('${id}').player;\n    ${use}\n  });\n<\/script>`;
+    return `<object id="${pre}anim" type="image/svg+xml" data="${file}" aria-label="${label}" style="width:100%;max-width:${DW}px"></object>\n\n<script>\n  document.getElementById('${pre}anim').addEventListener('load', (e) => {\n    const player = e.target.contentDocument.getElementById('${id}').player;\n    ${use}\n  });\n<\/script>`;
   if (fw === 'react' || fw === 'next')
     return `${fw === 'next' ? '"use client";\n\n' : ''}import { useEffect, useRef } from "react";\n\nexport default function ${comp}({ onReady }) {\n  const ref = useRef(null);\n\n  useEffect(() => {\n    const el = ref.current;\n    const handleLoad = () => {\n      const player = el.contentDocument?.getElementById("${id}")?.player;\n      if (player) player.ready((p) => onReady?.(p));\n    };\n    el.addEventListener("load", handleLoad);\n    return () => {\n      el.removeEventListener("load", handleLoad);\n      el.contentDocument?.getElementById("${id}")?.player?.destruct();\n    };\n  }, [onReady]);\n\n  return (\n    <object ref={ref} type="image/svg+xml" data="/${file}" aria-label="${label}"\n      style={{ width: "100%", maxWidth: ${DW} }} />\n  );\n}\n\n// Usage: <${comp} onReady={(player) => player.play()} />`;
   if (fw === 'vue')
@@ -59,7 +61,7 @@ export let fwSel = 'html';
 export function renderSnippet() {
   $('#xFw')
     .querySelectorAll('button')
-    .forEach(b => b.classList.toggle('on', b.dataset.v === fwSel));
+    .forEach((b: HTMLElement) => b.classList.toggle('on', b.dataset.v === fwSel));
   $('#xSnip').value = snippet(fwSel);
   $('#xFwNote').innerHTML =
     doc.ex.mode === 'css' && fwSel !== 'api'
@@ -67,21 +69,21 @@ export function renderSnippet() {
       : FW_NOTES[fwSel];
 }
 export let lastExport = '';
-export function setLastExport(c?) {
+export function setLastExport(c: string) {
   lastExport = c;
 }
 
 export function init(): void {
-  $('#xTab').addEventListener('click', e => {
+  $('#xTab').addEventListener('click', (e: MouseEvent) => {
     const b = (e.target as any).closest('button');
     if (!b) return;
     $('#xTab')
       .querySelectorAll('button')
-      .forEach(x => x.classList.toggle('on', x === b));
+      .forEach((x: HTMLElement) => x.classList.toggle('on', x === b));
     $('#xPanePrev').hidden = b.dataset.v !== 'preview';
     $('#xPaneEmbed').hidden = b.dataset.v !== 'embed';
   });
-  $('#xFw').addEventListener('click', e => {
+  $('#xFw').addEventListener('click', (e: MouseEvent) => {
     const b = (e.target as any).closest('button');
     if (!b) return;
     fwSel = b.dataset.v;
@@ -102,29 +104,29 @@ export function init(): void {
       toast('Press Ctrl+C to copy the selected code.');
     }
   });
-  $('#xOut').addEventListener('change', e => {
+  $('#xOut').addEventListener('change', (e: Event) => {
     doc.ex.out = (e.target as any).value;
     save();
     updateExport();
   });
-  $('#xFill').addEventListener('change', e => {
+  $('#xFill').addEventListener('change', (e: Event) => {
     doc.ex.fill = (e.target as any).value;
     save();
     updateExport();
   });
-  $('#xFps').addEventListener('change', e => {
+  $('#xFps').addEventListener('change', (e: Event) => {
     doc.ex.fps = parseInt((e.target as any).value) || 0;
     save();
     updateExport();
   });
-  $('#xSpeed').addEventListener('change', e => {
+  $('#xSpeed').addEventListener('change', (e: Event) => {
     const v = parseFloat((e.target as any).value);
     doc.ex.speed = isFinite(v) && v > 0 ? r3(clamp(v, 0.05, 20)) : 1;
     save();
     syncExportUI();
     updateExport();
   });
-  $('#xIds').addEventListener('click', e => {
+  $('#xIds').addEventListener('click', (e: MouseEvent) => {
     const b = (e.target as any).closest('button');
     if (!b) return;
     doc.ex.ids = b.dataset.v;

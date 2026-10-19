@@ -1,4 +1,5 @@
 // Keyline — ui/layers-panel
+import type { Layer } from '../model/types';
 import { $, H, ICON, NOFILL, TICON, clone, esc, r2, r3 } from '../core/constants';
 import { LP } from '../core/dom';
 import { beginEdit, select } from '../core/history';
@@ -41,13 +42,13 @@ export function renderLayers() {
   $('#lDel').hidden = !S.selSet.size;
   $('#lCount').textContent = S.selSet.size > 1 ? `${S.selSet.size} selected` : '';
 }
-export function renameInline(el?, l?) {
+export function renameInline(el: HTMLElement, l: Layer) {
   el.innerHTML = `<input id="rn-${l.id}" value="${esc(l.name)}" aria-label="Layer name">`;
   const inp = el.querySelector('input');
   inp.focus();
   inp.select();
   let done = false;
-  const finish = ok => {
+  const finish = (ok: boolean) => {
     if (done) return;
     done = true;
     if (ok && inp.value.trim() && inp.value.trim() !== l.name) {
@@ -59,15 +60,15 @@ export function renameInline(el?, l?) {
       renderTimeline();
     }
   };
-  inp.addEventListener('keydown', ev => {
+  inp.addEventListener('keydown', (ev: KeyboardEvent) => {
     ev.stopPropagation();
     if (ev.key === 'Enter') finish(true);
     if (ev.key === 'Escape') finish(false);
   });
   inp.addEventListener('blur', () => finish(true));
 }
-export let dragIds = null;
-export function dropMode(r?, e?) {
+export let dragIds: string[] | null = null;
+export function dropMode(r: HTMLElement, e: MouseEvent) {
   const tgt = layerById(r.dataset.lid);
   if (!tgt || !dragIds) return null;
   if (dragIds.some(id => id === tgt.id || ancestors(tgt).some(a => a.id === id))) return null;
@@ -76,11 +77,11 @@ export function dropMode(r?, e?) {
   return isBox(tgt) ? (y < 0.28 ? 'before' : y > 0.72 ? 'after' : 'into') : y < 0.5 ? 'before' : 'after';
 }
 export function clearDrop() {
-  return LP.querySelectorAll('.d-before,.d-after,.d-into').forEach(x =>
+  return LP.querySelectorAll('.d-before,.d-after,.d-into').forEach((x: HTMLElement) =>
     x.classList.remove('d-before', 'd-after', 'd-into'),
   );
 }
-export function moveLayers(ids?, tgt?, mode?) {
+export function moveLayers(ids: string[], tgt: Layer | null, mode: 'before' | 'after' | 'into' | 'root' | string) {
   const ls = ids.map(layerById).filter(Boolean);
   if (!ls.length) return;
   const ed = beginEdit();
@@ -128,7 +129,7 @@ export function groupSel() {
   S.lexp[g.id] = true;
   ed.end({ insp: true });
 }
-export function ungroup(g?) {
+export function ungroup(g: Layer) {
   if (!g || g.type !== 'group') return;
   const ed = beginEdit();
   const ch = kids(g.id),
@@ -167,10 +168,10 @@ export function deleteSel() {
   S.keys.clear();
   ed.end({ insp: true });
 }
-export function duplicate(l?) {
+export function duplicate(l: Layer) {
   const ed = beginEdit(),
     list = [l, ...descendants(l)],
-    map: any = {};
+    map: Record<string, string> = {};
   const clones = list.map(x => {
     const c = clone(x);
     c.id = uid();
@@ -188,11 +189,11 @@ export function duplicate(l?) {
   doc.layers.splice(doc.layers.indexOf(l) + 1, 0, root);
   doc.layers.push(...clones.slice(1));
   S.sel = root.id;
-  S.selSet = new Set<any>([root.id]);
+  S.selSet = new Set<string>([root.id]);
   S.keys.clear();
   ed.end({ insp: true });
 }
-export function arrange(l?, dir?) {
+export function arrange(l: Layer, dir: number) {
   const sib = kids(pidOf(l)),
     i = sib.indexOf(l),
     j = i + dir;
@@ -206,7 +207,7 @@ export function arrange(l?, dir?) {
 }
 
 export function init(): void {
-  LP.addEventListener('click', e => {
+  LP.addEventListener('click', (e: MouseEvent) => {
     const r = (e.target as any).closest('.lp-row');
     if (!r) {
       if (e.target === LP) select(null);
@@ -235,7 +236,7 @@ export function init(): void {
     if ((e.target as any).closest('input')) return;
     select(l.id, e.shiftKey ? 'range' : e.ctrlKey || e.metaKey ? 'toggle' : undefined);
   });
-  LP.addEventListener('keydown', e => {
+  LP.addEventListener('keydown', (e: KeyboardEvent) => {
     const r = (e.target as any).closest('.lp-row');
     if (!r || (e.target as any).tagName === 'INPUT') return;
     if (e.key === 'Enter' || e.key === ' ') {
@@ -254,11 +255,11 @@ export function init(): void {
       }
     }
   });
-  LP.addEventListener('dblclick', e => {
+  LP.addEventListener('dblclick', (e: MouseEvent) => {
     const nm = (e.target as any).closest('.lp-name');
     if (nm) renameInline(nm, layerById(nm.closest('[data-lid]').dataset.lid));
   });
-  LP.addEventListener('dragstart', e => {
+  LP.addEventListener('dragstart', (e: DragEvent) => {
     const r = (e.target as any).closest('.lp-row');
     if (!r) return;
     const id = r.dataset.lid;
@@ -269,7 +270,7 @@ export function init(): void {
       e.dataTransfer.setData('text/x-keyline-layer', id);
     } catch (_) {}
   });
-  LP.addEventListener('dragover', e => {
+  LP.addEventListener('dragover', (e: DragEvent) => {
     if (!dragIds) return;
     e.preventDefault();
     clearDrop();
@@ -279,22 +280,19 @@ export function init(): void {
     if (m) r.classList.add('d-' + m);
     else e.dataTransfer.dropEffect = 'none';
   });
-  LP.addEventListener('dragleave', e => {
+  LP.addEventListener('dragleave', (e: DragEvent) => {
     if (e.target === LP) clearDrop();
   });
-  LP.addEventListener('drop', e => {
+  LP.addEventListener('drop', (e: DragEvent) => {
     if (!dragIds) return;
     e.preventDefault();
     clearDrop();
     const r = (e.target as any).closest('.lp-row');
+    // decide the drop position while dragIds is still set: dropMode() checks it
+    const m = r ? dropMode(r, e) : 'root';
     const ids = dragIds;
     dragIds = null;
-    if (!r) {
-      moveLayers(ids, null, 'root');
-      return;
-    }
-    const m = dropMode(r, e);
-    if (m) moveLayers(ids, layerById(r.dataset.lid), m);
+    if (m) moveLayers(ids, r ? layerById(r.dataset.lid) : null, m);
   });
   LP.addEventListener('dragend', () => {
     dragIds = null;
@@ -303,13 +301,13 @@ export function init(): void {
   $('#lGroup').addEventListener('click', groupSel);
   $('#lUngroup').addEventListener('click', () => ungroup(selLayer()));
   $('#lDel').addEventListener('click', deleteSel);
-  $('#sideTabs').addEventListener('click', e => {
+  $('#sideTabs').addEventListener('click', (e: MouseEvent) => {
     const b = (e.target as any).closest('button');
     if (!b) return;
     S.tab = b.dataset.v;
     $('#sideTabs')
       .querySelectorAll('button')
-      .forEach(x => x.classList.toggle('on', x === b));
+      .forEach((x: HTMLElement) => x.classList.toggle('on', x === b));
     $('#paneLayers').hidden = S.tab !== 'layers';
     $('#paneAssets').hidden = S.tab !== 'assets';
   });

@@ -14,7 +14,7 @@ import { renderLayers } from './layers-panel';
 export function tln() {
   return parseFloat(getComputedStyle(TLB).getPropertyValue('--tln')) || 214;
 }
-export function ticks(W?) {
+export function ticks(W: number) {
   const pps = S.pps,
     minor = pps >= 260 ? 0.1 : pps >= 110 ? 0.25 : 0.5,
     major = pps >= 60 ? 1 : 2;
@@ -77,14 +77,14 @@ export function renderTimeline() {
       }
   }
   TLB.innerHTML = h + '<div class="tl-ph" id="playhead"></div>';
-  TLB.querySelectorAll('.kf,.seg').forEach(el => {
+  TLB.querySelectorAll('.kf,.seg').forEach((el: KfEl) => {
     const l = layerById(el.dataset.lid);
     el._k = l.t[el.dataset.prop][+el.dataset.i];
   });
-  TLB.querySelectorAll('.sdot').forEach(el => {
+  TLB.querySelectorAll('.sdot').forEach((el: KfEl) => {
     const l = layerById(el.dataset.lid),
       t = +el.dataset.t;
-    el._ks = Object.values<any>(l.t).flatMap(tr => tr.filter(q => Math.abs(q[0] - t) < 0.004));
+    el._ks = Object.values(l.t).flatMap(tr => tr.filter(q => Math.abs(q[0] - t) < 0.004));
   });
   updatePlayhead();
 }
@@ -94,7 +94,7 @@ export function updatePlayhead() {
   const x = tln() + S.time * S.pps;
   ph.style.left = x + 'px';
   ph.style.visibility = x - TLS.scrollLeft < tln() - 1 ? 'hidden' : 'visible';
-  TLB.querySelectorAll('.tl-prop').forEach(r => {
+  TLB.querySelectorAll('.tl-prop').forEach((r: HTMLElement) => {
     const l = layerById(r.dataset.lid),
       tr = l && l.t[r.dataset.prop];
     const b = r.querySelector('.kb');
@@ -112,13 +112,13 @@ export function updatePlayhead() {
     else if (vx < tln()) TLS.scrollLeft = Math.max(0, x - tln() - 20);
   }
 }
-export function laneTime(e?, lane?) {
+export function laneTime(e: { clientX: number }, lane: Element) {
   const r = lane.getBoundingClientRect();
   return clamp((e.clientX - r.left) / S.pps, 0, doc.dur);
 }
-export function dragWin(move?, up?) {
-  const mv = e => move(e),
-    u = e => {
+export function dragWin(move: (e: PointerEvent) => void, up?: (e: PointerEvent) => void) {
+  const mv = (e: PointerEvent) => move(e),
+    u = (e: PointerEvent) => {
       window.removeEventListener('pointermove', mv);
       window.removeEventListener('pointerup', u);
       window.removeEventListener('pointercancel', u);
@@ -128,13 +128,15 @@ export function dragWin(move?, up?) {
   window.addEventListener('pointerup', u);
   window.addEventListener('pointercancel', u);
 }
-export function selectKeyLayer(id?) {
+export function selectKeyLayer(id: string) {
   if (S.sel !== id) {
     S.sel = id;
-    S.selSet = new Set<any>([id]);
+    S.selSet = new Set<string>([id]);
     S.node = null;
   }
 }
+/** Timeline keyframe element with the keyframe(s) it stands for. */
+export type KfEl = HTMLElement & { _k?: Keyframe; _ks?: Keyframe[] };
 export interface KeyOwner {
   l: Layer;
   k: PropKey;
@@ -148,8 +150,8 @@ export function keyOwners(): Map<Keyframe, KeyOwner> {
   return m;
 }
 export const FRAME = 1 / 30;
-export function snapT(t?, excl?) {
-  let best = null,
+export function snapT(t: number, excl: Set<Keyframe>) {
+  let best: number | null = null,
     bd = 7 / S.pps;
   const cand = [S.time, 0, doc.dur];
   doc.layers.forEach(l => {
@@ -170,7 +172,7 @@ export function snapT(t?, excl?) {
 export const TIP = $('#tltip');
 export const MARQ = $('#tlmarq');
 export const MENU: any = $('#ctxmenu');
-export function showTip(ev?, txt?) {
+export function showTip(ev: { clientX: number; clientY: number }, txt: string) {
   TIP.textContent = txt;
   TIP.hidden = false;
   TIP.style.left = Math.min(ev.clientX + 14, innerWidth - 200) + 'px';
@@ -191,12 +193,12 @@ export function resolveCollisions() {
     }
   });
 }
-export function keyDrag(e?, grab?) {
+export function keyDrag(e: PointerEvent, grab: Keyframe) {
   const x0 = e.clientX,
     dupMode = e.ctrlKey || e.metaKey,
     ed = beginEdit();
   let moved = false,
-    items = null,
+    items: Array<{ q: Keyframe; t0: number }> | null = null,
     g = grab,
     gT0 = grab[0],
     tMin = 0,
@@ -250,7 +252,7 @@ export function keyDrag(e?, grab?) {
           `${fmt(g[0])}s  ${d >= 0 ? '+' : '−'}${fmt(Math.abs(d))}s${dupMode ? ' · copy' : ''}${snap ? '' : ' · free'}`,
         );
       }
-      TLB.querySelectorAll('.kf').forEach(el => {
+      TLB.querySelectorAll('.kf').forEach((el: KfEl) => {
         el.style.left = el._k[0] * S.pps + 'px';
       });
       doc.layers.forEach(L => Object.values<any>(L.t).forEach(sortTrack));
@@ -268,13 +270,13 @@ export function keyDrag(e?, grab?) {
     },
   );
 }
-export function marquee(e?, lane?) {
+export function marquee(e: PointerEvent, lane: HTMLElement) {
   const x0 = e.clientX,
     y0 = e.clientY,
     add = e.shiftKey || e.ctrlKey || e.metaKey,
-    base = new Set<any>(add ? S.keys : []);
+    base = new Set<Keyframe>(add ? S.keys : []);
   let moved = false;
-  const hit = (el, L, T, R, B) => {
+  const hit = (el: Element, L: number, T: number, R: number, B: number) => {
     const r = el.getBoundingClientRect();
     return r.right >= L && r.left <= R && r.bottom >= T && r.top <= B;
   };
@@ -288,16 +290,16 @@ export function marquee(e?, lane?) {
         B = Math.max(y0, ev.clientY);
       Object.assign(MARQ.style, { left: L + 'px', top: T + 'px', width: R - L + 'px', height: B - T + 'px' });
       MARQ.hidden = false;
-      const sel = new Set<any>(base);
-      TLB.querySelectorAll('.kf').forEach(el => {
+      const sel = new Set<Keyframe>(base);
+      TLB.querySelectorAll('.kf').forEach((el: KfEl) => {
         if (hit(el, L, T, R, B)) sel.add(el._k);
       });
-      TLB.querySelectorAll('.sdot').forEach(el => {
+      TLB.querySelectorAll('.sdot').forEach((el: KfEl) => {
         if (hit(el, L, T, R, B)) el._ks.forEach(q => sel.add(q));
       });
       S.keys = sel;
-      TLB.querySelectorAll('.kf').forEach(el => el.classList.toggle('sel', sel.has(el._k)));
-      TLB.querySelectorAll('.sdot').forEach(el =>
+      TLB.querySelectorAll('.kf').forEach((el: KfEl) => el.classList.toggle('sel', sel.has(el._k)));
+      TLB.querySelectorAll('.sdot').forEach((el: KfEl) =>
         el.classList.toggle('sel', el._ks.length > 0 && el._ks.every(q => sel.has(q))),
       );
       showTip(ev, `${sel.size} keyframe${sel.size === 1 ? '' : 's'}`);
@@ -307,7 +309,7 @@ export function marquee(e?, lane?) {
       TIP.hidden = true;
       if (!moved) {
         if (!add) S.keys.clear();
-        const row = lane.closest('[data-lid]');
+        const row = lane.closest<HTMLElement>('[data-lid]');
         if (row) selectKeyLayer(row.dataset.lid);
         S.time = clamp(r3(laneTime(ev, lane)), 0, doc.dur);
         S.ptime = S.time;
@@ -326,7 +328,7 @@ export function marquee(e?, lane?) {
 
 export function init(): void {
   TLS.addEventListener('scroll', () => updatePlayhead());
-  TLB.addEventListener('pointerdown', e => {
+  TLB.addEventListener('pointerdown', (e: PointerEvent) => {
     if (e.button !== 0) return;
     closeMenu();
     const seg = (e.target as any).closest('.seg');
@@ -345,15 +347,15 @@ export function init(): void {
     if (kf) {
       e.preventDefault();
       const ks = kf._ks || [kf._k],
-        allIn = ks.length > 0 && ks.every(q => S.keys.has(q));
+        allIn = ks.length > 0 && ks.every((q: Keyframe) => S.keys.has(q));
       if (e.shiftKey) {
-        ks.forEach(q => (allIn ? S.keys.delete(q) : S.keys.add(q)));
+        ks.forEach((q: Keyframe) => (allIn ? S.keys.delete(q) : S.keys.add(q)));
       } else if (!allIn) {
         if (!(e.ctrlKey || e.metaKey)) S.keys.clear();
-        ks.forEach(q => S.keys.add(q));
+        ks.forEach((q: Keyframe) => S.keys.add(q));
       }
       selectKeyLayer(kf.dataset.lid);
-      TLB.querySelectorAll('.kf').forEach(el => el.classList.toggle('sel', S.keys.has(el._k)));
+      TLB.querySelectorAll('.kf').forEach((el: KfEl) => el.classList.toggle('sel', S.keys.has(el._k)));
       if (!S.keys.size || (e.shiftKey && allIn)) {
         renderTimeline();
         renderInspector();

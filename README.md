@@ -71,7 +71,7 @@ src/
 
   app/boot.ts            Startup: restore the last project, assets and file handle
 
-tests/                   Vitest: runtime player and easing, zip container, path geometry
+tests/                   Vitest: runtime player and easing, zip container, path geometry, export output
 ```
 
 ## How the pieces fit
@@ -103,24 +103,27 @@ A `.klp` file is a standard zip archive:
 
 ## Typing
 
-The document model lives in `src/model/types.ts`: `Doc`, `Layer`, `Geometry`, `BaseValues`, `Tracks`, `ExportSettings`, `Asset`, plus the transient `EditorState` (`S`). The runtime's `EngineLayer` is the exported subset of `Layer`.
+The document model lives in `src/model/types.ts`: `Doc`, `Layer`, `Geometry`, `BaseValues`, `Tracks`, `ExportSettings`, `Asset`, plus the transient `EditorState` (`S`) and `Drag`. The runtime's `EngineLayer` is the exported subset of `Layer`.
 
-`tsconfig.json` is `strict` with `noImplicitAny` and `strictNullChecks` relaxed, so the older UI code still compiles. `noImplicitAny` is being switched on folder by folder:
+`tsconfig.json` is `strict`, including `noImplicitAny`, with two exceptions:
 
-```bash
-npm run typecheck:strict
-```
+- `strictNullChecks` is off;
+- `useUnknownInCatchVariables` is off.
 
-This runs the compiler with `noImplicitAny` on and fails only on errors inside the folders listed in `scripts/typecheck-strict.mjs` (CI runs it too). It also prints how many spots are left elsewhere.
+Explicit `any` remains where the code works with the page directly: `$()` and `byId()` lookups, a few panel elements in `core/dom.ts`, and `e.target` in delegated event handlers. Typing those is the next step, before `strictNullChecks` is switched on.
 
-| Folder                                  | `noImplicitAny` |
-| --------------------------------------- | --------------- |
-| `runtime`, `geometry`, `model`, `core`  | clean, enforced |
-| `render`, `io`, `export`, `tools`, `ui` | to do           |
+Conventions:
 
-**To migrate a folder:** run `npm run typecheck:strict`, fix that folder's errors, then add it to the `STRICT` list. The main jobs in UI code are annotating event handlers (`(e: MouseEvent) =>`) and narrowing `e.target`. When every folder is clean, turn `noImplicitAny` on in `tsconfig.json`, then `strictNullChecks`.
+- Drag gestures assign an object to `S.drag`. Its `move(p, e)` and `up(p, e)` get their types from `Drag`, so don't annotate them.
+- Shared tables keyed by strings (`ICON`, `EXT_OF`, ...) are typed `Record<string, ...>`.
+- Timers use `ReturnType<typeof setTimeout>`, so the code compiles with or without Node types.
 
-DOM lookups (`$`, `byId`) and most panel elements in `core/dom.ts` are still `any`. Typing them is part of the UI pass.
+## Tests
+
+- `tests/engine.test.ts`: easing, interpolation, the player API, and that the player can be embedded.
+- `tests/zip.test.ts`: the `.klp` container.
+- `tests/geometry.test.ts`: path parsing and morph helpers.
+- `tests/output.test.ts`: compares the exported SVG (JS and CSS modes, every trigger) and every embed snippet against `tests/fixtures/export-sample.json`. It also checks that no editor TypeScript syntax leaks into a snippet. After an intended change to the output, regenerate the reference with `UPDATE_FIXTURES=1 npx vitest run tests/output.test.ts` and review the diff.
 
 ## Deploying (GitHub Pages)
 

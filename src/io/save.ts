@@ -11,7 +11,7 @@ export const KLP_TYPES = [{ description: 'Keyline project', accept: { 'applicati
 export function canPick() {
   return typeof (window as any).showSaveFilePicker === 'function';
 }
-export async function writeHandle(handle?, blob?) {
+export async function writeHandle(handle: any, blob: Blob) {
   if (handle.queryPermission && (await handle.queryPermission({ mode: 'readwrite' })) !== 'granted') {
     if (!handle.requestPermission || (await handle.requestPermission({ mode: 'readwrite' })) !== 'granted')
       throw Object.assign(new Error('permission'), { name: 'NotAllowedError' });
@@ -20,7 +20,7 @@ export async function writeHandle(handle?, blob?) {
   await w.write(blob);
   await w.close();
 }
-export async function downloadKLP(name?, blob?) {
+export async function downloadKLP(name: string, blob: Blob) {
   if ((window as any).claude && (window as any).claude.use) {
     let dl = null;
     try {
@@ -85,14 +85,14 @@ export async function saveProject() {
   }
   return false;
 }
-export let saveResolve = null;
-export function saveProjectAs() {
-  return new Promise<any>(res => {
+export let saveResolve: ((v: boolean) => void) | null = null;
+export function saveProjectAs(): Promise<boolean> {
+  return new Promise<boolean>(res => {
     saveResolve = res;
     const all = Object.keys(ASSETS).length,
       used = usedAssetIds(),
       unused = Object.keys(ASSETS).filter(id => !used.has(id)),
-      size = ids => ids.reduce((s, id) => s + (ASSETS[id].size || 0), 0);
+      size = (ids: string[]) => ids.reduce((s, id) => s + (ASSETS[id].size || 0), 0);
     $('#sName').value = S.file && S.file.name ? S.file.name.replace(/\.klp(\.zip)?$/i, '') : slug(doc.name);
     $('#sAll').checked = S.saveAll !== false;
     $('#sAll').closest('label').hidden = !unused.length;
@@ -110,7 +110,7 @@ export function saveProjectAs() {
     }, 0);
   });
 }
-export function endSave(v?) {
+export function endSave(v: boolean) {
   $('#mSave').hidden = true;
   const r = saveResolve;
   saveResolve = null;
@@ -120,12 +120,12 @@ export function endSave(v?) {
 export function init(): void {
   $('#mSave').addEventListener(
     'click',
-    e => {
+    (e: MouseEvent) => {
       if ((e.target as any).id === 'mSave' || (e.target as any).closest('[data-close]')) endSave(false);
     },
     true,
   );
-  $('#sName').addEventListener('keydown', e => {
+  $('#sName').addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key === 'Enter') $('#sGo').click();
   });
   $('#sGo').addEventListener('click', async () => {

@@ -1,4 +1,5 @@
 // Keyline — tools/stage-input
+import type { Layer, XY } from '../model/types';
 import { H, clamp, clone, r2, xfp } from '../core/constants';
 import { INSP, WRAP } from '../core/dom';
 import { beginEdit, select, setProp, setTool } from '../core/history';
@@ -9,8 +10,8 @@ import { fit, frame } from '../render/stage';
 import { boneCreate, fkDrag, ikDrag } from './bones';
 import { createDrag, createText, finishPen, handleDrag, nodeDrag, penDown, toggleSmooth } from './edit-tools';
 
-export function hitChain(target?) {
-  const chain = [];
+export function hitChain(target: any): string[] {
+  const chain: string[] = [];
   let g = target.closest && target.closest('g[data-lid]');
   while (g) {
     chain.push(g.dataset.lid);
@@ -18,7 +19,7 @@ export function hitChain(target?) {
   }
   return chain;
 }
-export function endDrag(e?) {
+export function endDrag(e: PointerEvent) {
   if (S.drag) {
     const d = S.drag;
     S.drag = null;
@@ -26,14 +27,14 @@ export function endDrag(e?) {
     if (d.up) d.up(p, e);
   }
 }
-export function moveDrag(l?, p0?) {
+export function moveDrag(l: Layer, p0: XY) {
   const PMi = parentMatrix(l).inverse(),
     lp0 = xfp(PMi, p0.x, p0.y),
     start = clone(H.get(l, 'pos', S.time)),
     ed = beginEdit();
   let moved = false;
   S.drag = {
-    move(p?, e?) {
+    move(p, e) {
       const lp = xfp(PMi, p.x, p.y);
       let dx = lp.x - lp0.x,
         dy = lp.y - lp0.y;
@@ -53,7 +54,7 @@ export function moveDrag(l?, p0?) {
 }
 
 export function init(): void {
-  WRAP.addEventListener('pointerdown', e => {
+  WRAP.addEventListener('pointerdown', (e: PointerEvent) => {
     if (e.button !== 0) return;
     const p = docPt(e);
     try {
@@ -108,7 +109,7 @@ export function init(): void {
       select(null);
     }
   });
-  WRAP.addEventListener('pointermove', e => {
+  WRAP.addEventListener('pointermove', (e: PointerEvent) => {
     const p = docPt(e);
     S.lastPt = p;
     if (S.drag) S.drag.move(p, e);
@@ -119,7 +120,7 @@ export function init(): void {
   });
   WRAP.addEventListener('pointerup', endDrag);
   WRAP.addEventListener('pointercancel', endDrag);
-  WRAP.addEventListener('dblclick', e => {
+  WRAP.addEventListener('dblclick', (e: MouseEvent) => {
     if (S.tool === 'pen' && S.pen) {
       const n = S.pen.nodes;
       if (n.length > 1) {
@@ -154,7 +155,7 @@ export function init(): void {
   });
   WRAP.addEventListener(
     'wheel',
-    e => {
+    (e: WheelEvent) => {
       if (!(e.ctrlKey || e.metaKey)) return;
       e.preventDefault();
       S.zoom = clamp(S.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1), 0.1, 8);

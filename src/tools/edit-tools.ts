@@ -1,4 +1,5 @@
 // Keyline — tools/edit-tools
+import type { Layer, XY } from '../model/types';
 import { $, FONTS, H, HINTS, byId, clone, fmt, r2, r3, xfp } from '../core/constants';
 import { INSP, WRAP } from '../core/dom';
 import { beginEdit, setProp } from '../core/history';
@@ -10,7 +11,7 @@ import { frame, renderStage } from '../render/stage';
 import { reOrigin, toHex } from '../ui/inspector';
 import { renderTools } from '../ui/tools-rail';
 
-export function cursorFor(dx?, dy?) {
+export function cursorFor(dx: number, dy: number) {
   let a = (Math.atan2(dy, dx) * 180) / Math.PI;
   a = ((a % 180) + 180) % 180;
   return a < 22.5 || a >= 157.5 ? 'ew-resize' : a < 67.5 ? 'nwse-resize' : a < 112.5 ? 'ns-resize' : 'nesw-resize';
@@ -26,7 +27,7 @@ export const H9 = [
   [0.5, 1],
   [1, 1],
 ];
-export function originDrag(l?) {
+export function originDrag(l: Layer) {
   const g = byId('e-' + l.id);
   if (!g) return;
   const Mi = gMatrix(l).inverse(),
@@ -34,7 +35,7 @@ export function originDrag(l?) {
     ed = beginEdit();
   const pts = H9.map(([u, v]) => [b.x + b.width * u, b.y + b.height * v]);
   S.drag = {
-    move(p?, e?) {
+    move(p, e) {
       const q = xfp(Mi, p.x, p.y);
       let o = [q.x, q.y];
       const near: any = pts
@@ -52,7 +53,7 @@ export function originDrag(l?) {
     },
   };
 }
-export function setAnchor(l?, u?, v?) {
+export function setAnchor(l: Layer, u: number, v: number) {
   const g = byId('e-' + l.id);
   if (!g) return;
   const b = g.getBBox(),
@@ -60,12 +61,12 @@ export function setAnchor(l?, u?, v?) {
   reOrigin(l, [b.x + b.width * u, b.y + b.height * v]);
   ed.end();
 }
-export function handleDrag(kind?, p0?) {
+export function handleDrag(kind: string, p0: XY) {
   const l = selLayer();
   if (!l) return;
   if (kind === 'org') return originDrag(l);
   const PMi = parentMatrix(l).inverse(),
-    L = p => xfp(PMi, p.x, p.y),
+    L = (p: XY) => xfp(PMi, p.x, p.y),
     c = H.comp(l, S.time),
     C = { x: c.x, y: c.y },
     ed = beginEdit(),
@@ -75,7 +76,7 @@ export function handleDrag(kind?, p0?) {
       a0 = Math.atan2(q0.y - C.y, q0.x - C.x);
     S.drag = {
       rot: true,
-      move(p?, e?) {
+      move(p, e) {
         const q = L(p);
         let r = r0 + ((Math.atan2(q.y - C.y, q.x - C.x) - a0) * 180) / Math.PI;
         if (e.shiftKey) r = Math.round(r / 15) * 15;
@@ -92,11 +93,18 @@ export function handleDrag(kind?, p0?) {
      Shift keeps proportions · Alt scales from the box center · Ctrl/Cmd scales around the origin · drag past the anchor to mirror */
   const g = byId('e-' + l.id),
     b = g.getBBox();
-  const UV = { nw: [0, 0], n: [0.5, 0], ne: [1, 0], e: [1, 0.5], se: [1, 1], s: [0.5, 1], sw: [0, 1], w: [0, 0.5] }[
-    kind
-  ];
+  const UV = (<Record<string, number[]>>{
+    nw: [0, 0],
+    n: [0.5, 0],
+    ne: [1, 0],
+    e: [1, 0.5],
+    se: [1, 1],
+    s: [0.5, 1],
+    sw: [0, 1],
+    w: [0, 0.5],
+  })[kind];
   if (!UV) return;
-  const at = (u, v) => [b.x + b.width * u, b.y + b.height * v],
+  const at = (u: number, v: number) => [b.x + b.width * u, b.y + b.height * v],
     Hl = at(UV[0], UV[1]),
     ax = UV[0] !== 0.5,
     ay = UV[1] !== 0.5;
@@ -106,13 +114,13 @@ export function handleDrag(kind?, p0?) {
     rad = (c.r * Math.PI) / 180,
     cs = Math.cos(rad),
     sn = Math.sin(rad);
-  const T = (pt, s, t) => {
+  const T = (pt: number[], s: number[], t: number[]) => {
     const dx = (pt[0] - o[0]) * s[0],
       dy = (pt[1] - o[1]) * s[1];
     return [t[0] + o[0] + dx * cs - dy * sn, t[1] + o[1] + dx * sn + dy * cs];
   };
   S.drag = {
-    move(p?, e?) {
+    move(p, e) {
       const A = e.ctrlKey || e.metaKey ? o : e.altKey ? at(0.5, 0.5) : at(1 - UV[0], 1 - UV[1]),
         TA = T(A, s0, t0),
         P = L(p);
@@ -150,7 +158,7 @@ export function handleDrag(kind?, p0?) {
     },
   };
 }
-export function newShape(t?) {
+export function newShape(t: string) {
   const col = nextColor(),
     base = t === 'rect' ? 'Rectangle' : t === 'ellipse' ? 'Ellipse' : 'Star',
     n = doc.layers.filter(l => l.name.startsWith(base)).length + 1;
@@ -158,7 +166,7 @@ export function newShape(t?) {
   if (t === 'ellipse') return mkLayer('ellipse', base + ' ' + n, { cx: 0, cy: 0, rx: 0, ry: 0 }, { fill: col });
   return mkLayer('path', base + ' ' + n, {}, { fill: col, d: [] });
 }
-export function setGeo(l?, t?, x?, y?, w?, h?, p0?, p?) {
+export function setGeo(l: Layer, t: string, x: number, y: number, w: number, h: number, p0: XY, p: XY) {
   if (t === 'rect') Object.assign(l.geo, { x: r2(x), y: r2(y), w: r2(w), h: r2(h) });
   else if (t === 'ellipse')
     Object.assign(l.geo, { cx: r2(x + w / 2), cy: r2(y + h / 2), rx: r2(w / 2), ry: r2(h / 2) });
@@ -167,10 +175,10 @@ export function setGeo(l?, t?, x?, y?, w?, h?, p0?, p?) {
     l.b.d = starNodes(r2(p0.x), r2(p0.y), r2(R), r2(R * 0.45), 5);
   }
 }
-export function addLayer(l?) {
+export function addLayer(l: Layer) {
   doc.layers.push(l);
   S.sel = l.id;
-  S.selSet = new Set<any>([l.id]);
+  S.selSet = new Set<string>([l.id]);
 }
 export function backToSelect() {
   S.tool = 'select';
@@ -178,11 +186,11 @@ export function backToSelect() {
   $('#hint').textContent = HINTS.select;
   renderTools();
 }
-export function createDrag(t?, p0?) {
+export function createDrag(t: string, p0: XY) {
   const ed = beginEdit();
-  let l = null;
+  let l: Layer | null = null;
   S.drag = {
-    move(p?, e?) {
+    move(p, e) {
       let x = Math.min(p0.x, p.x),
         y = Math.min(p0.y, p.y),
         w = Math.abs(p.x - p0.x),
@@ -214,7 +222,7 @@ export function createDrag(t?, p0?) {
     },
   };
 }
-export function createText(p?) {
+export function createText(p: XY) {
   const ed = beginEdit();
   const l = mkLayer(
     'text',
@@ -233,13 +241,13 @@ export function createText(p?) {
     }
   }, 0);
 }
-export function lum(c?) {
+export function lum(c: string) {
   const h = toHex(c);
   if (!h) return 1;
   const v = [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16) / 255);
   return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
 }
-export function penDown(p?) {
+export function penDown(p: XY) {
   if (!S.pen) S.pen = { nodes: [], hover: p };
   const n = S.pen.nodes;
   if (n.length >= 2 && Math.hypot(p.x - n[0][0], p.y - n[0][1]) * S.scale < 9) {
@@ -249,7 +257,7 @@ export function penDown(p?) {
   const q = N(r2(p.x), r2(p.y));
   n.push(q);
   S.drag = {
-    move(m?) {
+    move(m) {
       if (Math.hypot(m.x - q[0], m.y - q[1]) * S.scale < 3) return;
       q[4] = r2(m.x);
       q[5] = r2(m.y);
@@ -263,7 +271,7 @@ export function penDown(p?) {
   };
   drawOverlay();
 }
-export function finishPen(closed?) {
+export function finishPen(closed: boolean) {
   const P = S.pen;
   S.pen = null;
   if (!P || P.nodes.length < 2) {
@@ -283,7 +291,7 @@ export function finishPen(closed?) {
   backToSelect();
   ed.end({ insp: true });
 }
-export function nodeDrag([i, j, part], p0?) {
+export function nodeDrag([i, j, part]: number[], p0: XY) {
   const l = selLayer();
   if (!l || l.type !== 'path') return;
   const Mi = localMatrix(l).inverse(),
@@ -293,7 +301,7 @@ export function nodeDrag([i, j, part], p0?) {
   S.node = [i, j];
   const smooth = isSmooth(base[i].n[j]);
   S.drag = {
-    move(p?, e?) {
+    move(p, e) {
       const lp = xfp(Mi, p.x, p.y),
         dx = lp.x - lp0.x,
         dy = lp.y - lp0.y,
@@ -328,7 +336,7 @@ export function nodeDrag([i, j, part], p0?) {
   };
   frame();
 }
-export function toggleSmooth(i?, j?) {
+export function toggleSmooth(i: number, j: number) {
   const l = selLayer();
   if (!l) return;
   const ed = beginEdit(),

@@ -19,8 +19,6 @@ jobs:
         run: npm run format:check
       - name: Type-check
         run: npm run typecheck
-      - name: Type-check (noImplicitAny ratchet)
-        run: npm run typecheck:strict
       - name: Unit tests
         run: npm test
       - name: Build

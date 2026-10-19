@@ -11,12 +11,23 @@ export const CRC_T = (() => {
   }
   return t;
 })();
-export function crc32(u8?) {
+/** One entry to write into a zip. */
+export interface ZipInput {
+  name: string;
+  data: Uint8Array;
+  compress?: boolean;
+}
+export interface ZipReader {
+  names: string[];
+  get(name: string): Promise<Uint8Array | null>;
+  text(name: string): Promise<string | null>;
+}
+export function crc32(u8: Uint8Array) {
   let c = 0xffffffff;
   for (let i = 0; i < u8.length; i++) c = CRC_T[(c ^ u8[i]) & 255] ^ (c >>> 8);
   return (c ^ 0xffffffff) >>> 0;
 }
-export async function deflateRaw(u8?) {
+export async function deflateRaw(u8: Uint8Array): Promise<Uint8Array | null> {
   if (typeof CompressionStream === 'undefined') return null;
   try {
     return new Uint8Array(
@@ -26,16 +37,16 @@ export async function deflateRaw(u8?) {
     return null;
   }
 }
-export async function inflateRaw(u8?) {
+export async function inflateRaw(u8: Uint8Array): Promise<Uint8Array> {
   if (typeof DecompressionStream === 'undefined') throw new Error('this browser can’t unpack compressed project files');
   return new Uint8Array(
     await new Response(new Blob([u8]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer(),
   );
 }
-export async function makeZip(files?) {
+export async function makeZip(files: ZipInput[]): Promise<Blob> {
   const enc = new TextEncoder(),
-    parts = [],
-    central = [];
+    parts: Uint8Array[] = [],
+    central: Uint8Array[] = [];
   let off = 0;
   const d = new Date(),
     dt = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1),
@@ -90,7 +101,7 @@ export async function makeZip(files?) {
   end.setUint32(16, off, true);
   return new Blob([...parts, ...central, new Uint8Array(end.buffer)], { type: 'application/zip' });
 }
-export async function readZip(buf?) {
+export async function readZip(buf: ArrayBuffer): Promise<ZipReader> {
   const u8 = new Uint8Array(buf),
     dv = new DataView(buf);
   let e = -1;
@@ -102,7 +113,7 @@ export async function readZip(buf?) {
   if (e < 0) throw new Error('the file is damaged or not a Keyline project');
   const n = dv.getUint16(e + 10, true),
     dec = new TextDecoder(),
-    ent: any = {};
+    ent: Record<string, { method: number; data: Uint8Array }> = {};
   let p = dv.getUint32(e + 16, true);
   for (let i = 0; i < n; i++) {
     if (dv.getUint32(p, true) !== 0x02014b50) throw new Error('the file is damaged');
@@ -117,7 +128,7 @@ export async function readZip(buf?) {
     ent[name] = { method, data: u8.subarray(start, start + csz) };
     p += 46 + nl + xl + cl;
   }
-  const get = async name => {
+  const get = async (name: string) => {
     const f = ent[name];
     if (!f) return null;
     if (f.method === 0) return f.data;
@@ -127,13 +138,13 @@ export async function readZip(buf?) {
   return {
     names: Object.keys(ent),
     get,
-    text: async name => {
+    text: async (name: string) => {
       const d = await get(name);
       return d ? dec.decode(d) : null;
     },
   };
 }
-export const EXT_OF = {
+export const EXT_OF: Record<string, string> = {
   'image/png': 'png',
   'image/apng': 'png',
   'image/jpeg': 'jpg',
@@ -148,7 +159,7 @@ export const EXT_OF = {
   'image/jxl': 'jxl',
   'image/svg+xml': 'svg',
 };
-export function dataToBytes(d?) {
+export function dataToBytes(d: string) {
   const i = d.indexOf(','),
     meta = d.slice(5, i);
   if (/;base64/i.test(meta)) {
@@ -160,14 +171,14 @@ export function dataToBytes(d?) {
   return new TextEncoder().encode(decodeURIComponent(d.slice(i + 1)));
 }
 export function usedAssetIds() {
-  return new Set<any>(doc.layers.filter(l => l.type === 'image').map(l => l.geo.asset));
+  return new Set<string>(doc.layers.filter(l => l.type === 'image').map(l => l.geo.asset));
 }
-export async function buildKLP(includeAll?) {
+export async function buildKLP(includeAll?: boolean) {
   const enc = new TextEncoder(),
     used = usedAssetIds(),
     ids = Object.keys(ASSETS).filter(id => includeAll || used.has(id)),
-    index = [],
-    files = [];
+    index: Array<Record<string, unknown>> = [],
+    files: ZipInput[] = [];
   ids.forEach(id => {
     const a = ASSETS[id],
       ext = a.kind === 'svg' ? 'svg' : EXT_OF[a.mime] || 'bin',
