@@ -1,4 +1,5 @@
 // Keyline — tools/edit-tools
+import { bgPaint } from '../model/background';
 import type { Layer, XY } from '../model/types';
 import { $, FONTS, H, HINTS, byId, clone, fmt, r2, r3, xfp } from '../core/constants';
 import { INSP, WRAP } from '../core/dom';
@@ -228,7 +229,7 @@ export function createText(p: XY) {
     'text',
     'Text',
     { x: r2(p.x), y: r2(p.y), text: 'Text', size: 48, family: FONTS[0][0], weight: '600', anchor: 'start' },
-    { fill: doc.bg && lum(doc.bg) < 0.45 ? '#F3EEE4' : '#1A2030' },
+    { fill: darkBg() ? '#F3EEE4' : '#1A2030' },
   );
   addLayer(l);
   backToSelect();
@@ -240,6 +241,11 @@ export function createText(p: XY) {
       ta.select();
     }
   }, 0);
+}
+/** Is the canvas background dark enough that new text should be light? */
+export function darkBg() {
+  const p = bgPaint(doc);
+  return p.alpha >= 0.5 && lum(p.color) < 0.45;
 }
 export function lum(c: string) {
   const h = toHex(c);

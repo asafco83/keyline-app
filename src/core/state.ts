@@ -81,6 +81,7 @@ export function blankDoc(w: number, h: number): Doc {
     vx: 0,
     vy: 0,
     bg: '#FFFFFF',
+    bgA: 1,
     dur: 3,
     it: 0,
     dir: 'normal',

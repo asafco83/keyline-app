@@ -1,4 +1,5 @@
 // Keyline — render/stage
+import { bgPaint } from '../model/background';
 import type { Layer } from '../model/types';
 import { $, byId, r2 } from '../core/constants';
 import { ART, CONTENT, STAGE, WRAP } from '../core/dom';
@@ -21,13 +22,16 @@ export function renderStage() {
   bg.setAttribute('y', doc.vy || 0);
   bg.setAttribute('width', doc.w);
   bg.setAttribute('height', doc.h);
-  bg.setAttribute('fill', doc.bg || 'none');
+  const paint = bgPaint(doc);
+  bg.setAttribute('fill', paint.alpha > 0 ? paint.color : 'none');
+  if (paint.alpha > 0 && paint.alpha < 1) bg.setAttribute('fill-opacity', String(paint.alpha));
+  else bg.removeAttribute('fill-opacity');
   const ab = $('#abrect');
   ab.setAttribute('x', doc.vx || 0);
   ab.setAttribute('y', doc.vy || 0);
   ab.setAttribute('width', doc.w);
   ab.setAttribute('height', doc.h);
-  ART.classList.toggle('clear', !doc.bg);
+  ART.classList.toggle('clear', paint.alpha < 1);
   CONTENT.innerHTML = markup(doc.layers, null, {
     pre: 'e-',
     editor: true,
