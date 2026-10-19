@@ -6,7 +6,7 @@ import { beginEdit, setTime } from '../core/history';
 import { closeMenu } from '../core/keyframes';
 import { S, doc, layerById, sortTrack } from '../core/state';
 import { ancestors, hasTracks, isHidden, treeRows } from '../model/tree';
-import { frame } from '../render/stage';
+import { frame, tc } from '../render/stage';
 import { easeLabel } from './easing';
 import { renderInspector } from './inspector';
 import { renderLayers } from './layers-panel';
@@ -14,24 +14,33 @@ import { renderLayers } from './layers-panel';
 export function tln() {
   return parseFloat(getComputedStyle(TLB).getPropertyValue('--tln')) || 214;
 }
-export function ticks(W: number) {
+/** Seconds the timeline shows: at least the animation, and enough to fill the panel (SVGator-style);
+ *  the time after the end is shaded and its end line can be dragged to change the length. */
+export function shownSpan() {
+  const view = Math.max(0, (TLS.clientWidth || 800) - tln() - 24) / S.pps,
+    lastKey = doc.layers.reduce((m, l) => Math.max(m, ...Object.values(l.t).flatMap(tr => tr.map(q => q[0]))), 0);
+  return Math.max(doc.dur + 1, view, lastKey + 0.5);
+}
+export function ticks(W: number, span = doc.dur) {
   const pps = S.pps,
     minor = pps >= 260 ? 0.1 : pps >= 110 ? 0.25 : 0.5,
     major = pps >= 60 ? 1 : 2;
   let h = '';
-  for (let t = 0; t <= doc.dur + 1e-6; t = r3(t + minor)) {
+  for (let t = 0; t <= span + 1e-6; t = r3(t + minor)) {
     const mj = Math.abs(t / major - Math.round(t / major)) < 1e-6;
     h += `<div class="tk${mj ? ' mj' : ''}" style="left:${t * pps}px">${mj ? `<b>${fmt(t, 1)}s</b>` : ''}</div>`;
   }
-  return h + `<div class="tl-end" style="left:${W}px"></div>`;
+  return h + `<div class="tl-out" style="left:${W}px"></div>`;
 }
 export function renderTimeline() {
   const W = doc.dur * S.pps,
-    LW = W + 48,
+    span = shownSpan(),
+    LW = span * S.pps + 24,
+    out = `<div class="tl-out" style="left:${W}px"></div>`,
     list = treeRows()
       .map(r => r[0])
       .filter(hasTracks);
-  let h = `<div class="tl-row tl-ruler"><div class="tl-name">Animated layers</div><div class="tl-lane" id="ruler" style="width:${LW}px">${ticks(W)}</div></div>`;
+  let h = `<div class="tl-row tl-ruler"><div class="tl-name">Animated layers</div><div class="tl-lane" id="ruler" style="width:${LW}px">${ticks(W, span)}</div></div>`;
   if (!list.length)
     h += `<div class="tl-empty">Layers with keyframes appear here. Click ◆ beside a property in the inspector, or use Animate in the Layers panel, to start animating it. After that, changing it at any point in time adds a keyframe there.</div>`;
   for (const l of list) {
@@ -53,7 +62,7 @@ export function renderTimeline() {
           : ''
       }
       <span class="tl-lname" data-act="sel" title="Double-click to rename">${esc(l.name)}</span><span class="tl-type">${l.type}</span></div>
-      <div class="tl-lane" data-act="lane" style="width:${LW}px"><div class="tl-bar" style="width:${W}px"></div>${times
+      <div class="tl-lane" data-act="lane" style="width:${LW}px">${out}<div class="tl-bar" style="width:${W}px"></div>${times
         .map(t => {
           const kat = live.flatMap(k => l.t[k].filter(q => Math.abs(q[0] - t) < 0.004));
           return `<button class="sdot${kat.length && kat.every(q => S.keys.has(q)) ? ' sel' : ''}" data-lid="${l.id}" data-t="${t}" style="left:${t * S.pps}px" aria-label="All ${esc(l.name)} keyframes at ${fmt(t)}s" title="${fmt(t)}s · all keyframes"></button>`;
@@ -84,10 +93,13 @@ export function renderTimeline() {
         <button class="tl-ic tl-fz${fz ? ' on' : ''}" data-act="freeze" aria-pressed="${fz}" aria-label="${fz ? 'Unfreeze' : 'Freeze'} ${nm}" title="${fz ? `Frozen: ${nm} holds its value and its keyframes are not used. Click to unfreeze.` : `Freeze ${nm}: hold its current value and set the keyframes aside`}">${ICON.freeze}</button>
         <button class="kb" data-act="key" ${fz ? 'disabled ' : ''}aria-label="Add or remove ${nm} keyframe at playhead"></button>
         <button class="tl-ic tl-x" data-act="rmtrack" aria-label="Remove ${nm} animation">${ICON.x}</button></div>
-        <div class="tl-lane" data-act="lane" style="width:${LW}px">${segs}${keys}</div></div>`;
+        <div class="tl-lane" data-act="lane" style="width:${LW}px">${out}${segs}${keys}</div></div>`;
       }
   }
-  TLB.innerHTML = h + '<div class="tl-ph" id="playhead"></div>';
+  TLB.innerHTML =
+    h +
+    `<div class="tl-endline" id="tlEnd" style="left:${tln() + W}px" role="slider" aria-label="Animation length" aria-valuemin="0.1" aria-valuemax="600" aria-valuenow="${fmt(doc.dur)}" tabindex="0" title="Drag to change the animation length (${fmt(doc.dur)}s)"><span class="tl-endtip" id="tlEndTip" hidden></span></div>` +
+    '<div class="tl-ph" id="playhead"></div>';
   TLB.querySelectorAll('.kf,.seg').forEach((el: KfEl) => {
     const l = layerById(el.dataset.lid);
     el._k = (l.t[el.dataset.prop] || (l.ft && l.ft[el.dataset.prop]))[+el.dataset.i];
@@ -105,6 +117,8 @@ export function updatePlayhead() {
   const x = tln() + S.time * S.pps;
   ph.style.left = x + 'px';
   ph.style.visibility = x - TLS.scrollLeft < tln() - 1 ? 'hidden' : 'visible';
+  const end = $('#tlEnd');
+  if (end) end.style.visibility = tln() + doc.dur * S.pps - TLS.scrollLeft < tln() - 1 ? 'hidden' : 'visible';
   TLB.querySelectorAll('.tl-prop').forEach((r: HTMLElement) => {
     const l = layerById(r.dataset.lid),
       tr = l && l.t[r.dataset.prop];
@@ -122,6 +136,41 @@ export function updatePlayhead() {
     if (vx > TLS.clientWidth - 30) TLS.scrollLeft = x - tln() - 20;
     else if (vx < tln()) TLS.scrollLeft = Math.max(0, x - tln() - 20);
   }
+}
+/** Drag the end line: the animation length follows (snapped to 0.05s; Shift for 0.01s). */
+function endDrag(e0: PointerEvent) {
+  const ed = beginEdit(),
+    ruler = $('#ruler'),
+    x0 = ruler.getBoundingClientRect().left;
+  let tip = $('#tlEndTip');
+  const show = () => {
+    tip = $('#tlEndTip');
+    if (tip) {
+      tip.hidden = false;
+      tip.textContent = '⏱ ' + tc(doc.dur);
+    }
+    const n = $('#tDur');
+    if (n) n.value = fmt(doc.dur);
+  };
+  show();
+  dragWin(
+    ev => {
+      const raw = (ev.clientX - x0) / S.pps,
+        st = ev.shiftKey ? 0.01 : 0.05,
+        v = clamp(Math.round(raw / st) * st, 0.1, 600);
+      if (Math.abs(v - doc.dur) < 1e-6) return;
+      doc.dur = r3(v);
+      if (S.time > doc.dur) S.time = doc.dur;
+      renderTimeline();
+      $('#tlEnd').classList.add('drag');
+      show();
+      frame();
+    },
+    () => {
+      ed.end({ insp: true });
+    },
+  );
+  void e0;
 }
 export function laneTime(e: { clientX: number }, lane: Element) {
   const r = lane.getBoundingClientRect();
@@ -339,6 +388,27 @@ export function marquee(e: PointerEvent, lane: HTMLElement) {
 
 export function init(): void {
   TLS.addEventListener('scroll', () => updatePlayhead());
+  // the shown range fills the panel, so redraw when the panel changes size
+  let lastW = 0;
+  if (typeof ResizeObserver !== 'undefined')
+    new ResizeObserver(() => {
+      if (Math.abs(TLS.clientWidth - lastW) < 2) return;
+      lastW = TLS.clientWidth;
+      if (doc) renderTimeline();
+    }).observe(TLS);
+  // keyboard: ←/→ on the focused end line change the length
+  TLB.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (!(e.target as any).closest || !(e.target as any).closest('#tlEnd')) return;
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    e.stopPropagation();
+    const ed = beginEdit();
+    doc.dur = r3(clamp(doc.dur + (e.key === 'ArrowRight' ? 1 : -1) * (e.shiftKey ? 1 : 0.1), 0.1, 600));
+    if (S.time > doc.dur) S.time = doc.dur;
+    ed.end({ insp: true });
+    const n = $('#tlEnd');
+    if (n) n.focus();
+  });
   TLB.addEventListener('pointerdown', (e: PointerEvent) => {
     if (e.button !== 0) return;
     closeMenu();
@@ -375,6 +445,10 @@ export function init(): void {
       }
       keyDrag(e, S.keys.has(ks[0]) ? ks[0] : [...S.keys][0]);
       return;
+    }
+    if ((e.target as any).closest('#tlEnd')) {
+      e.preventDefault();
+      return endDrag(e);
     }
     const ruler = (e.target as any).closest('#ruler');
     if (ruler) {
