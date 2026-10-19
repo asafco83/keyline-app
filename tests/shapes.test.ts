@@ -28,3 +28,29 @@ describe('polygon and star settings', () => {
     expect(JSON.stringify(shapeD(poly({ rad: 1e6 })))).toBe(JSON.stringify(shapeD(poly({ rad: mx }))));
   });
 });
+
+describe('recognising older shapes', () => {
+  it('finds polygon and star settings from their points', async () => {
+    const { polygonNodes, starNodes, inferShape } = await import('../src/geometry/nodes');
+    const p = inferShape(polygonNodes(10, 20, 50, 7, 0));
+    expect(p).toMatchObject({ kind: 'polygon', n: 7, r: 50, cx: 10, cy: 20 });
+    const s = inferShape(starNodes(0, 0, 80, 36, 5, 0));
+    expect(s.kind).toBe('star');
+    expect(s.n).toBe(5);
+    expect(s.ratio).toBeCloseTo(0.45, 2);
+    // a blob is not a polygon
+    expect(
+      inferShape([
+        {
+          c: true,
+          n: [
+            [0, 0, 0, 0, 0, 0],
+            [10, 0, 10, 0, 10, 0],
+            [3, 7, 3, 7, 3, 7],
+            [0, 9, 0, 9, 0, 9],
+          ],
+        },
+      ]),
+    ).toBeNull();
+  });
+});

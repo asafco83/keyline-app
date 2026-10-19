@@ -18,7 +18,7 @@ import { FILTERS, addFilter, fxKey, removeFilter, syncFa } from '../model/filter
 import { H9 } from '../tools/edit-tools';
 import { colf, gnum, krow, nrow, num, renderInspector } from './inspector';
 import { isLine, liveShape, setShape } from '../tools/shapes';
-import { maxCornerRadius } from '../geometry/nodes';
+import { type ShapeParams, maxCornerRadius } from '../geometry/nodes';
 import { renderStage } from '../render/stage';
 
 const PAINTED = ['rect', 'ellipse', 'path', 'text'];
@@ -144,8 +144,9 @@ function applyShape(l: Layer, key: string, raw: number) {
   }
   const sh = liveShape(l);
   if (!sh) return;
-  const p = { ...sh };
+  const p: ShapeParams & { sig?: string } = { ...sh };
   delete p.sig;
+
   if (key === 'n') p.n = Math.round(Math.max(3, Math.min(24, raw)));
   if (key === 'ratio') p.ratio = Math.max(0.05, Math.min(0.95, raw));
   if (key === 'rad') p.rad = r2(Math.max(0, raw));
