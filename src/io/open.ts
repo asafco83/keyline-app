@@ -1,4 +1,5 @@
 // Keyline — io/open
+import type { Asset, BaseValues, Doc, Layer, OpenFile } from '../model/types';
 import { $, clamp } from '../core/constants';
 import { redo, save, setTime, undo } from '../core/history';
 import { togglePlay } from '../core/playback';
@@ -21,10 +22,10 @@ export function clearAssets() {
     delete ASSETS[id];
   });
 }
-export function applyProject(d?, assets?, file?) {
+export function applyProject(d: Partial<Doc>, assets: Record<string, Asset> | null, file: OpenFile | null) {
   S.loading = true;
   clearAssets();
-  Object.values<any>(assets || {}).forEach(a => {
+  Object.values(assets || {}).forEach(a => {
     if (!a || !a.id) return;
     ASSETS[a.id] = a;
     try {
@@ -44,7 +45,7 @@ export function applyProject(d?, assets?, file?) {
   S.loading = false;
   markClean();
 }
-export async function loadProjectFile(f?, handle?) {
+export async function loadProjectFile(f: File, handle: FileSystemFileHandle | null) {
   try {
     const buf = await f.arrayBuffer(),
       u8 = new Uint8Array(buf);
@@ -54,7 +55,7 @@ export async function loadProjectFile(f?, handle?) {
       if (man.format !== 'keyline-project') throw new Error('it isn’t a Keyline project');
       const d = JSON.parse(await z.text('project.json')),
         idx = JSON.parse((await z.text('assets/index.json')) || '[]'),
-        assets: any = {},
+        assets: Record<string, Asset> = {},
         dec = new TextDecoder();
       for (const a of idx) {
         const bytes = await z.get(a.file);
@@ -112,25 +113,25 @@ export async function openFlow() {
   }
   $('#fProj').click();
 }
-export function openProject(t?) {
+export function openProject(t: string) {
   loadProjectFile(new File([t], 'project.json', { type: 'application/json' }), null);
 }
-export function normalizeDoc(d?): any {
+export function normalizeDoc(d: Partial<Doc>): Doc {
   const o = Object.assign(blankDoc(d.w || 640, d.h || 400), d);
   o.ex = Object.assign(blankDoc(1, 1).ex, d.ex || {});
   o.ezPresets = d.ezPresets || [];
-  const ids = new Set<any>(o.layers.map(l => l.id));
-  o.layers.forEach(l => {
+  const ids = new Set<string>(o.layers.map((l: Layer) => l.id));
+  o.layers.forEach((l: Layer) => {
     l.t = l.t || {};
-    l.b = Object.assign({ pos: [0, 0], rot: 0, scl: [1, 1], op: 1 }, l.b || {});
+    l.b = Object.assign({ pos: [0, 0], rot: 0, scl: [1, 1], op: 1 } as BaseValues, l.b || {});
     l.extra = l.extra || {};
     l.geo = l.geo || {};
     if (!l.parent || !ids.has(l.parent) || l.parent === l.id) l.parent = null;
   });
   return o;
 }
-export let toastT = 0;
-export function toast(m?) {
+export let toastT: ReturnType<typeof setTimeout> | 0 = 0;
+export function toast(m: string) {
   const t = $('#toast');
   t.textContent = m;
   t.hidden = false;
@@ -140,7 +141,7 @@ export function toast(m?) {
 
 export function init(): void {
   $('#bOpen').addEventListener('click', openFlow);
-  $('#fProj').addEventListener('change', e => {
+  $('#fProj').addEventListener('change', (e: Event) => {
     const f = (e.target as any).files[0];
     (e.target as any).value = '';
     if (f) loadProjectFile(f, null);
@@ -150,7 +151,7 @@ export function init(): void {
   $('#bKeys').addEventListener('click', () => {
     $('#mKeys').hidden = false;
   });
-  $('#pname').addEventListener('change', e => {
+  $('#pname').addEventListener('change', (e: Event) => {
     doc.name = (e.target as any).value.trim() || 'Untitled animation';
     save();
   });
@@ -158,13 +159,13 @@ export function init(): void {
   $('#tStart').addEventListener('click', () => {
     setTime(0);
   });
-  $('#tLoop').addEventListener('click', e => {
+  $('#tLoop').addEventListener('click', (e: MouseEvent) => {
     S.loop = !S.loop;
-    e.currentTarget.classList.toggle('on', S.loop);
+    (e.currentTarget as HTMLElement).classList.toggle('on', S.loop);
   });
-  $('#tRec').addEventListener('click', e => {
+  $('#tRec').addEventListener('click', (e: MouseEvent) => {
     S.autokey = !S.autokey;
-    e.currentTarget.classList.toggle('on', S.autokey);
+    (e.currentTarget as HTMLElement).classList.toggle('on', S.autokey);
     frame();
     toast(
       S.autokey
@@ -172,8 +173,8 @@ export function init(): void {
         : 'Auto-key off: edits change the static value unless the property already has keyframes.',
     );
   });
-  $('#tDur').addEventListener('change', e => docField(e.target));
-  $('#tZoom').addEventListener('input', e => {
+  $('#tDur').addEventListener('change', (e: Event) => docField(e.target as HTMLInputElement));
+  $('#tZoom').addEventListener('input', (e: Event) => {
     S.pps = +(e.target as any).value;
     renderTimeline();
   });
@@ -192,9 +193,9 @@ export function init(): void {
     fit();
     frame();
   });
-  $('#zBones').addEventListener('click', e => {
+  $('#zBones').addEventListener('click', (e: MouseEvent) => {
     S.showBones = !S.showBones;
-    e.currentTarget.classList.toggle('on', S.showBones);
+    (e.currentTarget as HTMLElement).classList.toggle('on', S.showBones);
     frame();
   });
 }

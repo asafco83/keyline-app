@@ -1,4 +1,5 @@
 // Keyline — render/overlay
+import type { Layer, PathData, PathNode } from '../model/types';
 import { H, byId, fmt, r2, xfp } from '../core/constants';
 import { CONTENT, OV, svgEl } from '../core/dom';
 import { S, doc, layerById, selLayer } from '../core/state';
@@ -6,17 +7,17 @@ import { isHidden, isLocked, parentMatrix } from '../model/tree';
 import { drawBone } from '../tools/bones';
 import { cursorFor } from '../tools/edit-tools';
 
-export function toDoc(x?, y?) {
+export function toDoc(x: number, y: number) {
   return new DOMPoint(x, y).matrixTransform(CONTENT.getScreenCTM().inverse());
 }
-export function docPt(e?) {
+export function docPt(e: { clientX: number; clientY: number }) {
   return toDoc(e.clientX, e.clientY);
 }
-export function localMatrix(l?) {
+export function localMatrix(l: Layer): DOMMatrix {
   const s = byId('e-' + l.id + '-s');
   return CONTENT.getScreenCTM().inverse().multiply(s.getScreenCTM());
 }
-export function boxOf(l?) {
+export function boxOf(l: Layer) {
   const s = byId('e-' + l.id + '-s');
   if (!s) return null;
   const rc = s.getBoundingClientRect(),
@@ -24,11 +25,11 @@ export function boxOf(l?) {
     b = toDoc(rc.right, rc.bottom);
   return { x: a.x, y: a.y, w: Math.max(0, b.x - a.x), h: Math.max(0, b.y - a.y) };
 }
-export function gMatrix(l?) {
+export function gMatrix(l: Layer): DOMMatrix {
   const g = byId('e-' + l.id);
   return CONTENT.getScreenCTM().inverse().multiply(g.getScreenCTM());
 }
-export function obbOf(l?) {
+export function obbOf(l: Layer): DOMPoint[] | null {
   const s = byId('e-' + l.id);
   if (!s) return null;
   let b;
@@ -45,7 +46,7 @@ export function obbOf(l?) {
     [b.x, b.y + b.height],
   ].map(([x, y]) => xfp(M, x, y));
 }
-export function quadPts(q?) {
+export function quadPts(q: DOMPointReadOnly[]) {
   return q.map(p => r2(p.x) + ',' + r2(p.y)).join(' ');
 }
 export function drawOverlay() {
@@ -73,7 +74,7 @@ export function drawOverlay() {
   const Q = obbOf(l);
   if (!Q) return;
   const PM = parentMatrix(l),
-    mp = (x, y) => xfp(PM, x, y),
+    mp = (x: number, y: number) => xfp(PM, x, y),
     tr = l.t.pos,
     o = H.get(l, 'org', S.time) || [0, 0];
   if (tr && tr.length > 1) {
@@ -121,7 +122,7 @@ export function drawOverlay() {
   const ang = (Math.atan2(Q[1].y - Q[0].y, Q[1].x - Q[0].x) * 180) / Math.PI,
     mx = (Q[0].x + Q[2].x) / 2,
     my = (Q[0].y + Q[2].y) / 2;
-  const mid2 = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+  const mid2 = (a: DOMPointReadOnly, b: DOMPointReadOnly) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
   const H8: any[] = [
     ['nw', Q[0]],
     ['n', mid2(Q[0], Q[1])],
@@ -189,10 +190,10 @@ export function drawOverlay() {
     OV.append(t);
   }
 }
-export function drawNodes(l?, u?) {
+export function drawNodes(l: Layer, u: number) {
   const M = localMatrix(l),
-    d = H.get(l, 'd', S.time) || [],
-    P = (x, y) => xfp(M, x, y);
+    d: PathData = H.get(l, 'd', S.time) || [],
+    P = (x: number, y: number) => xfp(M, x, y);
   d.forEach((sp, i) =>
     sp.n.forEach((q, j) => {
       const A = P(q[0], q[1]),
@@ -225,8 +226,8 @@ export function drawNodes(l?, u?) {
     }),
   );
 }
-export function drawPen(u?) {
-  const n = S.pen.nodes;
+export function drawPen(u: number) {
+  const n: PathNode[] = S.pen.nodes;
   if (!n.length) return;
   OV.append(svgEl('path', { d: H.dstr([{ c: false, n }]), class: 'ov-pen' }));
   const l = n[n.length - 1],

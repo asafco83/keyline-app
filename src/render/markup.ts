@@ -1,8 +1,22 @@
 // Keyline — render/markup
+import type { Composite } from '../runtime/engine';
+import type { Layer } from '../model/types';
 import { H, esc, r3 } from '../core/constants';
 import { isBox, kids } from '../model/tree';
 
-export function attrs(o?) {
+/** How markup is produced: for the editor canvas or for an exported file. */
+export interface MarkupCtx {
+  /** element id prefix */
+  pre: string;
+  /** seconds */
+  t: number;
+  editor?: boolean;
+  /** editor: asset id → URL */
+  href?: (id: string) => string;
+  /** export: asset id → symbol id (or empty to skip) */
+  useImg?: (id: string) => string | null | undefined;
+}
+export function attrs(o: Record<string, unknown>) {
   let s = '';
   for (const k in o) {
     const v = o[k];
@@ -11,13 +25,13 @@ export function attrs(o?) {
   }
   return s;
 }
-export function tfStr(c?) {
+export function tfStr(c: Composite) {
   return `translate(${r3(c.x)},${r3(c.y)}) rotate(${r3(c.r)}) scale(${r3(c.sx)},${r3(c.sy)}) translate(${r3(-c.ox)},${r3(-c.oy)})`;
 }
-export function layerSVG(l?, ctx?, c?, children?) {
+export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: string) {
   const id = ctx.pre + l.id,
     G = l.geo;
-  const a = Object.assign({}, l.extra || {});
+  const a: Record<string, any> = Object.assign({}, l.extra || {});
   a.id = id + '-s';
   if (l.xf) a.transform = l.xf;
   if (c.fill != null) a.fill = c.fill;
@@ -28,7 +42,7 @@ export function layerSVG(l?, ctx?, c?, children?) {
     a['stroke-dasharray'] = '100 100';
     a['stroke-dashoffset'] = r3(100 - c.draw);
   }
-  let inner;
+  let inner: string;
   if (l.type === 'rect') {
     Object.assign(a, { x: G.x, y: G.y, width: G.w, height: G.h });
     if (G.rx) a.rx = G.rx;
@@ -63,7 +77,7 @@ export function layerSVG(l?, ctx?, c?, children?) {
   else inner = `<g${attrs(a)}>${G.markup || ''}</g>`;
   return `<g id="${id}" transform="${tfStr(c)}" opacity="${r3(c.op)}"${ctx.editor ? ` data-lid="${l.id}"` : ''}>${inner}</g>`;
 }
-export function markup(list?, pid?, ctx?) {
+export function markup(list: Layer[], pid: string | null, ctx: MarkupCtx): string {
   return kids(pid, list)
     .filter(l => !l.hid)
     .map(l => layerSVG(l, ctx, H.comp(l, ctx.t), isBox(l) ? markup(list, l.id, ctx) : ''))

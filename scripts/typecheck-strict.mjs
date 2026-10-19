@@ -4,7 +4,7 @@
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 
-const STRICT = ['src/runtime/', 'src/geometry/', 'src/model/', 'src/core/'];
+const STRICT = ['src/runtime/', 'src/geometry/', 'src/model/', 'src/core/', 'src/render/', 'src/io/'];
 
 const tsc = createRequire(import.meta.url).resolve('typescript/bin/tsc');
 const run = spawnSync(process.execPath, [tsc, '--noEmit', '--noImplicitAny', '--pretty', 'false'], {

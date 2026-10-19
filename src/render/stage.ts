@@ -1,4 +1,5 @@
 // Keyline — render/stage
+import type { Layer } from '../model/types';
 import { $, byId, r2 } from '../core/constants';
 import { ART, CONTENT, STAGE, WRAP } from '../core/dom';
 import { ASSETS, S, URLS, doc, eng, setEng } from '../core/state';
@@ -31,11 +32,11 @@ export function renderStage() {
     pre: 'e-',
     editor: true,
     t: S.time,
-    href: id => URLS[id] || (ASSETS[id] && ASSETS[id].data) || '',
+    href: (id: string) => URLS[id] || (ASSETS[id] && ASSETS[id].data) || '',
   });
   const vis = visibleLayers();
   setEng(KLEngine({ p: 'e-', L: vis, dur: doc.dur }, CONTENT));
-  const measure = l => {
+  const measure = (l: Layer) => {
     const g = byId('e-' + l.id);
     if (!g) return;
     try {
@@ -77,7 +78,7 @@ export function frame() {
   ART.classList.toggle('rec', rec);
   $('#recBadge').hidden = !rec;
 }
-export function tc(t?) {
+export function tc(t: number) {
   return `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, '0')}`;
 }
 export function renderAll() {

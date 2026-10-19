@@ -1,4 +1,5 @@
 // Keyline — io/svg-import
+import type { LayerType, PathData, PathNode } from '../model/types';
 import { FONTS, NOFILL, NS } from '../core/constants';
 import { beginEdit } from '../core/history';
 import { S, blankDoc, doc, mkLayer, setDoc, setIdc, syncIdc } from '../core/state';
@@ -7,8 +8,8 @@ import { parsePath } from '../geometry/parse-path';
 import { toast } from './open';
 import { fit, frame } from '../render/stage';
 
-export function parseStyle(s?) {
-  const o: any = {};
+export function parseStyle(s: unknown) {
+  const o: Record<string, string> = {};
   String(s || '')
     .split(';')
     .forEach(p => {
@@ -34,7 +35,7 @@ export const PRES = [
   'text-anchor',
   'letter-spacing',
 ];
-export function importSVG(text?, replace?, name?) {
+export function importSVG(text: string, replace?: boolean, name?: string) {
   let dom;
   try {
     dom = new DOMParser().parseFromString(text, 'image/svg+xml');
@@ -95,7 +96,7 @@ export function importSVG(text?, replace?, name?) {
     'marker',
   ];
   const SKIP = ['title', 'desc', 'metadata', 'script', 'namedview', 'foreignObject'];
-  function walk(node?, pid?, inh?) {
+  function walk(node: Element, pid: string | null, inh: Record<string, string>) {
     for (const el of Array.from<any>(node.children)) {
       const tag = el.localName;
       if (SKIP.includes(tag) || el.namespaceURI !== NS) continue;
@@ -145,7 +146,7 @@ export function importSVG(text?, replace?, name?) {
   );
   return true;
 }
-export function groupFromEl(el?) {
+export function groupFromEl(el: Element) {
   const at: any = {};
   for (const a of Array.from<any>(el.attributes)) at[a.name] = a.value;
   const st = parseStyle(at.style),
@@ -170,19 +171,19 @@ export function groupFromEl(el?) {
   g.extra = extra;
   return g;
 }
-export function elToLayer(el?, inh?, ser?) {
+export function elToLayer(el: Element, inh: Record<string, string>, ser: XMLSerializer) {
   const tag = el.localName,
     at: any = {};
   for (const a of Array.from<any>(el.attributes)) at[a.name] = a.value;
   const st = parseStyle(at.style);
   delete at.style;
-  const pv = n => (st[n] != null ? st[n] : at[n] != null ? at[n] : inh[n]);
+  const pv = (n: string) => (st[n] != null ? st[n] : at[n] != null ? at[n] : inh[n]);
   const name = at.id || at['inkscape:label'] || at['data-name'] || tag;
   const used = new Set<any>(['id', 'style', 'fill', 'stroke', 'stroke-width', 'opacity', 'transform']);
-  let type = null,
+  let type: LayerType | null = null,
     geo: any = {},
-    d = null;
-  const nf = v => parseFloat(v) || 0;
+    d: PathData | null = null;
+  const nf = (v: string) => parseFloat(v) || 0;
   if (tag === 'rect') {
     type = 'rect';
     geo = { x: nf(at.x), y: nf(at.y), w: nf(at.width), h: nf(at.height), rx: nf(at.rx || at.ry) };
@@ -210,7 +211,7 @@ export function elToLayer(el?, inh?, ser?) {
       .trim()
       .split(/[\s,]+/)
       .map(parseFloat);
-    const n = [];
+    const n: PathNode[] = [];
     for (let i = 0; i + 1 < v.length; i += 2) n.push(N(v[i], v[i + 1]));
     if (n.length < 2) return null;
     d = [{ c: tag === 'polygon', n }];
