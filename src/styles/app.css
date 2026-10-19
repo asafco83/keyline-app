@@ -1286,6 +1286,59 @@ textarea.ta:focus {
   font-size: 11px;
   margin-left: auto;
 }
+.lp-foot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-top: 1px solid var(--line);
+}
+.lp-foot .btn {
+  height: 30px;
+}
+.lp-foot .lp-anim-btn {
+  padding: 0 12px 0 9px;
+}
+.lp-foot .rl {
+  flex: 1;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+  padding-right: 4px;
+}
+.lp-foot .btn.ib {
+  background: transparent;
+  color: var(--fg);
+}
+.lp-foot .btn.ib:not(:disabled):hover {
+  background: var(--panel-2);
+}
+.lp-foot .btn:disabled,
+.lp-foot .btn:disabled:hover {
+  opacity: 0.38;
+  border-color: var(--line);
+}
+.lp-foot .btn.pri:disabled {
+  background: var(--panel-2);
+  color: var(--muted);
+}
+#animMenu .am-l {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+#animMenu .am-key {
+  width: 7px;
+  height: 7px;
+  transform: rotate(45deg);
+  border: 1.5px solid var(--muted);
+  opacity: 0.6;
+}
+#animMenu .am-key.has {
+  background: var(--key);
+  border-color: var(--key);
+  opacity: 1;
+}
 .lp {
   flex: 1;
   overflow: auto;

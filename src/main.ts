@@ -18,11 +18,13 @@ import { init as init14 } from './io/open';
 import { init as init15 } from './ui/keyboard';
 import { init as init16 } from './app/boot';
 import { init as initHand } from './tools/hand';
+import { init as initAnim } from './ui/animate-menu';
 
 // Same order as the original single-file build
 init0(); // ui/tools-rail
 init1(); // tools/stage-input
 initHand(); // tools/hand
+initAnim(); // ui/animate-menu
 init2(); // ui/layers-panel
 init3(); // ui/timeline
 init4(); // core/keyframes

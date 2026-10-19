@@ -1,4 +1,5 @@
 // Keyline — ui/layers-panel
+import { syncLayerActions } from './animate-menu';
 import type { Layer } from '../model/types';
 import { $, H, ICON, NOFILL, TICON, clone, esc, r2, r3 } from '../core/constants';
 import { LP } from '../core/dom';
@@ -38,8 +39,7 @@ export function renderLayers() {
       })
       .join('');
   const s = selLayer();
-  $('#lUngroup').hidden = !(s && s.type === 'group');
-  $('#lDel').hidden = !S.selSet.size;
+  syncLayerActions(s);
   $('#lCount').textContent = S.selSet.size > 1 ? `${S.selSet.size} selected` : '';
 }
 export function renameInline(el: HTMLElement, l: Layer) {

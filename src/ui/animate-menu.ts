@@ -1,0 +1,140 @@
+// Keyline — ui/animate-menu
+// The Animate button at the bottom of the Layers panel (as in SVGator): pick a property and every
+// selected layer that has it gets a keyframe at the playhead, so it joins the timeline.
+// Shortcuts: Shift + the letter shown next to each property.
+import type { Keyframe, Layer, PropKey } from '../model/types';
+import { $, H, ICON, clone, r3 } from '../core/constants';
+import { beginEdit } from '../core/history';
+import { propOK } from '../core/keyframes';
+import { S, layerById, sortTrack } from '../core/state';
+import { isLocked } from '../model/tree';
+
+/** Menu sections, in SVGator's order. Letters are Shift shortcuts (Shift+C is the Convert Point tool). */
+export const ANIM_GROUPS: Array<Array<[PropKey, string, string?]>> = [
+  [
+    ['pos', 'Position', 'P'],
+    ['org', 'Origin', 'A'],
+    ['scl', 'Scale', 'S'],
+    ['rot', 'Rotate', 'R'],
+  ],
+  [['op', 'Opacity', 'O']],
+  [['fill', 'Fill color']],
+  [
+    ['stk', 'Stroke color', 'B'],
+    ['sw', 'Stroke width', 'W'],
+    ['draw', 'Draw (stroke offset)', 'D'],
+  ],
+  [['d', 'Morph path', 'M']],
+];
+const BY_KEY: Record<string, PropKey> = {};
+ANIM_GROUPS.flat().forEach(([k, , key]) => key && (BY_KEY[key.toLowerCase()] = k));
+
+/** Selected layers that can be animated (unlocked). */
+export function animTargets(): Layer[] {
+  return [...S.selSet].map(id => layerById(id)).filter(l => l && !isLocked(l));
+}
+export function canAnimate() {
+  return animTargets().length > 0;
+}
+/** Add a keyframe for `k` at the playhead on every target that has the property. */
+export function animateProp(k: PropKey) {
+  const ls = animTargets().filter(l => propOK(l, k));
+  if (!ls.length) return false;
+  const ed = beginEdit(),
+    t = r3(S.time),
+    made: Keyframe[] = [];
+  ls.forEach(l => {
+    const tr = l.t[k] || (l.t[k] = []);
+    let q = tr.find(x => Math.abs(x[0] - t) < 0.005);
+    if (!q) {
+      q = [t, clone(H.get(l, k, S.time)), 'ease'];
+      tr.push(q);
+      sortTrack(tr);
+    }
+    made.push(q);
+    S.exp[l.id] = true;
+  });
+  S.keys = new Set(made);
+  ed.end({ insp: true });
+  return true;
+}
+/** Shift+letter shortcuts. Returns true when handled. */
+export function animateShortcut(e: KeyboardEvent) {
+  if (!e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return false;
+  const k = BY_KEY[(e.key || '').toLowerCase()];
+  if (!k || !canAnimate()) return false;
+  return animateProp(k);
+}
+
+const MENU = () => $('#animMenu') as HTMLElement;
+export function closeAnimMenu() {
+  const m = MENU();
+  if (!m || m.hidden) return;
+  m.hidden = true;
+  $('#lAnim').setAttribute('aria-expanded', 'false');
+}
+export function openAnimMenu() {
+  const ls = animTargets();
+  if (!ls.length) return;
+  const m = MENU(),
+    btn = $('#lAnim') as HTMLElement;
+  m.innerHTML = ANIM_GROUPS.map(g =>
+    g
+      .filter(([k]) => ls.some(l => propOK(l, k)))
+      .map(([k, label, key]) => {
+        const has = ls.some(l => l.t[k] && l.t[k].length);
+        return `<button role="menuitem" data-k="${k}"><span class="am-l"><i class="am-key${has ? ' has' : ''}" aria-hidden="true"></i>${label}</span><kbd>${key ? '⇧ ' + key : ''}</kbd></button>`;
+      })
+      .join(''),
+  )
+    .filter(Boolean)
+    .join('<hr>');
+  m.hidden = false;
+  btn.setAttribute('aria-expanded', 'true');
+  // open upwards from the button, kept inside the window
+  const r = btn.getBoundingClientRect(),
+    mr = m.getBoundingClientRect();
+  m.style.left = Math.max(4, Math.min(r.left, innerWidth - mr.width - 4)) + 'px';
+  m.style.top = Math.max(4, r.top - mr.height - 6) + 'px';
+  const first = m.querySelector<HTMLElement>('button');
+  if (first) first.focus();
+}
+/** Enable or grey out the panel's action buttons for the current selection. */
+export function syncLayerActions(sel: Layer | null | undefined) {
+  ($('#lAnim') as HTMLButtonElement).disabled = !canAnimate();
+  ($('#lUngroup') as HTMLButtonElement).disabled = !(sel && sel.type === 'group' && !isLocked(sel));
+  ($('#lDel') as HTMLButtonElement).disabled = !S.selSet.size;
+  if (!canAnimate()) closeAnimMenu();
+}
+
+export function init(): void {
+  $('#lAnimIc').innerHTML = ICON.animate;
+  $('#lGroup').innerHTML = ICON.group;
+  $('#lUngroup').innerHTML = ICON.ungroup;
+  $('#lAnim').addEventListener('click', () => (MENU().hidden ? openAnimMenu() : closeAnimMenu()));
+  MENU().addEventListener('click', (e: MouseEvent) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-k]');
+    if (!b) return;
+    closeAnimMenu();
+    animateProp(b.dataset.k as PropKey);
+  });
+  MENU().addEventListener('keydown', (e: KeyboardEvent) => {
+    const items = [...MENU().querySelectorAll<HTMLElement>('button')],
+      i = items.indexOf(document.activeElement as HTMLElement);
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      items[(i + (e.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length].focus();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      closeAnimMenu();
+      ($('#lAnim') as HTMLElement).focus();
+    } else if (e.key === 'Tab') closeAnimMenu();
+  });
+  document.addEventListener('pointerdown', (e: PointerEvent) => {
+    const t = e.target as HTMLElement;
+    if (!t.closest('#animMenu') && !t.closest('#lAnim')) closeAnimMenu();
+  });
+  window.addEventListener('blur', closeAnimMenu);
+  window.addEventListener('resize', closeAnimMenu);
+}

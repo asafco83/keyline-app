@@ -115,6 +115,11 @@ tests/                   Vitest: runtime player and easing, zip container, path 
 
 Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to go back to Select.
 
+**Layers panel actions** sit at the bottom of the panel and grey out when they don't apply:
+
+- **Animate** opens a menu of the properties the selected layers can animate. Picking one adds a keyframe at the playhead. Shortcuts: Shift+P position, Shift+A origin, Shift+S scale, Shift+R rotate, Shift+O opacity, Shift+B stroke color, Shift+W stroke width, Shift+D draw, Shift+M morph. Fill color has no shortcut, because Shift+C is the Convert Point tool.
+- **Ungroup** (Ctrl+Shift+G), **Group** (Ctrl+G; with nothing selected it adds an empty group) and **Delete**.
+
 ## The `.klp` project format
 
 A `.klp` file is a standard zip archive:
