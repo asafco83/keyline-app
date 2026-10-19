@@ -63,16 +63,23 @@ export function renderStage() {
   }
   fit();
 }
+/** Zoom limits for the work area (screen px per document unit). */
+export const MIN_SCALE = 0.02,
+  MAX_SCALE = 32;
+/** The scale at which the whole artboard fits the work area. */
+export function fitScale() {
+  const r = WRAP.getBoundingClientRect();
+  return Math.max(1e-3, Math.min((r.width - 64) / doc.w, (r.height - 64) / doc.h));
+}
 export function fit() {
   const r = WRAP.getBoundingClientRect();
   if (!r.width) return;
-  const base = Math.min((r.width - 64) / doc.w, (r.height - 64) / doc.h);
-  S.scale = Math.max(0.05, base * S.zoom);
+  S.scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, fitScale() * S.zoom));
   ART.style.width = doc.w * S.scale + 'px';
   ART.style.height = doc.h * S.scale + 'px';
   ART.style.marginLeft = (-doc.w * S.scale) / 2 + 'px';
   ART.style.marginTop = (-doc.h * S.scale) / 2 + 'px';
-  $('#zVal').textContent = Math.round(S.scale * 100) + '%';
+  $('#zValT').textContent = Math.round(S.scale * 100) + '%';
 }
 export function frame() {
   if (eng) eng.apply(S.time);

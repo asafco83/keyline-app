@@ -1,10 +1,12 @@
 // Keyline — tools/hand
+import { zoomChanged } from '../ui/zoom-menu';
 // Panning and zooming the work area: the Hand tool (H), Space-drag from any tool,
 // middle-mouse drag, wheel to scroll, Ctrl/Cmd+wheel to zoom at the pointer.
 import { clamp } from '../core/constants';
 import { ART, WRAP } from '../core/dom';
 import { S, doc } from '../core/state';
-import { fit, frame } from '../render/stage';
+import { MAX_SCALE, MIN_SCALE, fit, fitScale, frame } from '../render/stage';
+import { isHidden } from '../model/tree';
 
 /** Keep at least this much of the artboard on screen (px). */
 const KEEP = 48;
@@ -29,6 +31,7 @@ export function applyPan() {
   applied.x = S.pan.x;
   applied.y = S.pan.y;
   ART.style.transform = S.pan.x || S.pan.y ? `translate(${S.pan.x}px, ${S.pan.y}px)` : '';
+  zoomChanged();
 }
 export function panBy(dx: number, dy: number) {
   S.pan.x += dx;
@@ -44,7 +47,8 @@ export function zoomAt(factor: number, cx?: number, cy?: number) {
     py = cy == null ? wr.top + wr.height / 2 : cy,
     dx = (px - ar.left) / S.scale,
     dy = (py - ar.top) / S.scale;
-  S.zoom = clamp(S.zoom * factor, 0.1, 8);
+  const base = fitScale();
+  S.zoom = clamp(S.zoom * factor, MIN_SCALE / base, MAX_SCALE / base);
   fit();
   const b = baseRect();
   S.pan.x = px - dx * S.scale - b.left;
@@ -58,6 +62,57 @@ export function fitView() {
   fit();
   applyPan();
   frame();
+}
+/** Zoom to an absolute scale (1 = 100%), around the view centre. */
+export function zoomTo(scale: number) {
+  zoomAt(scale / S.scale);
+}
+export function isFitView() {
+  return Math.abs(S.zoom - 1) < 1e-6 && !S.pan.x && !S.pan.y;
+}
+/** Visible selected layers, for Fit selection. */
+export function fitSelectionTargets() {
+  return [...S.selSet].filter(id => {
+    const l = doc.layers.find(x => x.id === id);
+    return l && !isHidden(l) && document.getElementById('e-' + id);
+  });
+}
+/** Zoom and pan so the selected layers fill the work area. */
+export function fitSelection() {
+  const ids = fitSelectionTargets();
+  if (!ids.length) return false;
+  let L = Infinity,
+    T = Infinity,
+    R = -Infinity,
+    B = -Infinity;
+  ids.forEach(id => {
+    const r = document.getElementById('e-' + id).getBoundingClientRect();
+    if (!r.width && !r.height) return;
+    L = Math.min(L, r.left);
+    T = Math.min(T, r.top);
+    R = Math.max(R, r.right);
+    B = Math.max(B, r.bottom);
+  });
+  if (!isFinite(L)) return false;
+  const wr = WRAP.getBoundingClientRect(),
+    ar = ART.getBoundingClientRect(),
+    s0 = S.scale,
+    // the selection's box in document units
+    x0 = (L - ar.left) / s0,
+    y0 = (T - ar.top) / s0,
+    bw = Math.max(1, (R - L) / s0),
+    bh = Math.max(1, (B - T) / s0),
+    target = clamp(Math.min((wr.width - 96) / bw, (wr.height - 96) / bh), MIN_SCALE, MAX_SCALE),
+    base = fitScale();
+  S.zoom = target / base;
+  fit();
+  const b = baseRect();
+  // centre the selection in the work area
+  S.pan.x = wr.left + wr.width / 2 - (x0 + bw / 2) * S.scale - b.left;
+  S.pan.y = wr.top + wr.height / 2 - (y0 + bh / 2) * S.scale - b.top;
+  applyPan();
+  frame();
+  return true;
 }
 /** Start a pan gesture from a pointerdown. */
 export function panDrag(e: PointerEvent) {

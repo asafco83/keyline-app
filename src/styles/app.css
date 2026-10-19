@@ -592,11 +592,72 @@ button {
 .zoom .btn.on {
   color: var(--accent);
 }
-.zoom span {
+.zoom .zv {
+  position: relative;
+  padding: 0 14px 0 8px;
   font: 500 11px var(--f-num);
-  min-width: 42px;
-  text-align: center;
+  min-width: 58px;
   font-variant-numeric: tabular-nums;
+}
+.zoom .zv .tri {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  margin-top: -2px;
+  border-left: 3.5px solid transparent;
+  border-right: 3.5px solid transparent;
+  border-top: 4px solid currentColor;
+  opacity: 0.6;
+}
+.zoom-menu {
+  min-width: 220px;
+}
+.zoom-menu .zm-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 4px;
+}
+.zoom-menu input[type='range'] {
+  flex: 1;
+  accent-color: var(--accent);
+}
+.zoom-menu .zm-num {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-2);
+  padding: 0 6px;
+  height: 26px;
+}
+.zoom-menu .zm-num input {
+  width: 38px;
+  border: 0;
+  background: transparent;
+  font: 500 12px var(--f-num);
+  color: var(--fg);
+  text-align: right;
+  outline: none;
+}
+.zoom-menu .zm-num:focus-within {
+  border-color: var(--accent);
+}
+.zoom-menu .zm-num em {
+  font-style: normal;
+  color: var(--muted);
+  font-size: 11px;
+}
+.zoom-menu .zm-l {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.zoom-menu .ck {
+  width: 12px;
+  text-align: center;
+  font-size: 12px;
 }
 .badge-rec {
   position: absolute;

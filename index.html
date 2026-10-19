@@ -72,6 +72,7 @@
             <button class="btn ib" id="lDel" aria-label="Delete" title="Delete selected layers (Del)"></button>
           </div>
           <div class="ctx" id="animMenu" role="menu" aria-label="Animate property" hidden></div>
+          <div class="ctx zoom-menu" id="zoomMenu" role="menu" aria-label="Zoom" hidden></div>
         </div>
         <div class="pane" id="paneAssets" hidden>
           <div class="side-act">
@@ -98,9 +99,10 @@
           <div class="hint" id="hint"></div>
           <div class="zoom">
             <button class="btn ib" id="zOut" aria-label="Zoom out">−</button>
-            <span id="zVal">100%</span>
+            <button class="btn zv" id="zVal" aria-haspopup="menu" aria-expanded="false" title="Zoom options">
+              <span id="zValT">100%</span><i class="tri" aria-hidden="true"></i>
+            </button>
             <button class="btn ib" id="zIn" aria-label="Zoom in">+</button>
-            <button class="btn" id="zFit">Fit</button>
             <button class="btn on" id="zBones" title="Show or hide bones on the canvas">Bones</button>
           </div>
         </div>
