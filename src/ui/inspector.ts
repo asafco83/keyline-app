@@ -13,7 +13,7 @@ import { fit, frame, renderStage } from '../render/stage';
 import { addChildBone, boneTipL, shiftChildBones } from '../tools/bones';
 import { H9, setAnchor } from '../tools/edit-tools';
 import { applyEase, bezOf, drawEz, easeFam, famName, keyPanel, parseBez, sameEase } from './easing';
-import { arrange, deleteSel, duplicate, groupSel, moveLayers, ungroup } from './layers-panel';
+import { deleteSel, groupSel, moveLayers, ungroup } from './layers-panel';
 import { dragWin } from './timeline';
 
 export function num(f: string, lab: string, unit?: string) {
@@ -131,7 +131,6 @@ export function renderInspector() {
       h += `<section class="sec"><h3>Rig</h3>${nrow('Attach to bone', `<select class="sel" id="attachBone"><option value="">Not attached</option>${bones.map(b => `<option value="${b.id}"${b.id === cur ? ' selected' : ''}>${esc(b.name)}</option>`).join('')}</select>`)}</section>`;
     }
   }
-  h += `<section class="sec"><h3>Arrange</h3><div class="btns"><button class="btn" data-act="fwd">Bring forward</button><button class="btn" data-act="back">Send backward</button><button class="btn" data-act="dup">Duplicate</button><button class="btn danger" data-act="del">Delete</button></div></section>`;
   INSP.innerHTML = h;
   refreshInspector(true);
   drawEz();
@@ -530,11 +529,6 @@ export function init(): void {
       const ed = beginEdit();
       subdivideAll(l);
       ed.end({ insp: true });
-    } else if (a === 'fwd' || a === 'back') arrange(l, a === 'fwd' ? 1 : -1);
-    else if (a === 'dup') duplicate(l);
-    else if (a === 'del') {
-      S.selSet = new Set<any>([l.id]);
-      deleteSel();
     } else if (a === 'delsel') deleteSel();
     else if (a === 'grp') groupSel();
     else if (a === 'ungroup') ungroup(l);
