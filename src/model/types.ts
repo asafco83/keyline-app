@@ -126,7 +126,10 @@ export interface Doc {
   h: number;
   vx: number;
   vy: number;
+  /** background colour; empty means transparent */
   bg: string;
+  /** background opacity 0–1 (default 1) */
+  bgA?: number;
   /** seconds */
   dur: number;
   /** iterations, 0 = infinite */

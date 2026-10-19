@@ -1,4 +1,5 @@
 // Keyline — ui/inspector
+import { bgPaint, parseBg, setBg } from '../model/background';
 import type { Ease, Layer, PathData, PropKey, Vec2 } from '../model/types';
 import { $, EZFAM, FONTS, H, PROPS, byId, clamp, clone, esc, fmt, r2, r3, xfp } from '../core/constants';
 import { INSP } from '../core/dom';
@@ -139,6 +140,7 @@ export function docPanel() {
   return `<section class="sec"><h3>Document</h3>
     ${nrow('Canvas', `<label class="nf"><span>W</span><input id="d-w" data-doc="w" inputmode="numeric"></label><label class="nf"><span>H</span><input id="d-h" data-doc="h" inputmode="numeric"></label>`)}
     ${nrow('Background', `<div class="cf"><input type="color" id="d-bgc" data-doc="bg" aria-label="Background color"><input class="txt mono" id="d-bg" data-doc="bg" placeholder="none" spellcheck="false" aria-label="Background value"></div>`)}
+    ${nrow('Opacity', `<label class="nf" title="0% makes the background transparent"><span>α</span><input id="d-bga" data-doc="bgA" inputmode="decimal" aria-label="Background opacity"><em>%</em></label>`)}
     ${nrow('Length', `<label class="nf"><span>t</span><input id="d-dur" data-doc="dur" inputmode="decimal"><em>s</em></label>`)}
     ${nrow('Repeat', `<select class="sel" id="d-it" data-doc="it"><option value="0">Loop forever</option><option value="1">Play once</option><option value="2">2 times</option><option value="3">3 times</option><option value="5">5 times</option></select>`)}
     ${nrow('Direction', `<select class="sel" id="d-dir" data-doc="dir"><option value="normal">Normal</option><option value="alternate">Alternate</option><option value="reverse">Reverse</option><option value="alternate-reverse">Reverse, then alternate</option></select>`)}</section>
@@ -156,8 +158,10 @@ export function refreshDocFields() {
   };
   set('d-w', doc.w);
   set('d-h', doc.h);
-  set('d-bg', doc.bg || '');
-  set('d-bgc', toHex(doc.bg) || '#ffffff');
+  const bp = bgPaint(doc);
+  set('d-bg', doc.bg ? bp.color : 'none');
+  set('d-bgc', toHex(bp.color) || '#ffffff');
+  set('d-bga', fmt(bp.alpha * 100, 1));
   set('d-dur', fmt(doc.dur));
   set('d-it', String(doc.it || 0));
   set('d-dir', doc.dir);
@@ -300,8 +304,12 @@ export function docField(t: HTMLInputElement) {
       S.time = Math.min(S.time, doc.dur);
     }
   } else if (k === 'bg') {
-    const v = t.value.trim();
-    doc.bg = !v || v === 'none' || v === 'transparent' ? '' : v;
+    setBg(doc, parseBg(t.value, bgPaint(doc)));
+  } else if (k === 'bgA') {
+    const v = parseFloat(t.value);
+    if (isFinite(v)) {
+      setBg(doc, { color: bgPaint(doc).color, alpha: clamp(v, 0, 100) / 100 });
+    }
   } else if (k === 'it') doc.it = parseInt(t.value) || 0;
   else if (k === 'dir') doc.dir = t.value;
   ed.end();
@@ -323,7 +331,9 @@ export function init(): void {
     }
     if (t.id === 'd-bgc') {
       if (!S.colorEd) S.colorEd = beginEdit();
-      doc.bg = t.value;
+      const cur = bgPaint(doc);
+      setBg(doc, { color: t.value, alpha: cur.alpha > 0 ? cur.alpha : 1 });
+      refreshDocFields();
       renderStage();
       frame();
     }

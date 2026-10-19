@@ -1,4 +1,5 @@
 // Keyline — export/build
+import { bgAttrs } from '../model/background';
 import type { Composite } from '../runtime/engine';
 import type { Layer } from '../model/types';
 import type { MarkupCtx } from '../render/markup';
@@ -177,8 +178,9 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
   let out = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="${svgId}" viewBox="${doc.vx || 0} ${doc.vy || 0} ${doc.w} ${doc.h}" ${size} shape-rendering="geometricPrecision" text-rendering="geometricPrecision">`;
   out += `<title>${esc(doc.name)}</title>`;
   if (doc.defs || syms) out += `<defs>${doc.defs || ''}${syms}</defs>`;
-  if (doc.bg)
-    out += `<rect x="${doc.vx || 0}" y="${doc.vy || 0}" width="${doc.w}" height="${doc.h}" fill="${esc(doc.bg)}"/>`;
+  const bga = bgAttrs(doc);
+  if (bga)
+    out += `<rect x="${doc.vx || 0}" y="${doc.vy || 0}" width="${doc.w}" height="${doc.h}" fill="${esc(bga.fill)}"${bga['fill-opacity'] != null ? ` fill-opacity="${bga['fill-opacity']}"` : ''}/>`;
   out += body;
   if (anim.length) {
     if (ex.mode === 'css') out += `<style>${cssFor(anim, pre, svgId)}</style>`;
