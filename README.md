@@ -115,6 +115,8 @@ tests/                   Vitest: runtime player and easing, zip container, path 
 
 Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to go back to Select.
 
+**Zoom:** click the percentage at the bottom of the work area for a menu with a slider (2%–3200%), a typed value, _Fit selection_ (2), _Fit_ (1), _Zoom 100%_ (0), _Zoom in_ (Ctrl +) and _Zoom out_ (Ctrl −). The − / + buttons beside it step the zoom; Ctrl+wheel zooms at the pointer.
+
 **Layers panel actions** sit at the bottom of the panel and grey out when they don't apply:
 
 - **Animate** opens a menu of the properties the selected layers can animate. Picking one adds a keyframe at the playhead. Shortcuts: Shift+P position, Shift+A origin, Shift+S scale, Shift+R rotate, Shift+O opacity, Shift+B stroke color, Shift+W stroke width, Shift+D draw, Shift+M morph. Fill color has no shortcut, because Shift+C is the Convert Point tool.

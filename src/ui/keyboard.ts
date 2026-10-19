@@ -1,4 +1,5 @@
 // Keyline — ui/keyboard
+import { zoomShortcut } from './zoom-menu';
 import { animateShortcut } from './animate-menu';
 import { pickTool } from './tools-rail';
 import { setSpace } from '../tools/hand';
@@ -72,6 +73,10 @@ export function init(): void {
     }
     if (typing) return;
     if ([...(document.querySelectorAll as any)('.modal')].some(x => !x.hidden)) return;
+    if (zoomShortcut(e)) {
+      e.preventDefault();
+      return;
+    }
     const mod = e.ctrlKey || e.metaKey,
       l = selLayer(),
       k = e.key;
