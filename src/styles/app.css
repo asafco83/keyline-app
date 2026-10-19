@@ -2123,3 +2123,32 @@ details summary {
 .sec p.muted {
   font-style: italic;
 }
+
+/* narrow inspector: give the numbers room */
+#insp {
+  container-type: inline-size;
+}
+@container (max-width: 300px) {
+  .sec {
+    padding: 12px 10px;
+  }
+  .row {
+    grid-template-columns: 14px 58px minmax(0, 1fr);
+    gap: 4px;
+  }
+  .row.nk {
+    grid-template-columns: 76px minmax(0, 1fr);
+  }
+  .rf {
+    gap: 4px;
+  }
+  .rf .nf em {
+    display: none;
+  }
+  .rf .nf {
+    padding: 0 4px;
+  }
+  .rf .btn.ib {
+    width: 24px;
+  }
+}
