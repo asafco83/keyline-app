@@ -6,7 +6,7 @@ import { S, doc, layerById, selLayer, setDoc, sortTrack, syncIdc } from './state
 import { markDirty } from '../io/file-state';
 import { ancestors, treeRows } from '../model/tree';
 import { frame, renderAll, renderStage } from '../render/stage';
-import { finishPen } from '../tools/edit-tools';
+import { finishPen, toolCursor } from '../tools/pen';
 import { renderInspector } from '../ui/inspector';
 import { renderLayers } from '../ui/layers-panel';
 import { renderTimeline } from '../ui/timeline';
@@ -197,8 +197,10 @@ export function setTime(t: number) {
 export function setTool(t: Tool) {
   if (S.pen && t !== 'pen') finishPen(false);
   S.tool = t;
+  S.penHint = null;
   renderTools();
-  WRAP.className = 't-' + t;
+  WRAP.className = 't-' + t + (S.spaceHeld ? ' space' : '');
+  toolCursor();
   $('#hint').textContent = HINTS[t];
   frame();
 }

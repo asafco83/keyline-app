@@ -1,4 +1,5 @@
 // Keyline — io/open
+import { fitView, zoomAt } from '../tools/hand';
 import type { Asset, BaseValues, Doc, Layer, OpenFile } from '../model/types';
 import { $, clamp } from '../core/constants';
 import { redo, save, setTime, undo } from '../core/history';
@@ -178,21 +179,9 @@ export function init(): void {
     S.pps = +(e.target as any).value;
     renderTimeline();
   });
-  $('#zIn').addEventListener('click', () => {
-    S.zoom = clamp(S.zoom * 1.25, 0.1, 8);
-    fit();
-    frame();
-  });
-  $('#zOut').addEventListener('click', () => {
-    S.zoom = clamp(S.zoom / 1.25, 0.1, 8);
-    fit();
-    frame();
-  });
-  $('#zFit').addEventListener('click', () => {
-    S.zoom = 1;
-    fit();
-    frame();
-  });
+  $('#zIn').addEventListener('click', () => zoomAt(1.25));
+  $('#zOut').addEventListener('click', () => zoomAt(1 / 1.25));
+  $('#zFit').addEventListener('click', fitView);
   $('#zBones').addEventListener('click', (e: MouseEvent) => {
     S.showBones = !S.showBones;
     (e.currentTarget as HTMLElement).classList.toggle('on', S.showBones);

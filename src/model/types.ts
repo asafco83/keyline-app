@@ -189,6 +189,8 @@ export interface Drag {
   /** where to draw the label */
   lp?: XY;
   rot?: any;
+  /** keys pressed during the gesture (e.g. ↑/↓ for polygon sides); return true if handled */
+  key?(k: string, e: KeyboardEvent): boolean;
 }
 
 /** Transient editor state (not saved with the project). */
@@ -239,4 +241,18 @@ export interface EditorState {
   saveAll?: boolean;
   pickPlace?: boolean;
   lastPt?: XY;
+  /** work-area pan offset in screen px */
+  pan: XY;
+  /** Space held: temporary hand tool */
+  spaceHeld?: boolean;
+  /** the Space press was used for panning or a tool, so releasing it doesn't toggle playback */
+  spaceUsed?: boolean;
+  /** last tool used in each toolbar group */
+  toolGroup: Record<string, string>;
+  polySides: number;
+  starPoints: number;
+  /** pencil stroke in progress (document coordinates) */
+  pencil?: XY[] | null;
+  /** what the pen would do under the pointer (for the overlay) */
+  penHint?: { kind: string; x: number; y: number } | null;
 }

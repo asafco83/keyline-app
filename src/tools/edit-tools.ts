@@ -10,7 +10,7 @@ import { parentMatrix } from '../model/tree';
 import { drawOverlay, gMatrix, localMatrix } from '../render/overlay';
 import { frame, renderStage } from '../render/stage';
 import { reOrigin, toHex } from '../ui/inspector';
-import { renderTools } from '../ui/tools-rail';
+import { addLayer, backToSelect } from './shapes';
 
 export function cursorFor(dx: number, dy: number) {
   let a = (Math.atan2(dy, dx) * 180) / Math.PI;
@@ -159,70 +159,6 @@ export function handleDrag(kind: string, p0: XY) {
     },
   };
 }
-export function newShape(t: string) {
-  const col = nextColor(),
-    base = t === 'rect' ? 'Rectangle' : t === 'ellipse' ? 'Ellipse' : 'Star',
-    n = doc.layers.filter(l => l.name.startsWith(base)).length + 1;
-  if (t === 'rect') return mkLayer('rect', base + ' ' + n, { x: 0, y: 0, w: 0, h: 0, rx: 0 }, { fill: col });
-  if (t === 'ellipse') return mkLayer('ellipse', base + ' ' + n, { cx: 0, cy: 0, rx: 0, ry: 0 }, { fill: col });
-  return mkLayer('path', base + ' ' + n, {}, { fill: col, d: [] });
-}
-export function setGeo(l: Layer, t: string, x: number, y: number, w: number, h: number, p0: XY, p: XY) {
-  if (t === 'rect') Object.assign(l.geo, { x: r2(x), y: r2(y), w: r2(w), h: r2(h) });
-  else if (t === 'ellipse')
-    Object.assign(l.geo, { cx: r2(x + w / 2), cy: r2(y + h / 2), rx: r2(w / 2), ry: r2(h / 2) });
-  else {
-    const R = Math.max(4, Math.hypot(p.x - p0.x, p.y - p0.y));
-    l.b.d = starNodes(r2(p0.x), r2(p0.y), r2(R), r2(R * 0.45), 5);
-  }
-}
-export function addLayer(l: Layer) {
-  doc.layers.push(l);
-  S.sel = l.id;
-  S.selSet = new Set<string>([l.id]);
-}
-export function backToSelect() {
-  S.tool = 'select';
-  WRAP.className = 't-select';
-  $('#hint').textContent = HINTS.select;
-  renderTools();
-}
-export function createDrag(t: string, p0: XY) {
-  const ed = beginEdit();
-  let l: Layer | null = null;
-  S.drag = {
-    move(p, e) {
-      let x = Math.min(p0.x, p.x),
-        y = Math.min(p0.y, p.y),
-        w = Math.abs(p.x - p0.x),
-        h = Math.abs(p.y - p0.y);
-      if (e.shiftKey) {
-        w = h = Math.max(w, h);
-        if (p.x < p0.x) x = p0.x - w;
-        if (p.y < p0.y) y = p0.y - h;
-      }
-      if (!l && w * S.scale < 3 && h * S.scale < 3) return;
-      if (!l) {
-        l = newShape(t);
-        addLayer(l);
-      }
-      setGeo(l, t, x, y, w, h, p0, p);
-      l.o = null;
-      renderStage();
-      frame();
-    },
-    up() {
-      if (!l) {
-        l = newShape(t);
-        addLayer(l);
-        setGeo(l, t, p0.x - 50, p0.y - 50, 100, 100, p0, { x: p0.x + 50, y: p0.y });
-      }
-      l.o = null;
-      backToSelect();
-      ed.end({ insp: true });
-    },
-  };
-}
 export function createText(p: XY) {
   const ed = beginEdit();
   const l = mkLayer(
@@ -252,50 +188,6 @@ export function lum(c: string) {
   if (!h) return 1;
   const v = [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16) / 255);
   return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
-}
-export function penDown(p: XY) {
-  if (!S.pen) S.pen = { nodes: [], hover: p };
-  const n = S.pen.nodes;
-  if (n.length >= 2 && Math.hypot(p.x - n[0][0], p.y - n[0][1]) * S.scale < 9) {
-    finishPen(true);
-    return;
-  }
-  const q = N(r2(p.x), r2(p.y));
-  n.push(q);
-  S.drag = {
-    move(m) {
-      if (Math.hypot(m.x - q[0], m.y - q[1]) * S.scale < 3) return;
-      q[4] = r2(m.x);
-      q[5] = r2(m.y);
-      q[2] = r2(2 * q[0] - m.x);
-      q[3] = r2(2 * q[1] - m.y);
-      drawOverlay();
-    },
-    up() {
-      drawOverlay();
-    },
-  };
-  drawOverlay();
-}
-export function finishPen(closed: boolean) {
-  const P = S.pen;
-  S.pen = null;
-  if (!P || P.nodes.length < 2) {
-    drawOverlay();
-    return;
-  }
-  const ed = beginEdit(),
-    col = nextColor();
-  const l = mkLayer(
-    'path',
-    closed ? 'Shape' : 'Line',
-    {},
-    { fill: closed ? col : 'none', stk: closed ? 'none' : col, sw: closed ? 0 : 4, d: [{ c: closed, n: P.nodes }] },
-  );
-  l.extra = { 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
-  addLayer(l);
-  backToSelect();
-  ed.end({ insp: true });
 }
 export function nodeDrag([i, j, part]: number[], p0: XY) {
   const l = selLayer();

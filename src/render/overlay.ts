@@ -6,6 +6,7 @@ import { S, doc, layerById, selLayer } from '../core/state';
 import { isHidden, isLocked, parentMatrix } from '../model/tree';
 import { drawBone } from '../tools/bones';
 import { cursorFor } from '../tools/edit-tools';
+import { ellNodes, rectNodes } from '../geometry/nodes';
 
 export function toDoc(x: number, y: number) {
   return new DOMPoint(x, y).matrixTransform(CONTENT.getScreenCTM().inverse());
@@ -52,7 +53,8 @@ export function quadPts(q: DOMPointReadOnly[]) {
 export function drawOverlay() {
   OV.replaceChildren();
   const u = 1 / S.scale;
-  if (S.pen) drawPen(u);
+  if (S.pen || S.pencil || S.penHint) drawPen(u);
+  if (S.tool !== 'select') drawLabel(u);
   if (S.showBones && ['select', 'bone', 'node'].includes(S.tool))
     doc.layers.forEach(b => {
       if (b.type === 'bone' && !isHidden(b)) drawBone(b, u, S.selSet.has(b.id));
@@ -107,7 +109,8 @@ export function drawOverlay() {
     return;
   }
   OV.append(svgEl('polygon', { points: quadPts(Q), class: 'ov-box' }));
-  if (S.tool === 'node' && l.type === 'path') {
+  const nodeTool = S.tool === 'node' || S.tool === 'pen' || S.tool === 'addnode' || S.tool === 'delnode';
+  if (nodeTool && (l.type === 'path' || (S.tool !== 'node' && (l.type === 'rect' || l.type === 'ellipse')))) {
     drawNodes(l, u);
     return;
   }
@@ -192,7 +195,8 @@ export function drawOverlay() {
 }
 export function drawNodes(l: Layer, u: number) {
   const M = localMatrix(l),
-    d: PathData = H.get(l, 'd', S.time) || [],
+    d: PathData =
+      l.type === 'rect' ? rectNodes(l.geo) : l.type === 'ellipse' ? ellNodes(l.geo) : H.get(l, 'd', S.time) || [],
     P = (x: number, y: number) => xfp(M, x, y);
   d.forEach((sp, i) =>
     sp.n.forEach((q, j) => {
@@ -227,23 +231,58 @@ export function drawNodes(l: Layer, u: number) {
   );
 }
 export function drawPen(u: number) {
-  const n: PathNode[] = S.pen.nodes;
-  if (!n.length) return;
-  OV.append(svgEl('path', { d: H.dstr([{ c: false, n }]), class: 'ov-pen' }));
-  const l = n[n.length - 1],
-    hv = S.pen.hover;
-  if (hv && !S.drag) OV.append(svgEl('line', { x1: l[0], y1: l[1], x2: hv.x, y2: hv.y, class: 'ov-rub' }));
-  n.forEach((q, j) => {
-    if (q[4] !== q[0] || q[5] !== q[1])
-      OV.append(svgEl('line', { x1: q[2], y1: q[3], x2: q[4], y2: q[5], class: 'ov-hl' }));
-    OV.append(
-      svgEl('rect', {
-        x: q[0] - 4 * u,
-        y: q[1] - 4 * u,
-        width: 8 * u,
-        height: 8 * u,
-        class: 'ov-an' + (j === 0 && n.length > 1 ? ' is-sel' : ''),
-      }),
-    );
+  const P = S.pen,
+    sq = (x: number, y: number, cls: string, r = 4) =>
+      svgEl('rect', { x: x - r * u, y: y - r * u, width: 2 * r * u, height: 2 * r * u, class: cls });
+  if (P && P.nodes.length) {
+    const n: PathNode[] = P.nodes,
+      l = n[n.length - 1],
+      hv = P.hover;
+    OV.append(svgEl('path', { d: H.dstr([{ c: false, n }]), class: 'ov-pen' }));
+    // rubber band: the next segment as it would be drawn from the last point's handle
+    if (hv && !S.drag) {
+      const curved = l[4] !== l[0] || l[5] !== l[1];
+      OV.append(
+        svgEl('path', {
+          d: curved
+            ? `M${l[0]} ${l[1]}C${l[4]} ${l[5]} ${hv.x} ${hv.y} ${hv.x} ${hv.y}`
+            : `M${l[0]} ${l[1]}L${hv.x} ${hv.y}`,
+          class: 'ov-rub',
+        }),
+      );
+    }
+    n.forEach((q, j) => {
+      const recent = j >= n.length - 2 || j === 0;
+      if (recent)
+        [
+          [q[2], q[3]],
+          [q[4], q[5]],
+        ].forEach(([hx, hy]) => {
+          if (Math.hypot(hx - q[0], hy - q[1]) < 0.01) return;
+          OV.append(svgEl('line', { x1: q[0], y1: q[1], x2: hx, y2: hy, class: 'ov-hl' }));
+          OV.append(svgEl('circle', { cx: hx, cy: hy, r: 3 * u, class: 'ov-hd' }));
+        });
+      OV.append(sq(q[0], q[1], 'ov-an' + (j === n.length - 1 ? ' is-sel' : '')));
+    });
+  }
+  if (S.pencil && S.pencil.length > 1)
+    OV.append(svgEl('polyline', { points: S.pencil.map(q => r2(q.x) + ',' + r2(q.y)).join(' '), class: 'ov-pen' }));
+  const h = S.penHint;
+  if (h && !S.drag) {
+    if (h.kind === 'add') {
+      OV.append(svgEl('circle', { cx: h.x, cy: h.y, r: 4 * u, class: 'ov-hint-add' }));
+    } else OV.append(sq(h.x, h.y, 'ov-hint-del', 6));
+  }
+}
+function drawLabel(u: number) {
+  if (!(S.drag && S.drag.lbl && S.drag.lp)) return;
+  const t = svgEl('text', {
+    x: S.drag.lp.x + 14 * u,
+    y: S.drag.lp.y - 12 * u,
+    class: 'ov-ang',
+    'font-size': 11 * u,
+    'stroke-width': 2.5 * u,
   });
+  t.textContent = S.drag.lbl;
+  OV.append(t);
 }

@@ -86,6 +86,18 @@ export const ICON: Record<string, string> = {
   ellipse: ic('<circle cx="12" cy="12" r="8"/>'),
   star: ic('<path d="M12 3.5l2.6 5.6 6.1.7-4.5 4.1 1.2 6-5.4-3-5.4 3 1.2-6-4.5-4.1 6.1-.7z"/>'),
   pen: ic('<path d="M12 21l-6-8 6-10 6 10z"/><circle cx="12" cy="13" r="1.6"/>'),
+  addnode: ic(
+    '<path d="M10 21l-5-7.5 5-9.5 5 9.5z"/><circle cx="10" cy="13.5" r="1.4"/><path d="M19 3.5v6M16 6.5h6"/>',
+  ),
+  delnode: ic('<path d="M10 21l-5-7.5 5-9.5 5 9.5z"/><circle cx="10" cy="13.5" r="1.4"/><path d="M16 6.5h6"/>'),
+  pencil: ic(
+    '<path d="M4 20l1.2-4.4L16.5 4.3a2 2 0 012.8 0l.4.4a2 2 0 010 2.8L8.4 18.8z"/><path d="M14.5 6.3l3.2 3.2"/>',
+  ),
+  polygon: ic('<path d="M12 3.5l8.1 5.9-3.1 9.6H7L3.9 9.4z"/>'),
+  line: ic('<path d="M5 19L19 5"/>'),
+  hand: ic(
+    '<path d="M8 13V6a1.5 1.5 0 013 0v5M11 10.5V4.5a1.5 1.5 0 013 0V11M14 10.5V6a1.5 1.5 0 013 0v7.5c0 4-2.6 6.5-6 6.5h-.6c-2 0-3.4-.9-4.6-2.5L3.7 14.2a1.5 1.5 0 012.3-1.9L8 14.5"/>',
+  ),
   text: ic('<path d="M5 6V4h14v2M12 4v16M9 20h6"/>'),
   play: ic('<path d="M7.5 4.8v14.4L19 12z" fill="currentColor"/>'),
   pause: ic('<path d="M7 4.5h3.5v15H7zM13.5 4.5H17v15h-3.5z" fill="currentColor" stroke="none"/>'),
@@ -119,25 +131,58 @@ export const TICON: Record<string, string> = {
   raw: ic('<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/>', 14),
   bone: ic('<circle cx="6" cy="18" r="2.5"/><path d="M8 16L18 6M8 16l2.5-6.5L18 6l-6.5 2.5z"/>', 14),
 };
-export const TOOLS = [
-  ['select', 'Select & transform', 'V'],
-  ['node', 'Edit path nodes', 'A'],
+/** Every tool: label and its shortcut (shown in the UI; `keys` are the keys that select it). */
+export const TOOL_INFO: Record<string, { label: string; key?: string; keys?: string[] }> = {
+  select: { label: 'Select & transform', key: 'V', keys: ['v'] },
+  node: { label: 'Edit path nodes', key: 'A', keys: ['a'] },
+  pen: { label: 'Pen tool', key: 'P', keys: ['p'] },
+  addnode: { label: 'Add node tool', key: '+', keys: ['+', '='] },
+  delnode: { label: 'Remove node tool', key: '-', keys: ['-', '_'] },
+  pencil: { label: 'Pencil tool', key: 'N', keys: ['n'] },
+  ellipse: { label: 'Ellipse', key: 'O', keys: ['o'] },
+  rect: { label: 'Rectangle', key: 'M', keys: ['m'] },
+  polygon: { label: 'Polygon' },
+  star: { label: 'Star' },
+  line: { label: 'Line', key: 'L', keys: ['l'] },
+  text: { label: 'Text', key: 'T', keys: ['t'] },
+  bone: { label: 'Bone', key: 'B', keys: ['b'] },
+  hand: { label: 'Hand (hold Space)', key: 'H', keys: ['h'] },
+};
+export interface ToolGroup {
+  group: string;
+  label: string;
+  items: string[];
+}
+/** The tool rail, top to bottom. `null` is a separator. */
+export const TOOLBAR: Array<string | ToolGroup | null> = [
+  'select',
+  'node',
   null,
-  ['rect', 'Rectangle', 'R'],
-  ['ellipse', 'Ellipse', 'E'],
-  ['star', 'Star', 'S'],
-  ['pen', 'Pen', 'P'],
-  ['text', 'Text', 'T'],
+  { group: 'pen', label: 'Pen tools', items: ['pen', 'addnode', 'delnode', 'pencil'] },
+  { group: 'shapes', label: 'Shape tools', items: ['ellipse', 'rect', 'polygon', 'star', 'line'] },
+  'text',
   null,
-  ['bone', 'Bone', 'B'],
+  'bone',
+  null,
+  'hand',
 ];
+export function groupOf(tool: string): ToolGroup | null {
+  for (const e of TOOLBAR) if (e && typeof e !== 'string' && e.items.includes(tool)) return e;
+  return null;
+}
 export const HINTS: Record<string, string> = {
   select: 'Drag to move · corners scale · top dot rotates · Ctrl+click picks inside groups',
   node: 'Drag nodes and handles · double-click a node for smooth/corner · Del removes a node',
-  rect: 'Drag to draw · Shift for a square',
-  ellipse: 'Drag to draw · Shift for a circle',
-  star: 'Drag out from the center to set the size',
-  pen: 'Click for corners, drag for curves · click the first node to close · Enter to finish',
+  pen: 'Click: corner · drag: curve (Alt breaks the handle, Shift 45°, Space moves the point) · click the first point to close · Enter/Esc ends · on a selected path: hover to add, delete or continue',
+  addnode: 'Click a segment of the selected path to add a node',
+  delnode: 'Click a node of the selected path to remove it',
+  pencil: 'Drag to draw freehand · end near the start to close the shape',
+  ellipse: 'Drag to draw · Shift for a circle · Alt from the center',
+  rect: 'Drag to draw · Shift for a square · Alt from the center',
+  polygon: 'Drag out from the center · ↑/↓ while dragging changes the sides · Shift keeps it upright',
+  star: 'Drag out from the center · ↑/↓ while dragging changes the points · Shift keeps it upright',
+  line: 'Drag to draw a line · Shift snaps to 45° · Alt from the center',
   text: 'Click on the canvas to place text',
   bone: 'Drag to draw a bone · start on a bone tip to chain a child bone · Esc to finish',
+  hand: 'Drag to pan · wheel scrolls · Ctrl+wheel zooms · double-click the hand to fit · hold Space for the hand in any tool',
 };

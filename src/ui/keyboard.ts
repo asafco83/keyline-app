@@ -1,5 +1,7 @@
 // Keyline — ui/keyboard
-import { $, H, clone, r2 } from '../core/constants';
+import { pickTool } from './tools-rail';
+import { setSpace } from '../tools/hand';
+import { $, H, TOOL_INFO, clone, r2 } from '../core/constants';
 import { beginEdit, deleteKeys, redo, select, setProp, setTime, setTool, undo } from '../core/history';
 import { closeMenu, copyKeys, duplicateKeys, jumpKey, pasteKeys, selectAllKeys, shiftKeys } from '../core/keyframes';
 import { togglePlay } from '../core/playback';
@@ -9,7 +11,7 @@ import { removeNodeAll } from '../geometry/nodes';
 import { openFlow, toast } from '../io/open';
 import { saveProject, saveProjectAs } from '../io/save';
 import { isLocked } from '../model/tree';
-import { finishPen } from '../tools/edit-tools';
+import { finishPen, penBackspace } from '../tools/pen';
 import { applyEase } from './easing';
 import { FM, closeFileMenu } from './file-menu';
 import { renderInspector } from './inspector';
@@ -18,6 +20,14 @@ import { FRAME, MENU, renderTimeline } from './timeline';
 import { closeModal } from './topbar';
 
 export function init(): void {
+  window.addEventListener('keyup', (e: KeyboardEvent) => {
+    if (e.key !== ' ' || !S.spaceHeld) return;
+    setSpace(false);
+    const tg: any = e.target;
+    if (!S.spaceUsed && !(tg.closest && tg.closest('input,textarea,select'))) togglePlay();
+    S.spaceUsed = false;
+  });
+  window.addEventListener('blur', () => S.spaceHeld && setSpace(false));
   window.addEventListener('keydown', (e: KeyboardEvent) => {
     const tg: any = e.target,
       typing = tg.closest && tg.closest('input,textarea,select');
@@ -121,8 +131,12 @@ export function init(): void {
     }
     if (mod) return;
     if (k === ' ') {
+      // hold Space for the hand tool; a tap (no drag) plays/pauses on release
       e.preventDefault();
-      togglePlay();
+      if (!e.repeat) {
+        S.spaceUsed = !!S.drag;
+        setSpace(true);
+      }
       return;
     }
     if (k === 'Enter' && S.pen) {
@@ -145,6 +159,15 @@ export function init(): void {
         return;
       }
       select(null);
+      return;
+    }
+    if ((k === 'Delete' || k === 'Backspace') && S.pen) {
+      e.preventDefault();
+      penBackspace();
+      return;
+    }
+    if (S.drag && S.drag.key && S.drag.key(k, e)) {
+      e.preventDefault();
       return;
     }
     if (k === 'Delete' || k === 'Backspace') {
@@ -194,16 +217,7 @@ export function init(): void {
       ed.end();
       return;
     }
-    const map: Record<string, string> = {
-      v: 'select',
-      a: 'node',
-      r: 'rect',
-      e: 'ellipse',
-      s: 'star',
-      p: 'pen',
-      t: 'text',
-      b: 'bone',
-    };
-    if (map[k.toLowerCase()]) setTool(map[k.toLowerCase()]);
+    const id = Object.keys(TOOL_INFO).find(t => (TOOL_INFO[t].keys || []).includes(k.toLowerCase()));
+    if (id && !e.altKey) pickTool(id);
   });
 }
