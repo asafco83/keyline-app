@@ -298,6 +298,9 @@ export function init(): void {
     dragIds = null;
     clearDrop();
   });
+  $('#lUp').addEventListener('click', () => selLayer() && arrange(selLayer(), 1));
+  $('#lDown').addEventListener('click', () => selLayer() && arrange(selLayer(), -1));
+  $('#lDup').addEventListener('click', () => selLayer() && duplicate(selLayer()));
   $('#lGroup').addEventListener('click', groupSel);
   $('#lUngroup').addEventListener('click', () => ungroup(selLayer()));
   $('#lDel').addEventListener('click', deleteSel);

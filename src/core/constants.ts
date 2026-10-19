@@ -119,6 +119,11 @@ export const ICON: Record<string, string> = {
   undo: ic('<path d="M8 6l-4 4 4 4"/><path d="M4 10h10.5a5 5 0 010 10H11"/>'),
   redo: ic('<path d="M16 6l4 4-4 4"/><path d="M20 10H9.5a5 5 0 000 10H13"/>'),
   x: ic('<path d="M6 6l12 12M18 6L6 18"/>'),
+  moveUp: ic('<path d="M5 4.5h14M12 20V9M7.5 13.5L12 9l4.5 4.5"/>'),
+  moveDown: ic('<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/>'),
+  duplicate: ic(
+    '<rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2"/><path d="M15.5 8.5V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7.5a2 2 0 002 2h2.5"/>',
+  ),
   group: ic('<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>'),
   ungroup: ic(
     '<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M3.5 4.5l17 15"/>',
@@ -127,6 +132,11 @@ export const ICON: Record<string, string> = {
   trash: ic('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'),
 };
 export const TICON: Record<string, string> = {
+  moveUp: ic('<path d="M5 4.5h14M12 20V9M7.5 13.5L12 9l4.5 4.5"/>'),
+  moveDown: ic('<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/>'),
+  duplicate: ic(
+    '<rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2"/><path d="M15.5 8.5V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7.5a2 2 0 002 2h2.5"/>',
+  ),
   group: ic('<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>', 14),
   rect: ic('<rect x="4" y="5" width="16" height="14" rx="1.5"/>', 14),
   ellipse: ic('<circle cx="12" cy="12" r="8"/>', 14),

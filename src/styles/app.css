@@ -1347,6 +1347,27 @@ textarea.ta:focus {
   font-size: 11px;
   margin-left: auto;
 }
+.lp-acts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+}
+.lp-acts .sp {
+  flex: 1;
+}
+.lp-acts .btn.ib {
+  width: 30px;
+  height: 30px;
+  background: var(--panel-2);
+  color: var(--fg);
+}
+.lp-acts .btn:disabled,
+.lp-acts .btn:disabled:hover {
+  opacity: 0.38;
+  border-color: var(--line);
+}
 .lp-foot {
   display: flex;
   align-items: center;
@@ -1364,8 +1385,6 @@ textarea.ta:focus {
   flex: 1;
   font-size: 11px;
   color: var(--muted);
-  text-align: right;
-  padding-right: 4px;
 }
 .lp-foot .btn.ib {
   background: transparent;
