@@ -23,7 +23,10 @@ export function liveShape(l: Layer) {
   if (s && s.sig === JSON.stringify(l.b.d)) return s;
   // older polygons and stars: recognise them from their points (a star's start point may differ, so
   // the path is only rewritten once a setting changes)
-  return inferShape(l.b.d);
+  const inf = inferShape(l.b.d);
+  // remember what was recognised (tied to the current path), so it can be keyed like any shape
+  if (inf) l.shape = { ...inf, sig: JSON.stringify(l.b.d) };
+  return inf;
 }
 /** A two-point open path: shown with From / To. */
 export function isLine(l: Layer) {

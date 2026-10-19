@@ -2191,6 +2191,13 @@ details summary {
 }
 
 /* typing text on the canvas */
+.kl-tedit::selection {
+  background: rgba(91, 124, 250, 0.35);
+  color: transparent;
+}
+.ov-tbh {
+  fill: var(--panel);
+}
 .kl-tedit {
   position: fixed;
   left: 0;
@@ -2199,8 +2206,7 @@ details summary {
   margin: 0;
   padding: 0;
   border: 0;
-  outline: 1px dashed var(--accent);
-  outline-offset: 2px;
+  outline: none;
   background: transparent;
   resize: none;
   overflow: hidden;

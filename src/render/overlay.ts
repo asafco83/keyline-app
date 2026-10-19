@@ -8,7 +8,7 @@ import { drawBone } from '../tools/bones';
 import { cursorFor } from '../tools/edit-tools';
 import { ellNodes, rectNodes } from '../geometry/nodes';
 import { currentNode, segCtrl } from '../tools/motion-path';
-import { followTextEdit } from '../tools/text-edit';
+import { editBox, followTextEdit, textEditing } from '../tools/text-edit';
 
 export function toDoc(x: number, y: number) {
   return new DOMPoint(x, y).matrixTransform(CONTENT.getScreenCTM().inverse());
@@ -139,6 +139,7 @@ export function drawOverlay() {
     }
     return;
   }
+  if (l.type === 'text' && textEditing() === l.id) return drawEditBox(l, u);
   OV.append(svgEl('polygon', { points: quadPts(Q), class: 'ov-box' }));
   const nodeTool =
     S.tool === 'node' || S.tool === 'pen' || S.tool === 'addnode' || S.tool === 'delnode' || S.tool === 'convert';
@@ -224,6 +225,37 @@ export function drawOverlay() {
     t.textContent = S.drag.lbl;
     OV.append(t);
   }
+}
+/** Text being typed: its box, with a handle on each side to set the width. */
+function drawEditBox(l: Layer, u: number) {
+  const M = localMatrix(l),
+    b = editBox(l),
+    P = (x: number, y: number) => xfp(M, x, y),
+    q = [P(b.x, b.y), P(b.x + b.w, b.y), P(b.x + b.w, b.y + b.h), P(b.x, b.y + b.h)];
+  OV.append(svgEl('polygon', { points: quadPts(q), class: 'ov-box' }));
+  const ang = (Math.atan2(q[1].y - q[0].y, q[1].x - q[0].x) * 180) / Math.PI,
+    hw = 5 * u,
+    hh = Math.min(22 * u, Math.hypot(q[3].x - q[0].x, q[3].y - q[0].y) * 0.7);
+  (
+    [
+      ['tbw', P(b.x, b.y + b.h / 2)],
+      ['tbe', P(b.x + b.w, b.y + b.h / 2)],
+    ] as Array<[string, DOMPoint]>
+  ).forEach(([k, p]) =>
+    OV.append(
+      svgEl('rect', {
+        x: p.x - hw / 2,
+        y: p.y - hh / 2,
+        width: hw,
+        height: hh,
+        rx: hw / 2,
+        class: 'ov-h ov-tbh',
+        'data-h': k,
+        transform: `rotate(${r2(ang)} ${r2(p.x)} ${r2(p.y)})`,
+        style: 'cursor:ew-resize',
+      }),
+    ),
+  );
 }
 export function drawNodes(l: Layer, u: number) {
   const M = localMatrix(l),

@@ -92,7 +92,8 @@ export function handleDrag(kind: string, p0: XY) {
     return;
   }
   // text: the side handles set the box width (lines wrap inside it) instead of stretching the letters
-  if (l.type === 'text' && (kind === 'e' || kind === 'w')) return textBoxDrag(l, kind, ed);
+  // edit mode: the box's side handles set its width (Keep width turns on) instead of scaling
+  if (l.type === 'text' && (kind === 'tbe' || kind === 'tbw')) return textBoxDrag(l, kind === 'tbe' ? 'e' : 'w', ed);
   /* Photoshop-style scaling: drag a handle; the opposite side stays put.
      Shift keeps proportions · Alt scales from the box center · Ctrl/Cmd scales around the origin · drag past the anchor to mirror */
   const g = byId('e-' + l.id),

@@ -107,9 +107,18 @@ export function transformSection(l: Layer) {
 /* ---------- Shape settings: polygon sides, star points & ratio, corner radius, line ends ---------- */
 
 /** slider + number for one shape setting */
-function slide(key: string, label: string, min: number, max: number, step: number, val: number, unit = '', scale = 1) {
-  return nrow(
-    label,
+function slide(
+  key: string,
+  label: string,
+  min: number,
+  max: number,
+  step: number,
+  val: number,
+  unit = '',
+  scale = 1,
+  kb?: PropKey,
+) {
+  return (kb ? (b: string) => krow(kb, label, b) : (b: string) => nrow(label, b))(
     `<input type="range" class="rng" id="sh-${key}-r" data-sh="${key}" data-scale="${scale}" min="${min}" max="${max}" step="${step}" value="${val}" aria-label="${label}"><label class="nf"><input id="sh-${key}" data-sh="${key}" data-scale="${scale}" inputmode="decimal" value="${fmt(val)}" aria-label="${label}">${unit ? `<em>${unit}</em>` : ''}</label>`,
   );
 }
@@ -117,7 +126,7 @@ export function shapeSection(l: Layer) {
   if (l.type === 'rect') {
     const G = l.geo,
       mx = Math.max(0, Math.min(G.w, G.h) / 2);
-    return `<section class="sec"><h3>Rectangle</h3>${nrow('Position', gnum('x', 'X') + gnum('y', 'Y'))}${nrow('Size', gnum('w', 'W') + gnum('h', 'H'))}${slide('rx', 'Radius', 0, r2(mx), 0.5, Math.min(G.rx || 0, mx), 'px')}<div class="btns"><button class="btn" data-act="topath">Convert to path</button></div></section>`;
+    return `<section class="sec"><h3>Rectangle</h3>${nrow('Position', gnum('x', 'X') + gnum('y', 'Y'))}${nrow('Size', gnum('w', 'W') + gnum('h', 'H'))}${slide('rad', 'Radius', 0, r2(mx), 0.5, Math.min(valueAt(l, 'rad', S.time) || 0, mx), 'px', 1, 'rad')}<div class="btns"><button class="btn" data-act="topath">Convert to path</button></div></section>`;
   }
   const sh = liveShape(l);
   if (sh) {
@@ -126,24 +135,26 @@ export function shapeSection(l: Layer) {
     return `<section class="sec"><h3>${star ? 'Star' : 'Polygon'}</h3>
       ${slide('n', star ? 'Points' : 'Sides', 3, 24, 1, sh.n)}
       ${star ? slide('ratio', 'Ratio', 5, 95, 1, Math.round((sh.ratio == null ? 0.45 : sh.ratio) * 100), '%', 100) : ''}
-      ${slide('rad', 'Radius', 0, mx, 0.5, Math.min(sh.rad || 0, mx), 'px')}
+      ${slide('rad', 'Radius', 0, mx, 0.5, Math.min(valueAt(l, 'rad', S.time) || 0, mx), 'px', 1, 'rad')}
       <p>Editing the nodes by hand, or adding Morph keyframes, turns this into a plain path.</p></section>`;
   }
   if (isLine(l))
     return `<section class="sec"><h3>Line</h3>
-      ${krow('d', 'From', `<label class="nf"><span>X</span><input id="ln-0-0" data-ln="0:0" inputmode="decimal" aria-label="From X"></label><label class="nf"><span>Y</span><input id="ln-0-1" data-ln="0:1" inputmode="decimal" aria-label="From Y"></label>`)}
-      <div class="row"><span></span><span class="rl">To</span><div class="rf"><label class="nf"><span>X</span><input id="ln-1-0" data-ln="1:0" inputmode="decimal" aria-label="To X"></label><label class="nf"><span>Y</span><input id="ln-1-1" data-ln="1:1" inputmode="decimal" aria-label="To Y"></label></div></div>
-      <p>◆ keys both ends together, so a line can grow, swing or swap ends over time.</p></section>`;
+      ${krow('p0', 'From', `<label class="nf"><span>X</span><input id="ln-0-0" data-ln="0:0" inputmode="decimal" aria-label="From X"></label><label class="nf"><span>Y</span><input id="ln-0-1" data-ln="0:1" inputmode="decimal" aria-label="From Y"></label>`)}
+      ${krow('p1', 'To', `<label class="nf"><span>X</span><input id="ln-1-0" data-ln="1:0" inputmode="decimal" aria-label="To X"></label><label class="nf"><span>Y</span><input id="ln-1-1" data-ln="1:1" inputmode="decimal" aria-label="To Y"></label>`)}
+      <p>Key each end with ◆ so the line can grow, swing or swap ends over time.</p></section>`;
   return '';
 }
 /** Apply one shape setting (from a slider while dragging, or a number). */
 function applyShape(l: Layer, key: string, raw: number) {
   if (l.type === 'rect') {
-    l.geo.rx = r2(Math.max(0, Math.min(raw, Math.min(l.geo.w, l.geo.h) / 2)));
+    if (key === 'rad') setProp(l, 'rad', r2(Math.max(0, Math.min(raw, Math.min(l.geo.w, l.geo.h) / 2))));
     return;
   }
   const sh = liveShape(l);
   if (!sh) return;
+  // the radius is animatable: keyed at the playhead when it has keyframes (or Auto-key is on)
+  if (key === 'rad') return setProp(l, 'rad', r2(Math.max(0, Math.min(raw, maxCornerRadius(sh)))));
   const p: ShapeParams & { sig?: string } = { ...sh };
   delete p.sig;
 
@@ -156,13 +167,10 @@ function applyShape(l: Layer, key: string, raw: number) {
 }
 /** Move one end of a line (its handles move with it); keyed like a Morph value. */
 function setLineEnd(l: Layer, node: number, axis: number, v: number) {
-  const d = clone(valueAt(l, 'd', S.time)) as PathData,
-    q = d[0].n[node],
-    dv = v - q[axis];
-  q[axis] += dv;
-  q[axis + 2] += dv;
-  q[axis + 4] += dv;
-  setProp(l, 'd', d);
+  const k = ('p' + node) as PropKey,
+    e = clone(valueAt(l, k, S.time)) as number[];
+  e[axis] = v;
+  setProp(l, k, e);
 }
 
 /* ---------- Path nodes (motion path keyframes) ---------- */
@@ -384,14 +392,20 @@ export function refreshProps(l: Layer): void {
     bw.value = bb ? fmt(bb.width) : '';
     byId('bb-h').value = bb ? fmt(bb.height) : '';
   }
-  if (byId('ln-0-0') && isLine(l)) {
-    const d = valueAt(l, 'd', S.time) as PathData;
-    [0, 1].forEach(n =>
+  if (byId('ln-0-0') && isLine(l))
+    [0, 1].forEach(n => {
+      const v = valueAt(l, 'p' + n, S.time);
       [0, 1].forEach(a => {
         const e = byId(`ln-${n}-${a}`);
-        if (e && e !== document.activeElement && d && d[0]) e.value = fmt(d[0].n[n][a]);
-      }),
-    );
+        if (e && e !== document.activeElement && v) e.value = fmt(v[a]);
+      });
+    });
+  const rr = byId('sh-rad-r');
+  if (rr && rr !== document.activeElement) {
+    const v = valueAt(l, 'rad', S.time) || 0;
+    rr.value = String(v);
+    const rn = byId('sh-rad');
+    if (rn !== document.activeElement) rn.value = fmt(v);
   }
   const nx = byId('np-x');
   // the playhead moved onto another node: rebuild the panel for it

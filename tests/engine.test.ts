@@ -317,3 +317,65 @@ describe('curved motion path segments', () => {
     expect(H.get(L, 'pos', 0.5)).toEqual([50, 0]);
   });
 });
+
+describe('corner radius and line ends', () => {
+  it('rebuilds a polygon path from an animated radius, keeping the node count', () => {
+    const L: EngineLayer = {
+      id: 'p',
+      b: {},
+      shape: { kind: 'polygon', cx: 0, cy: 0, r: 100, rot: 0, n: 4 },
+      t: {
+        rad: [
+          [0, 0, 'linear'],
+          [1, 20, 'linear'],
+        ],
+      },
+    };
+    const a = H.comp(L, 0).d,
+      b = H.comp(L, 0.5).d;
+    expect(a[0].n.length).toBe(8);
+    expect(b[0].n.length).toBe(8);
+    // at radius 0 both nodes of a corner sit on the corner
+    expect(a[0].n[0].slice(0, 2)).toEqual(a[0].n[1].slice(0, 2));
+    expect(H.comp(L, 0.5).rad).toBe(10);
+  });
+  it('animates a rectangle radius as rx', () => {
+    const L: EngineLayer = {
+      id: 'r',
+      b: {},
+      t: {
+        rad: [
+          [0, 0, 'linear'],
+          [1, 8, 'linear'],
+        ],
+      },
+    };
+    expect(H.comp(L, 0.25).rad).toBe(2);
+    expect(H.comp({ id: 'r', b: {}, t: {} }, 0).rad).toBeNull();
+  });
+  it('moves the ends of a line', () => {
+    const L: EngineLayer = {
+      id: 'l',
+      b: {
+        d: [
+          {
+            c: false,
+            n: [
+              [0, 0, 0, 0, 0, 0],
+              [10, 0, 10, 0, 10, 0],
+            ],
+          },
+        ],
+      },
+      t: {
+        p1: [
+          [0, [10, 0], 'linear'],
+          [1, [10, 20], 'linear'],
+        ],
+      },
+    };
+    const d = H.comp(L, 0.5).d;
+    expect(d[0].n[0]).toEqual([0, 0, 0, 0, 0, 0]);
+    expect(d[0].n[1]).toEqual([10, 10, 10, 10, 10, 10]);
+  });
+});

@@ -1,5 +1,4 @@
 // Keyline — render/stage
-import { textEditing } from '../tools/text-edit';
 import { bgPaint } from '../model/background';
 import type { Layer } from '../model/types';
 import { $, byId, r2 } from '../core/constants';
@@ -38,7 +37,6 @@ export function renderStage() {
     editor: true,
     t: S.time,
     href: (id: string) => URLS[id] || (ASSETS[id] && ASSETS[id].data) || '',
-    hideText: textEditing(),
   });
   const vis = visibleLayers();
   setEng(KLEngine({ p: 'e-', L: vis, dur: doc.dur }, CONTENT));
