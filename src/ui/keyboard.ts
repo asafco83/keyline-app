@@ -1,4 +1,5 @@
 // Keyline — ui/keyboard
+import { animateShortcut } from './animate-menu';
 import { pickTool } from './tools-rail';
 import { setSpace } from '../tools/hand';
 import { $, H, TOOL_INFO, clone, r2 } from '../core/constants';
@@ -215,6 +216,10 @@ export function init(): void {
       const ed = beginEdit();
       setProp(l, 'pos', p.map(r2));
       ed.end();
+      return;
+    }
+    if (animateShortcut(e)) {
+      e.preventDefault();
       return;
     }
     const lk = k.toLowerCase(),

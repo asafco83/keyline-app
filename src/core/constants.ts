@@ -119,6 +119,11 @@ export const ICON: Record<string, string> = {
   undo: ic('<path d="M8 6l-4 4 4 4"/><path d="M4 10h10.5a5 5 0 010 10H11"/>'),
   redo: ic('<path d="M16 6l4 4-4 4"/><path d="M20 10H9.5a5 5 0 000 10H13"/>'),
   x: ic('<path d="M6 6l12 12M18 6L6 18"/>'),
+  group: ic('<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>'),
+  ungroup: ic(
+    '<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M3.5 4.5l17 15"/>',
+  ),
+  animate: ic('<path d="M12 4.5l7.5 7.5-7.5 7.5L4.5 12z"/>'),
   trash: ic('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'),
 };
 export const TICON: Record<string, string> = {

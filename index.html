@@ -50,20 +50,28 @@
           </div>
         </div>
         <div class="pane" id="paneLayers">
-          <div class="side-act">
-            <button class="btn" id="lGroup" title="Group the selected layers (Ctrl+G), or add an empty group">
-              Group
-            </button>
-            <button class="btn" id="lUngroup" title="Ungroup (Ctrl+Shift+G)">Ungroup</button>
-            <button
-              class="btn ib danger"
-              id="lDel"
-              aria-label="Delete selected layers"
-              title="Delete selected layers"
-            ></button>
-            <span class="rl" id="lCount"></span>
-          </div>
           <div class="lp" id="lp" role="tree" aria-label="Layers"></div>
+          <div class="lp-foot">
+            <button
+              class="btn pri lp-anim-btn"
+              id="lAnim"
+              aria-haspopup="menu"
+              aria-expanded="false"
+              title="Animate a property of the selected layers"
+            >
+              <span id="lAnimIc" aria-hidden="true"></span>Animate
+            </button>
+            <span class="rl" id="lCount"></span>
+            <button class="btn ib" id="lUngroup" aria-label="Ungroup" title="Ungroup (Ctrl+Shift+G)"></button>
+            <button
+              class="btn ib"
+              id="lGroup"
+              aria-label="Group"
+              title="Group the selected layers (Ctrl+G), or add an empty group"
+            ></button>
+            <button class="btn ib" id="lDel" aria-label="Delete" title="Delete selected layers (Del)"></button>
+          </div>
+          <div class="ctx" id="animMenu" role="menu" aria-label="Animate property" hidden></div>
         </div>
         <div class="pane" id="paneAssets" hidden>
           <div class="side-act">
