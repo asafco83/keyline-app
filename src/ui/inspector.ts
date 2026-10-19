@@ -8,6 +8,7 @@ import {
   H,
   PROPS,
   propKind,
+  isFrozen,
   byId,
   clamp,
   clone,
@@ -188,7 +189,10 @@ export function refreshInspector(full?: boolean) {
   });
   INSP.querySelectorAll('[data-kb]').forEach((b: HTMLElement) => {
     const tr = l.t[b.dataset.kb],
-      has = !!(tr && tr.length);
+      has = !!(tr && tr.length),
+      fz = isFrozen(l, b.dataset.kb);
+    b.classList.toggle('fz', fz);
+    b.title = fz ? 'Frozen in the timeline: unfreeze it to use or add keyframes' : 'Add / remove keyframe at playhead';
     b.classList.toggle('has', has);
     b.classList.toggle('on', has && tr.some(q => Math.abs(q[0] - S.time) < 0.005));
   });

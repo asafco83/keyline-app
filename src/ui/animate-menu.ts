@@ -3,7 +3,7 @@
 // selected layer that has it gets a keyframe at the playhead, so it joins the timeline.
 // Shortcuts: Shift + the letter shown next to each property.
 import type { Keyframe, Layer, PropKey } from '../model/types';
-import { $, H, ICON, clone, r3, valueAt } from '../core/constants';
+import { $, H, ICON, clone, isFrozen, r3, valueAt } from '../core/constants';
 import { beginEdit } from '../core/history';
 import { propOK } from '../core/keyframes';
 import { S, layerById, sortTrack } from '../core/state';
@@ -49,7 +49,7 @@ export function canAnimate() {
 }
 /** Add a keyframe for `k` at the playhead on every target that has the property. */
 export function animateProp(k: PropKey) {
-  const ls = animTargets().filter(l => propOK(l, k));
+  const ls = animTargets().filter(l => propOK(l, k) && !isFrozen(l, k));
   if (!ls.length) return false;
   const ed = beginEdit(),
     t = r3(S.time),

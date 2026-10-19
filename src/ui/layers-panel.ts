@@ -9,6 +9,7 @@ import { toast } from '../io/open';
 import {
   ancestors,
   descendants,
+  hasTracks,
   isAnim,
   isBox,
   kids,
@@ -33,7 +34,7 @@ export function renderLayers() {
         return `<div class="lp-row${S.selSet.has(l.id) ? ' sel' : ''}${l.hid ? ' hid' : ''}" draggable="true" tabindex="0" role="treeitem" aria-selected="${S.selSet.has(l.id)}" data-lid="${l.id}" style="padding-left:${4 + d * 14}px">
       ${grp && n ? `<button class="tl-ic" data-la="exp" aria-label="${open ? 'Collapse' : 'Expand'} ${esc(l.name)}">${open ? ICON.down : ICON.right}</button>` : '<span class="lp-sp"></span>'}
       <span class="lp-ty" title="${l.type}">${TICON[l.type] || TICON.raw}</span><span class="lp-name" title="${esc(l.name)}">${esc(l.name)}</span>
-      ${isAnim(l) ? '<i class="lp-anim" title="Has keyframes"></i>' : ''}
+      ${hasTracks(l) ? '<i class="lp-anim" title="Has keyframes"></i>' : ''}
       <button class="tl-ic${l.hid ? '' : ' vis-hide'}" data-la="hid" aria-label="${l.hid ? 'Show' : 'Hide'} ${esc(l.name)}">${l.hid ? ICON.eyeoff : ICON.eye}</button>
       <button class="tl-ic${l.lock ? '' : ' vis-hide'}" data-la="lock" aria-label="${l.lock ? 'Unlock' : 'Lock'} ${esc(l.name)}">${l.lock ? ICON.lock : ICON.unlock}</button></div>`;
       })

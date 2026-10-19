@@ -3,7 +3,7 @@ import { fxOf } from '../model/filters';
 import type { ClipKey, Ease, Keyframe, Layer, PropKey } from '../model/types';
 import { $, H, clamp, clone, r3 } from './constants';
 import { TLB } from './dom';
-import { beginEdit, deleteKeys, removeTrack, select, setTime, toggleKey } from './history';
+import { beginEdit, deleteKeys, removeTrack, select, setTime, toggleFreeze, toggleKey } from './history';
 import { S, doc, layerById, selLayer, sortTrack } from './state';
 import { equalizeTrack } from '../geometry/nodes';
 import { toast } from '../io/open';
@@ -327,6 +327,8 @@ export function init(): void {
       toggleKey(l, row.dataset.prop);
     } else if (a === 'rmtrack') {
       removeTrack(l, row.dataset.prop);
+    } else if (a === 'freeze') {
+      toggleFreeze(l, row.dataset.prop);
     }
   });
   TLB.addEventListener('dblclick', (e: MouseEvent) => {
@@ -341,7 +343,7 @@ export function init(): void {
         l = layerById(row.dataset.lid),
         k = row.dataset.prop;
       setTime(Math.round(laneTime(e, lane) * 20) / 20);
-      if (!l.t[k].some(q => Math.abs(q[0] - S.time) < 0.005)) toggleKey(l, k);
+      if (l.t[k] && !l.t[k].some(q => Math.abs(q[0] - S.time) < 0.005)) toggleKey(l, k);
     }
   });
 }

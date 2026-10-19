@@ -113,6 +113,9 @@ export interface Layer {
    *  radius stay editable. `sig` is the path it produced; once the path is edited by hand (or morphs)
    *  the settings no longer apply. */
   shape?: ShapeParams & { sig?: string };
+  /** frozen tracks: kept aside (not played, exported or keyed) while the property holds the value it
+   *  had when frozen; unfreezing moves them back into `t` */
+  ft?: Tracks;
   /** curved motion path */
   sm: boolean;
   /** orient along motion path */
