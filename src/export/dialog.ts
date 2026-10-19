@@ -1,4 +1,5 @@
 // Keyline — export/dialog
+import { isRTL, webFont } from '../render/fonts';
 import { $, fmt } from '../core/constants';
 import { doc } from '../core/state';
 import { syncSizeUI } from './size';
@@ -33,6 +34,19 @@ export function syncExportUI() {
     .querySelectorAll('button')
     .forEach((b: HTMLElement) => b.classList.toggle('on', b.dataset.v === (ex.size || 'resp')));
   syncSizeUI();
+  const wf = doc.layers.filter(l => l.type === 'text' && !l.hid && webFont(l.geo.family)),
+    fm = ex.fonts === 'embed' ? 'embed' : 'outline';
+  $('#xFontRow').hidden = !wf.length;
+  $('#xFonts')
+    .querySelectorAll('button')
+    .forEach((b: HTMLElement) => b.classList.toggle('on', b.dataset.v === fm));
+  const rtl = fm === 'outline' && wf.some(l => isRTL(l.geo.text));
+  $('#xFontNote').hidden = !wf.length;
+  $('#xFontNote').textContent =
+    fm === 'outline'
+      ? 'Text is converted to shapes: it looks identical everywhere and needs no font download, but can’t be selected or read by screen readers.' +
+        (rtl ? ' Right-to-left text is embedded instead, so it keeps its letter order.' : '')
+      : 'The font files are embedded (only the alphabets your text uses). Text stays selectable; best for longer text.';
   $('#xIds')
     .querySelectorAll('button')
     .forEach((b: HTMLElement) => b.classList.toggle('on', b.dataset.v === (ex.ids || 'gen')));

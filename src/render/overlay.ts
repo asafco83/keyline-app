@@ -7,6 +7,7 @@ import { isHidden, isLocked, parentMatrix } from '../model/tree';
 import { drawBone } from '../tools/bones';
 import { cursorFor } from '../tools/edit-tools';
 import { ellNodes, rectNodes } from '../geometry/nodes';
+import { segCtrl } from '../tools/motion-path';
 
 export function toDoc(x: number, y: number) {
   return new DOMPoint(x, y).matrixTransform(CONTENT.getScreenCTM().inverse());
@@ -89,6 +90,26 @@ export function drawOverlay() {
       pts.push(r2(q.x) + ',' + r2(q.y));
     }
     OV.append(svgEl('polyline', { points: pts.join(' '), class: 'ov-path' }));
+    if (S.tool === 'select' && !isLocked(l))
+      for (let i = 0; i < tr.length - 1; i++) {
+        const c = segCtrl(l, i).map(v => mp(v[0] + o[0], v[1] + o[1]));
+        OV.append(
+          svgEl('path', {
+            d: `M${r2(c[0].x)} ${r2(c[0].y)}C${r2(c[1].x)} ${r2(c[1].y)} ${r2(c[2].x)} ${r2(c[2].y)} ${r2(c[3].x)} ${r2(c[3].y)}`,
+            class: 'ov-mseg',
+            'data-mseg': i,
+            'stroke-width': 10,
+          }),
+        );
+        if (tr[i][3])
+          [1, 2].forEach(j => {
+            const e = c[j === 1 ? 0 : 3];
+            OV.append(svgEl('line', { x1: e.x, y1: e.y, x2: c[j].x, y2: c[j].y, class: 'ov-mhl' }));
+            OV.append(
+              svgEl('circle', { cx: c[j].x, cy: c[j].y, r: 3.5 * u, class: 'ov-mh', 'data-mh': i + ',' + (j - 1) }),
+            );
+          });
+      }
     tr.forEach(k => {
       const q = mp(k[1][0] + o[0], k[1][1] + o[1]);
       OV.append(svgEl('circle', { cx: q.x, cy: q.y, r: 3.5 * u, class: 'ov-kdot' }));
@@ -170,7 +191,7 @@ export function drawOverlay() {
     ry = tm.y + ny * 24 * u;
   OV.append(svgEl('line', { x1: tm.x, y1: tm.y, x2: rx, y2: ry, class: 'ov-box' }));
   OV.append(svgEl('circle', { cx: rx, cy: ry, r: 5 * u, class: 'ov-h ov-rot', 'data-h': 'rot' }));
-  OV.append(svgEl('circle', { cx: C.x, cy: C.y, r: 6 * u, class: 'ov-orgh', 'data-h': 'org' }));
+  OV.append(svgEl('circle', { cx: C.x, cy: C.y, r: 4.5 * u, class: 'ov-orgh', 'data-h': 'org' }));
   if (S.drag && S.drag.rot) {
     const t = svgEl('text', {
       x: rx + 10 * u,

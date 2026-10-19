@@ -1,6 +1,7 @@
 // Keyline — render/markup
 import { filterSVG } from '../model/filters';
 import { anchorX, textLines } from './text-layout';
+import { ensureFaces, facesFor, familyCSS, outlineD, webFont } from './fonts';
 import type { Composite } from '../runtime/engine';
 import type { Layer } from '../model/types';
 import { H, esc, r3 } from '../core/constants';
@@ -17,6 +18,10 @@ export interface MarkupCtx {
   href?: (id: string) => string;
   /** export: asset id → symbol id (or empty to skip) */
   useImg?: (id: string) => string | null | undefined;
+  /** export: how web fonts are written (outlines, or text with an embedded font) */
+  fonts?: 'outline' | 'embed';
+  /** export: font faces that need embedding (filled while writing markup) */
+  faces?: Set<string>;
 }
 export function attrs(o: Record<string, unknown>) {
   let s = '';
@@ -71,16 +76,35 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
       x: ax,
       y: G.y,
       'font-size': G.size,
-      'font-family': G.family,
+      'font-family': familyCSS(G.family),
       'font-weight': G.weight,
       'font-style': G.italic ? 'italic' : null,
       'text-decoration': G.deco || null,
       'letter-spacing': G.ls ? r3(G.ls) : null,
       'text-anchor': G.anchor,
     });
-    const lh = r3((G.lh || 1.2) * (G.size || 16));
-    inner =
-      lines.length === 1
+    const lh = r3((G.lh || 1.2) * (G.size || 16)),
+      wf = webFont(G.family),
+      od = wf && !ctx.editor && ctx.fonts === 'outline' ? outlineD(G) : null;
+    if (wf && ctx.editor) ensureFaces(G);
+    if (wf && !ctx.editor && !od && ctx.faces) facesFor(G).forEach(fc => ctx.faces.add(fc.key));
+    if (od) {
+      [
+        'x',
+        'y',
+        'font-size',
+        'font-family',
+        'font-weight',
+        'font-style',
+        'text-decoration',
+        'letter-spacing',
+        'text-anchor',
+      ].forEach(k => delete a[k]);
+      a.d = od;
+    }
+    inner = od
+      ? `<path${attrs(a)}/>`
+      : lines.length === 1
         ? `<text${attrs(a)}>${esc(lines[0])}</text>`
         : `<text${attrs(a)}>${lines.map((s, i) => `<tspan x="${r3(ax)}"${i ? ` dy="${lh}"` : ''}>${esc(s) || ' '}</tspan>`).join('')}</text>`;
   } else if (l.type === 'image') {

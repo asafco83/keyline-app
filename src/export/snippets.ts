@@ -126,6 +126,14 @@ export function init(): void {
     syncExportUI();
     updateExport();
   });
+  $('#xFonts').addEventListener('click', (e: MouseEvent) => {
+    const b = (e.target as any).closest('button');
+    if (!b) return;
+    doc.ex.fonts = b.dataset.v;
+    save();
+    syncExportUI();
+    updateExport();
+  });
   $('#xIds').addEventListener('click', (e: MouseEvent) => {
     const b = (e.target as any).closest('button');
     if (!b) return;

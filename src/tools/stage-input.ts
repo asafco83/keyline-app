@@ -1,6 +1,7 @@
 // Keyline — tools/stage-input
 import { panDrag } from './hand';
-import type { Layer, XY } from '../model/types';
+import type { Keyframe, Layer, XY } from '../model/types';
+import { motionHandleDrag, segmentDrag, straighten } from './motion-path';
 import { H, clamp, clone, r2, xfp } from '../core/constants';
 import { INSP, WRAP } from '../core/dom';
 import { beginEdit, select, setProp, setTool } from '../core/history';
@@ -13,6 +14,10 @@ import { createText, handleDrag, nodeDrag, toggleSmooth } from './edit-tools';
 import { addNodeDown, convertDown, delNodeDown, finishPen, penDown, penHover, pencilDown } from './pen';
 import { SHAPE_TOOLS, createDrag } from './shapes';
 
+/** Position keyframes of `l` that are selected in the timeline. */
+export function selectedPosKeys(l: Layer): Keyframe[] {
+  return S.keys.size && l.t.pos ? l.t.pos.filter(q => S.keys.has(q)) : [];
+}
 export function hitChain(target: any): string[] {
   const chain: string[] = [];
   let g = target.closest && target.closest('g[data-lid]');
@@ -34,6 +39,9 @@ export function moveDrag(l: Layer, p0: XY) {
   const PMi = parentMatrix(l).inverse(),
     lp0 = xfp(PMi, p0.x, p0.y),
     start = clone(H.get(l, 'pos', S.time)),
+    // position keyframes selected in the timeline move together (the whole motion path when all are)
+    keys = selectedPosKeys(l),
+    keyStart = keys.map(q => clone(q[1])),
     ed = beginEdit();
   let moved = false;
   S.drag = {
@@ -47,7 +55,8 @@ export function moveDrag(l: Layer, p0: XY) {
         if (Math.abs(dx) > Math.abs(dy)) dy = 0;
         else dx = 0;
       }
-      setProp(l, 'pos', [r2(start[0] + dx), r2(start[1] + dy)]);
+      if (keys.length) keys.forEach((q, i) => (q[1] = [r2(keyStart[i][0] + dx), r2(keyStart[i][1] + dy)]));
+      else setProp(l, 'pos', [r2(start[0] + dx), r2(start[1] + dy)]);
       frame();
     },
     up() {
@@ -56,6 +65,7 @@ export function moveDrag(l: Layer, p0: XY) {
   };
 }
 
+let lastSeg: { id: string; i: number; t: number } | null = null;
 export function init(): void {
   WRAP.addEventListener('pointerdown', (e: PointerEvent) => {
     if (e.button !== 0 && e.button !== 1) return;
@@ -90,6 +100,24 @@ export function init(): void {
     if (nd) return nodeDrag(nd.dataset.node.split(',').map(Number), p);
     const h = (e.target as any).closest('[data-h]');
     if (h) return handleDrag(h.dataset.h, p);
+    const mh = (e.target as any).closest('[data-mh]'),
+      ms = (e.target as any).closest('[data-mseg]'),
+      sl = S.sel && layerById(S.sel);
+    if (sl && mh) {
+      const [i, w] = mh.dataset.mh.split(',').map(Number);
+      return motionHandleDrag(sl, i, w, p);
+    }
+    if (sl && ms) {
+      // the overlay is redrawn after each press, so a double-click is detected by timing
+      const i = +ms.dataset.mseg,
+        now = Date.now();
+      if (lastSeg && lastSeg.i === i && lastSeg.id === sl.id && now - lastSeg.t < 400) {
+        lastSeg = null;
+        return straighten(sl, i);
+      }
+      lastSeg = { id: sl.id, i, t: now };
+      return segmentDrag(sl, i, p);
+    }
     const chain = hitChain(e.target);
     if (chain.length) {
       const nb = chain.filter(c => {

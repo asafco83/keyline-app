@@ -287,3 +287,33 @@ describe('skew, opacities, dash offset and filter tracks', () => {
     expect(fe.getAttribute('flood-color')).toBe('rgb(128,128,128)');
   });
 });
+
+describe('curved motion path segments', () => {
+  it('follows the cubic stored on the keyframe', () => {
+    const L: EngineLayer = {
+      id: 'c',
+      b: { pos: [0, 0] },
+      t: {
+        pos: [
+          [0, [0, 0], 'linear', [0, 100, 0, 100]],
+          [1, [100, 0], 'linear'],
+        ],
+      },
+    };
+    expect(H.get(L, 'pos', 0.5)).toEqual([50, 75]);
+    expect(H.get(L, 'pos', 1)).toEqual([100, 0]);
+  });
+  it('stays straight without a curve', () => {
+    const L: EngineLayer = {
+      id: 'c',
+      b: {},
+      t: {
+        pos: [
+          [0, [0, 0], 'linear'],
+          [1, [100, 0], 'linear'],
+        ],
+      },
+    };
+    expect(H.get(L, 'pos', 0.5)).toEqual([50, 0]);
+  });
+});

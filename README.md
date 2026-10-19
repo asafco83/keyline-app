@@ -133,12 +133,17 @@ Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to 
 **Inspector** (properties of the selected layer):
 
 - **Align bar** at the top: align left / centre / right / top / middle / bottom, distribute horizontally / vertically. One layer aligns to the canvas, several align to each other; distributing needs three or more.
-- **Text:** content, position, measured size, and **Set motion path** (also on shapes): pick a path, rectangle or ellipse and the layer follows it over the whole animation.
-- **Transforms:** position, origin, scale (with a keep-proportions link), skew X/Y, rotate as turns + degrees, anchor grid, flip.
-- **Text appearance:** font, style (weight × italic), bold / italic / underline / overline / strikethrough, size, letter spacing, alignment, line height, and **Keep width**: when on, the box keeps its width and lines break to fit it.
+- **Text:** content, position and measured size.
+- **Transforms:** position, scale (with a keep-proportions link), skew X/Y, rotate as turns + degrees (with a _rotate along the motion path_ toggle when the layer has one), origin, anchor grid, flip.
+- **Motion path:** _Set motion path_ makes the layer follow a path, rectangle or ellipse over the whole animation (one keyframe per point, timed for an even speed). On the canvas, drag a segment of the path to curve it, drag its handles to fine-tune, double-click a segment to straighten it.
+- **Text appearance:** font (system fonts or 31 Google Fonts, including Hebrew ones), style (weight × italic), bold / italic / underline / overline / strikethrough, size, letter spacing, alignment, line height, and **Keep width**: when on, the box keeps its width and lines break to fit it.
 - **Fill & stroke:** colours with an eyedropper (in browsers that support it), fill and stroke opacity, stroke width, and a swap button.
 - **Appearance:** paint order, blending, isolate, opacity slider, line ends, line join, miter limit, dash pattern, dash offset, path length, draw.
 - **Filters:** blur and drop shadow, reorderable, every parameter animatable (in JS export mode; CSS mode exports filters as static).
+
+**Moving keyframes:** with position keyframes selected in the timeline, dragging the layer or using the arrow keys on the canvas moves all of them together (select them all to move the whole motion path). Arrow keys pressed while working in the timeline still move the selected keyframes in time.
+
+**Web fonts in exports:** Google Fonts are converted to outlines by default (no font download, identical everywhere, also inside `<img>`). _Embed font_ instead keeps live, selectable text and embeds only the alphabets the text uses, which is smaller for long text. Right-to-left text is always embedded so its letters keep their order.
 
 ## The `.klp` project format
 
