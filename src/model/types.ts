@@ -1,5 +1,6 @@
 // Keyline — model/types
 // The editor's document model. The runtime's EngineLayer is the exported subset of Layer.
+import type { ShapeParams } from '../geometry/nodes';
 import type { Ease, EngineSubPath, Keyframe } from '../runtime/engine';
 
 export type { Ease, Keyframe };
@@ -105,6 +106,10 @@ export interface Layer {
   t: Tracks;
   /** transform origin (layer space); null means the shape's own default */
   o: Vec2 | null;
+  /** polygon / star drawn with the shape tools: its settings, so sides, points, ratio and corner
+   *  radius stay editable. `sig` is the path it produced; once the path is edited by hand (or morphs)
+   *  the settings no longer apply. */
+  shape?: ShapeParams & { sig?: string };
   /** curved motion path */
   sm: boolean;
   /** orient along motion path */
@@ -300,6 +305,8 @@ export interface EditorState {
   toolGroup: Record<string, string>;
   polySides: number;
   starPoints: number;
+  /** inner/outer radius for new stars */
+  starRatio?: number;
   /** pencil stroke in progress (document coordinates) */
   pencil?: XY[] | null;
   /** what the pen would do under the pointer (for the overlay) */

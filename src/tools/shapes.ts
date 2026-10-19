@@ -8,7 +8,25 @@ import { $, HINTS, r2 } from '../core/constants';
 import { WRAP } from '../core/dom';
 import { beginEdit } from '../core/history';
 import { S, doc, mkLayer, nextColor } from '../core/state';
-import { N, polygonNodes, snap45, starNodes } from '../geometry/nodes';
+import { N, type ShapeParams, shapeD, snap45 } from '../geometry/nodes';
+
+/** Give a path layer polygon / star settings and the path they produce. */
+export function setShape(l: Layer, p: ShapeParams) {
+  const d = shapeD(p);
+  l.b.d = d;
+  l.shape = { ...p, sig: JSON.stringify(d) };
+}
+/** The layer's polygon / star settings, while its path is still the one they produced. */
+export function liveShape(l: Layer) {
+  const s = l.shape;
+  if (!s || l.type !== 'path' || (l.t.d && l.t.d.length)) return null;
+  return s.sig === JSON.stringify(l.b.d) ? s : null;
+}
+/** A two-point open path: shown with From / To. */
+export function isLine(l: Layer) {
+  const d = l.type === 'path' && l.b.d;
+  return !!d && d.length === 1 && !d[0].c && d[0].n.length === 2;
+}
 import { frame, renderStage } from '../render/stage';
 import { renderTools } from '../ui/tools-rail';
 
@@ -81,10 +99,16 @@ export function setGeo(l: Layer, t: string, p0: XY, p: XY, o: ShapeOpts) {
   // polygon and star are drawn from the centre; the drag direction sets the rotation
   const R = Math.max(2, Math.hypot(p.x - p0.x, p.y - p0.y)),
     rot = o.shift ? 0 : (Math.atan2(p.y - p0.y, p.x - p0.x) * 180) / Math.PI + 90;
-  l.b.d =
-    t === 'polygon'
-      ? polygonNodes(r2(p0.x), r2(p0.y), r2(R), S.polySides, rot)
-      : starNodes(r2(p0.x), r2(p0.y), r2(R), r2(R * 0.45), S.starPoints, rot);
+  setShape(l, {
+    kind: t === 'polygon' ? 'polygon' : 'star',
+    cx: r2(p0.x),
+    cy: r2(p0.y),
+    r: r2(R),
+    rot: r2(rot),
+    n: t === 'polygon' ? S.polySides : S.starPoints,
+    ...(t === 'star' ? { ratio: S.starRatio || 0.45 } : {}),
+    rad: (l.shape && l.shape.rad) || 0,
+  });
 }
 export function createDrag(t: string, p0: XY) {
   const ed = beginEdit();

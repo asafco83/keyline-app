@@ -66,6 +66,9 @@ export const PORDER: PropKey[] = [
 ];
 /** Human name of a property (filters read as "Drop shadow · X"). */
 export function propLabel(l: Layer, k: string) {
+  // a two-point open path is a line: its Morph track moves the line's ends
+  const d0 = k === 'd' && l.type === 'path' && l.b.d;
+  if (d0 && d0.length === 1 && !d0[0].c && d0[0].n.length === 2) return 'Line';
   if ((PROPS as any)[k]) return (PROPS as any)[k][0] as string;
   const f = fxOf(l, k);
   return f ? `${f.def.label} · ${f.param.label}` : k;

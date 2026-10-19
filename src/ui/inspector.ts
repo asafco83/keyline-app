@@ -35,6 +35,7 @@ import {
   appearanceSection,
   filtersSection,
   nodeSection,
+  shapeSection,
   paintSection,
   propsChange,
   propsClick,
@@ -82,6 +83,7 @@ export function renderInspector() {
   if (S.keys.size) h += keyPanel();
   const painted = ['rect', 'ellipse', 'path', 'text'].includes(l.type);
   if (l.type === 'text') h += textSection(l);
+  h += shapeSection(l);
   h += transformSection(l);
   const curve = l.t.pos && l.t.pos.length > 1,
     pick = l.type === 'bone' ? '' : motionPick(l);
@@ -106,8 +108,6 @@ export function renderInspector() {
       <label class="check"><input type="checkbox" id="lockAR" ${S.lockAR ? 'checked' : ''}> Keep proportions</label>
       ${a ? '<div class="btns"><button class="btn" data-act="natural">Original size</button></div>' : ''}</section>`;
   }
-  if (l.type === 'rect')
-    h += `<section class="sec"><h3>Rectangle</h3>${nrow('Position', gnum('x', 'X') + gnum('y', 'Y'))}${nrow('Size', gnum('w', 'W') + gnum('h', 'H'))}${nrow('Corner', gnum('rx', 'R'))}<div class="btns"><button class="btn" data-act="topath">Convert to path</button></div></section>`;
   if (l.type === 'ellipse')
     h += `<section class="sec"><h3>Ellipse</h3>${nrow('Center', gnum('cx', 'X') + gnum('cy', 'Y'))}${nrow('Radius', gnum('rx', 'X') + gnum('ry', 'Y'))}<div class="btns"><button class="btn" data-act="topath">Convert to path</button></div></section>`;
   if (l.type === 'path') {
