@@ -8,7 +8,7 @@ import { $, HINTS, r2 } from '../core/constants';
 import { WRAP } from '../core/dom';
 import { beginEdit } from '../core/history';
 import { S, doc, mkLayer, nextColor } from '../core/state';
-import { N, type ShapeParams, shapeD, snap45 } from '../geometry/nodes';
+import { N, type ShapeParams, inferShape, shapeD, snap45 } from '../geometry/nodes';
 
 /** Give a path layer polygon / star settings and the path they produce. */
 export function setShape(l: Layer, p: ShapeParams) {
@@ -18,9 +18,12 @@ export function setShape(l: Layer, p: ShapeParams) {
 }
 /** The layer's polygon / star settings, while its path is still the one they produced. */
 export function liveShape(l: Layer) {
+  if (l.type !== 'path' || (l.t.d && l.t.d.length)) return null;
   const s = l.shape;
-  if (!s || l.type !== 'path' || (l.t.d && l.t.d.length)) return null;
-  return s.sig === JSON.stringify(l.b.d) ? s : null;
+  if (s && s.sig === JSON.stringify(l.b.d)) return s;
+  // older polygons and stars: recognise them from their points (a star's start point may differ, so
+  // the path is only rewritten once a setting changes)
+  return inferShape(l.b.d);
 }
 /** A two-point open path: shown with From / To. */
 export function isLine(l: Layer) {

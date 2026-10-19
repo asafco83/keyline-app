@@ -389,3 +389,52 @@ export function shapeD(s: ShapeParams): PathData {
   }
   return [{ c: true, n }];
 }
+
+/** Recognise a regular polygon or star in a path drawn before shapes kept their settings. */
+export function inferShape(d: PathData): ShapeParams | null {
+  const sp = d && d.length === 1 && d[0];
+  if (!sp || !sp.c || sp.n.length < 3) return null;
+  const n = sp.n;
+  // only sharp corners
+  if (n.some(q => Math.abs(q[2] - q[0]) + Math.abs(q[3] - q[1]) + Math.abs(q[4] - q[0]) + Math.abs(q[5] - q[1]) > 0.05))
+    return null;
+  const m = n.length,
+    cx = n.reduce((s, q) => s + q[0], 0) / m,
+    cy = n.reduce((s, q) => s + q[1], 0) / m,
+    rs = n.map(q => Math.hypot(q[0] - cx, q[1] - cy)),
+    tol = (r: number) => Math.max(0.6, r * 0.01);
+  const angle = (q: PathNode) => (Math.atan2(q[1] - cy, q[0] - cx) * 180) / Math.PI;
+  const evenly = (count: number) => {
+    const step = 360 / count;
+    for (let i = 1; i < m; i++) {
+      let da = angle(n[i]) - angle(n[i - 1]);
+      da = ((da % 360) + 360) % 360;
+      if (Math.abs(da - step) > 1) return false;
+    }
+    return true;
+  };
+  const rot = (q: PathNode) => r2((((angle(q) + 90) % 360) + 360) % 360);
+  if (rs.every(r => Math.abs(r - rs[0]) < tol(rs[0])) && evenly(m))
+    return { kind: 'polygon', cx: r2(cx), cy: r2(cy), r: r2(rs[0]), rot: rot(n[0]), n: m, rad: 0 };
+  if (m % 2 === 0 && m >= 6) {
+    const a = rs.filter((_, i) => i % 2 === 0),
+      b = rs.filter((_, i) => i % 2 === 1),
+      same = (v: number[]) => v.every(r => Math.abs(r - v[0]) < tol(v[0]));
+    if (same(a) && same(b) && evenly(m)) {
+      const outerFirst = a[0] >= b[0],
+        ro = outerFirst ? a[0] : b[0],
+        ri = outerFirst ? b[0] : a[0];
+      return {
+        kind: 'star',
+        cx: r2(cx),
+        cy: r2(cy),
+        r: r2(ro),
+        rot: rot(outerFirst ? n[0] : n[1]),
+        n: m / 2,
+        ratio: Math.round((ri / ro) * 1000) / 1000,
+        rad: 0,
+      };
+    }
+  }
+  return null;
+}
