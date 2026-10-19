@@ -313,3 +313,79 @@ export function reshapeSeg(a: PathNode, b: PathNode, t: number, dx: number, dy: 
   b[2] = r2(b[2] + (w2 * dx) / k);
   b[3] = r2(b[3] + (w2 * dy) / k);
 }
+
+/* ---------- parametric polygon / star (Layer.shape) ---------- */
+
+export interface ShapeParams {
+  kind: 'polygon' | 'star';
+  cx: number;
+  cy: number;
+  /** outer radius */
+  r: number;
+  /** degrees */
+  rot: number;
+  /** sides (polygon) or points (star) */
+  n: number;
+  /** star: inner radius as a fraction of the outer one */
+  ratio?: number;
+  /** corner radius, px */
+  rad?: number;
+}
+/** Corner points of the shape, clockwise from the top. */
+export function shapeCorners(s: ShapeParams): Pt[] {
+  const out: Pt[] = [],
+    star = s.kind === 'star',
+    m = star ? s.n * 2 : s.n;
+  for (let i = 0; i < m; i++) {
+    const a = ((-90 + s.rot + (i * 360) / m) * Math.PI) / 180,
+      r = star && i % 2 ? s.r * (s.ratio == null ? 0.45 : s.ratio) : s.r;
+    out.push([s.cx + r * Math.cos(a), s.cy + r * Math.sin(a)]);
+  }
+  return out;
+}
+/** Largest corner radius that still fits every corner. */
+export function maxCornerRadius(s: ShapeParams) {
+  const c = shapeCorners(s),
+    m = c.length;
+  let best = Infinity;
+  for (let i = 0; i < m; i++) {
+    const p = c[(i + m - 1) % m],
+      v = c[i],
+      q = c[(i + 1) % m],
+      a = Math.atan2(p[1] - v[1], p[0] - v[0]),
+      b = Math.atan2(q[1] - v[1], q[0] - v[0]);
+    let th = Math.abs(a - b);
+    if (th > Math.PI) th = 2 * Math.PI - th;
+    const half = Math.min(dist(p, v), dist(q, v)) / 2;
+    best = Math.min(best, half * Math.tan(th / 2));
+  }
+  return isFinite(best) ? Math.max(0, best) : 0;
+}
+/** Path for the shape. Rounded corners are two nodes joined by a circular arc (as a cubic). */
+export function shapeD(s: ShapeParams): PathData {
+  const c = shapeCorners(s),
+    m = c.length,
+    rad = Math.max(0, Math.min(s.rad || 0, maxCornerRadius(s))),
+    n: PathNode[] = [];
+  for (let i = 0; i < m; i++) {
+    const v = c[i];
+    if (rad <= 0) {
+      n.push(N(r2(v[0]), r2(v[1])));
+      continue;
+    }
+    const p = c[(i + m - 1) % m],
+      q = c[(i + 1) % m],
+      up = [(p[0] - v[0]) / dist(p, v), (p[1] - v[1]) / dist(p, v)],
+      uq = [(q[0] - v[0]) / dist(q, v), (q[1] - v[1]) / dist(q, v)],
+      th = Math.acos(Math.max(-1, Math.min(1, up[0] * uq[0] + up[1] * uq[1]))),
+      d = rad / Math.tan(th / 2),
+      // arc angle and the cubic handle length for a circular arc of radius `rad`
+      phi = Math.PI - th,
+      h = (4 / 3) * Math.tan(phi / 4) * rad,
+      A: Pt = [v[0] + up[0] * d, v[1] + up[1] * d],
+      B: Pt = [v[0] + uq[0] * d, v[1] + uq[1] * d];
+    n.push([r2(A[0]), r2(A[1]), r2(A[0]), r2(A[1]), r2(A[0] - up[0] * h), r2(A[1] - up[1] * h)]);
+    n.push([r2(B[0]), r2(B[1]), r2(B[0] - uq[0] * h), r2(B[1] - uq[1] * h), r2(B[0]), r2(B[1])]);
+  }
+  return [{ c: true, n }];
+}

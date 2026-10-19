@@ -6,8 +6,8 @@
 //   data-x="attr"                       static SVG attribute stored in Layer.extra
 //   data-ly="field"                     layer setting (blend, iso)
 //   data-tx="…" / data-act="…"          buttons
-import type { Layer, PropKey } from '../model/types';
-import { FONTS, ICON, byId, esc, fmt, ic, r2, valueAt } from '../core/constants';
+import type { Layer, PathData, PropKey } from '../model/types';
+import { FONTS, ICON, byId, clone, esc, fmt, ic, r2, valueAt } from '../core/constants';
 import { INSP } from '../core/dom';
 import { beginEdit, setProp, setTime } from '../core/history';
 import { type NodeType, currentNode, nodeType, setNodePos, setNodeType } from '../tools/motion-path';
@@ -16,7 +16,10 @@ import { WEB_FONTS } from '../model/font-catalog';
 import { localFamilies, localFontsSupported, localLoaded, pickWeight, webFont } from '../render/fonts';
 import { FILTERS, addFilter, fxKey, removeFilter, syncFa } from '../model/filters';
 import { H9 } from '../tools/edit-tools';
-import { colf, krow, nrow, num, renderInspector } from './inspector';
+import { colf, gnum, krow, nrow, num, renderInspector } from './inspector';
+import { isLine, liveShape, setShape } from '../tools/shapes';
+import { maxCornerRadius } from '../geometry/nodes';
+import { renderStage } from '../render/stage';
 
 const PAINTED = ['rect', 'ellipse', 'path', 'text'];
 const I = {
@@ -99,6 +102,66 @@ export function transformSection(l: Layer) {
         ? ''
         : `${nrow('Anchor', `<div class="anchor" role="group" aria-label="Move origin to a point of the box">${H9.map(([u, v]) => `<button data-anchor="${u},${v}" aria-label="Origin at ${['left', 'center', 'right'][u * 2]} ${['top', 'middle', 'bottom'][v * 2]}" title="Origin at ${['left', 'center', 'right'][u * 2]} ${['top', 'middle', 'bottom'][v * 2]}"></button>`).join('')}</div><div class="btns" style="margin-left:auto"><button class="btn" data-act="flipx" title="Mirror horizontally around the origin">Flip H</button><button class="btn" data-act="flipy" title="Mirror vertically around the origin">Flip V</button></div>`)}`
     }</section>`;
+}
+
+/* ---------- Shape settings: polygon sides, star points & ratio, corner radius, line ends ---------- */
+
+/** slider + number for one shape setting */
+function slide(key: string, label: string, min: number, max: number, step: number, val: number, unit = '', scale = 1) {
+  return nrow(
+    label,
+    `<input type="range" class="rng" id="sh-${key}-r" data-sh="${key}" data-scale="${scale}" min="${min}" max="${max}" step="${step}" value="${val}" aria-label="${label}"><label class="nf"><input id="sh-${key}" data-sh="${key}" data-scale="${scale}" inputmode="decimal" value="${fmt(val)}" aria-label="${label}">${unit ? `<em>${unit}</em>` : ''}</label>`,
+  );
+}
+export function shapeSection(l: Layer) {
+  if (l.type === 'rect') {
+    const G = l.geo,
+      mx = Math.max(0, Math.min(G.w, G.h) / 2);
+    return `<section class="sec"><h3>Rectangle</h3>${nrow('Position', gnum('x', 'X') + gnum('y', 'Y'))}${nrow('Size', gnum('w', 'W') + gnum('h', 'H'))}${slide('rx', 'Radius', 0, r2(mx), 0.5, Math.min(G.rx || 0, mx), 'px')}<div class="btns"><button class="btn" data-act="topath">Convert to path</button></div></section>`;
+  }
+  const sh = liveShape(l);
+  if (sh) {
+    const star = sh.kind === 'star',
+      mx = r2(maxCornerRadius(sh));
+    return `<section class="sec"><h3>${star ? 'Star' : 'Polygon'}</h3>
+      ${slide('n', star ? 'Points' : 'Sides', 3, 24, 1, sh.n)}
+      ${star ? slide('ratio', 'Ratio', 5, 95, 1, Math.round((sh.ratio == null ? 0.45 : sh.ratio) * 100), '%', 100) : ''}
+      ${slide('rad', 'Radius', 0, mx, 0.5, Math.min(sh.rad || 0, mx), 'px')}
+      <p>Editing the nodes by hand, or adding Morph keyframes, turns this into a plain path.</p></section>`;
+  }
+  if (isLine(l))
+    return `<section class="sec"><h3>Line</h3>
+      ${krow('d', 'From', `<label class="nf"><span>X</span><input id="ln-0-0" data-ln="0:0" inputmode="decimal" aria-label="From X"></label><label class="nf"><span>Y</span><input id="ln-0-1" data-ln="0:1" inputmode="decimal" aria-label="From Y"></label>`)}
+      <div class="row"><span></span><span class="rl">To</span><div class="rf"><label class="nf"><span>X</span><input id="ln-1-0" data-ln="1:0" inputmode="decimal" aria-label="To X"></label><label class="nf"><span>Y</span><input id="ln-1-1" data-ln="1:1" inputmode="decimal" aria-label="To Y"></label></div></div>
+      <p>◆ keys both ends together, so a line can grow, swing or swap ends over time.</p></section>`;
+  return '';
+}
+/** Apply one shape setting (from a slider while dragging, or a number). */
+function applyShape(l: Layer, key: string, raw: number) {
+  if (l.type === 'rect') {
+    l.geo.rx = r2(Math.max(0, Math.min(raw, Math.min(l.geo.w, l.geo.h) / 2)));
+    return;
+  }
+  const sh = liveShape(l);
+  if (!sh) return;
+  const p = { ...sh };
+  delete p.sig;
+  if (key === 'n') p.n = Math.round(Math.max(3, Math.min(24, raw)));
+  if (key === 'ratio') p.ratio = Math.max(0.05, Math.min(0.95, raw));
+  if (key === 'rad') p.rad = r2(Math.max(0, raw));
+  if (key === 'n') sh.kind === 'star' ? (S.starPoints = p.n) : (S.polySides = p.n);
+  if (key === 'ratio') S.starRatio = p.ratio;
+  setShape(l, p);
+}
+/** Move one end of a line (its handles move with it); keyed like a Morph value. */
+function setLineEnd(l: Layer, node: number, axis: number, v: number) {
+  const d = clone(valueAt(l, 'd', S.time)) as PathData,
+    q = d[0].n[node],
+    dv = v - q[axis];
+  q[axis] += dv;
+  q[axis + 2] += dv;
+  q[axis + 4] += dv;
+  setProp(l, 'd', d);
 }
 
 /* ---------- Path nodes (motion path keyframes) ---------- */
@@ -320,6 +383,15 @@ export function refreshProps(l: Layer): void {
     bw.value = bb ? fmt(bb.width) : '';
     byId('bb-h').value = bb ? fmt(bb.height) : '';
   }
+  if (byId('ln-0-0') && isLine(l)) {
+    const d = valueAt(l, 'd', S.time) as PathData;
+    [0, 1].forEach(n =>
+      [0, 1].forEach(a => {
+        const e = byId(`ln-${n}-${a}`);
+        if (e && e !== document.activeElement && d && d[0]) e.value = fmt(d[0].n[n][a]);
+      }),
+    );
+  }
   const nx = byId('np-x');
   // the playhead moved onto another node: rebuild the panel for it
   if (nx) {
@@ -506,6 +578,24 @@ export function propsChange(t: HTMLInputElement | HTMLSelectElement, l: Layer) {
     ed.end({ insp: true });
     return true;
   }
+  if (t.dataset.sh !== undefined) {
+    const v = parseFloat(t.value);
+    if (!isFinite(v)) return true;
+    const ed = S.colorEd || beginEdit();
+    S.colorEd = null;
+    applyShape(l, t.dataset.sh, (t as HTMLInputElement).type === 'range' ? v / +t.dataset.scale : v / +t.dataset.scale);
+    ed.end({ insp: true });
+    return true;
+  }
+  if (t.dataset.ln !== undefined) {
+    const v = parseFloat(t.value),
+      [n, a] = t.dataset.ln.split(':').map(Number);
+    if (!isFinite(v)) return true;
+    const ed = beginEdit();
+    setLineEnd(l, n, a, r2(v));
+    ed.end({ insp: true });
+    return true;
+  }
   if (t.dataset.np !== undefined) {
     const v = parseFloat(t.value),
       i = +t.dataset.ni,
@@ -531,6 +621,14 @@ export function propsChange(t: HTMLInputElement | HTMLSelectElement, l: Layer) {
 }
 /** The opacity slider, live while dragging. */
 export function propsInput(t: HTMLInputElement, l: Layer) {
+  if (t.dataset.sh !== undefined && t.type === 'range') {
+    if (!S.colorEd) S.colorEd = beginEdit();
+    applyShape(l, t.dataset.sh, +t.value / +t.dataset.scale);
+    const n = byId('sh-' + t.dataset.sh);
+    if (n) n.value = fmt(+t.value);
+    renderStage();
+    return true;
+  }
   if (t.dataset.range !== 'op') return false;
   if (!S.colorEd) S.colorEd = beginEdit();
   setProp(l, 'op', Math.round(+t.value) / 100);
