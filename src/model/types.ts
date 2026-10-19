@@ -30,8 +30,8 @@ export type PropKey =
   | 'draw'
   | 'dof'
   | 'd'
-  /** filter parameter: fx:<filter id>:<param> */
-  | `fx:${string}`;
+  /** filter parameter: fx.<filter id>.<param> */
+  | `fx.${string}`;
 
 /** Unanimated values. */
 export interface BaseValues {
@@ -270,6 +270,8 @@ export interface EditorState {
   colorEd: { end(o?: any): void } | null;
   swatch: number;
   lockAR: boolean;
+  /** keep scale proportions in the inspector */
+  sclLock?: boolean;
   ezDir: string;
   tab: string;
   snap: boolean;

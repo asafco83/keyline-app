@@ -1,6 +1,6 @@
 // Keyline — core/history
 import type { Layer, PropKey, Tool } from '../model/types';
-import { $, H, HINTS, baseOf, clamp, clone, r3, setBase } from './constants';
+import { $, H, HINTS, baseOf, clamp, clone, r3, setBase, valueAt } from './constants';
 import { LP, WRAP } from './dom';
 import { S, doc, layerById, selLayer, setDoc, sortTrack, syncIdc } from './state';
 import { markDirty } from '../io/file-state';
@@ -107,7 +107,7 @@ export function setProp(l: Layer, k: PropKey, v: any) {
 export function toggleKey(l: Layer, k: PropKey) {
   const ed = beginEdit(),
     tr = l.t[k],
-    cur = clone(H.get(l, k, S.time));
+    cur = clone(valueAt(l, k, S.time));
   if (!tr || !tr.length) l.t[k] = [[r3(S.time), cur, 'ease']];
   else {
     const i = tr.findIndex(q => Math.abs(q[0] - S.time) < 0.005);
@@ -128,7 +128,7 @@ export function toggleKey(l: Layer, k: PropKey) {
 }
 export function removeTrack(l: Layer, k: PropKey) {
   const ed = beginEdit();
-  const v = clone(H.get(l, k, S.time));
+  const v = clone(valueAt(l, k, S.time));
   (l.t[k] || []).forEach(q => S.keys.delete(q));
   delete l.t[k];
   setBase(l, k, v);

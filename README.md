@@ -36,6 +36,7 @@ src/
 
   model/
     tree.ts              Layer hierarchy (groups, bones), parent matrices
+    filters.ts           Layer filters (blur, drop shadow) with animatable parameters
     sample.ts            The sample scene
 
   geometry/
@@ -44,6 +45,7 @@ src/
 
   render/
     markup.ts            Layer → SVG markup (shared by the editor canvas and the exporter)
+    text-layout.ts       Text line breaking ("Keep width" wrapping) and measuring
     stage.ts             Canvas render, fit, per-frame update
     overlay.ts           Selection box, handles, motion paths, nodes, pen preview
 
@@ -58,6 +60,7 @@ src/
   ui/                    Panels and controls
     layers-panel.ts  timeline.ts  inspector.ts  easing.ts
     tools-rail.ts (tool groups and flyouts)  topbar.ts  file-menu.ts  keyboard.ts
+    props-panel.ts (inspector sections)  align.ts (align bar, Set motion path)
 
   io/                    Files
     assets.ts            Image import (incl. TIFF/HEIC conversion), IndexedDB, asset panel
@@ -125,7 +128,17 @@ Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to 
   - **Ungroup** (Ctrl+Shift+G).
   - **Group** (Ctrl+G); with nothing selected it adds an empty group.
   - **Delete**.
-- **At the bottom right:** **Animate** opens a menu of the properties the selected layers can animate. Picking one adds a keyframe at the playhead. Shortcuts: Shift+P position, Shift+A origin, Shift+S scale, Shift+R rotate, Shift+O opacity, Shift+B stroke color, Shift+W stroke width, Shift+D draw, Shift+M morph. Fill color has no shortcut, because Shift+C is the Convert Point tool.
+- **At the bottom right:** **Animate** opens a menu of the properties the selected layers can animate. Picking one adds a keyframe at the playhead. Shortcuts: Shift+P position, Shift+A origin, Shift+S scale, Shift+R rotate, Shift+X skew, Shift+O opacity, Shift+B stroke color, Shift+W stroke width, Shift+D draw, Shift+F dash offset, Shift+M morph. Fill color, fill opacity and stroke opacity have no shortcut (Shift+C is the Convert Point tool).
+
+**Inspector** (properties of the selected layer):
+
+- **Align bar** at the top: align left / centre / right / top / middle / bottom, distribute horizontally / vertically. One layer aligns to the canvas, several align to each other; distributing needs three or more.
+- **Text:** content, position, measured size, and **Set motion path** (also on shapes): pick a path, rectangle or ellipse and the layer follows it over the whole animation.
+- **Transforms:** position, origin, scale (with a keep-proportions link), skew X/Y, rotate as turns + degrees, anchor grid, flip.
+- **Text appearance:** font, style (weight × italic), bold / italic / underline / overline / strikethrough, size, letter spacing, alignment, line height, and **Keep width**: when on, the box keeps its width and lines break to fit it.
+- **Fill & stroke:** colours with an eyedropper (in browsers that support it), fill and stroke opacity, stroke width, and a swap button.
+- **Appearance:** paint order, blending, isolate, opacity slider, line ends, line join, miter limit, dash pattern, dash offset, path length, draw.
+- **Filters:** blur and drop shadow, reorderable, every parameter animatable (in JS export mode; CSS mode exports filters as static).
 
 ## The `.klp` project format
 

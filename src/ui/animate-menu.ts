@@ -3,7 +3,7 @@
 // selected layer that has it gets a keyframe at the playhead, so it joins the timeline.
 // Shortcuts: Shift + the letter shown next to each property.
 import type { Keyframe, Layer, PropKey } from '../model/types';
-import { $, H, ICON, clone, r3 } from '../core/constants';
+import { $, H, ICON, clone, r3, valueAt } from '../core/constants';
 import { beginEdit } from '../core/history';
 import { propOK } from '../core/keyframes';
 import { S, layerById, sortTrack } from '../core/state';
@@ -16,13 +16,19 @@ export const ANIM_GROUPS: Array<Array<[PropKey, string, string?]>> = [
     ['org', 'Origin', 'A'],
     ['scl', 'Scale', 'S'],
     ['rot', 'Rotate', 'R'],
+    ['skw', 'Skew', 'X'],
   ],
   [['op', 'Opacity', 'O']],
-  [['fill', 'Fill color']],
+  [
+    ['fill', 'Fill color'],
+    ['fo', 'Fill opacity'],
+  ],
   [
     ['stk', 'Stroke color', 'B'],
+    ['so', 'Stroke opacity'],
     ['sw', 'Stroke width', 'W'],
     ['draw', 'Draw (stroke offset)', 'D'],
+    ['dof', 'Dash offset', 'F'],
   ],
   [['d', 'Morph path', 'M']],
 ];
@@ -47,7 +53,7 @@ export function animateProp(k: PropKey) {
     const tr = l.t[k] || (l.t[k] = []);
     let q = tr.find(x => Math.abs(x[0] - t) < 0.005);
     if (!q) {
-      q = [t, clone(H.get(l, k, S.time)), 'ease'];
+      q = [t, clone(valueAt(l, k, S.time)), 'ease'];
       tr.push(q);
       sortTrack(tr);
     }

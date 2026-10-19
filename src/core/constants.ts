@@ -80,8 +80,15 @@ export function propKind(l: Layer, k: string): 'v' | 'n' | 'c' | 'm' {
 export function layerTracks(l: Layer): PropKey[] {
   return [...PORDER, ...(fxKeys(l) as PropKey[])].filter(k => l.t[k] && l.t[k].length);
 }
+/** Values of properties a layer may never have set. */
+export const PDEF: Partial<Record<string, any>> = { skw: [0, 0], fo: 1, so: 1, dof: 0 };
+/** A property's value at time t, falling back to its default. */
+export function valueAt(l: Layer, k: string, t: number) {
+  const v = H.get(l, k, t);
+  return v == null && PDEF[k] != null ? clone(PDEF[k]) : v;
+}
 export function baseOf(l: Layer, k: PropKey) {
-  return k === 'org' ? l.o || [0, 0] : l.b[k];
+  return k === 'org' ? l.o || [0, 0] : l.b[k] != null ? l.b[k] : clone(PDEF[k]);
 }
 export function setBase(l: Layer, k: PropKey, v: any) {
   if (k === 'org') l.o = v;

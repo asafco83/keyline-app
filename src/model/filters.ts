@@ -1,5 +1,5 @@
 // Keyline — model/filters
-// Layer filters (Blur, Drop shadow). Each parameter is an animatable track keyed `fx:<filter id>:<param>`,
+// Layer filters (Blur, Drop shadow). Each parameter is an animatable track keyed `fx.<filter id>.<param>`,
 // stored like any other property in Layer.b / Layer.t. The runtime animates them through Layer.fa.
 import type { Layer } from './types';
 
@@ -38,13 +38,13 @@ export const FILTERS: Record<string, FilterDef> = {
     ],
   },
 };
-export const fxKey = (id: string, param: string) => `fx:${id}:${param}`;
+export const fxKey = (id: string, param: string) => `fx.${id}.${param}`;
 export function isFxKey(k: string) {
-  return k.startsWith('fx:');
+  return k.startsWith('fx.');
 }
-/** Parse `fx:<id>:<param>` into the filter and its parameter definition. */
+/** Parse `fx.<id>.<param>` into the filter and its parameter definition. */
 export function fxOf(l: Layer, k: string) {
-  const [, id, key] = k.split(':'),
+  const [, id, key] = k.split('.'),
     fx = (l.fx || []).find(f => f.id === id),
     def = fx && FILTERS[fx.type],
     param = def && def.params.find(p => p.key === key);

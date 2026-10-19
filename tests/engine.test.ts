@@ -270,16 +270,16 @@ describe('skew, opacities, dash offset and filter tracks', () => {
     document.body.innerHTML =
       '<svg><g id="x-a"><rect id="x-a-s"/><filter><feDropShadow id="x-a-f1"/></filter></g></svg>';
     const L: any = layer({
-      'fx:f1:sd': [
+      'fx.f1.sd': [
         [0, 0, 'linear'],
         [1, 8, 'linear'],
       ],
-      'fx:f1:col': [
+      'fx.f1.col': [
         [0, '#000000', 'linear'],
         [1, '#ffffff', 'linear'],
       ],
     });
-    L.fa = { 'fx:f1:sd': ['-f1', 'stdDeviation'], 'fx:f1:col': ['-f1', 'flood-color'] };
+    L.fa = { 'fx.f1.sd': ['-f1', 'stdDeviation'], 'fx.f1.col': ['-f1', 'flood-color'] };
     const P = KLEngine({ p: 'x-', dur: 1, L: [L] }, document.body);
     P.apply(0.5);
     const fe = document.getElementById('x-a-f1');

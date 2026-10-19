@@ -1,29 +1,61 @@
 // Keyline — ui/inspector
 import { bgPaint, parseBg, setBg } from '../model/background';
 import type { Ease, Layer, PathData, PropKey, Vec2 } from '../model/types';
-import { $, EZFAM, FONTS, H, PROPS, propKind, byId, clamp, clone, esc, fmt, r2, r3, xfp } from '../core/constants';
+import {
+  $,
+  EZFAM,
+  FONTS,
+  H,
+  PROPS,
+  propKind,
+  byId,
+  clamp,
+  clone,
+  esc,
+  fmt,
+  r2,
+  r3,
+  xfp,
+  valueAt,
+} from '../core/constants';
 import { INSP } from '../core/dom';
 import { beginEdit, deleteKeys, setProp, setTool, toggleKey } from '../core/history';
 import { convertToPath, morphTo } from '../core/layer-ops';
 import { ASSETS, S, doc, layerById, selLayer, sortTrack } from '../core/state';
 import { subdivideAll } from '../geometry/nodes';
 import { toast } from '../io/open';
+import { fxOf } from '../model/filters';
 import { descendants, kids } from '../model/tree';
 import { fit, frame, renderStage } from '../render/stage';
 import { addChildBone, boneTipL, shiftChildBones } from '../tools/bones';
-import { H9, setAnchor } from '../tools/edit-tools';
+import { setAnchor } from '../tools/edit-tools';
+import { align, alignBar, motionPick, setMotionPath } from './align';
+import {
+  appearanceSection,
+  filtersSection,
+  paintSection,
+  propsChange,
+  propsClick,
+  propsInput,
+  propsToggle,
+  refreshProps,
+  rotFromFields,
+  textAppearanceSection,
+  textSection,
+  transformSection,
+} from './props-panel';
 import { applyEase, bezOf, drawEz, easeFam, famName, keyPanel, parseBez, sameEase } from './easing';
 import { deleteSel, groupSel, moveLayers, ungroup } from './layers-panel';
 import { dragWin } from './timeline';
 
 export function num(f: string, lab: string, unit?: string) {
-  return `<label class="nf"><span data-scrub="${f}">${lab}</span><input id="i-${f.replace(/:/g, '_')}" data-f="${f}" inputmode="decimal" spellcheck="false" aria-label="${lab}">${unit ? `<em>${unit}</em>` : ''}</label>`;
+  return `<label class="nf"><span data-scrub="${f}">${lab}</span><input id="i-${f.replace(/[:.]/g, '_')}" data-f="${f}" inputmode="decimal" spellcheck="false" aria-label="${lab}">${unit ? `<em>${unit}</em>` : ''}</label>`;
 }
 export function gnum(g: string, lab: string, unit?: string) {
   return `<label class="nf"><span>${lab}</span><input id="g-${g}" data-g="${g}" inputmode="decimal" spellcheck="false" aria-label="${lab}">${unit ? `<em>${unit}</em>` : ''}</label>`;
 }
 export function colf(f: string) {
-  return `<div class="cf"><input type="color" data-f="${f}" data-col id="c-${f}" aria-label="Pick color"><input class="txt mono" data-f="${f}" id="t-${f}" spellcheck="false" aria-label="Color value"></div>`;
+  return `<div class="cf"><input type="color" data-f="${f}" data-col id="c-${f.replace(/\./g, '_')}" aria-label="Pick color"><input class="txt mono" data-f="${f}" id="t-${f.replace(/\./g, '_')}" spellcheck="false" aria-label="Color value"></div>`;
 }
 export function krow(k: string, label: string, body: string) {
   return `<div class="row"><button class="kb" data-kb="${k}" aria-label="Keyframe ${label}" title="Add / remove keyframe at playhead"></button><span class="rl">${label}</span><div class="rf">${body}</div></div>`;
@@ -41,35 +73,27 @@ export function renderInspector() {
     refreshDocFields();
     return;
   }
-  let h = '';
+  let h = alignBar();
   if (S.selSet.size > 1)
     h += `<section class="sec"><h3>${S.selSet.size} layers selected</h3><div class="btns"><button class="btn" data-act="grp">Group them</button><button class="btn danger" data-act="delsel">Delete all</button></div><p>The fields below edit “${esc(l.name)}”.</p></section>`;
   h += `<section class="sec"><h3>Layer <span class="chip">${l.type}</span></h3>${nrow('Name', `<input class="txt" id="ln" data-name value="${esc(l.name)}" spellcheck="false">`)}</section>`;
   if (S.keys.size) h += keyPanel();
-  h += `<section class="sec"><h3>Transform <small>◆ adds a keyframe</small></h3>
-    ${krow('pos', 'Position', num('pos:0', 'X') + num('pos:1', 'Y'))}
-    ${krow('rot', 'Rotate', num('rot', '↻', '°'))}
-    ${krow('scl', 'Scale', num('scl:0:100', 'W', '%') + num('scl:1:100', 'H', '%'))}
-    ${krow('op', 'Opacity', num('op::100', 'α', '%'))}
+  const painted = ['rect', 'ellipse', 'path', 'text'].includes(l.type);
+  if (l.type === 'text') h += textSection(l, motionPick(l));
+  h += transformSection(l);
+  const curve = l.t.pos && l.t.pos.length > 1,
+    pick = l.type === 'text' || l.type === 'bone' ? '' : motionPick(l);
+  if (curve || pick)
+    h += `<section class="sec"><h3>Motion path</h3>${pick}
     ${
-      l.type === 'bone'
-        ? ''
-        : `    ${krow('org', 'Origin', num('org:0', 'X') + num('org:1', 'Y') + `<button class="btn ib" data-act="center" title="Center origin on the shape" aria-label="Center origin">◎</button>`)}
-    ${nrow('Anchor', `<div class="anchor" role="group" aria-label="Move origin to a point of the box">${H9.map(([u, v]) => `<button data-anchor="${u},${v}" aria-label="Origin at ${['left', 'center', 'right'][u * 2]} ${['top', 'middle', 'bottom'][v * 2]}" title="Origin at ${['left', 'center', 'right'][u * 2]} ${['top', 'middle', 'bottom'][v * 2]}"></button>`).join('')}</div><div class="btns" style="margin-left:auto"><button class="btn" data-act="flipx" title="Mirror horizontally around the origin">Flip H</button><button class="btn" data-act="flipy" title="Mirror vertically around the origin">Flip V</button></div>`)}
-    <p>Drag the origin on the canvas to move it (Shift snaps to the box). Scale handles: Shift keeps proportions, Alt scales from the center, Ctrl scales around the origin, drag past the edge to mirror.</p>`
+      curve
+        ? `<label class="check"><input type="checkbox" data-flag="sm" id="fl-sm" ${l.sm ? 'checked' : ''}> Curved path through keyframes</label>
+    <label class="check"><input type="checkbox" data-flag="or" id="fl-or" ${l.or ? 'checked' : ''}> Rotate along the path</label>`
+        : ''
     }</section>`;
-  if (l.t.pos && l.t.pos.length > 1)
-    h += `<section class="sec"><h3>Motion path</h3>
-    <label class="check"><input type="checkbox" data-flag="sm" id="fl-sm" ${l.sm ? 'checked' : ''}> Curved path through keyframes</label>
-    <label class="check"><input type="checkbox" data-flag="or" id="fl-or" ${l.or ? 'checked' : ''}> Rotate along the path</label></section>`;
-  if (['rect', 'ellipse', 'path', 'text'].includes(l.type)) {
-    h += `<section class="sec"><h3>Appearance</h3>${krow('fill', 'Fill', colf('fill'))}${krow('stk', 'Stroke', colf('stk'))}${krow('sw', 'Stroke width', num('sw', 'W', 'px'))}`;
-    if (l.type !== 'text')
-      h +=
-        krow('draw', 'Draw', num('draw', '◐', '%')) +
-        `<p>Draw animates the stroke from 0% to 100% for a self-drawing line. Give the layer a stroke first.</p>`;
-    h += `</section>`;
-  }
+  if (l.type === 'text') h += textAppearanceSection(l);
+  if (painted) h += paintSection(l);
+  if (l.type !== 'bone') h += appearanceSection(l) + filtersSection(l);
   const G = l.geo;
   if (l.type === 'group') {
     const n = kids(l.id).length;
@@ -89,23 +113,6 @@ export function renderInspector() {
     h += `<section class="sec"><h3>Rectangle</h3>${nrow('Position', gnum('x', 'X') + gnum('y', 'Y'))}${nrow('Size', gnum('w', 'W') + gnum('h', 'H'))}${nrow('Corner', gnum('rx', 'R'))}<div class="btns"><button class="btn" data-act="topath">Convert to path</button></div></section>`;
   if (l.type === 'ellipse')
     h += `<section class="sec"><h3>Ellipse</h3>${nrow('Center', gnum('cx', 'X') + gnum('cy', 'Y'))}${nrow('Radius', gnum('rx', 'X') + gnum('ry', 'Y'))}<div class="btns"><button class="btn" data-act="topath">Convert to path</button></div></section>`;
-  if (l.type === 'text') {
-    const fams = FONTS.some(f => f[0] === G.family) ? FONTS : FONTS.concat([[G.family, G.family.split(',')[0]]]);
-    h += `<section class="sec"><h3>Text</h3><textarea class="ta" data-g="text" id="g-text" rows="2" aria-label="Text">${esc(G.text)}</textarea>
-    ${nrow('Font', `<select class="sel" data-g="family" id="g-family">${fams.map(f => `<option value="${esc(f[0])}"${f[0] === G.family ? ' selected' : ''}>${esc(f[1])}</option>`).join('')}</select>`)}
-    ${nrow('Size', gnum('size', 'pt') + `<select class="sel" data-g="weight" id="g-weight">${['300', '400', '500', '600', '700', '800'].map(w => `<option${String(G.weight) === w ? ' selected' : ''}>${w}</option>`).join('')}</select>`)}
-    ${nrow(
-      'Align',
-      `<select class="sel" data-g="anchor" id="g-anchor">${[
-        ['start', 'Left'],
-        ['middle', 'Center'],
-        ['end', 'Right'],
-      ]
-        .map(a => `<option value="${a[0]}"${G.anchor === a[0] ? ' selected' : ''}>${a[1]}</option>`)
-        .join('')}</select>`,
-    )}
-    ${nrow('Position', gnum('x', 'X') + gnum('y', 'Y'))}</section>`;
-  }
   if (l.type === 'path') {
     const others = doc.layers.filter(o => o !== l && ['path', 'rect', 'ellipse'].includes(o.type));
     const cnt = ((H.get(l, 'd', S.time) || []) as PathData).reduce((s, p) => s + p.n.length, 0);
@@ -166,6 +173,7 @@ export function refreshDocFields() {
   set('d-dir', doc.dir);
   set('tDur', fmt(doc.dur));
 }
+const GDEF: Record<string, number> = { ls: 0, lh: 1.2 };
 export function refreshInspector(full?: boolean) {
   const td = $('#tDur');
   if (td !== document.activeElement) td.value = fmt(doc.dur);
@@ -174,7 +182,7 @@ export function refreshInspector(full?: boolean) {
   INSP.querySelectorAll('[data-f]').forEach((inp: HTMLInputElement) => {
     if (inp === document.activeElement) return;
     const [k, i, m] = inp.dataset.f.split(':') as [PropKey, string, string];
-    let v = H.get(l, k, S.time);
+    let v = valueAt(l, k, S.time);
     if (i !== undefined && i !== '') v = v ? v[+i] : 0;
     if (propKind(l, k) === 'c') {
       if (inp.type === 'color') inp.value = toHex(v) || '#000000';
@@ -189,8 +197,9 @@ export function refreshInspector(full?: boolean) {
   });
   if (full)
     INSP.querySelectorAll('input[data-g]').forEach((inp: HTMLInputElement) => {
-      inp.value = fmt(l.geo[inp.dataset.g]);
+      inp.value = fmt(l.geo[inp.dataset.g] ?? GDEF[inp.dataset.g]);
     });
+  refreshProps(l);
   INSP.querySelectorAll('[data-o]').forEach((inp: HTMLInputElement) => {
     if (full || inp !== document.activeElement) inp.value = fmt((l.o || [0, 0])[+inp.dataset.o]);
   });
@@ -248,20 +257,29 @@ export function parseField(l: Layer, inp: HTMLInputElement): [PropKey, any] | nu
   const [k, i, m] = inp.dataset.f.split(':') as [PropKey, string, string];
   const kind = propKind(l, k);
   let v: any;
+  if (inp.dataset.rt) return [k, r3(rotFromFields())];
   if (kind === 'c') {
     v = inp.value.trim() || 'none';
   } else {
     v = parseFloat(inp.value);
     if (!isFinite(v)) return null;
     if (m) v /= +m;
-    if (k === 'op') v = clamp(v, 0, 1);
+    if (k === 'op' || k === 'fo' || k === 'so') v = clamp(v, 0, 1);
+    if (k.startsWith('fx.')) {
+      const p = fxOf(l, k);
+      if (p && p.param.min != null) v = Math.max(p.param.min, v);
+      if (p && p.param.scale === 100) v = Math.min(1, v);
+    }
     if (k === 'draw') v = clamp(v, 0, 100);
     if (k === 'sw') v = Math.max(0, v);
     v = r3(v);
   }
   if (i !== undefined && i !== '') {
-    const cur = clone(H.get(l, k, S.time));
-    cur[+i] = v;
+    const cur = clone(valueAt(l, k, S.time)),
+      j = +i,
+      o = 1 - j;
+    if (k === 'scl' && S.sclLock && cur[j]) cur[o] = r3((cur[o] * v) / cur[j]);
+    cur[j] = v;
     v = cur;
   }
   return [k, v];
@@ -320,6 +338,7 @@ export function init(): void {
   INSP.addEventListener('input', (e: Event) => {
     const t = e.target as HTMLInputElement,
       l = selLayer();
+    if (l && propsInput(t, l)) return frame();
     if (t.dataset.col !== undefined && l) {
       if (!S.colorEd) S.colorEd = beginEdit();
       const r = parseField(l, t);
@@ -340,7 +359,7 @@ export function init(): void {
   INSP.addEventListener('change', (e: Event) => {
     const t = e.target as HTMLInputElement,
       l = selLayer();
-    if (S.colorEd && (t.dataset.col !== undefined || t.id === 'd-bgc')) {
+    if (S.colorEd && (t.dataset.col !== undefined || t.dataset.range !== undefined || t.id === 'd-bgc')) {
       const ed = S.colorEd;
       S.colorEd = null;
       ed.end();
@@ -348,6 +367,11 @@ export function init(): void {
     }
     if (t.dataset.doc !== undefined) return docField(t);
     if (!l) return;
+    if (propsChange(t, l)) return;
+    if (t.id === 'motionPath') {
+      if (t.value && !setMotionPath(l, t.value)) toast('That shape has no length to follow.');
+      return;
+    }
     if (t.dataset.f) {
       const r = parseField(l, t);
       if (!r) {
@@ -362,14 +386,21 @@ export function init(): void {
     if (t.dataset.g) {
       const g = t.dataset.g,
         ed = beginEdit();
-      if (['text', 'family', 'weight', 'anchor'].includes(g)) l.geo[g] = t.value;
+      if (['text', 'family', 'weight', 'anchor', 'deco'].includes(g)) l.geo[g] = t.value;
       else {
         const v = parseFloat(t.value);
         if (!isFinite(v)) {
           refreshInspector(true);
           return;
         }
-        const nv = ['w', 'h', 'rx', 'ry', 'size'].includes(g) ? Math.max(0, v) : v;
+        const nv =
+          g === 'lh'
+            ? clamp(v, 0.5, 5)
+            : g === 'ww'
+              ? Math.max(1, v)
+              : ['w', 'h', 'rx', 'ry', 'size'].includes(g)
+                ? Math.max(0, v)
+                : v;
         if (l.type === 'image' && S.lockAR && (g === 'w' || g === 'h') && l.geo.w && l.geo.h) {
           const ratio = l.geo.h / l.geo.w;
           if (g === 'w') l.geo.h = r2(nv * ratio);
@@ -379,7 +410,9 @@ export function init(): void {
         l.geo[g] = g === 'len' ? Math.max(1, nv) : nv;
         if (oldTip) shiftChildBones(l, oldTip);
       }
-      ed.end();
+      // the text box and line breaks can change with any text field
+      if (l.type === 'text' && ['text', 'size', 'ww', 'ls', 'family'].includes(g)) ed.end({ insp: g !== 'text' });
+      else ed.end();
       refreshInspector(true);
       return;
     }
@@ -496,6 +529,10 @@ export function init(): void {
       }
       return;
     }
+    const al = (e.target as any).closest('[data-align]');
+    if (al) return align(al.dataset.align);
+    const tx = (e.target as any).closest('[data-tx]');
+    if (tx && l) return propsToggle(tx, l);
     const an = (e.target as any).closest('[data-anchor]');
     if (an && l) {
       const [u, v] = an.dataset.anchor.split(',').map(Number);
@@ -505,6 +542,7 @@ export function init(): void {
     const b = (e.target as any).closest('[data-act]');
     if (!b || !l) return;
     const a = b.dataset.act;
+    if (propsClick(a, b, l)) return;
     if (a === 'flipx' || a === 'flipy') {
       const s = clone(H.get(l, 'scl', S.time)),
         ed = beginEdit();
@@ -597,7 +635,22 @@ export function init(): void {
     const f = sc.dataset.scrub,
       inp = sc.parentElement.querySelector('input'),
       [k] = f.split(':');
-    const step = (<Record<string, number>>{ pos: 1, org: 1, rot: 1, scl: 0.5, op: 0.5, sw: 0.1, draw: 0.5 })[k] || 1,
+    const step =
+        +sc.dataset.scrubStep ||
+        (<Record<string, number>>{
+          pos: 1,
+          org: 1,
+          rot: 1,
+          scl: 0.5,
+          skw: 0.5,
+          op: 0.5,
+          fo: 0.5,
+          so: 0.5,
+          sw: 0.1,
+          draw: 0.5,
+          dof: 1,
+        })[k] ||
+        (k.startsWith('fx.') ? 0.1 : 1),
       start = parseFloat(inp.value) || 0,
       x0 = e.clientX,
       ed = beginEdit();
