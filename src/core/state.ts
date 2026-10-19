@@ -43,6 +43,10 @@ export const S: EditorState = {
   clip: null,
   showBones: true,
   boneDraft: null,
+  pan: { x: 0, y: 0 },
+  toolGroup: { pen: 'pen', shapes: 'rect' },
+  polySides: 6,
+  starPoints: 5,
 };
 export let idc = 0;
 export let aidc = 0;

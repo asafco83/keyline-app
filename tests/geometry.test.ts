@@ -1,6 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import { parsePath, arcToCubic } from '../src/geometry/parse-path';
-import { equalizeValues, splitSeg, rectNodes, ellNodes, starNodes } from '../src/geometry/nodes';
+import {
+  cubicAt,
+  ellNodes,
+  equalizeValues,
+  polygonNodes,
+  rectNodes,
+  simplifyPts,
+  smoothNodes,
+  snap45,
+  splitSeg,
+  splitSegAt,
+  starNodes,
+} from '../src/geometry/nodes';
 import { KLEngine } from '../src/runtime/engine';
 
 const H = KLEngine({ L: [] }, null);
@@ -76,5 +88,86 @@ describe('node utilities used for morphing', () => {
   });
   it('builds ellipses from four smooth nodes', () => {
     expect(count(ellNodes({ cx: 0, cy: 0, rx: 10, ry: 5 }))).toEqual([4]);
+  });
+});
+
+describe('drawing-tool helpers', () => {
+  const line = () => ({
+    c: false,
+    n: [
+      [0, 0, 0, 0, 0, 0],
+      [30, 0, 30, 0, 30, 0],
+    ],
+  });
+  it('splits a segment at t without changing its shape', () => {
+    const sp = {
+      c: false,
+      n: [
+        [0, 0, 0, 0, 0, 30],
+        [40, 0, 40, 30, 40, 0],
+      ],
+    };
+    const before = [0.1, 0.3, 0.5, 0.8].map(t => cubicAt(sp.n[0], sp.n[1], t));
+    const k = splitSegAt(sp, 0, 0.3);
+    expect(k).toBe(1);
+    expect(sp.n).toHaveLength(3);
+    const at = cubicAt(sp.n[0], sp.n[1], 1);
+    expect(at[0]).toBeCloseTo(before[1][0], 1);
+    expect(at[1]).toBeCloseTo(before[1][1], 1);
+    // a point past the split now lies on the second half
+    const later = cubicAt(sp.n[1], sp.n[2], (0.8 - 0.3) / 0.7);
+    expect(later[0]).toBeCloseTo(before[3][0], 1);
+    expect(later[1]).toBeCloseTo(before[3][1], 1);
+  });
+  it('splits straight lines at the requested position', () => {
+    const sp = line();
+    splitSegAt(sp, 0, 0.25);
+    expect(sp.n[1].slice(0, 2)).toEqual([7.5, 0]);
+  });
+  it('builds regular polygons with a corner at the top', () => {
+    const [sp] = polygonNodes(0, 0, 10, 6);
+    expect(sp.c).toBe(true);
+    expect(sp.n).toHaveLength(6);
+    expect(sp.n[0][0]).toBeCloseTo(0);
+    expect(sp.n[0][1]).toBeCloseTo(-10);
+  });
+  it('rotates stars', () => {
+    const [sp] = starNodes(0, 0, 10, 4, 5, 90);
+    expect(sp.n).toHaveLength(10);
+    expect(sp.n[0][0]).toBeCloseTo(10);
+    expect(sp.n[0][1]).toBeCloseTo(0);
+  });
+  it('snaps to 45° steps', () => {
+    const p = snap45([0, 0], [10, 1]);
+    expect(p[1]).toBeCloseTo(0);
+    const q = snap45([0, 0], [10, 9]);
+    expect(q[0]).toBeCloseTo(q[1]);
+  });
+  it('simplifies a noisy straight stroke to its ends', () => {
+    const pts = Array.from({ length: 50 }, (_, i) => [i, i % 2 ? 0.2 : -0.2]);
+    expect(simplifyPts(pts, 1)).toEqual([pts[0], pts[49]]);
+  });
+  it('keeps the corner of an L-shaped stroke', () => {
+    const pts = [...Array.from({ length: 10 }, (_, i) => [i, 0]), ...Array.from({ length: 10 }, (_, i) => [9, i + 1])];
+    const s = simplifyPts(pts, 0.5);
+    expect(s).toContainEqual([9, 0]);
+    expect(s).toHaveLength(3);
+  });
+  it('fits smooth nodes through every point, with flat ends on open strokes', () => {
+    const n = smoothNodes(
+      [
+        [0, 0],
+        [10, 10],
+        [20, 0],
+      ],
+      false,
+    );
+    expect(n.map(q => q.slice(0, 2))).toEqual([
+      [0, 0],
+      [10, 10],
+      [20, 0],
+    ]);
+    expect(n[0].slice(2)).toEqual([0, 0, 0, 0]);
+    expect(n[1][4]).toBeGreaterThan(10);
   });
 });

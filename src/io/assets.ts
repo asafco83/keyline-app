@@ -8,7 +8,7 @@ import { markDirty } from './file-state';
 import { confirmDiscard } from './guard';
 import { loadProjectFile, toast } from './open';
 import { importSVG } from './svg-import';
-import { addLayer } from '../tools/edit-tools';
+import { addLayer } from '../tools/shapes';
 import { kb } from '../ui/inspector';
 
 export const IDB = {

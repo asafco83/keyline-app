@@ -1,4 +1,5 @@
 // Keyline — tools/stage-input
+import { panDrag } from './hand';
 import type { Layer, XY } from '../model/types';
 import { H, clamp, clone, r2, xfp } from '../core/constants';
 import { INSP, WRAP } from '../core/dom';
@@ -8,7 +9,9 @@ import { isLocked, parentMatrix } from '../model/tree';
 import { docPt, drawOverlay } from '../render/overlay';
 import { fit, frame } from '../render/stage';
 import { boneCreate, fkDrag, ikDrag } from './bones';
-import { createDrag, createText, finishPen, handleDrag, nodeDrag, penDown, toggleSmooth } from './edit-tools';
+import { createText, handleDrag, nodeDrag, toggleSmooth } from './edit-tools';
+import { addNodeDown, delNodeDown, finishPen, penDown, penHover, pencilDown } from './pen';
+import { SHAPE_TOOLS, createDrag } from './shapes';
 
 export function hitChain(target: any): string[] {
   const chain: string[] = [];
@@ -55,14 +58,22 @@ export function moveDrag(l: Layer, p0: XY) {
 
 export function init(): void {
   WRAP.addEventListener('pointerdown', (e: PointerEvent) => {
-    if (e.button !== 0) return;
+    if (e.button !== 0 && e.button !== 1) return;
     const p = docPt(e);
     try {
       WRAP.setPointerCapture(e.pointerId);
     } catch (_) {}
     const t = S.tool;
-    if (t === 'pen') return penDown(p);
-    if (t === 'rect' || t === 'ellipse' || t === 'star') return createDrag(t, p);
+    if (e.button === 1 || t === 'hand' || (S.spaceHeld && !S.drag)) {
+      e.preventDefault();
+      if (S.spaceHeld) S.spaceUsed = true;
+      return panDrag(e);
+    }
+    if (t === 'pen') return penDown(p, e);
+    if (t === 'addnode') return addNodeDown(p, e, hitChain(e.target));
+    if (t === 'delnode') return delNodeDown(p, e, hitChain(e.target));
+    if (t === 'pencil') return pencilDown(p);
+    if (SHAPE_TOOLS.includes(t)) return createDrag(t, p);
     if (t === 'text') return createText(p);
     if (t === 'bone') return boneCreate(p);
     const bn = (e.target as any).closest('[data-bone]');
@@ -112,9 +123,18 @@ export function init(): void {
   WRAP.addEventListener('pointermove', (e: PointerEvent) => {
     const p = docPt(e);
     S.lastPt = p;
-    if (S.drag) S.drag.move(p, e);
-    else if (S.pen) {
-      S.pen.hover = p;
+    if (S.drag) S.drag.move && S.drag.move(p, e);
+    else penHover(p, e);
+  });
+  // Alt changes what the pen would do (convert anchor), so refresh its cursor without a move
+  const altCursor = (e: KeyboardEvent) => {
+    if (e.key === 'Alt' && S.lastPt && !S.drag) penHover(S.lastPt, e);
+  };
+  window.addEventListener('keydown', altCursor);
+  window.addEventListener('keyup', altCursor);
+  WRAP.addEventListener('pointerleave', () => {
+    if (S.penHint) {
+      S.penHint = null;
       drawOverlay();
     }
   });
@@ -122,12 +142,6 @@ export function init(): void {
   WRAP.addEventListener('pointercancel', endDrag);
   WRAP.addEventListener('dblclick', (e: MouseEvent) => {
     if (S.tool === 'pen' && S.pen) {
-      const n = S.pen.nodes;
-      if (n.length > 1) {
-        const a = n[n.length - 1],
-          b = n[n.length - 2];
-        if (Math.hypot(a[0] - b[0], a[1] - b[1]) * S.scale < 4) n.pop();
-      }
       finishPen(false);
       return;
     }
@@ -153,15 +167,4 @@ export function init(): void {
       }
     }
   });
-  WRAP.addEventListener(
-    'wheel',
-    (e: WheelEvent) => {
-      if (!(e.ctrlKey || e.metaKey)) return;
-      e.preventDefault();
-      S.zoom = clamp(S.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1), 0.1, 8);
-      fit();
-      frame();
-    },
-    { passive: false },
-  );
 }

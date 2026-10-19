@@ -271,6 +271,65 @@ button {
   font: 500 8px var(--f-num);
   opacity: 0.55;
 }
+.tool .tri {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-bottom: 4px solid currentColor;
+  opacity: 0.7;
+}
+.tool.grp kbd {
+  right: 9px;
+}
+.tool-fly {
+  position: fixed;
+  z-index: 60;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  box-shadow: 0 12px 32px var(--shade);
+  padding: 4px;
+  min-width: 210px;
+  display: flex;
+  flex-direction: column;
+}
+.tf-item {
+  display: grid;
+  grid-template-columns: 14px 18px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  text-align: left;
+  padding: 6px 10px 6px 6px;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.tf-item svg {
+  color: var(--accent);
+}
+.tf-item:hover,
+.tf-item:focus-visible {
+  background: var(--accent-soft);
+  outline: none;
+}
+.tf-item .ck {
+  font-size: 12px;
+  color: var(--fg);
+  text-align: center;
+}
+.tf-item kbd {
+  font: 500 10px var(--f-num);
+  color: var(--muted);
+  min-width: 12px;
+  text-align: right;
+}
 .tools .sep {
   width: 20px;
   height: 1px;
@@ -287,14 +346,16 @@ button {
 #wrap {
   position: absolute;
   inset: 0;
-  overflow: auto;
+  overflow: hidden;
   display: grid;
   place-items: center;
   touch-action: none;
 }
 #artboard {
-  position: relative;
-  margin: 28px;
+  /* centred in the work area at any size; panning adds a translate */
+  position: absolute;
+  left: 50%;
+  top: 50%;
   box-shadow:
     0 1px 2px var(--shade),
     0 10px 30px var(--shade);
@@ -322,6 +383,15 @@ button {
 }
 #wrap.t-text {
   cursor: text;
+}
+#wrap.t-hand,
+#wrap.space,
+#wrap.space * {
+  cursor: grab !important;
+}
+#wrap.panning,
+#wrap.panning * {
+  cursor: grabbing !important;
 }
 .ov-box {
   fill: none;
@@ -446,11 +516,38 @@ button {
   pointer-events: none;
 }
 .ov-rub {
+  fill: none;
   stroke: var(--accent);
   stroke-width: 1;
   stroke-dasharray: 3 3;
   vector-effect: non-scaling-stroke;
   pointer-events: none;
+}
+.ov-hint-add {
+  fill: var(--accent);
+  stroke: var(--panel);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.ov-hint-del {
+  fill: none;
+  stroke: var(--head);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+/* the pen family sets its own cursors on the work area; overlay handles must not override them */
+#wrap.t-pen #overlay *,
+#wrap.t-addnode #overlay *,
+#wrap.t-delnode #overlay *,
+#wrap.t-pencil #overlay * {
+  cursor: inherit;
+}
+#wrap.t-ellipse,
+#wrap.t-polygon,
+#wrap.t-line {
+  cursor: crosshair;
 }
 .hud {
   position: absolute;

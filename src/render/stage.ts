@@ -70,6 +70,8 @@ export function fit() {
   S.scale = Math.max(0.05, base * S.zoom);
   ART.style.width = doc.w * S.scale + 'px';
   ART.style.height = doc.h * S.scale + 'px';
+  ART.style.marginLeft = (-doc.w * S.scale) / 2 + 'px';
+  ART.style.marginTop = (-doc.h * S.scale) / 2 + 'px';
   $('#zVal').textContent = Math.round(S.scale * 100) + '%';
 }
 export function frame() {

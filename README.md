@@ -50,11 +50,14 @@ src/
   tools/
     stage-input.ts       Canvas pointer handling
     bones.ts             Bone tool, forward kinematics, inverse kinematics (CCD)
-    edit-tools.ts        Move/scale/rotate/origin drags, shape/text/pen creation, node editing
+    edit-tools.ts        Move/scale/rotate/origin drags, text creation, node editing
+    pen.ts               Pen, add/remove node, pencil; path hit-testing
+    shapes.ts            Ellipse, rectangle, polygon, star, line
+    hand.ts              Pan and zoom (hand tool, Space, wheel)
 
   ui/                    Panels and controls
     layers-panel.ts  timeline.ts  inspector.ts  easing.ts
-    tools-rail.ts  topbar.ts  file-menu.ts  keyboard.ts
+    tools-rail.ts (tool groups and flyouts)  topbar.ts  file-menu.ts  keyboard.ts
 
   io/                    Files
     assets.ts            Image import (incl. TIFF/HEIC conversion), IndexedDB, asset panel
@@ -87,6 +90,29 @@ tests/                   Vitest: runtime player and easing, zip container, path 
 **Shared mutable state uses setters.** ES module imports are read-only bindings, so replacing the open document goes through `setDoc()` and the canvas engine through `setEng()`. Other examples are `setIdc()`, `nextAid()` and `setLastExport()`. Reading `doc` anywhere always gives the current document.
 
 **The editor canvas renders the exact SVG that gets exported.** `render/markup.ts` produces markup for both, and the canvas is animated by the same runtime that ships in the file. What you see while editing is what you get.
+
+## Tools
+
+| Tool             | Key | Notes                                                                                                                                                                                                                                                                                                                                                                                        |
+| ---------------- | --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Select           | V   | Move, scale, rotate; Ctrl+click picks inside groups                                                                                                                                                                                                                                                                                                                                          |
+| Edit nodes       | A   | Drag nodes and handles; double-click toggles smooth/corner                                                                                                                                                                                                                                                                                                                                   |
+| **Pen group**    |     | Hold or right-click the button for the flyout                                                                                                                                                                                                                                                                                                                                                |
+| Pen              | P   | Click = corner, drag = curve. While dragging: Alt breaks the handle, Shift snaps to 45°, Space moves the point. Click the first point to close; click the last point to drop its handle. Enter / Esc / Ctrl+click ends, Backspace removes the last point. On the selected path: hover a segment to add a node, a node to delete it, Alt+node to convert it, an open end to continue the path |
+| Add node         | +   | Click a segment of the selected path (rectangles and ellipses convert to paths)                                                                                                                                                                                                                                                                                                              |
+| Remove node      | −   | Click a node of the selected path                                                                                                                                                                                                                                                                                                                                                            |
+| Pencil           | N   | Freehand; simplified and smoothed. End near the start to close                                                                                                                                                                                                                                                                                                                               |
+| **Shapes group** |     |                                                                                                                                                                                                                                                                                                                                                                                              |
+| Ellipse          | O   | Shift = circle, Alt = from the centre                                                                                                                                                                                                                                                                                                                                                        |
+| Rectangle        | M   | Shift = square, Alt = from the centre                                                                                                                                                                                                                                                                                                                                                        |
+| Polygon          |     | Drag from the centre; ↑/↓ while dragging changes the sides; Shift keeps it upright                                                                                                                                                                                                                                                                                                           |
+| Star             |     | As polygon; ↑/↓ changes the points                                                                                                                                                                                                                                                                                                                                                           |
+| Line             | L   | Shift = 45° steps, Alt = from the centre                                                                                                                                                                                                                                                                                                                                                     |
+| Text             | T   |                                                                                                                                                                                                                                                                                                                                                                                              |
+| Bone             | B   |                                                                                                                                                                                                                                                                                                                                                                                              |
+| Hand             | H   | Drag to pan. Hold Space for the hand in any tool (a tap plays/pauses). Middle-drag pans, the wheel scrolls, Ctrl+wheel zooms at the pointer, double-click the hand to fit                                                                                                                                                                                                                    |
+
+Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to go back to Select.
 
 ## The `.klp` project format
 

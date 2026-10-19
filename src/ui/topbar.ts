@@ -1,4 +1,5 @@
 // Keyline — ui/topbar
+import { applyPan } from '../tools/hand';
 import { $, clamp } from '../core/constants';
 import { TLS, WRAP } from '../core/dom';
 import { save } from '../core/history';
@@ -42,9 +43,11 @@ export function resetView() {
   S.ptime = 0;
   S.exp = {};
   S.zoom = 1;
+  S.pan = { x: 0, y: 0 };
   syncIdc();
   save();
   renderAll();
+  applyPan();
 }
 
 export function init(): void {
