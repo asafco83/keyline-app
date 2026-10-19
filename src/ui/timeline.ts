@@ -1,6 +1,6 @@
 // Keyline — ui/timeline
 import type { Keyframe, Layer, PropKey } from '../model/types';
-import { $, ICON, PORDER, PROPS, clamp, clone, esc, fmt, r3 } from '../core/constants';
+import { $, ICON, clamp, clone, esc, fmt, layerTracks, propLabel, r3 } from '../core/constants';
 import { TLB, TLS } from '../core/dom';
 import { beginEdit, setTime } from '../core/history';
 import { closeMenu } from '../core/keyframes';
@@ -35,7 +35,7 @@ export function renderTimeline() {
   if (!list.length)
     h += `<div class="tl-empty">Layers with keyframes appear here. Select a layer, move the playhead, then change it with Auto-key on, or click ◆ beside a property in the inspector.</div>`;
   for (const l of list) {
-    const tracks = PORDER.filter(k => l.t[k] && l.t[k].length),
+    const tracks = layerTracks(l),
       ex = S.exp[l.id] !== false;
     const times = [...new Set<any>(tracks.flatMap(k => l.t[k].map(q => q[0])))],
       par = l.parent && layerById(l.parent);
@@ -68,11 +68,11 @@ export function renderTimeline() {
             nx = tr[i + 1];
           if (nx && JSON.stringify(q[1]) !== JSON.stringify(nx[1]))
             segs += `<i class="seg${q[2] === 'hold' ? ' hold' : ''}" data-lid="${l.id}" data-prop="${k}" data-i="${i}" style="left:${q[0] * S.pps}px;width:${(nx[0] - q[0]) * S.pps}px" title="${esc(easeLabel(q[2]))} · click to edit easing"></i>`;
-          keys += `<button class="kf${S.keys.has(q) ? ' sel' : ''}${q[2] === 'hold' ? ' hold' : ''}" data-lid="${l.id}" data-prop="${k}" data-i="${i}" style="left:${q[0] * S.pps}px" aria-label="${PROPS[k][0]} keyframe at ${fmt(q[0])}s" title="${PROPS[k][0]} · ${fmt(q[0])}s · ${esc(easeLabel(q[2]))}"></button>`;
+          keys += `<button class="kf${S.keys.has(q) ? ' sel' : ''}${q[2] === 'hold' ? ' hold' : ''}" data-lid="${l.id}" data-prop="${k}" data-i="${i}" style="left:${q[0] * S.pps}px" aria-label="${propLabel(l, k)} keyframe at ${fmt(q[0])}s" title="${propLabel(l, k)} · ${fmt(q[0])}s · ${esc(easeLabel(q[2]))}"></button>`;
         }
-        h += `<div class="tl-row tl-prop" data-lid="${l.id}" data-prop="${k}"><div class="tl-name"><span class="tl-pname">${PROPS[k][0]}</span>
-        <button class="kb" data-act="key" aria-label="Add or remove ${PROPS[k][0]} keyframe at playhead"></button>
-        <button class="tl-ic tl-x" data-act="rmtrack" aria-label="Remove ${PROPS[k][0]} animation">${ICON.x}</button></div>
+        h += `<div class="tl-row tl-prop" data-lid="${l.id}" data-prop="${k}"><div class="tl-name"><span class="tl-pname">${propLabel(l, k)}</span>
+        <button class="kb" data-act="key" aria-label="Add or remove ${propLabel(l, k)} keyframe at playhead"></button>
+        <button class="tl-ic tl-x" data-act="rmtrack" aria-label="Remove ${propLabel(l, k)} animation">${ICON.x}</button></div>
         <div class="tl-lane" data-act="lane" style="width:${LW}px">${segs}${keys}</div></div>`;
       }
   }

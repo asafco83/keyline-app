@@ -15,6 +15,8 @@ export interface EngineLayer {
   t: Record<string, Keyframe[]>;
   /** curved motion path */ sm?: boolean | 1;
   /** orient along motion path */ or?: boolean | 1;
+  /** extra animated attributes: track key → [element id suffix, attribute] (filter parameters) */
+  fa?: Record<string, [string, string]>;
 }
 type EaseFn = (p: number) => number;
 type Bezier = number[];
@@ -40,6 +42,14 @@ export interface Composite {
   sw: any;
   draw: any;
   d: EngineSubPath[] | undefined;
+  /** skew, degrees */
+  kx: number;
+  ky: number;
+  /** fill / stroke opacity (null = not set) */
+  fo: any;
+  so: any;
+  /** stroke dash offset (null = not set) */
+  dof: any;
 }
 type Handler = (this: KLPlayer, offsetMs: number) => void;
 export interface EngineData {
@@ -113,6 +123,10 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     sw: 'n',
     draw: 'n',
     d: 'm',
+    skw: 'v',
+    fo: 'n',
+    so: 'n',
+    dof: 'n',
   };
   var EZ: Record<string, Bezier> = {
     ease: [0.25, 0.1, 0.25, 1],
@@ -321,7 +335,7 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       if (t < b[0]) {
         p = ez(a[2], (t - a[0]) / (b[0] - a[0]));
         if (k === 'pos' && L.sm && n > 2) return cr((tr[i - 1] || a)[1], a[1], b[1], (tr[i + 2] || b)[1], p);
-        return mix(K[k], a[1], b[1], p);
+        return mix(K[k] || (typeof a[1] === 'string' ? 'c' : typeof a[1] === 'object' ? 'v' : 'n'), a[1], b[1], p);
       }
     }
     return tr[n - 1][1];
@@ -335,6 +349,7 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       p = get(L, 'pos', t) || [0, 0],
       r = get(L, 'rot', t) || 0,
       s = get(L, 'scl', t) || [1, 1],
+      k = get(L, 'skw', t) || [0, 0],
       tr = L.t && L.t.pos,
       op = get(L, 'op', t);
     if (L.or && tr && tr.length > 1) {
@@ -360,6 +375,11 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       sw: get(L, 'sw', t),
       draw: get(L, 'draw', t),
       d: get(L, 'd', t),
+      kx: k[0],
+      ky: k[1],
+      fo: get(L, 'fo', t),
+      so: get(L, 'so', t),
+      dof: get(L, 'dof', t),
     };
   }
   function f(n: number) {
@@ -373,6 +393,8 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       f(c.y) +
       ') rotate(' +
       f(c.r) +
+      (c.kx ? ') skewX(' + f(c.kx) : '') +
+      (c.ky ? ') skewY(' + f(c.ky) : '') +
       ') scale(' +
       f(c.sx) +
       ',' +
@@ -423,8 +445,16 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
         s.setAttribute('pathLength', '100');
         s.setAttribute('stroke-dasharray', '100 100');
         s.setAttribute('stroke-dashoffset', String(f(100 - c.draw)));
-      }
+      } else if (c.dof != null) s.setAttribute('stroke-dashoffset', String(f(c.dof)));
+      if (c.fo != null) s.setAttribute('fill-opacity', String(f(c.fo)));
+      if (c.so != null) s.setAttribute('stroke-opacity', String(f(c.so)));
       if (c.d) s.setAttribute('d', dstr(c.d));
+      if (L.fa)
+        for (var fk in L.fa) {
+          var fe = el(D.p + L.id + L.fa[fk][0]),
+            fv = get(L, fk, t);
+          if (fe && fv != null) fe.setAttribute(L.fa[fk][1], typeof fv === 'number' ? String(f(fv)) : fv);
+        }
     }
   }
   /* ---- player (SVGator-compatible API) ---- */

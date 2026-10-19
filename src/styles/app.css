@@ -2033,3 +2033,93 @@ details summary {
     animation: none !important;
   }
 }
+
+/* ---------- inspector: align bar, toggles, appearance, filters ---------- */
+.align-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 2px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+}
+.align-bar .btn {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border-color: transparent;
+}
+.align-bar .btn:not(:disabled):hover {
+  background: var(--panel-2);
+  border-color: var(--line);
+}
+.rf .btn.ib,
+.btns.tight .btn.ib {
+  width: 26px;
+  height: 28px;
+  flex: none;
+}
+.rf .nf {
+  padding: 0 5px;
+  gap: 3px;
+}
+.btns.tight {
+  gap: 2px;
+  flex-wrap: nowrap;
+  flex: none;
+}
+.btn.tg b,
+.btn.tg i,
+.btn.tg u,
+.btn.tg s,
+.btn.tg span {
+  font-size: 13px;
+  font-family: var(--f-ui);
+}
+.tx-tg {
+  gap: 2px;
+}
+.nf.ro {
+  opacity: 0.6;
+}
+.nf.ro span {
+  cursor: default;
+}
+.sec h3 .h3b {
+  width: 24px;
+  height: 24px;
+}
+.sec .sub {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-top: 2px;
+}
+.check.inl {
+  flex: none;
+  white-space: nowrap;
+}
+.rng {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--accent);
+}
+.row .rng + .nf {
+  flex: 0 0 76px;
+}
+.fx-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 12px;
+}
+.fx-head .sp {
+  flex: 1;
+}
+.fx-head .btn.ib {
+  width: 26px;
+  height: 26px;
+}
+.sec p.muted {
+  font-style: italic;
+}

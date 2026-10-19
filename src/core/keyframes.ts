@@ -1,4 +1,5 @@
 // Keyline — core/keyframes
+import { fxOf } from '../model/filters';
 import type { ClipKey, Ease, Keyframe, Layer, PropKey } from '../model/types';
 import { $, H, clamp, clone, r3 } from './constants';
 import { TLB } from './dom';
@@ -14,11 +15,14 @@ import { renameInline, renderLayers } from '../ui/layers-panel';
 import { MENU, keyOwners, laneTime, renderTimeline, resolveCollisions, selectKeyLayer } from '../ui/timeline';
 
 export function propOK(l: Layer, k: PropKey) {
+  const painted = ['rect', 'ellipse', 'path', 'text'].includes(l.type);
   return (
     ['pos', 'org', 'rot', 'scl', 'op'].includes(k) ||
-    (['fill', 'stk', 'sw'].includes(k) && ['rect', 'ellipse', 'path', 'text'].includes(l.type)) ||
+    (k === 'skw' && l.type !== 'bone') ||
+    (['fill', 'stk', 'sw', 'fo', 'so', 'dof'].includes(k) && painted) ||
     (k === 'draw' && ['rect', 'ellipse', 'path'].includes(l.type)) ||
-    (k === 'd' && l.type === 'path')
+    (k === 'd' && l.type === 'path') ||
+    (k.startsWith('fx.') && !!fxOf(l, k))
   );
 }
 export function keySpan() {

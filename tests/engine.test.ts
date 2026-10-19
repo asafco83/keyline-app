@@ -231,3 +231,59 @@ describe('embedding', () => {
     expect(KLEngine.toString()).not.toContain(']]>');
   });
 });
+
+describe('skew, opacities, dash offset and filter tracks', () => {
+  it('skews in the transform only when set', () => {
+    const plain = layer({}),
+      sk = layer({
+        skw: [
+          [0, [0, 0], 'linear'],
+          [1, [20, -10], 'linear'],
+        ],
+      });
+    expect(H.comp(plain, 0).kx).toBe(0);
+    const c = H.comp(sk, 0.5);
+    expect(c.kx).toBeCloseTo(10);
+    expect(c.ky).toBeCloseTo(-5);
+  });
+  it('animates fill and stroke opacity and dash offset', () => {
+    const L = layer({
+      fo: [
+        [0, 1, 'linear'],
+        [1, 0, 'linear'],
+      ],
+      so: [
+        [0, 0, 'linear'],
+        [1, 1, 'linear'],
+      ],
+      dof: [
+        [0, 0, 'linear'],
+        [1, 40, 'linear'],
+      ],
+    });
+    const c = H.comp(L, 0.25);
+    expect(c.fo).toBeCloseTo(0.75);
+    expect(c.so).toBeCloseTo(0.25);
+    expect(c.dof).toBeCloseTo(10);
+  });
+  it('drives filter attributes and mixes colours for them', () => {
+    document.body.innerHTML =
+      '<svg><g id="x-a"><rect id="x-a-s"/><filter><feDropShadow id="x-a-f1"/></filter></g></svg>';
+    const L: any = layer({
+      'fx.f1.sd': [
+        [0, 0, 'linear'],
+        [1, 8, 'linear'],
+      ],
+      'fx.f1.col': [
+        [0, '#000000', 'linear'],
+        [1, '#ffffff', 'linear'],
+      ],
+    });
+    L.fa = { 'fx.f1.sd': ['-f1', 'stdDeviation'], 'fx.f1.col': ['-f1', 'flood-color'] };
+    const P = KLEngine({ p: 'x-', dur: 1, L: [L] }, document.body);
+    P.apply(0.5);
+    const fe = document.getElementById('x-a-f1');
+    expect(fe.getAttribute('stdDeviation')).toBe('4');
+    expect(fe.getAttribute('flood-color')).toBe('rgb(128,128,128)');
+  });
+});

@@ -20,7 +20,8 @@ export function roundV(v: any): any {
   return v;
 }
 export function cssTf(c: Composite) {
-  return `translate(${r3(c.x)}px,${r3(c.y)}px) rotate(${r3(c.r)}deg) scale(${r3(c.sx)},${r3(c.sy)}) translate(${r3(-c.ox)}px,${r3(-c.oy)}px)`;
+  const sk = (c.kx ? ` skewX(${r3(c.kx)}deg)` : '') + (c.ky ? ` skewY(${r3(c.ky)}deg)` : '');
+  return `translate(${r3(c.x)}px,${r3(c.y)}px) rotate(${r3(c.r)}deg)${sk} scale(${r3(c.sx)},${r3(c.sy)}) translate(${r3(-c.ox)}px,${r3(-c.oy)}px)`;
 }
 export function kfBlock(name: string, stops: string[], N: number) {
   const keep = stops.map((s, i) => i === 0 || i === N || s !== stops[i - 1] || s !== stops[i + 1]);
@@ -38,7 +39,7 @@ export function cssFor(anim: Layer[], pre: string, svgId: string) {
       T = l.t,
       fr: Composite[] = [];
     for (let i = 0; i <= N; i++) fr.push(H.comp(l, (i / N) * doc.dur));
-    const gt = !!(T.pos || T.rot || T.scl || T.org),
+    const gt = !!(T.pos || T.rot || T.scl || T.org || T.skw),
       go = !!T.op;
     if (gt || go)
       css +=
@@ -47,7 +48,7 @@ export function cssFor(anim: Layer[], pre: string, svgId: string) {
           fr.map(c => (gt ? `transform:${cssTf(c)};` : '') + (go ? `opacity:${r3(c.op)}` : '')),
           N,
         ) + `#${id}{transform-box:view-box;transform-origin:0 0;animation:${id}-g ${run}}`;
-    const sk = ['fill', 'stk', 'sw', 'draw', 'd'].filter(k => T[k]);
+    const sk = ['fill', 'fo', 'stk', 'so', 'sw', 'draw', 'dof', 'd'].filter(k => T[k]);
     if (sk.length)
       css +=
         kfBlock(
@@ -59,11 +60,19 @@ export function cssFor(anim: Layer[], pre: string, svgId: string) {
                   ? `fill:${c.fill}`
                   : k === 'stk'
                     ? `stroke:${c.stk}`
-                    : k === 'sw'
-                      ? `stroke-width:${r3(c.sw)}px`
-                      : k === 'draw'
-                        ? `stroke-dashoffset:${r3(100 - c.draw)}`
-                        : `d:path("${H.dstr(c.d)}")`,
+                    : k === 'fo'
+                      ? `fill-opacity:${r3(c.fo)}`
+                      : k === 'so'
+                        ? `stroke-opacity:${r3(c.so)}`
+                        : k === 'dof'
+                          ? T.draw
+                            ? ''
+                            : `stroke-dashoffset:${r3(c.dof)}`
+                          : k === 'sw'
+                            ? `stroke-width:${r3(c.sw)}px`
+                            : k === 'draw'
+                              ? `stroke-dashoffset:${r3(100 - c.draw)}`
+                              : `d:path("${H.dstr(c.d)}")`,
               )
               .join(';'),
           ),
@@ -204,7 +213,9 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
             sw: null,
             draw: null,
           };
+          if (l.b.skw && (l.b.skw[0] || l.b.skw[1])) b.skw = l.b.skw;
           const o: any = { id: l.id, o: l.o || [0, 0], b, t: l.t };
+          if (l.fa) o.fa = l.fa;
           if (l.sm) o.sm = 1;
           if (l.or) o.or = 1;
           return o;
