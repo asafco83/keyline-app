@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { crc32, makeZip, readZip } from '../src/io/zip';
 
-const enc = new TextEncoder(), dec = new TextDecoder();
+const enc = new TextEncoder(),
+  dec = new TextDecoder();
 
 describe('zip (.klp container)', () => {
   it('computes the standard CRC-32', () => {

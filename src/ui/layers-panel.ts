@@ -4,110 +4,313 @@ import { LP } from '../core/dom';
 import { beginEdit, select } from '../core/history';
 import { S, doc, layerById, mkLayer, selLayer, uid } from '../core/state';
 import { toast } from '../io/open';
-import { ancestors, descendants, isAnim, isBox, kids, pidOf, pmOf, reparentKeep, selectedRoots, treeRows } from '../model/tree';
+import {
+  ancestors,
+  descendants,
+  isAnim,
+  isBox,
+  kids,
+  pidOf,
+  pmOf,
+  reparentKeep,
+  selectedRoots,
+  treeRows,
+} from '../model/tree';
 import { renderTimeline } from './timeline';
 
 export function renderLayers() {
-  const rows=treeRows(null,0,[],true);
-  if(!rows.length) LP.innerHTML=`<p class="lp-empty">Layers appear here. Draw with the tools on the left, or drop SVG and image files onto the canvas.</p>`;
-  else LP.innerHTML=rows.map(([l,d])=>{ const grp=isBox(l), n=grp?kids(l.id).length:0, open=S.lexp[l.id]!==false;
-    return `<div class="lp-row${S.selSet.has(l.id)?' sel':''}${l.hid?' hid':''}" draggable="true" tabindex="0" role="treeitem" aria-selected="${S.selSet.has(l.id)}" data-lid="${l.id}" style="padding-left:${4+d*14}px">
-      ${grp&&n?`<button class="tl-ic" data-la="exp" aria-label="${open?'Collapse':'Expand'} ${esc(l.name)}">${open?ICON.down:ICON.right}</button>`:'<span class="lp-sp"></span>'}
-      <span class="lp-ty" title="${l.type}">${TICON[l.type]||TICON.raw}</span><span class="lp-name" title="${esc(l.name)}">${esc(l.name)}</span>
-      ${isAnim(l)?'<i class="lp-anim" title="Has keyframes"></i>':''}
-      <button class="tl-ic${l.hid?'':' vis-hide'}" data-la="hid" aria-label="${l.hid?'Show':'Hide'} ${esc(l.name)}">${l.hid?ICON.eyeoff:ICON.eye}</button>
-      <button class="tl-ic${l.lock?'':' vis-hide'}" data-la="lock" aria-label="${l.lock?'Unlock':'Lock'} ${esc(l.name)}">${l.lock?ICON.lock:ICON.unlock}</button></div>`; }).join('');
-  const s=selLayer(); $('#lUngroup').hidden=!(s&&s.type==='group'); $('#lDel').hidden=!S.selSet.size;
-  $('#lCount').textContent=S.selSet.size>1?`${S.selSet.size} selected`:'';
+  const rows = treeRows(null, 0, [], true);
+  if (!rows.length)
+    LP.innerHTML = `<p class="lp-empty">Layers appear here. Draw with the tools on the left, or drop SVG and image files onto the canvas.</p>`;
+  else
+    LP.innerHTML = rows
+      .map(([l, d]) => {
+        const grp = isBox(l),
+          n = grp ? kids(l.id).length : 0,
+          open = S.lexp[l.id] !== false;
+        return `<div class="lp-row${S.selSet.has(l.id) ? ' sel' : ''}${l.hid ? ' hid' : ''}" draggable="true" tabindex="0" role="treeitem" aria-selected="${S.selSet.has(l.id)}" data-lid="${l.id}" style="padding-left:${4 + d * 14}px">
+      ${grp && n ? `<button class="tl-ic" data-la="exp" aria-label="${open ? 'Collapse' : 'Expand'} ${esc(l.name)}">${open ? ICON.down : ICON.right}</button>` : '<span class="lp-sp"></span>'}
+      <span class="lp-ty" title="${l.type}">${TICON[l.type] || TICON.raw}</span><span class="lp-name" title="${esc(l.name)}">${esc(l.name)}</span>
+      ${isAnim(l) ? '<i class="lp-anim" title="Has keyframes"></i>' : ''}
+      <button class="tl-ic${l.hid ? '' : ' vis-hide'}" data-la="hid" aria-label="${l.hid ? 'Show' : 'Hide'} ${esc(l.name)}">${l.hid ? ICON.eyeoff : ICON.eye}</button>
+      <button class="tl-ic${l.lock ? '' : ' vis-hide'}" data-la="lock" aria-label="${l.lock ? 'Unlock' : 'Lock'} ${esc(l.name)}">${l.lock ? ICON.lock : ICON.unlock}</button></div>`;
+      })
+      .join('');
+  const s = selLayer();
+  $('#lUngroup').hidden = !(s && s.type === 'group');
+  $('#lDel').hidden = !S.selSet.size;
+  $('#lCount').textContent = S.selSet.size > 1 ? `${S.selSet.size} selected` : '';
 }
 export function renameInline(el?, l?) {
-  el.innerHTML=`<input id="rn-${l.id}" value="${esc(l.name)}" aria-label="Layer name">`; const inp=el.querySelector('input'); inp.focus(); inp.select();
-  let done=false; const finish=(ok?)=>{ if(done) return; done=true; if(ok&&inp.value.trim()&&inp.value.trim()!==l.name){ const ed=beginEdit(); l.name=inp.value.trim(); ed.end({insp:true}); } else { renderLayers(); renderTimeline(); } };
-  inp.addEventListener('keydown',(ev?)=>{ ev.stopPropagation(); if(ev.key==='Enter') finish(true); if(ev.key==='Escape') finish(false); });
-  inp.addEventListener('blur',()=>finish(true));
+  el.innerHTML = `<input id="rn-${l.id}" value="${esc(l.name)}" aria-label="Layer name">`;
+  const inp = el.querySelector('input');
+  inp.focus();
+  inp.select();
+  let done = false;
+  const finish = (ok?) => {
+    if (done) return;
+    done = true;
+    if (ok && inp.value.trim() && inp.value.trim() !== l.name) {
+      const ed = beginEdit();
+      l.name = inp.value.trim();
+      ed.end({ insp: true });
+    } else {
+      renderLayers();
+      renderTimeline();
+    }
+  };
+  inp.addEventListener('keydown', (ev?) => {
+    ev.stopPropagation();
+    if (ev.key === 'Enter') finish(true);
+    if (ev.key === 'Escape') finish(false);
+  });
+  inp.addEventListener('blur', () => finish(true));
 }
 export let dragIds = null;
-export function dropMode(r?, e?) { const tgt=layerById(r.dataset.lid); if(!tgt||!dragIds) return null;
-  if(dragIds.some((id?)=>id===tgt.id||ancestors(tgt).some((a?)=>a.id===id))) return null;
-  const rc=r.getBoundingClientRect(), y=(e.clientY-rc.top)/rc.height;
-  return isBox(tgt)?(y<.28?'before':y>.72?'after':'into'):(y<.5?'before':'after'); }
-export function clearDrop() { return (LP.querySelectorAll('.d-before,.d-after,.d-into').forEach((x?)=>x.classList.remove('d-before','d-after','d-into'))); }
+export function dropMode(r?, e?) {
+  const tgt = layerById(r.dataset.lid);
+  if (!tgt || !dragIds) return null;
+  if (dragIds.some((id?) => id === tgt.id || ancestors(tgt).some((a?) => a.id === id))) return null;
+  const rc = r.getBoundingClientRect(),
+    y = (e.clientY - rc.top) / rc.height;
+  return isBox(tgt) ? (y < 0.28 ? 'before' : y > 0.72 ? 'after' : 'into') : y < 0.5 ? 'before' : 'after';
+}
+export function clearDrop() {
+  return LP.querySelectorAll('.d-before,.d-after,.d-into').forEach((x?) =>
+    x.classList.remove('d-before', 'd-after', 'd-into'),
+  );
+}
 export function moveLayers(ids?, tgt?, mode?) {
-  const ls=ids.map(layerById).filter(Boolean); if(!ls.length) return;
-  const ed=beginEdit();
-  const newPid=mode==='into'?tgt.id:mode==='root'?null:pidOf(tgt), PM=pmOf(newPid);
-  ls.forEach((l?)=>{ if(pidOf(l)!==newPid) reparentKeep(l,PM); });
-  const order=mode==='before'?ls:ls.slice().reverse();
-  order.forEach((l?)=>{ doc.layers.splice(doc.layers.indexOf(l),1); l.parent=newPid;
-    if(mode==='into'||mode==='root') doc.layers.push(l);
-    else { const ti=doc.layers.indexOf(tgt); doc.layers.splice(mode==='before'?ti+1:ti,0,l); } });
-  if(mode==='into') S.lexp[tgt.id]=true;
-  ed.end({insp:true});
+  const ls = ids.map(layerById).filter(Boolean);
+  if (!ls.length) return;
+  const ed = beginEdit();
+  const newPid = mode === 'into' ? tgt.id : mode === 'root' ? null : pidOf(tgt),
+    PM = pmOf(newPid);
+  ls.forEach((l?) => {
+    if (pidOf(l) !== newPid) reparentKeep(l, PM);
+  });
+  const order = mode === 'before' ? ls : ls.slice().reverse();
+  order.forEach((l?) => {
+    doc.layers.splice(doc.layers.indexOf(l), 1);
+    l.parent = newPid;
+    if (mode === 'into' || mode === 'root') doc.layers.push(l);
+    else {
+      const ti = doc.layers.indexOf(tgt);
+      doc.layers.splice(mode === 'before' ? ti + 1 : ti, 0, l);
+    }
+  });
+  if (mode === 'into') S.lexp[tgt.id] = true;
+  ed.end({ insp: true });
 }
 export function groupSel() {
-  const roots=selectedRoots(), ed=beginEdit();
-  const cnt=doc.layers.filter((l?)=>l.type==='group').length+1;
-  const g=mkLayer('group','Group '+cnt,{},NOFILL);
-  if(!roots.length){ doc.layers.push(g); }
-  else { const pid=pidOf(selLayer()||roots[0]); g.parent=pid; const PM=pmOf(pid);
-    const maxI=Math.max(...roots.map((l?)=>doc.layers.indexOf(l))); doc.layers.splice(maxI+1,0,g);
-    roots.slice().reverse().forEach((l?)=>{ if(pidOf(l)!==pid) reparentKeep(l,PM); l.parent=g.id; }); }
-  S.sel=g.id; S.selSet=new Set<any>([g.id]); S.lexp[g.id]=true; ed.end({insp:true});
+  const roots = selectedRoots(),
+    ed = beginEdit();
+  const cnt = doc.layers.filter((l?) => l.type === 'group').length + 1;
+  const g = mkLayer('group', 'Group ' + cnt, {}, NOFILL);
+  if (!roots.length) {
+    doc.layers.push(g);
+  } else {
+    const pid = pidOf(selLayer() || roots[0]);
+    g.parent = pid;
+    const PM = pmOf(pid);
+    const maxI = Math.max(...roots.map((l?) => doc.layers.indexOf(l)));
+    doc.layers.splice(maxI + 1, 0, g);
+    roots
+      .slice()
+      .reverse()
+      .forEach((l?) => {
+        if (pidOf(l) !== pid) reparentKeep(l, PM);
+        l.parent = g.id;
+      });
+  }
+  S.sel = g.id;
+  S.selSet = new Set<any>([g.id]);
+  S.lexp[g.id] = true;
+  ed.end({ insp: true });
 }
 export function ungroup(g?) {
-  if(!g||g.type!=='group') return; const ed=beginEdit();
-  const ch=kids(g.id), PM=pmOf(pidOf(g)), anim=isAnim(g), gc=H.comp(g,S.time);
-  ch.forEach((c?)=>{ reparentKeep(c,PM);
-    if(!anim){ if(!(c.t.rot&&c.t.rot.length)) c.b.rot=r2(c.b.rot+gc.r); if(!(c.t.scl&&c.t.scl.length)) c.b.scl=[r3(c.b.scl[0]*gc.sx),r3(c.b.scl[1]*gc.sy)]; if(!(c.t.op&&c.t.op.length)) c.b.op=r3(c.b.op*gc.op); }
-    c.parent=pidOf(g); });
-  ch.forEach((c?)=>doc.layers.splice(doc.layers.indexOf(c),1));
-  doc.layers.splice(doc.layers.indexOf(g),1,...ch);
-  S.selSet=new Set<any>(ch.map((c?)=>c.id)); S.sel=ch.length?ch[ch.length-1].id:null; S.keys.clear();
-  ed.end({insp:true});
-  if(anim||g.xf) toast('Ungrouped. The group’s own keyframes and transform were removed.');
+  if (!g || g.type !== 'group') return;
+  const ed = beginEdit();
+  const ch = kids(g.id),
+    PM = pmOf(pidOf(g)),
+    anim = isAnim(g),
+    gc = H.comp(g, S.time);
+  ch.forEach((c?) => {
+    reparentKeep(c, PM);
+    if (!anim) {
+      if (!(c.t.rot && c.t.rot.length)) c.b.rot = r2(c.b.rot + gc.r);
+      if (!(c.t.scl && c.t.scl.length)) c.b.scl = [r3(c.b.scl[0] * gc.sx), r3(c.b.scl[1] * gc.sy)];
+      if (!(c.t.op && c.t.op.length)) c.b.op = r3(c.b.op * gc.op);
+    }
+    c.parent = pidOf(g);
+  });
+  ch.forEach((c?) => doc.layers.splice(doc.layers.indexOf(c), 1));
+  doc.layers.splice(doc.layers.indexOf(g), 1, ...ch);
+  S.selSet = new Set<any>(ch.map((c?) => c.id));
+  S.sel = ch.length ? ch[ch.length - 1].id : null;
+  S.keys.clear();
+  ed.end({ insp: true });
+  if (anim || g.xf) toast('Ungrouped. The group’s own keyframes and transform were removed.');
 }
 export function deleteSel() {
-  const roots=selectedRoots(); if(!roots.length) return; const ed=beginEdit();
-  roots.forEach((l?)=>{ [l,...descendants(l)].forEach((x?)=>{ const i=doc.layers.indexOf(x); if(i>=0) doc.layers.splice(i,1); }); });
-  S.sel=null; S.selSet.clear(); S.keys.clear(); ed.end({insp:true});
+  const roots = selectedRoots();
+  if (!roots.length) return;
+  const ed = beginEdit();
+  roots.forEach((l?) => {
+    [l, ...descendants(l)].forEach((x?) => {
+      const i = doc.layers.indexOf(x);
+      if (i >= 0) doc.layers.splice(i, 1);
+    });
+  });
+  S.sel = null;
+  S.selSet.clear();
+  S.keys.clear();
+  ed.end({ insp: true });
 }
 export function duplicate(l?) {
-  const ed=beginEdit(), list=[l,...descendants(l)], map: any={};
-  const clones=list.map((x?)=>{ const c=clone(x); c.id=uid(); map[x.id]=c.id; return c; });
-  clones.forEach((c?,i?)=>{ if(i>0) c.parent=map[list[i].parent]||c.parent; });
-  const root=clones[0]; root.name=l.name+' copy'; root.hid=false;
-  if(root.t.pos&&root.t.pos.length) root.t.pos.forEach((q?)=>q[1]=[q[1][0]+16,q[1][1]+16]); else root.b.pos=[root.b.pos[0]+16,root.b.pos[1]+16];
-  doc.layers.splice(doc.layers.indexOf(l)+1,0,root); doc.layers.push(...clones.slice(1));
-  S.sel=root.id; S.selSet=new Set<any>([root.id]); S.keys.clear(); ed.end({insp:true});
+  const ed = beginEdit(),
+    list = [l, ...descendants(l)],
+    map: any = {};
+  const clones = list.map((x?) => {
+    const c = clone(x);
+    c.id = uid();
+    map[x.id] = c.id;
+    return c;
+  });
+  clones.forEach((c?, i?) => {
+    if (i > 0) c.parent = map[list[i].parent] || c.parent;
+  });
+  const root = clones[0];
+  root.name = l.name + ' copy';
+  root.hid = false;
+  if (root.t.pos && root.t.pos.length) root.t.pos.forEach((q?) => (q[1] = [q[1][0] + 16, q[1][1] + 16]));
+  else root.b.pos = [root.b.pos[0] + 16, root.b.pos[1] + 16];
+  doc.layers.splice(doc.layers.indexOf(l) + 1, 0, root);
+  doc.layers.push(...clones.slice(1));
+  S.sel = root.id;
+  S.selSet = new Set<any>([root.id]);
+  S.keys.clear();
+  ed.end({ insp: true });
 }
-export function arrange(l?, dir?) { const sib=kids(pidOf(l)), i=sib.indexOf(l), j=i+dir; if(j<0||j>=sib.length) return; const ed=beginEdit(); const a=doc.layers.indexOf(l), b=doc.layers.indexOf(sib[j]); doc.layers[a]=sib[j]; doc.layers[b]=l; ed.end(); }
+export function arrange(l?, dir?) {
+  const sib = kids(pidOf(l)),
+    i = sib.indexOf(l),
+    j = i + dir;
+  if (j < 0 || j >= sib.length) return;
+  const ed = beginEdit();
+  const a = doc.layers.indexOf(l),
+    b = doc.layers.indexOf(sib[j]);
+  doc.layers[a] = sib[j];
+  doc.layers[b] = l;
+  ed.end();
+}
 
 export function init(): void {
-  LP.addEventListener('click',(e?)=>{
-    const r=(e.target as any).closest('.lp-row'); if(!r){ if(e.target===LP) select(null); return; }
-    const l=layerById(r.dataset.lid), a=(e.target as any).closest('[data-la]');
-    if(a){ const k=a.dataset.la;
-      if(k==='exp'){ S.lexp[l.id]=S.lexp[l.id]===false; renderLayers(); return; }
-      const ed=beginEdit(); if(k==='hid'){ l.hid=!l.hid; if(l.hid){ S.selSet.delete(l.id); if(S.sel===l.id) S.sel=null; } } else l.lock=!l.lock; ed.end({insp:true}); return; }
-    if((e.target as any).closest('input')) return;
-    select(l.id,e.shiftKey?'range':(e.ctrlKey||e.metaKey)?'toggle':undefined);
+  LP.addEventListener('click', (e?) => {
+    const r = (e.target as any).closest('.lp-row');
+    if (!r) {
+      if (e.target === LP) select(null);
+      return;
+    }
+    const l = layerById(r.dataset.lid),
+      a = (e.target as any).closest('[data-la]');
+    if (a) {
+      const k = a.dataset.la;
+      if (k === 'exp') {
+        S.lexp[l.id] = S.lexp[l.id] === false;
+        renderLayers();
+        return;
+      }
+      const ed = beginEdit();
+      if (k === 'hid') {
+        l.hid = !l.hid;
+        if (l.hid) {
+          S.selSet.delete(l.id);
+          if (S.sel === l.id) S.sel = null;
+        }
+      } else l.lock = !l.lock;
+      ed.end({ insp: true });
+      return;
+    }
+    if ((e.target as any).closest('input')) return;
+    select(l.id, e.shiftKey ? 'range' : e.ctrlKey || e.metaKey ? 'toggle' : undefined);
   });
-  LP.addEventListener('keydown',(e?)=>{ const r=(e.target as any).closest('.lp-row'); if(!r||(e.target as any).tagName==='INPUT') return;
-    if(e.key==='Enter'||e.key===' '){ e.preventDefault(); e.stopPropagation(); select(r.dataset.lid); }
-    if(e.key==='ArrowDown'||e.key==='ArrowUp'){ e.preventDefault(); e.stopPropagation(); const nx=e.key==='ArrowDown'?r.nextElementSibling:r.previousElementSibling; if(nx&&nx.dataset.lid){ select(nx.dataset.lid); const nr=LP.querySelector(`[data-lid="${nx.dataset.lid}"]`); if(nr) nr.focus(); } } });
-  LP.addEventListener('dblclick',(e?)=>{ const nm=(e.target as any).closest('.lp-name'); if(nm) renameInline(nm,layerById(nm.closest('[data-lid]').dataset.lid)); });
-  LP.addEventListener('dragstart',(e?)=>{ const r=(e.target as any).closest('.lp-row'); if(!r) return; const id=r.dataset.lid;
-    if(!S.selSet.has(id)) select(id);
-    dragIds=selectedRoots().map((l?)=>l.id); e.dataTransfer.effectAllowed='move'; try{ e.dataTransfer.setData('text/x-keyline-layer',id); }catch(_){} });
-  LP.addEventListener('dragover',(e?)=>{ if(!dragIds) return; e.preventDefault(); clearDrop(); const r=(e.target as any).closest('.lp-row'); if(!r) return; const m=dropMode(r,e); if(m) r.classList.add('d-'+m); else e.dataTransfer.dropEffect='none'; });
-  LP.addEventListener('dragleave',(e?)=>{ if(e.target===LP) clearDrop(); });
-  LP.addEventListener('drop',(e?)=>{ if(!dragIds) return; e.preventDefault(); clearDrop(); const r=(e.target as any).closest('.lp-row');
-    const ids=dragIds; dragIds=null;
-    if(!r){ moveLayers(ids,null,'root'); return; }
-    const m=dropMode(r,e); if(m) moveLayers(ids,layerById(r.dataset.lid),m); });
-  LP.addEventListener('dragend',()=>{ dragIds=null; clearDrop(); });
-  $('#lGroup').addEventListener('click',groupSel);
-  $('#lUngroup').addEventListener('click',()=>ungroup(selLayer()));
-  $('#lDel').addEventListener('click',deleteSel);
-  $('#sideTabs').addEventListener('click',(e?)=>{ const b=(e.target as any).closest('button'); if(!b) return; S.tab=b.dataset.v; $('#sideTabs').querySelectorAll('button').forEach((x?)=>x.classList.toggle('on',x===b)); $('#paneLayers').hidden=S.tab!=='layers'; $('#paneAssets').hidden=S.tab!=='assets'; });
+  LP.addEventListener('keydown', (e?) => {
+    const r = (e.target as any).closest('.lp-row');
+    if (!r || (e.target as any).tagName === 'INPUT') return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      e.stopPropagation();
+      select(r.dataset.lid);
+    }
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      e.stopPropagation();
+      const nx = e.key === 'ArrowDown' ? r.nextElementSibling : r.previousElementSibling;
+      if (nx && nx.dataset.lid) {
+        select(nx.dataset.lid);
+        const nr = LP.querySelector(`[data-lid="${nx.dataset.lid}"]`);
+        if (nr) nr.focus();
+      }
+    }
+  });
+  LP.addEventListener('dblclick', (e?) => {
+    const nm = (e.target as any).closest('.lp-name');
+    if (nm) renameInline(nm, layerById(nm.closest('[data-lid]').dataset.lid));
+  });
+  LP.addEventListener('dragstart', (e?) => {
+    const r = (e.target as any).closest('.lp-row');
+    if (!r) return;
+    const id = r.dataset.lid;
+    if (!S.selSet.has(id)) select(id);
+    dragIds = selectedRoots().map((l?) => l.id);
+    e.dataTransfer.effectAllowed = 'move';
+    try {
+      e.dataTransfer.setData('text/x-keyline-layer', id);
+    } catch (_) {}
+  });
+  LP.addEventListener('dragover', (e?) => {
+    if (!dragIds) return;
+    e.preventDefault();
+    clearDrop();
+    const r = (e.target as any).closest('.lp-row');
+    if (!r) return;
+    const m = dropMode(r, e);
+    if (m) r.classList.add('d-' + m);
+    else e.dataTransfer.dropEffect = 'none';
+  });
+  LP.addEventListener('dragleave', (e?) => {
+    if (e.target === LP) clearDrop();
+  });
+  LP.addEventListener('drop', (e?) => {
+    if (!dragIds) return;
+    e.preventDefault();
+    clearDrop();
+    const r = (e.target as any).closest('.lp-row');
+    const ids = dragIds;
+    dragIds = null;
+    if (!r) {
+      moveLayers(ids, null, 'root');
+      return;
+    }
+    const m = dropMode(r, e);
+    if (m) moveLayers(ids, layerById(r.dataset.lid), m);
+  });
+  LP.addEventListener('dragend', () => {
+    dragIds = null;
+    clearDrop();
+  });
+  $('#lGroup').addEventListener('click', groupSel);
+  $('#lUngroup').addEventListener('click', () => ungroup(selLayer()));
+  $('#lDel').addEventListener('click', deleteSel);
+  $('#sideTabs').addEventListener('click', (e?) => {
+    const b = (e.target as any).closest('button');
+    if (!b) return;
+    S.tab = b.dataset.v;
+    $('#sideTabs')
+      .querySelectorAll('button')
+      .forEach((x?) => x.classList.toggle('on', x === b));
+    $('#paneLayers').hidden = S.tab !== 'layers';
+    $('#paneAssets').hidden = S.tab !== 'assets';
+  });
 }

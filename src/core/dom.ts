@@ -11,4 +11,8 @@ export const TLB = $('#tlbody');
 export const TLS = $('#tlscroll');
 export const LP = $('#lp');
 export const AG = $('#ag');
-export function svgEl(tag?, a?) { const e=document.createElementNS(NS,tag); for(const k in a) e.setAttribute(k,a[k]); return e; }
+export function svgEl(tag?, a?) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in a) e.setAttribute(k, a[k]);
+  return e;
+}
