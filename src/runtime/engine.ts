@@ -6,7 +6,8 @@
  *  value and c2 relative to the next key's value. */
 /** preset name or cubic-bezier [x1, y1, x2, y2] */
 export type Ease = string | number[];
-export type Keyframe = [number, any, Ease, number[]?];
+/** index 4 (editor only): the motion-path node type at this key — see tools/motion-path */
+export type Keyframe = [number, any, Ease, number[]?, string?];
 export interface EngineLayer {
   id: string;
   /** transform origin in the layer's own space */

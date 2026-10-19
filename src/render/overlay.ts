@@ -7,7 +7,8 @@ import { isHidden, isLocked, parentMatrix } from '../model/tree';
 import { drawBone } from '../tools/bones';
 import { cursorFor } from '../tools/edit-tools';
 import { ellNodes, rectNodes } from '../geometry/nodes';
-import { segCtrl } from '../tools/motion-path';
+import { currentNode, segCtrl } from '../tools/motion-path';
+import { followTextEdit } from '../tools/text-edit';
 
 export function toDoc(x: number, y: number) {
   return new DOMPoint(x, y).matrixTransform(CONTENT.getScreenCTM().inverse());
@@ -53,6 +54,7 @@ export function quadPts(q: DOMPointReadOnly[]) {
 }
 export function drawOverlay() {
   OV.replaceChildren();
+  followTextEdit();
   const u = 1 / S.scale;
   if (S.pen || S.pencil || S.penHint) drawPen(u);
   if (S.tool !== 'select') drawLabel(u);
@@ -110,9 +112,17 @@ export function drawOverlay() {
             );
           });
       }
-    tr.forEach(k => {
+    const cn = currentNode(l);
+    tr.forEach((k, ki) => {
       const q = mp(k[1][0] + o[0], k[1][1] + o[1]);
-      OV.append(svgEl('circle', { cx: q.x, cy: q.y, r: 3.5 * u, class: 'ov-kdot' }));
+      OV.append(
+        svgEl('circle', {
+          cx: q.x,
+          cy: q.y,
+          r: (ki === cn ? 4.5 : 3.5) * u,
+          class: 'ov-kdot' + (ki === cn ? ' cur' : ''),
+        }),
+      );
     });
   }
   if (l.type === 'bone') {

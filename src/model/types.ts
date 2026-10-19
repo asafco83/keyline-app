@@ -274,6 +274,8 @@ export interface EditorState {
   colorEd: { end(o?: any): void } | null;
   swatch: number;
   lockAR: boolean;
+  /** inspector: show the free font-name field */
+  fontCustom?: boolean;
   /** keep scale proportions in the inspector */
   sclLock?: boolean;
   ezDir: string;

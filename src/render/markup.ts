@@ -1,7 +1,7 @@
 // Keyline — render/markup
 import { filterSVG } from '../model/filters';
 import { anchorX, textLines } from './text-layout';
-import { ensureFaces, facesFor, familyCSS, outlineD, webFont } from './fonts';
+import { ensureFaces, facesFor, familyCSS, isLocalFamily, outlineD, webFont } from './fonts';
 import type { Composite } from '../runtime/engine';
 import type { Layer } from '../model/types';
 import { H, esc, r3 } from '../core/constants';
@@ -20,6 +20,8 @@ export interface MarkupCtx {
   useImg?: (id: string) => string | null | undefined;
   /** export: how web fonts are written (outlines, or text with an embedded font) */
   fonts?: 'outline' | 'embed';
+  /** editor: a text layer being typed into on the canvas (drawn hidden under the text editor) */
+  hideText?: string | null;
   /** export: font faces that need embedding (filled while writing markup) */
   faces?: Set<string>;
 }
@@ -83,8 +85,9 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
       'letter-spacing': G.ls ? r3(G.ls) : null,
       'text-anchor': G.anchor,
     });
+    if (ctx.editor && ctx.hideText === l.id) a.visibility = 'hidden';
     const lh = r3((G.lh || 1.2) * (G.size || 16)),
-      wf = webFont(G.family),
+      wf = webFont(G.family) || isLocalFamily(G.family),
       od = wf && !ctx.editor && ctx.fonts === 'outline' ? outlineD(G) : null;
     if (wf && ctx.editor) ensureFaces(G);
     if (wf && !ctx.editor && !od && ctx.faces) facesFor(G).forEach(fc => ctx.faces.add(fc.key));
@@ -107,6 +110,13 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
       : lines.length === 1
         ? `<text${attrs(a)}>${esc(lines[0])}</text>`
         : `<text${attrs(a)}>${lines.map((s, i) => `<tspan x="${r3(ax)}"${i ? ` dy="${lh}"` : ''}>${esc(s) || ' '}</tspan>`).join('')}</text>`;
+    // editor: a fixed-width text box is selectable (and measured) across its whole width
+    if (ctx.editor && G.wrap && G.ww > 0) {
+      const sz = G.size || 16;
+      inner =
+        `<rect class="kl-tbox" x="${r3(G.x)}" y="${r3(G.y - sz * 0.8 - (lh - sz) / 2)}" width="${r3(G.ww)}" height="${r3(Math.max(1, lines.length) * lh)}" fill="transparent"/>` +
+        inner;
+    }
   } else if (l.type === 'image') {
     Object.assign(a, { x: G.x, y: G.y, width: G.w, height: G.h });
     if (ctx.editor) {
