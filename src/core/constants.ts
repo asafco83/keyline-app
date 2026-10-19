@@ -76,7 +76,7 @@ export const NOFILL: Record<'fill' | 'stk' | 'sw' | 'draw', null> = { fill: null
 export function ic(p: string, s = 16) {
   return `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 }
-export const ICON = {
+export const ICON: Record<string, string> = {
   bone: ic('<circle cx="6" cy="18" r="2.5"/><path d="M8 16L18 6M8 16l2.5-6.5L18 6l-6.5 2.5z"/>'),
   select: ic('<path d="M5 3.5l13 6.2-5.6 1.7-1.9 5.8z"/><path d="M12.4 11.4l5 5"/>'),
   node: ic(
@@ -106,7 +106,7 @@ export const ICON = {
   x: ic('<path d="M6 6l12 12M18 6L6 18"/>'),
   trash: ic('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'),
 };
-export const TICON = {
+export const TICON: Record<string, string> = {
   group: ic('<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>', 14),
   rect: ic('<rect x="4" y="5" width="16" height="14" rx="1.5"/>', 14),
   ellipse: ic('<circle cx="12" cy="12" r="8"/>', 14),

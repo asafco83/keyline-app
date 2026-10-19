@@ -1,40 +1,48 @@
 // Keyline — ui/easing
+import type { Ease } from '../model/types';
 import { $, EZFAM, H, clamp, clone, esc, fmt, r2, r3 } from '../core/constants';
 import { beginEdit } from '../core/history';
 import { S, doc } from '../core/state';
 import { nrow } from './inspector';
 
-export function easeLabel(e?) {
+export function easeLabel(e: Ease): string {
   if (Array.isArray(e)) return 'cubic-bezier(' + e.map(v => r3(v)).join(', ') + ')';
-  const m = { linear: 'Linear', ease: 'Ease', in: 'Ease in', out: 'Ease out', inOut: 'Ease in-out', hold: 'Hold' };
+  const m: Record<string, string> = {
+    linear: 'Linear',
+    ease: 'Ease',
+    in: 'Ease in',
+    out: 'Ease out',
+    inOut: 'Ease in-out',
+    hold: 'Hold',
+  };
   if (!e) return 'Ease';
   if (m[e]) return m[e];
   const q = /^(inOut|in|out)([A-Z]\w*)$/.exec(e);
-  if (q) return q[2] + ' ' + { in: 'in', out: 'out', inOut: 'in-out' }[q[1]];
+  if (q) return q[2] + ' ' + (<Record<string, string>>{ in: 'in', out: 'out', inOut: 'in-out' })[q[1]];
   return e;
 }
-export function easeDir(e?) {
+export function easeDir(e: Ease): string {
   if (typeof e !== 'string') return S.ezDir;
   if (e === 'in' || e === 'out' || e === 'inOut') return e;
   const q = /^(inOut|in|out)[A-Z]/.exec(e);
   return q ? q[1] : S.ezDir;
 }
-export function easeFam(e?) {
+export function easeFam(e: Ease): string {
   if (Array.isArray(e)) return 'custom';
   if (e === 'in' || e === 'out' || e === 'inOut') return 'Standard';
   const q = /^(?:inOut|in|out)([A-Z]\w*)$/.exec(e || '');
   return q ? q[1] : e || 'ease';
 }
-export function famName(f?, dir?) {
+export function famName(f: string, dir: string) {
   return f === 'Standard' ? dir : dir + f;
 }
-export function bezOf(e?) {
+export function bezOf(e: Ease): number[] | null {
   return Array.isArray(e) ? e : !e ? H.EZ.ease : e === 'linear' ? [0, 0, 1, 1] : H.EZ[e] || null;
 }
-export function sameEase(a?, b?) {
+export function sameEase(a: Ease, b: Ease) {
   return JSON.stringify(a || 'ease') === JSON.stringify(b || 'ease');
 }
-export function thumb(e?) {
+export function thumb(e: Ease) {
   let d = '';
   for (let i = 0; i <= 40; i++) {
     const p = i / 40,
@@ -43,10 +51,10 @@ export function thumb(e?) {
   }
   return `<svg viewBox="0 -2 40 30" aria-hidden="true"><path d="${d}"/></svg>`;
 }
-export function EZX(x?) {
+export function EZX(x: number) {
   return 20 + x * 200;
 }
-export function EZY(v?) {
+export function EZY(v: number) {
   return 190 - (v + 0.5) * 90;
 }
 export function keyPanel() {
@@ -56,7 +64,7 @@ export function keyPanel() {
   S.ezDir = easeDir(cur);
   const allSame = ks.every(k => sameEase(k[2], cur)),
     dir = S.ezDir;
-  const tile = (e, label, extra?) =>
+  const tile = (e: Ease, label: string, extra?: string) =>
     `<button class="ezb${allSame && sameEase(e, cur) ? ' on' : ''}" data-ez="${esc(JSON.stringify(e))}" title="${esc(easeLabel(e))}"${extra || ''}>${thumb(e)}<span>${esc(label)}</span></button>`;
   let grid = tile('linear', 'Linear') + tile('ease', 'Ease') + tile('hold', 'Hold');
   EZFAM.forEach(f => {
@@ -139,20 +147,20 @@ export function drawEz() {
   const css = $('#ezCss');
   if (css !== document.activeElement) css.value = bz ? `cubic-bezier(${b.map(v => r3(v)).join(', ')})` : '';
 }
-export function applyEase(v?) {
+export function applyEase(v: Ease) {
   const ed = beginEdit();
   S.keys.forEach(k => (k[2] = clone(v)));
   ed.end({ insp: true });
 }
-export const CSSKW = {
+export const CSSKW: Record<string, number[]> = {
   linear: [0, 0, 1, 1],
   ease: [0.25, 0.1, 0.25, 1],
   'ease-in': [0.42, 0, 1, 1],
   'ease-out': [0, 0, 0.58, 1],
   'ease-in-out': [0.42, 0, 0.58, 1],
 };
-export function parseBez(s?) {
-  s = String(s || '')
+export function parseBez(raw: unknown): number[] | null {
+  const s = String(raw || '')
     .trim()
     .toLowerCase();
   if (CSSKW[s]) return CSSKW[s].slice();

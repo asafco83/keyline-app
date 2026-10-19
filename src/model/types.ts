@@ -172,6 +172,22 @@ export interface OpenFile {
 
 export type Tool = 'select' | 'node' | 'rect' | 'ellipse' | 'path' | 'pen' | 'text' | 'bone' | string;
 
+export interface XY {
+  x: number;
+  y: number;
+}
+
+/** An active pointer gesture on the canvas: `move` on every pointermove, `up` on release. */
+export interface Drag {
+  move?(p: XY, e: PointerEvent): void;
+  up?(p: XY, e: PointerEvent): void;
+  /** live label drawn next to the pointer */
+  lbl?: string;
+  /** where to draw the label */
+  lp?: XY;
+  rot?: any;
+}
+
 /** Transient editor state (not saved with the project). */
 export interface EditorState {
   /** primary selected layer id */
@@ -200,7 +216,7 @@ export interface EditorState {
   undo: string[];
   redo: string[];
   /** active pointer gesture */
-  drag: any;
+  drag: Drag | null;
   /** pen tool in progress */
   pen: any;
   last: number;
@@ -219,5 +235,5 @@ export interface EditorState {
   loading?: boolean;
   saveAll?: boolean;
   pickPlace?: boolean;
-  lastPt?: { x: number; y: number };
+  lastPt?: XY;
 }

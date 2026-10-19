@@ -18,7 +18,7 @@ import { FRAME, MENU, renderTimeline } from './timeline';
 import { closeModal } from './topbar';
 
 export function init(): void {
-  window.addEventListener('keydown', e => {
+  window.addEventListener('keydown', (e: KeyboardEvent) => {
     const tg: any = e.target,
       typing = tg.closest && tg.closest('input,textarea,select');
     if (e.key === 'Escape') {
@@ -194,7 +194,16 @@ export function init(): void {
       ed.end();
       return;
     }
-    const map = { v: 'select', a: 'node', r: 'rect', e: 'ellipse', s: 'star', p: 'pen', t: 'text', b: 'bone' };
+    const map: Record<string, string> = {
+      v: 'select',
+      a: 'node',
+      r: 'rect',
+      e: 'ellipse',
+      s: 'star',
+      p: 'pen',
+      t: 'text',
+      b: 'bone',
+    };
     if (map[k.toLowerCase()]) setTool(map[k.toLowerCase()]);
   });
 }

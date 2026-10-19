@@ -59,7 +59,7 @@ export const IDB = {
   },
 };
 export let assetWarned = false;
-export let assetT = 0;
+export let assetT: ReturnType<typeof setTimeout> | undefined;
 export function saveAssets() {
   clearTimeout(assetT);
   assetT = setTimeout(async () => {

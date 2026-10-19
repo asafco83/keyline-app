@@ -13,7 +13,7 @@ import { docPt } from '../render/overlay';
 import { renderAll } from '../render/stage';
 import { tln } from './timeline';
 
-export function closeModal(m?) {
+export function closeModal(m: HTMLElement) {
   m.hidden = true;
   if (m.id === 'mExport') {
     const s = $('#xprev svg');
@@ -48,8 +48,8 @@ export function resetView() {
 }
 
 export function init(): void {
-  (document.querySelectorAll as any)('.modal').forEach(m => {
-    m.addEventListener('click', e => {
+  document.querySelectorAll<HTMLElement>('.modal').forEach(m => {
+    m.addEventListener('click', (e: MouseEvent) => {
       if (e.target === m || (e.target as any).closest('[data-close]')) closeModal(m);
     });
   });
@@ -63,7 +63,7 @@ export function init(): void {
     S.pickPlace = true;
     $('#fSvg').click();
   });
-  $('#fSvg').addEventListener('change', async e => {
+  $('#fSvg').addEventListener('change', async (e: Event) => {
     const fs = [...(e.target as any).files];
     (e.target as any).value = '';
     if (!fs.length) return;
@@ -87,23 +87,23 @@ export function init(): void {
     if (importSVG(t, $('#iReplace').checked)) $('#mImport').hidden = true;
   });
   ['dragover', 'dragenter'].forEach(ev =>
-    drop.addEventListener(ev, e => {
+    drop.addEventListener(ev, (e: DragEvent) => {
       e.preventDefault();
       drop.classList.add('over');
     }),
   );
   ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, () => drop.classList.remove('over')));
-  drop.addEventListener('drop', e => {
+  drop.addEventListener('drop', (e: DragEvent) => {
     e.preventDefault();
     const fs = [...e.dataTransfer.files];
     if (!fs.length) return;
     $('#mImport').hidden = true;
     importFiles(fs, null, true);
   });
-  WRAP.addEventListener('dragover', e => {
+  WRAP.addEventListener('dragover', (e: DragEvent) => {
     e.preventDefault();
   });
-  WRAP.addEventListener('drop', e => {
+  WRAP.addEventListener('drop', (e: DragEvent) => {
     e.preventDefault();
     const p = docPt(e);
     let aid = '';
@@ -117,7 +117,7 @@ export function init(): void {
     const fs = [...e.dataTransfer.files];
     if (fs.length) importFiles(fs, p, true);
   });
-  document.addEventListener('paste', e => {
+  document.addEventListener('paste', (e: ClipboardEvent) => {
     if ((e.target as any).closest && (e.target as any).closest('input,textarea')) return;
     const cd = e.clipboardData;
     if (!cd) return;

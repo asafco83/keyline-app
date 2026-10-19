@@ -1,4 +1,5 @@
 // Keyline — tools/bones
+import type { Geometry, Layer, XY } from '../model/types';
 import { H, NOFILL, byId, clamp, fmt, r2, xfp } from '../core/constants';
 import { OV, svgEl } from '../core/dom';
 import { beginEdit, select, setProp } from '../core/history';
@@ -7,18 +8,18 @@ import { isHidden, kids, parentMatrix, pmOf } from '../model/tree';
 import { drawOverlay, gMatrix } from '../render/overlay';
 import { frame } from '../render/stage';
 
-export function boneTipL(G?) {
+export function boneTipL(G: Geometry): number[] {
   const a = (G.ang * Math.PI) / 180;
   return [G.x + G.len * Math.cos(a), G.y + G.len * Math.sin(a)];
 }
-export function bonePts(l?) {
+export function bonePts(l: Layer): { J: DOMPoint; T: DOMPoint } | null {
   const g = byId('e-' + l.id);
   if (!g) return null;
   const M = gMatrix(l),
     tl = boneTipL(l.geo);
   return { J: xfp(M, l.geo.x, l.geo.y), T: xfp(M, tl[0], tl[1]) };
 }
-export function drawBone(l?, u?, sel?) {
+export function drawBone(l: Layer, u: number, sel: boolean) {
   const bp = bonePts(l);
   if (!bp) return;
   const { J, T } = bp,
@@ -57,15 +58,15 @@ export function drawBone(l?, u?, sel?) {
   );
   OV.append(svgEl('circle', { cx: T.x, cy: T.y, r: 4 * u, class: 'ov-bt' + k, 'data-bone': l.id, 'data-part': 'tip' }));
 }
-export function limitRot(b?, r?) {
+export function limitRot(b: Layer, r: number) {
   return b.lim ? clamp(r, b.lmin != null ? b.lmin : -90, b.lmax != null ? b.lmax : 90) : r;
 }
 export function newBoneName() {
   return 'Bone ' + (doc.layers.filter(x => x.type === 'bone').length + 1);
 }
-export function boneCreate(p0?) {
+export function boneCreate(p0: XY) {
   const u = 1 / S.scale;
-  let best = null,
+  let best: [Layer, { J: DOMPoint; T: DOMPoint }] | null = null,
     bd = 10 * u;
   doc.layers.forEach(b => {
     if (b.type !== 'bone' || isHidden(b)) return;
@@ -80,7 +81,7 @@ export function boneCreate(p0?) {
   const start = best ? best[1].T : p0;
   S.boneDraft = { a: start, b: p0 };
   S.drag = {
-    move(p?) {
+    move(p) {
       S.boneDraft.b = p;
       drawOverlay();
     },
@@ -120,7 +121,7 @@ export function boneCreate(p0?) {
   };
   drawOverlay();
 }
-export function addChildBone(p?) {
+export function addChildBone(p: Layer) {
   const ed = beginEdit(),
     tl = boneTipL(p.geo),
     b = mkLayer(
@@ -137,7 +138,7 @@ export function addChildBone(p?) {
   S.selSet = new Set<any>([b.id]);
   ed.end({ insp: true });
 }
-export function fkDrag(b?, p0?) {
+export function fkDrag(b: Layer, p0: XY) {
   const J = bonePts(b).J,
     r0 = H.get(b, 'rot', S.time),
     a0 = Math.atan2(p0.y - J.y, p0.x - J.x),
@@ -146,7 +147,7 @@ export function fkDrag(b?, p0?) {
     ed = beginEdit();
   let moved = false;
   S.drag = {
-    move(p?, e?) {
+    move(p, e) {
       if (!moved && Math.hypot(p.x - p0.x, p.y - p0.y) * S.scale < 3) return;
       moved = true;
       let r = r0 + (sg * (Math.atan2(p.y - J.y, p.x - J.x) - a0) * 180) / Math.PI;
@@ -162,7 +163,7 @@ export function fkDrag(b?, p0?) {
     },
   };
 }
-export function ikChain(b?) {
+export function ikChain(b: Layer): Layer[] {
   const ch = [b];
   let x = b;
   while (!x.pin) {
@@ -173,7 +174,7 @@ export function ikChain(b?) {
   }
   return ch;
 }
-export function localMat(l?, t?, rot?) {
+export function localMat(l: Layer, t: number, rot?: number) {
   const c = H.comp(l, t);
   return new DOMMatrix()
     .translate(c.x, c.y)
@@ -181,7 +182,7 @@ export function localMat(l?, t?, rot?) {
     .scale(c.sx, c.sy)
     .translate(-c.ox, -c.oy);
 }
-export function ikDrag(b?, p0?) {
+export function ikDrag(b: Layer, p0: XY) {
   const ch = ikChain(b),
     PM = parentMatrix(ch[0]),
     t = S.time,
@@ -189,11 +190,11 @@ export function ikDrag(b?, p0?) {
     tip = boneTipL(b.geo),
     ed = beginEdit();
   let moved = false;
-  const solve = tg => {
+  const solve = (tg: XY) => {
     for (let it = 0; it < 20; it++) {
       let err = 0;
       for (let i = ch.length - 1; i >= 0; i--) {
-        const W = [];
+        const W: DOMMatrix[] = [];
         let M = PM;
         ch.forEach((x, k) => {
           M = M.multiply(localMat(x, t, rots[k]));
@@ -213,7 +214,7 @@ export function ikDrag(b?, p0?) {
     }
   };
   S.drag = {
-    move(p?) {
+    move(p) {
       if (!moved && Math.hypot(p.x - p0.x, p.y - p0.y) * S.scale < 3) return;
       moved = true;
       solve(p);
@@ -227,7 +228,7 @@ export function ikDrag(b?, p0?) {
     },
   };
 }
-export function shiftChildBones(l?, oldTip?) {
+export function shiftChildBones(l: Layer, oldTip: number[]) {
   const nt = boneTipL(l.geo),
     dx = nt[0] - oldTip[0],
     dy = nt[1] - oldTip[1];

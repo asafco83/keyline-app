@@ -18,7 +18,7 @@ export const XOUT = [
   ['restart', 'Restart'],
   ['none', 'Keep playing'],
 ];
-export function setOpts(sel?, list?, val?) {
+export function setOpts(sel: HTMLSelectElement, list: string[][], val: string) {
   sel.innerHTML = list.map(o => `<option value="${o[0]}">${o[1]}</option>`).join('');
   sel.value = list.some(o => o[0] === val) ? val : list[0][0];
 }
@@ -28,14 +28,14 @@ export function syncExportUI() {
   if (css && ['click', 'scroll', 'api'].includes(ex.trigger)) ex.trigger = 'load';
   $('#xMode')
     .querySelectorAll('button')
-    .forEach(b => b.classList.toggle('on', b.dataset.v === ex.mode));
+    .forEach((b: HTMLElement) => b.classList.toggle('on', b.dataset.v === ex.mode));
   $('#xSize')
     .querySelectorAll('button')
-    .forEach(b => b.classList.toggle('on', b.dataset.v === (ex.size || 'resp')));
+    .forEach((b: HTMLElement) => b.classList.toggle('on', b.dataset.v === (ex.size || 'resp')));
   syncSizeUI();
   $('#xIds')
     .querySelectorAll('button')
-    .forEach(b => b.classList.toggle('on', b.dataset.v === (ex.ids || 'gen')));
+    .forEach((b: HTMLElement) => b.classList.toggle('on', b.dataset.v === (ex.ids || 'gen')));
   setOpts(
     $('#xTrig'),
     XTRIG.filter(o => !css || ['load', 'hover'].includes(o[0])),

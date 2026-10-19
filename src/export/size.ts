@@ -38,7 +38,7 @@ export function syncSizeUI() {
     fixed = ex.size === 'fixed',
     [w, h] = outDims(),
     hasImg = usedImageIds().length > 0,
-    set = (id, v) => {
+    set = (id: string, v: string | number) => {
       const e = $('#' + id);
       if (e !== document.activeElement) e.value = v;
     };
@@ -86,7 +86,7 @@ export function syncSizeUI() {
     $('#xHi').checked = ex.hi !== false;
   }
 }
-export function setDims(w?, h?) {
+export function setDims(w: number, h: number) {
   const ex = doc.ex;
   ex.w = clamp(Math.round(w) || doc.w, 1, 20000);
   ex.h = clamp(Math.round(h) || doc.h, 1, 20000);
@@ -95,27 +95,27 @@ export function setDims(w?, h?) {
   renderSnippet();
   updateExport();
 }
-export let dimT = 0;
+export let dimT: ReturnType<typeof setTimeout> | undefined;
 
 export function init(): void {
-  $('#xW').addEventListener('change', e => {
+  $('#xW').addEventListener('change', (e: Event) => {
     const v = parseFloat((e.target as any).value);
     if (!(v > 0)) return syncSizeUI();
     const [, h] = outDims();
     setDims(v, doc.ex.lock !== false ? (v * doc.h) / doc.w : h);
   });
-  $('#xH').addEventListener('change', e => {
+  $('#xH').addEventListener('change', (e: Event) => {
     const v = parseFloat((e.target as any).value);
     if (!(v > 0)) return syncSizeUI();
     const [w] = outDims();
     setDims(doc.ex.lock !== false ? (v * doc.w) / doc.h : w, v);
   });
-  $('#xPct').addEventListener('change', e => {
+  $('#xPct').addEventListener('change', (e: Event) => {
     const v = parseFloat((e.target as any).value);
     if (!(v > 0)) return syncSizeUI();
     setDims((doc.w * v) / 100, (doc.h * v) / 100);
   });
-  $('#xPreset').addEventListener('change', e => {
+  $('#xPreset').addEventListener('change', (e: Event) => {
     const v = parseFloat((e.target as any).value);
     (e.target as any).value = '';
     if (v > 0) setDims((doc.w * v) / 100, (doc.h * v) / 100);
@@ -132,39 +132,39 @@ export function init(): void {
     }
   });
   ['xW', 'xH', 'xPct', 'xMaxW'].forEach(id =>
-    $('#' + id).addEventListener('input', e => {
+    $('#' + id).addEventListener('input', (e: Event) => {
       clearTimeout(dimT);
       dimT = setTimeout(() => (e.target as any).dispatchEvent(new Event('change')), 450);
     }),
   );
-  $('#xMaxW').addEventListener('change', e => {
+  $('#xMaxW').addEventListener('change', (e: Event) => {
     const v = parseFloat((e.target as any).value);
     doc.ex.maxW = v > 0 ? Math.round(clamp(v, 16, 20000)) : 0;
     save();
     syncSizeUI();
     updateExport();
   });
-  $('#xOpt').addEventListener('change', e => {
+  $('#xOpt').addEventListener('change', (e: Event) => {
     doc.ex.opt = (e.target as any).checked;
     save();
     syncSizeUI();
     updateExport();
   });
-  $('#xFmt').addEventListener('change', e => {
+  $('#xFmt').addEventListener('change', (e: Event) => {
     doc.ex.fmt = (e.target as any).value;
     save();
     syncSizeUI();
     updateExport();
   });
-  $('#xQ').addEventListener('input', e => {
+  $('#xQ').addEventListener('input', (e: Event) => {
     $('#xQv').textContent = (e.target as any).value + '%';
   });
-  $('#xQ').addEventListener('change', e => {
+  $('#xQ').addEventListener('change', (e: Event) => {
     doc.ex.q = parseInt((e.target as any).value) || 82;
     save();
     updateExport();
   });
-  $('#xHi').addEventListener('change', e => {
+  $('#xHi').addEventListener('change', (e: Event) => {
     doc.ex.hi = (e.target as any).checked;
     save();
     updateExport();

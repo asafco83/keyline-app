@@ -12,7 +12,7 @@ export function renderTools() {
 }
 
 export function init(): void {
-  $('#tools').addEventListener('click', e => {
+  $('#tools').addEventListener('click', (e: MouseEvent) => {
     const b = (e.target as any).closest('[data-tool]');
     if (b) setTool(b.dataset.tool);
   });

@@ -1,4 +1,5 @@
 // Keyline — export/images
+import type { Asset, Layer } from '../model/types';
 import { $, byId, esc, fmt } from '../core/constants';
 import { save } from '../core/history';
 import { ASSETS, URLS, doc, randPre } from '../core/state';
@@ -12,13 +13,24 @@ import { ancestors, isHidden } from '../model/tree';
 import { localMat } from '../tools/bones';
 import { kb } from '../ui/inspector';
 
-export const ENC: any = {};
-export function toBlobP(cv?, type?, q?) {
-  return new Promise<any>(r => {
+/** An image prepared for export. */
+export interface OptImage {
+  data: string;
+  size: number;
+  mime: string;
+  tw: number;
+  th: number;
+  note?: string;
+  orig?: boolean;
+}
+/** Encoders this browser supports (detected once). */
+export const ENC: { webp?: boolean; avif?: boolean; done?: boolean } = {};
+export function toBlobP(cv: HTMLCanvasElement, type?: string, q?: number) {
+  return new Promise<Blob | null>(r => {
     const t = setTimeout(() => r(null), 8000);
     try {
       cv.toBlob(
-        b => {
+        (b: Blob | null) => {
           clearTimeout(t);
           r(b);
         },
@@ -31,11 +43,11 @@ export function toBlobP(cv?, type?, q?) {
     }
   });
 }
-export let encP = null;
+export let encP: Promise<void> | null = null;
 export function detectEnc() {
   return (
     encP ||
-    (encP = Promise.race([detectEnc0(), new Promise<any>(r => setTimeout(r, 1500))]).then(() => {
+    (encP = Promise.race([detectEnc0(), new Promise<void>(r => setTimeout(r, 1500))]).then(() => {
       ENC.done = true;
     }))
   );
@@ -44,22 +56,22 @@ export async function detectEnc0() {
   if (ENC.done) return;
   const c = document.createElement('canvas');
   c.width = c.height = 2;
-  for (const t of ['webp', 'avif']) {
+  for (const t of ['webp', 'avif'] as const) {
     const b = await toBlobP(c, 'image/' + t, 0.8);
     ENC[t] = !!b && b.type === 'image/' + t;
   }
   ENC.done = true;
 }
-export function loadImg(src?) {
-  return new Promise<any>((res, rej) => {
+export function loadImg(src: string) {
+  return new Promise<HTMLImageElement>((res, rej) => {
     const im = new Image();
     im.onload = () => res(im);
     im.onerror = () => rej(new Error('decode'));
     im.src = src;
   });
 }
-export function drawScaled(img?, tw?, th?) {
-  let src = img,
+export function drawScaled(img: HTMLImageElement, tw: number, th: number) {
+  let src: CanvasImageSource = img,
     sw = img.naturalWidth,
     sh = img.naturalHeight;
   while (sw / 2 >= tw * 1.0001 && sh / 2 >= th) {
@@ -81,7 +93,7 @@ export function drawScaled(img?, tw?, th?) {
   x.drawImage(src, 0, 0, tw, th);
   return c;
 }
-export function hasAlpha(cv?) {
+export function hasAlpha(cv: HTMLCanvasElement) {
   const x = cv.getContext('2d'),
     w = cv.width,
     h = cv.height,
@@ -92,7 +104,7 @@ export function hasAlpha(cv?) {
   }
   return false;
 }
-export function worldMatAt(l?, t?) {
+export function worldMatAt(l: Layer, t: number) {
   let M = new DOMMatrix();
   [...ancestors(l).reverse(), l].forEach(x => {
     M = M.multiply(localMat(x, t));
@@ -110,10 +122,10 @@ export function worldMatAt(l?, t?) {
 export function imageNeeds() {
   const k = exportPxScale() * (doc.ex.hi !== false ? 2 : 1),
     N = Math.max(24, Math.round(doc.dur * 20)),
-    ts = new Set<any>();
+    ts = new Set<number>();
   for (let i = 0; i <= N; i++) ts.add((i / N) * doc.dur);
-  doc.layers.forEach(l => Object.values<any>(l.t).forEach(tr => tr.forEach(q => ts.add(q[0]))));
-  const need: any = {};
+  doc.layers.forEach(l => Object.values(l.t).forEach(tr => tr.forEach(q => ts.add(q[0]))));
+  const need: Record<string, { w: number; h: number }> = {};
   doc.layers.forEach(l => {
     if (l.type !== 'image' || isHidden(l) || !ASSETS[l.geo.asset]) return;
     let mx = 0,
@@ -129,17 +141,17 @@ export function imageNeeds() {
   });
   return need;
 }
-export const OPT = new Map<any, any>();
-export function optimizeAsset(a?, need?, fmt?, q?) {
+export const OPT = new Map<string, Promise<OptImage>>();
+export function optimizeAsset(a: Asset, need: { w: number; h: number }, fmt: string, q: number): Promise<OptImage> {
   const f = Math.min(1, Math.max(need.w / a.w, need.h / a.h)),
     tw = Math.max(1, Math.round(a.w * f)),
     th = Math.max(1, Math.round(a.h * f)),
     key = [a.id, tw, th, fmt, q].join('|');
   if (OPT.has(key)) return OPT.get(key);
-  const pr = (async () => {
-    const orig = { data: a.data, size: a.size, mime: a.mime, tw: a.w, th: a.h, orig: true };
+  const pr = (async (): Promise<OptImage> => {
+    const orig: OptImage = { data: a.data, size: a.size, mime: a.mime, tw: a.w, th: a.h, orig: true };
     if (/gif|apng/.test(a.mime || '')) return Object.assign(orig, { note: 'animated, kept as is' });
-    let img;
+    let img: HTMLImageElement;
     try {
       img = await loadImg(URLS[a.id] || a.data);
     } catch (e) {
@@ -160,7 +172,7 @@ export function optimizeAsset(a?, need?, fmt?, q?) {
       note = 'has transparency, so not JPEG';
     }
     types = types.filter(Boolean);
-    let best = null;
+    let best: Blob | null = null;
     for (const ty of types) {
       const b = await toBlobP(cv, ty, q / 100);
       if (b && b.type === ty && (!best || b.size < best.size)) best = b;
@@ -178,7 +190,7 @@ export async function prepImages() {
   if (!ids.length || doc.ex.opt === false) return null;
   await detectEnc();
   const need = imageNeeds(),
-    out: any = {};
+    out: Record<string, OptImage> = {};
   for (const id of ids)
     out[id] = await optimizeAsset(
       ASSETS[id],
@@ -188,10 +200,10 @@ export async function prepImages() {
     );
   return out;
 }
-export function fmtName(m?) {
+export function fmtName(m: string) {
   return (m || '').replace('image/', '').replace('x-icon', 'ico').replace('jpeg', 'jpg').toUpperCase();
 }
-export function renderImgList(imgs?) {
+export function renderImgList(imgs: Record<string, OptImage> | null) {
   const ids = usedImageIds();
   if (!ids.length) return;
   const rows = ids.map(id => {
@@ -227,7 +239,7 @@ export function sizePreview() {
     : `Responsive · fills its container · ${rw} px wide shown at ${pct}%`;
   $('#xPrevZoom')
     .querySelectorAll('button')
-    .forEach(b => b.classList.toggle('on', b.dataset.v === prevMode));
+    .forEach((b: HTMLElement) => b.classList.toggle('on', b.dataset.v === prevMode));
 }
 export let expSeq = 0;
 export let expPending = Promise.resolve();
@@ -241,7 +253,7 @@ export function updateExport() {
 export async function runExport() {
   const seq = ++expSeq;
   if (usedImageIds().length && doc.ex.opt !== false) $('#xStats').innerHTML = '<span>Optimizing images…</span>';
-  let imgs = null;
+  let imgs: Record<string, OptImage> | null = null;
   try {
     imgs = await prepImages();
   } catch (e) {
@@ -254,7 +266,7 @@ export async function runExport() {
     old = box.querySelector('svg');
   if (old && old.player) old.player.destruct();
   box.innerHTML = r.code;
-  box.querySelectorAll('script').forEach(sc => {
+  box.querySelectorAll('script').forEach((sc: HTMLScriptElement) => {
     const n = document.createElement('script');
     n.textContent = sc.textContent.replace('<![CDATA[', '').replace(']]>', '');
     sc.remove();
@@ -271,7 +283,7 @@ export async function runExport() {
     `<span>Size <b>${kb(new Blob([r.code]).size)}</b></span>${doc.ex.size === 'fixed' ? `<span>Output <b>${w}×${h}</b></span>` : ''}<span>Layers <b>${doc.layers.filter(l => !isHidden(l)).length}</b></span><span>Animated <b>${r.anim}</b></span><span>Animators <b>${r.tracks}</b></span>${r.images ? `<span>Images <b>${r.images}</b></span>` : ''}<span>Length <b>${fmt(doc.dur)}s</b></span>`;
   renderImgList(imgs);
 }
-export function slug(s?) {
+export function slug(s: unknown) {
   return (
     String(s || 'animation')
       .toLowerCase()
@@ -279,7 +291,7 @@ export function slug(s?) {
       .replace(/^-|-$/g, '') || 'animation'
   );
 }
-export async function saveFile(name?, data?, type?) {
+export async function saveFile(name: string, data: BlobPart, type: string) {
   if ((window as any).claude && (window as any).claude.use) {
     let dl = null;
     try {
@@ -314,13 +326,13 @@ export async function saveFile(name?, data?, type?) {
 }
 
 export function init(): void {
-  $('#xPrevZoom').addEventListener('click', e => {
+  $('#xPrevZoom').addEventListener('click', (e: MouseEvent) => {
     const b = (e.target as any).closest('button');
     if (!b) return;
     prevMode = b.dataset.v;
     sizePreview();
   });
-  $('#xMode').addEventListener('click', e => {
+  $('#xMode').addEventListener('click', (e: MouseEvent) => {
     const b = (e.target as any).closest('button');
     if (!b) return;
     doc.ex.mode = b.dataset.v;
@@ -328,7 +340,7 @@ export function init(): void {
     syncExportUI();
     updateExport();
   });
-  $('#xSize').addEventListener('click', e => {
+  $('#xSize').addEventListener('click', (e: MouseEvent) => {
     const b = (e.target as any).closest('button');
     if (!b) return;
     doc.ex.size = b.dataset.v;
@@ -336,24 +348,24 @@ export function init(): void {
     syncExportUI();
     updateExport();
   });
-  $('#xTrig').addEventListener('change', e => {
+  $('#xTrig').addEventListener('change', (e: Event) => {
     doc.ex.trigger = (e.target as any).value;
     save();
     syncExportUI();
     updateExport();
   });
-  $('#xIt').addEventListener('change', e => {
+  $('#xIt').addEventListener('change', (e: Event) => {
     doc.it = parseInt((e.target as any).value) || 0;
     save();
     updateExport();
   });
-  $('#xDir').addEventListener('change', e => {
+  $('#xDir').addEventListener('change', (e: Event) => {
     doc.dir = (e.target as any).value;
     save();
     updateExport();
   });
   $('#xIt').addEventListener('change', () => renderSnippet());
-  $('#xPre').addEventListener('change', e => {
+  $('#xPre').addEventListener('change', (e: Event) => {
     doc.ex.prefix = (e.target as any).value.trim() || randPre();
     save();
     syncExportUI();

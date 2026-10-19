@@ -72,7 +72,7 @@ export function afterSwap() {
   save();
   renderAll();
 }
-export let saveT = 0;
+export let saveT: ReturnType<typeof setTimeout> | undefined;
 export function save() {
   clearTimeout(saveT);
   saveT = setTimeout(() => {
