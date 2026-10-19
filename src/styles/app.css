@@ -226,11 +226,6 @@ button {
   border-color: var(--accent);
   color: var(--accent);
 }
-.btn.rec.on {
-  background: var(--key-soft);
-  border-color: var(--key);
-  color: var(--fg);
-}
 .btn.danger:hover {
   border-color: var(--head);
   color: var(--head);
@@ -364,10 +359,6 @@ button {
   background-color: var(--panel);
   background-image: conic-gradient(var(--check) 25%, transparent 0 50%, var(--check) 0 75%, transparent 0);
   background-size: 16px 16px;
-}
-#artboard.rec {
-  outline: 2px solid var(--key);
-  outline-offset: 4px;
 }
 #stage {
   display: block;
@@ -677,28 +668,6 @@ button {
   width: 12px;
   text-align: center;
   font-size: 12px;
-}
-.badge-rec {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--panel);
-  border: 1px solid var(--key);
-  border-radius: 999px;
-  padding: 3px 10px 3px 8px;
-  font-size: 11px;
-  font-weight: 600;
-  pointer-events: none;
-}
-.badge-rec::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  transform: rotate(45deg);
-  background: var(--key);
 }
 
 /* inspector */

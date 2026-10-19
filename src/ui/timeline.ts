@@ -33,7 +33,7 @@ export function renderTimeline() {
       .filter(isAnim);
   let h = `<div class="tl-row tl-ruler"><div class="tl-name">Animated layers</div><div class="tl-lane" id="ruler" style="width:${LW}px">${ticks(W)}</div></div>`;
   if (!list.length)
-    h += `<div class="tl-empty">Layers with keyframes appear here. Select a layer, move the playhead, then change it with Auto-key on, or click ◆ beside a property in the inspector.</div>`;
+    h += `<div class="tl-empty">Layers with keyframes appear here. Click ◆ beside a property in the inspector, or use Animate in the Layers panel, to start animating it. After that, changing it at any point in time adds a keyframe there.</div>`;
   for (const l of list) {
     const tracks = layerTracks(l),
       ex = S.exp[l.id] !== false;

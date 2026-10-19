@@ -87,9 +87,6 @@ export function frame() {
   updatePlayhead();
   refreshInspector();
   $('#tc').textContent = tc(S.time);
-  const rec = S.autokey && S.time > 0.004;
-  ART.classList.toggle('rec', rec);
-  $('#recBadge').hidden = !rec;
 }
 export function tc(t: number) {
   return `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, '0')}`;

@@ -256,7 +256,6 @@ export interface EditorState {
   ptime: number;
   playing: boolean;
   loop: boolean;
-  autokey: boolean;
   /** timeline pixels per second */
   pps: number;
   zoom: number;
