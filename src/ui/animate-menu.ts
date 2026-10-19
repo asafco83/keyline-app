@@ -7,7 +7,7 @@ import { $, H, ICON, clone, r3 } from '../core/constants';
 import { beginEdit } from '../core/history';
 import { propOK } from '../core/keyframes';
 import { S, layerById, sortTrack } from '../core/state';
-import { isLocked } from '../model/tree';
+import { isLocked, kids, pidOf } from '../model/tree';
 
 /** Menu sections, in SVGator's order. Letters are Shift shortcuts (Shift+C is the Convert Point tool). */
 export const ANIM_GROUPS: Array<Array<[PropKey, string, string?]>> = [
@@ -101,6 +101,12 @@ export function openAnimMenu() {
 }
 /** Enable or grey out the panel's action buttons for the current selection. */
 export function syncLayerActions(sel: Layer | null | undefined) {
+  const one = sel && S.selSet.size === 1 && !isLocked(sel) ? sel : null,
+    sib = one ? kids(pidOf(one)) : [],
+    i = one ? sib.indexOf(one) : -1;
+  ($('#lUp') as HTMLButtonElement).disabled = !one || i >= sib.length - 1;
+  ($('#lDown') as HTMLButtonElement).disabled = !one || i <= 0;
+  ($('#lDup') as HTMLButtonElement).disabled = !sel;
   ($('#lAnim') as HTMLButtonElement).disabled = !canAnimate();
   ($('#lUngroup') as HTMLButtonElement).disabled = !(sel && sel.type === 'group' && !isLocked(sel));
   ($('#lDel') as HTMLButtonElement).disabled = !S.selSet.size;
@@ -109,6 +115,9 @@ export function syncLayerActions(sel: Layer | null | undefined) {
 
 export function init(): void {
   $('#lAnimIc').innerHTML = ICON.animate;
+  $('#lUp').innerHTML = ICON.moveUp;
+  $('#lDown').innerHTML = ICON.moveDown;
+  $('#lDup').innerHTML = ICON.duplicate;
   $('#lGroup').innerHTML = ICON.group;
   $('#lUngroup').innerHTML = ICON.ungroup;
   $('#lAnim').addEventListener('click', () => (MENU().hidden ? openAnimMenu() : closeAnimMenu()));

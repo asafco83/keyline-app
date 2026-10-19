@@ -50,8 +50,23 @@
           </div>
         </div>
         <div class="pane" id="paneLayers">
+          <div class="lp-acts" role="toolbar" aria-label="Layer actions">
+            <button class="btn ib" id="lUp" aria-label="Move layer up" title="Move layer up (Ctrl+])"></button>
+            <button class="btn ib" id="lDown" aria-label="Move layer down" title="Move layer down (Ctrl+[)"></button>
+            <span class="sp"></span>
+            <button class="btn ib" id="lDup" aria-label="Duplicate" title="Duplicate (Ctrl+D)"></button>
+            <button class="btn ib" id="lUngroup" aria-label="Ungroup" title="Ungroup (Ctrl+Shift+G)"></button>
+            <button
+              class="btn ib"
+              id="lGroup"
+              aria-label="Group"
+              title="Group the selected layers (Ctrl+G), or add an empty group"
+            ></button>
+            <button class="btn ib" id="lDel" aria-label="Delete" title="Delete selected layers (Del)"></button>
+          </div>
           <div class="lp" id="lp" role="tree" aria-label="Layers"></div>
           <div class="lp-foot">
+            <span class="rl" id="lCount"></span>
             <button
               class="btn pri lp-anim-btn"
               id="lAnim"
@@ -61,15 +76,6 @@
             >
               <span id="lAnimIc" aria-hidden="true"></span>Animate
             </button>
-            <span class="rl" id="lCount"></span>
-            <button class="btn ib" id="lUngroup" aria-label="Ungroup" title="Ungroup (Ctrl+Shift+G)"></button>
-            <button
-              class="btn ib"
-              id="lGroup"
-              aria-label="Group"
-              title="Group the selected layers (Ctrl+G), or add an empty group"
-            ></button>
-            <button class="btn ib" id="lDel" aria-label="Delete" title="Delete selected layers (Del)"></button>
           </div>
           <div class="ctx" id="animMenu" role="menu" aria-label="Animate property" hidden></div>
           <div class="ctx zoom-menu" id="zoomMenu" role="menu" aria-label="Zoom" hidden></div>
