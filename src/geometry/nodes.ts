@@ -300,3 +300,16 @@ export function smoothNodes(pts: Pt[], closed: boolean): PathNode[] {
       : [r2(p[0]), r2(p[1]), r2(p[0] - tx), r2(p[1] - ty), r2(p[0] + tx), r2(p[1] + ty)];
   });
 }
+/**
+ * Reshape the segment a→b so its point at `t` moves by (dx, dy), changing only the two handles
+ * (the smallest change that does it). Used when dragging a segment with the Convert Point tool.
+ */
+export function reshapeSeg(a: PathNode, b: PathNode, t: number, dx: number, dy: number) {
+  const w1 = 3 * (1 - t) * (1 - t) * t,
+    w2 = 3 * (1 - t) * t * t,
+    k = w1 * w1 + w2 * w2 || 1;
+  a[4] = r2(a[4] + (w1 * dx) / k);
+  a[5] = r2(a[5] + (w1 * dy) / k);
+  b[2] = r2(b[2] + (w2 * dx) / k);
+  b[3] = r2(b[3] + (w2 * dy) / k);
+}

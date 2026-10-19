@@ -5,6 +5,7 @@ import {
   ellNodes,
   equalizeValues,
   polygonNodes,
+  reshapeSeg,
   rectNodes,
   simplifyPts,
   smoothNodes,
@@ -169,5 +170,15 @@ describe('drawing-tool helpers', () => {
     ]);
     expect(n[0].slice(2)).toEqual([0, 0, 0, 0]);
     expect(n[1][4]).toBeGreaterThan(10);
+  });
+  it('reshapes a segment so the dragged point follows the pointer', () => {
+    const a = [0, 0, 0, 0, 0, 0],
+      b = [30, 0, 30, 0, 30, 0];
+    reshapeSeg(a, b, 0.5, 0, 12);
+    expect(a.slice(0, 2)).toEqual([0, 0]);
+    expect(b.slice(0, 2)).toEqual([30, 0]);
+    const m = cubicAt(a, b, 0.5);
+    expect(m[0]).toBeCloseTo(15, 0);
+    expect(m[1]).toBeCloseTo(12, 0);
   });
 });

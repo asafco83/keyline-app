@@ -90,6 +90,9 @@ export const ICON: Record<string, string> = {
     '<path d="M10 21l-5-7.5 5-9.5 5 9.5z"/><circle cx="10" cy="13.5" r="1.4"/><path d="M19 3.5v6M16 6.5h6"/>',
   ),
   delnode: ic('<path d="M10 21l-5-7.5 5-9.5 5 9.5z"/><circle cx="10" cy="13.5" r="1.4"/><path d="M16 6.5h6"/>'),
+  convert: ic(
+    '<path d="M4 20L12 5l8 15"/><path d="M12 5v8"/><rect x="10.3" y="3.3" width="3.4" height="3.4" rx=".5"/>',
+  ),
   pencil: ic(
     '<path d="M4 20l1.2-4.4L16.5 4.3a2 2 0 012.8 0l.4.4a2 2 0 010 2.8L8.4 18.8z"/><path d="M14.5 6.3l3.2 3.2"/>',
   ),
@@ -138,6 +141,7 @@ export const TOOL_INFO: Record<string, { label: string; key?: string; keys?: str
   pen: { label: 'Pen tool', key: 'P', keys: ['p'] },
   addnode: { label: 'Add node tool', key: '+', keys: ['+', '='] },
   delnode: { label: 'Remove node tool', key: '-', keys: ['-', '_'] },
+  convert: { label: 'Convert point tool', key: '⇧C', keys: ['shift+c'] },
   pencil: { label: 'Pencil tool', key: 'N', keys: ['n'] },
   ellipse: { label: 'Ellipse', key: 'O', keys: ['o'] },
   rect: { label: 'Rectangle', key: 'M', keys: ['m'] },
@@ -158,7 +162,7 @@ export const TOOLBAR: Array<string | ToolGroup | null> = [
   'select',
   'node',
   null,
-  { group: 'pen', label: 'Pen tools', items: ['pen', 'addnode', 'delnode', 'pencil'] },
+  { group: 'pen', label: 'Pen tools', items: ['pen', 'addnode', 'delnode', 'convert', 'pencil'] },
   { group: 'shapes', label: 'Shape tools', items: ['ellipse', 'rect', 'polygon', 'star', 'line'] },
   'text',
   null,
@@ -176,6 +180,8 @@ export const HINTS: Record<string, string> = {
   pen: 'Click: corner · drag: curve (Alt breaks the handle, Shift 45°, Space moves the point) · click the first point to close · Enter/Esc ends · on a selected path: hover to add, delete or continue',
   addnode: 'Click a segment of the selected path to add a node',
   delnode: 'Click a node of the selected path to remove it',
+  convert:
+    'Click a point for a corner · drag a point for smooth handles · drag a handle to move it alone · drag a segment to reshape it',
   pencil: 'Drag to draw freehand · end near the start to close the shape',
   ellipse: 'Drag to draw · Shift for a circle · Alt from the center',
   rect: 'Drag to draw · Shift for a square · Alt from the center',

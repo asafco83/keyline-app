@@ -109,7 +109,8 @@ export function drawOverlay() {
     return;
   }
   OV.append(svgEl('polygon', { points: quadPts(Q), class: 'ov-box' }));
-  const nodeTool = S.tool === 'node' || S.tool === 'pen' || S.tool === 'addnode' || S.tool === 'delnode';
+  const nodeTool =
+    S.tool === 'node' || S.tool === 'pen' || S.tool === 'addnode' || S.tool === 'delnode' || S.tool === 'convert';
   if (nodeTool && (l.type === 'path' || (S.tool !== 'node' && (l.type === 'rect' || l.type === 'ellipse')))) {
     drawNodes(l, u);
     return;
