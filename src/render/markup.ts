@@ -1,4 +1,6 @@
 // Keyline — render/markup
+import { filterSVG } from '../model/filters';
+import { anchorX, textLines } from './text-layout';
 import type { Composite } from '../runtime/engine';
 import type { Layer } from '../model/types';
 import { H, esc, r3 } from '../core/constants';
@@ -26,7 +28,8 @@ export function attrs(o: Record<string, unknown>) {
   return s;
 }
 export function tfStr(c: Composite) {
-  return `translate(${r3(c.x)},${r3(c.y)}) rotate(${r3(c.r)}) scale(${r3(c.sx)},${r3(c.sy)}) translate(${r3(-c.ox)},${r3(-c.oy)})`;
+  const sk = (c.kx ? ` skewX(${r3(c.kx)})` : '') + (c.ky ? ` skewY(${r3(c.ky)})` : '');
+  return `translate(${r3(c.x)},${r3(c.y)}) rotate(${r3(c.r)})${sk} scale(${r3(c.sx)},${r3(c.sy)}) translate(${r3(-c.ox)},${r3(-c.oy)})`;
 }
 export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: string) {
   const id = ctx.pre + l.id,
@@ -41,7 +44,15 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
     a.pathLength = 100;
     a['stroke-dasharray'] = '100 100';
     a['stroke-dashoffset'] = r3(100 - c.draw);
-  }
+  } else if (c.dof != null && (c.dof !== 0 || (l.t.dof && l.t.dof.length))) a['stroke-dashoffset'] = r3(c.dof);
+  if (c.fo != null && (c.fo < 1 || (l.t.fo && l.t.fo.length))) a['fill-opacity'] = r3(c.fo);
+  if (c.so != null && (c.so < 1 || (l.t.so && l.t.so.length))) a['stroke-opacity'] = r3(c.so);
+  const css = [l.blend && l.blend !== 'normal' ? `mix-blend-mode:${l.blend}` : '', l.iso ? 'isolation:isolate' : '']
+    .filter(Boolean)
+    .join(';');
+  if (css) a.style = a.style ? a.style.replace(/;?\s*$/, ';') + css : css;
+  const fx = filterSVG(l, ctx.pre, k => H.get(l, k, ctx.t));
+  if (fx) a.filter = `url(#${id}-fx)`;
   let inner: string;
   if (l.type === 'rect') {
     Object.assign(a, { x: G.x, y: G.y, width: G.w, height: G.h });
@@ -54,15 +65,24 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
     a.d = H.dstr(c.d);
     inner = `<path${attrs(a)}/>`;
   } else if (l.type === 'text') {
+    const lines = textLines(G),
+      ax = anchorX(G);
     Object.assign(a, {
-      x: G.x,
+      x: ax,
       y: G.y,
       'font-size': G.size,
       'font-family': G.family,
       'font-weight': G.weight,
+      'font-style': G.italic ? 'italic' : null,
+      'text-decoration': G.deco || null,
+      'letter-spacing': G.ls ? r3(G.ls) : null,
       'text-anchor': G.anchor,
     });
-    inner = `<text${attrs(a)}>${esc(G.text)}</text>`;
+    const lh = r3((G.lh || 1.2) * (G.size || 16));
+    inner =
+      lines.length === 1
+        ? `<text${attrs(a)}>${esc(lines[0])}</text>`
+        : `<text${attrs(a)}>${lines.map((s, i) => `<tspan x="${r3(ax)}"${i ? ` dy="${lh}"` : ''}>${esc(s) || ' '}</tspan>`).join('')}</text>`;
   } else if (l.type === 'image') {
     Object.assign(a, { x: G.x, y: G.y, width: G.w, height: G.h });
     if (ctx.editor) {
@@ -75,7 +95,7 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
     }
   } else if (isBox(l)) inner = `<g${attrs(a)}>${children || ''}</g>`;
   else inner = `<g${attrs(a)}>${G.markup || ''}</g>`;
-  return `<g id="${id}" transform="${tfStr(c)}" opacity="${r3(c.op)}"${ctx.editor ? ` data-lid="${l.id}"` : ''}>${inner}</g>`;
+  return `<g id="${id}" transform="${tfStr(c)}" opacity="${r3(c.op)}"${ctx.editor ? ` data-lid="${l.id}"` : ''}>${fx}${inner}</g>`;
 }
 export function markup(list: Layer[], pid: string | null, ctx: MarkupCtx): string {
   return kids(pid, list)

@@ -1,5 +1,6 @@
 // Keyline — core/constants
 import type { Layer, PropKey } from '../model/types';
+import { fxKeys, fxOf } from '../model/filters';
 import { KLEngine } from '../runtime/engine';
 
 export function $(s: string): any {
@@ -36,14 +37,49 @@ export const PROPS: Record<PropKey, [label: string, kind: 'v' | 'n' | 'c' | 'm']
   org: ['Origin', 'v'],
   rot: ['Rotate', 'n'],
   scl: ['Scale', 'v'],
+  skw: ['Skew', 'v'],
   op: ['Opacity', 'n'],
   fill: ['Fill', 'c'],
+  fo: ['Fill opacity', 'n'],
   stk: ['Stroke', 'c'],
+  so: ['Stroke opacity', 'n'],
   sw: ['Stroke width', 'n'],
   draw: ['Draw', 'n'],
+  dof: ['Dash offset', 'n'],
   d: ['Morph', 'm'],
 };
-export const PORDER: PropKey[] = ['pos', 'org', 'rot', 'scl', 'op', 'fill', 'stk', 'sw', 'draw', 'd'];
+export const PORDER: PropKey[] = [
+  'pos',
+  'org',
+  'rot',
+  'scl',
+  'skw',
+  'op',
+  'fill',
+  'fo',
+  'stk',
+  'so',
+  'sw',
+  'draw',
+  'dof',
+  'd',
+];
+/** Human name of a property (filters read as "Drop shadow · X"). */
+export function propLabel(l: Layer, k: string) {
+  if ((PROPS as any)[k]) return (PROPS as any)[k][0] as string;
+  const f = fxOf(l, k);
+  return f ? `${f.def.label} · ${f.param.label}` : k;
+}
+/** Value kind of a property: v = 2D vector, n = number, c = colour, m = path. */
+export function propKind(l: Layer, k: string): 'v' | 'n' | 'c' | 'm' {
+  if ((PROPS as any)[k]) return (PROPS as any)[k][1];
+  const f = fxOf(l, k);
+  return f && typeof f.param.def === 'string' ? 'c' : 'n';
+}
+/** A layer's animated tracks in display order: standard properties, then filter parameters. */
+export function layerTracks(l: Layer): PropKey[] {
+  return [...PORDER, ...(fxKeys(l) as PropKey[])].filter(k => l.t[k] && l.t[k].length);
+}
 export function baseOf(l: Layer, k: PropKey) {
   return k === 'org' ? l.o || [0, 0] : l.b[k];
 }

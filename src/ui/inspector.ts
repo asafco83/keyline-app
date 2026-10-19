@@ -1,7 +1,7 @@
 // Keyline — ui/inspector
 import { bgPaint, parseBg, setBg } from '../model/background';
 import type { Ease, Layer, PathData, PropKey, Vec2 } from '../model/types';
-import { $, EZFAM, FONTS, H, PROPS, byId, clamp, clone, esc, fmt, r2, r3, xfp } from '../core/constants';
+import { $, EZFAM, FONTS, H, PROPS, propKind, byId, clamp, clone, esc, fmt, r2, r3, xfp } from '../core/constants';
 import { INSP } from '../core/dom';
 import { beginEdit, deleteKeys, setProp, setTool, toggleKey } from '../core/history';
 import { convertToPath, morphTo } from '../core/layer-ops';
@@ -176,7 +176,7 @@ export function refreshInspector(full?: boolean) {
     const [k, i, m] = inp.dataset.f.split(':') as [PropKey, string, string];
     let v = H.get(l, k, S.time);
     if (i !== undefined && i !== '') v = v ? v[+i] : 0;
-    if (PROPS[k][1] === 'c') {
+    if (propKind(l, k) === 'c') {
       if (inp.type === 'color') inp.value = toHex(v) || '#000000';
       else inp.value = v == null ? '' : v;
     } else inp.value = fmt(m ? v * +m : v);
@@ -246,7 +246,7 @@ export function toHex(raw: unknown): string | null {
 }
 export function parseField(l: Layer, inp: HTMLInputElement): [PropKey, any] | null {
   const [k, i, m] = inp.dataset.f.split(':') as [PropKey, string, string];
-  const kind = PROPS[k][1];
+  const kind = propKind(l, k);
   let v: any;
   if (kind === 'c') {
     v = inp.value.trim() || 'none';

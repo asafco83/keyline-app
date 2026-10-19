@@ -15,7 +15,23 @@ export type PathData = SubPath[];
 export type LayerType = 'group' | 'rect' | 'ellipse' | 'path' | 'text' | 'image' | 'bone' | 'raw';
 
 /** Animatable properties. `org` is stored on `Layer.o`, the rest on `Layer.b`. */
-export type PropKey = 'pos' | 'org' | 'rot' | 'scl' | 'op' | 'fill' | 'stk' | 'sw' | 'draw' | 'd';
+export type PropKey =
+  | 'pos'
+  | 'org'
+  | 'rot'
+  | 'scl'
+  | 'skw'
+  | 'op'
+  | 'fill'
+  | 'fo'
+  | 'stk'
+  | 'so'
+  | 'sw'
+  | 'draw'
+  | 'dof'
+  | 'd'
+  /** filter parameter: fx:<filter id>:<param> */
+  | `fx:${string}`;
 
 /** Unanimated values. */
 export interface BaseValues {
@@ -28,6 +44,13 @@ export interface BaseValues {
   sw: number;
   draw: number;
   d?: PathData;
+  /** skew x/y in degrees */
+  skw?: Vec2;
+  /** fill / stroke opacity 0–1 */
+  fo?: number;
+  so?: number;
+  /** stroke dash offset */
+  dof?: number;
   [extra: string]: any;
 }
 
@@ -53,6 +76,17 @@ export interface Geometry {
   family?: string;
   weight?: string;
   anchor?: 'start' | 'middle' | 'end' | string;
+  /** text: italic */
+  italic?: boolean;
+  /** text: CSS text-decoration lines, e.g. 'underline line-through' */
+  deco?: string;
+  /** text: letter spacing in px */
+  ls?: number;
+  /** text: keep the box width while typing and wrap lines at `ww` */
+  wrap?: boolean;
+  ww?: number;
+  /** text: line height as a multiple of the font size */
+  lh?: number;
   asset?: string;
   len?: number;
   ang?: number;
@@ -81,6 +115,13 @@ export interface Layer {
   xf: string;
   /** extra SVG attributes kept from import or tools */
   extra: Record<string, string>;
+  /** filters, applied in order */
+  fx?: Array<{ id: string; type: string }>;
+  /** runtime map for animated filter parameters (derived from fx, see model/filters) */
+  fa?: Record<string, [string, string]>;
+  /** compositing: CSS mix-blend-mode and isolation */
+  blend?: string;
+  iso?: boolean;
   /** bones: IK pin */
   pin?: boolean;
   /** bones: rotation limit */

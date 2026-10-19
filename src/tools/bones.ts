@@ -179,6 +179,8 @@ export function localMat(l: Layer, t: number, rot?: number) {
   return new DOMMatrix()
     .translate(c.x, c.y)
     .rotate(rot != null ? rot : c.r)
+    .skewX(c.kx || 0)
+    .skewY(c.ky || 0)
     .scale(c.sx, c.sy)
     .translate(-c.ox, -c.oy);
 }
