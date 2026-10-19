@@ -164,16 +164,6 @@ export function init(): void {
     S.loop = !S.loop;
     (e.currentTarget as HTMLElement).classList.toggle('on', S.loop);
   });
-  $('#tRec').addEventListener('click', (e: MouseEvent) => {
-    S.autokey = !S.autokey;
-    (e.currentTarget as HTMLElement).classList.toggle('on', S.autokey);
-    frame();
-    toast(
-      S.autokey
-        ? 'Auto-key on: edits after 0s record keyframes.'
-        : 'Auto-key off: edits change the static value unless the property already has keyframes.',
-    );
-  });
   $('#tDur').addEventListener('change', (e: Event) => docField(e.target as HTMLInputElement));
   $('#tZoom').addEventListener('input', (e: Event) => {
     S.pps = +(e.target as any).value;

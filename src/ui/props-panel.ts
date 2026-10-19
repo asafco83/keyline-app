@@ -153,7 +153,7 @@ function applyShape(l: Layer, key: string, raw: number) {
   }
   const sh = liveShape(l);
   if (!sh) return;
-  // the radius is animatable: keyed at the playhead when it has keyframes (or Auto-key is on)
+  // the radius is animatable: keyed at the playhead once it has keyframes
   if (key === 'rad') return setProp(l, 'rad', r2(Math.max(0, Math.min(raw, maxCornerRadius(sh)))));
   const p: ShapeParams & { sig?: string } = { ...sh };
   delete p.sig;

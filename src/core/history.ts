@@ -94,14 +94,6 @@ export function setProp(l: Layer, k: PropKey, v: any) {
     }
     return;
   }
-  if (S.autokey && S.time > 0.004 && k !== 'org') {
-    l.t[k] = [
-      [0, clone(baseOf(l, k)), 'ease'],
-      [r3(S.time), v, 'ease'],
-    ];
-    S.exp[l.id] = true;
-    return;
-  }
   setBase(l, k, v);
 }
 export function toggleKey(l: Layer, k: PropKey) {

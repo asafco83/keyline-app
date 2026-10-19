@@ -21,7 +21,6 @@ export const S: EditorState = {
   ptime: 0,
   playing: false,
   loop: true,
-  autokey: true,
   pps: 140,
   zoom: 1,
   scale: 1,
