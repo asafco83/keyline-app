@@ -135,15 +135,17 @@ Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to 
 - **Align bar** at the top: align left / centre / right / top / middle / bottom, distribute horizontally / vertically. One layer aligns to the canvas, several align to each other; distributing needs three or more.
 - **Text:** content, position and measured size.
 - **Transforms:** position, scale (with a keep-proportions link), skew X/Y, rotate as turns + degrees (with a _rotate along the motion path_ toggle when the layer has one), origin, anchor grid, flip.
-- **Motion path:** _Set motion path_ makes the layer follow a path, rectangle or ellipse over the whole animation (one keyframe per point, timed for an even speed). On the canvas, drag a segment of the path to curve it, drag its handles to fine-tune, double-click a segment to straighten it.
-- **Text appearance:** font (system fonts or 31 Google Fonts, including Hebrew ones), style (weight × italic), bold / italic / underline / overline / strikethrough, size, letter spacing, alignment, line height, and **Keep width**: when on, the box keeps its width and lines break to fit it.
+- **Motion path:** _Set motion path_ makes the layer follow a path, rectangle or ellipse over the whole animation (one keyframe per point, timed for an even speed). On the canvas, drag a segment of the path to curve it, drag its handles to fine-tune, double-click a segment to straighten it. **Path node** (below it) edits the keyframe at the playhead, or the one before it: its type (straight, mirrored, asymmetric, disconnected) and position; ‹ › step between nodes. Alt-drag a handle to move it alone.
+- **Text appearance:** font (basic stacks, 31 Google Fonts including Hebrew ones, and fonts on this computer — Chrome/Edge can list them after you allow it; elsewhere type a font name), style (weight × italic), bold / italic / underline / overline / strikethrough, size, letter spacing, alignment, line height, and **Keep width**: when on, the box keeps its width and lines break to fit it.
 - **Fill & stroke:** colours with an eyedropper (in browsers that support it), fill and stroke opacity, stroke width, and a swap button.
 - **Appearance:** paint order, blending, isolate, opacity slider, line ends, line join, miter limit, dash pattern, dash offset, path length, draw.
 - **Filters:** blur and drop shadow, reorderable, every parameter animatable (in JS export mode; CSS mode exports filters as static).
 
+**Typing text:** double-click a text on the canvas (or click it with the Text tool) to type in place; the panel's text box updates the canvas live too. Space types a space while you edit. Esc, Ctrl+Enter or clicking away finishes. With the Text tool, click for text that grows as you type, or drag to draw a box of fixed width whose lines wrap. The side handles of a text set its box width (wrapping the lines) instead of stretching the letters.
+
 **Moving keyframes:** with position keyframes selected in the timeline, dragging the layer or using the arrow keys on the canvas moves all of them together (select them all to move the whole motion path). Arrow keys pressed while working in the timeline still move the selected keyframes in time.
 
-**Web fonts in exports:** Google Fonts are converted to outlines by default (no font download, identical everywhere, also inside `<img>`). _Embed font_ instead keeps live, selectable text and embeds only the alphabets the text uses, which is smaller for long text. Right-to-left text is always embedded so its letters keep their order.
+**Web fonts in exports:** Google Fonts are converted to outlines by default (no font download, identical everywhere, also inside `<img>`). _Embed font_ instead keeps live, selectable text and embeds only the alphabets the text uses, which is smaller for long text. Right-to-left text is always embedded so its letters keep their order. Fonts from this computer are converted or embedded the same way once the browser has shared them (embedding includes the whole font file); otherwise the SVG only names the font.
 
 ## The `.klp` project format
 

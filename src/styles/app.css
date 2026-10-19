@@ -2108,6 +2108,9 @@ details summary {
   height: 24px;
 }
 .sec .sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 11px;
   color: var(--muted);
   font-weight: 600;
@@ -2138,6 +2141,21 @@ details summary {
 .fx-head .btn.ib {
   width: 26px;
   height: 26px;
+}
+.sec .sub .sp {
+  flex: 1;
+}
+.sec .sub .muted {
+  font-weight: 400;
+}
+.sec .sub .btn.ib {
+  width: 22px;
+  height: 22px;
+}
+.ov-kdot.cur {
+  fill: var(--panel);
+  stroke: var(--key);
+  stroke-width: 2;
 }
 .sec p.muted {
   font-style: italic;
@@ -2170,4 +2188,23 @@ details summary {
   .rf .btn.ib {
     width: 24px;
   }
+}
+
+/* typing text on the canvas */
+.kl-tedit {
+  position: fixed;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 1px dashed var(--accent);
+  outline-offset: 2px;
+  background: transparent;
+  resize: none;
+  overflow: hidden;
+  z-index: 40;
+  box-sizing: content-box;
+  font-kerning: normal;
 }

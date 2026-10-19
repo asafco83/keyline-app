@@ -8,13 +8,86 @@ import type { Geometry } from '../model/types';
 import { SUBSET_RANGES, WEB_FONTS, type WebFont } from '../model/font-catalog';
 import { anchorX, textLines } from './text-layout';
 
+/* ---------- fonts installed on this computer (Local Font Access API, Chrome / Edge) ---------- */
+
+export interface LocalFace {
+  family: string;
+  postscriptName: string;
+  style: string;
+  w: number;
+  it: boolean;
+  /** FontData from queryLocalFonts() */
+  data: { blob(): Promise<Blob> };
+}
+const LOCAL: Record<string, LocalFace[]> = {};
+const LS_KEY = 'kl-local-fonts';
+export function localFontsSupported() {
+  return typeof window !== 'undefined' && 'queryLocalFonts' in window;
+}
+/** Families seen on this computer, also remembered from earlier visits (names only). */
+export function localFamilies(): string[] {
+  let saved: string[] = [];
+  try {
+    saved = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+  } catch (_) {}
+  return [...new Set([...Object.keys(LOCAL), ...saved])].sort((a, b) => a.localeCompare(b));
+}
+export function localLoaded() {
+  return Object.keys(LOCAL).length > 0;
+}
+const WNAMES: Array<[RegExp, number]> = [
+  [/thin|hairline/i, 100],
+  [/extra ?light|ultra ?light/i, 200],
+  [/semi ?light|demi ?light/i, 350],
+  [/light/i, 300],
+  [/medium/i, 500],
+  [/semi ?bold|demi ?bold/i, 600],
+  [/extra ?bold|ultra ?bold/i, 800],
+  [/black|heavy/i, 900],
+  [/bold/i, 700],
+];
+/** Ask the browser for the fonts on this computer (needs a click; the browser asks for permission). */
+export async function loadLocalFonts(): Promise<string[]> {
+  const list: any[] = await (window as any).queryLocalFonts();
+  list.forEach(fd => {
+    const st = String(fd.style || ''),
+      w = (WNAMES.find(([r]) => r.test(st)) || [null, 400])[1];
+    (LOCAL[fd.family] = LOCAL[fd.family] || []).push({
+      family: fd.family,
+      postscriptName: fd.postscriptName,
+      style: st,
+      w,
+      it: /italic|oblique/i.test(st),
+      data: fd,
+    });
+  });
+  const fams = Object.keys(LOCAL).sort((a, b) => a.localeCompare(b));
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(fams));
+  } catch (_) {}
+  return fams;
+}
+export function isLocalFamily(family: unknown) {
+  return typeof family === 'string' && !webFont(family) && localFamilies().includes(family);
+}
+function localFace(G: Geometry): LocalFace | null {
+  const list = LOCAL[G.family];
+  if (!list || !list.length) return null;
+  const want = +String(G.weight || 400) || 400,
+    it = !!G.italic,
+    score = (f: LocalFace) => Math.abs(f.w - want) + (f.it === it ? 0 : 1000);
+  return list.reduce((b, f) => (score(f) < score(b) ? f : b), list[0]);
+}
+
 export function webFont(family: unknown): WebFont | null {
   return (typeof family === 'string' && WEB_FONTS.find(f => f.family === family)) || null;
 }
 /** font-family value for markup: the web font with its generic fallback */
 export function familyCSS(family: string) {
   const f = webFont(family);
-  return f ? `${f.family}, ${f.cat === 'handwriting' || f.cat === 'display' ? 'sans-serif' : f.cat}` : family;
+  if (f) return `${f.family}, ${f.cat === 'handwriting' || f.cat === 'display' ? 'sans-serif' : f.cat}`;
+  if (isLocalFamily(family)) return `'${String(family).replace(/'/g, '')}', sans-serif`;
+  return family;
 }
 const RANGES: Record<string, Array<[number, number]>> = {};
 function rangesOf(f: WebFont, sub: string) {
@@ -54,11 +127,16 @@ export function styleFor(f: WebFont, italic: unknown) {
 export function fontURL(f: WebFont, sub: string, w: number, st: string, ext: 'woff' | 'woff2') {
   return `https://cdn.jsdelivr.net/npm/@fontsource/${f.id}@${f.v}/files/${f.id}-${sub}-${w}-${st}.${ext}`;
 }
-type Face = { f: WebFont; sub: string; w: number; st: string; key: string };
+type Face = { f?: WebFont; local?: LocalFace; sub: string; w: number; st: string; key: string };
 const FACES: Record<string, Face> = {};
 export function facesFor(G: Geometry): Face[] {
   const f = webFont(G.family);
-  if (!f) return [];
+  if (!f) {
+    const lf = localFace(G);
+    if (!lf) return [];
+    const key = 'local:' + lf.postscriptName;
+    return [(FACES[key] = FACES[key] || { local: lf, sub: '', w: lf.w, st: lf.it ? 'italic' : 'normal', key })];
+  }
   const w = pickWeight(f, G.weight),
     st = styleFor(f, G.italic);
   return subsetsFor(f, G.text).map(sub => {
@@ -80,7 +158,8 @@ export function onFontLoad(fn: () => void) {
 export function ensureFaces(G: Geometry) {
   if (typeof FontFace === 'undefined' || typeof document === 'undefined' || !document.fonts) return;
   facesFor(G).forEach(({ f, sub, w, st, key }) => {
-    if (loaded.has(key)) return;
+    // fonts on this computer are already available to the page by name
+    if (!f || loaded.has(key)) return;
     loaded.add(key);
     const ff = new FontFace(
       f.family,
@@ -100,7 +179,29 @@ export function ensureFaces(G: Geometry) {
 /* ---------- export ---------- */
 
 const OT: Record<string, any> = {},
-  B64: Record<string, string> = {};
+  B64: Record<string, string> = {},
+  FMT: Record<string, [string, string]> = {};
+/** a local font file's format: [mime, css format] */
+function sniff(b: ArrayBuffer): [string, string] {
+  const t = new TextDecoder('latin1').decode(new Uint8Array(b, 0, 4));
+  return t === 'OTTO'
+    ? ['font/otf', 'opentype']
+    : t === 'wOF2'
+      ? ['font/woff2', 'woff2']
+      : t === 'wOFF'
+        ? ['font/woff', 'woff']
+        : ['font/ttf', 'truetype'];
+}
+/** Size in bytes of the embedded data for these faces (to warn about large local fonts). */
+export function embeddedBytes(keys: Iterable<string>) {
+  let n = 0;
+  for (const k of keys) n += B64[k] ? (B64[k].length * 3) / 4 : 0;
+  return n;
+}
+async function faceBuf(fc: Face, ext: 'woff' | 'woff2') {
+  if (fc.local) return (await fc.local.data.blob()).arrayBuffer();
+  return fetchBuf(fontURL(fc.f, fc.sub, fc.w, fc.st, ext));
+}
 async function fetchBuf(url: string) {
   const r = await fetch(url);
   if (!r.ok) throw new Error(url + ' ' + r.status);
@@ -129,13 +230,16 @@ export async function prepareFonts(geos: Geometry[], mode: 'outline' | 'embed') 
           (async () => {
             ot = ot || (await import('opentype.js'));
             const parse = ot.parse || (ot.default && ot.default.parse);
-            OT[fc.key] = parse(await fetchBuf(fontURL(fc.f, fc.sub, fc.w, fc.st, 'woff')));
+            OT[fc.key] = parse(await faceBuf(fc, 'woff'));
           })().catch(() => {}),
         );
       if (!outline && !B64[fc.key])
         jobs.push(
-          fetchBuf(fontURL(fc.f, fc.sub, fc.w, fc.st, 'woff2'))
-            .then(b => (B64[fc.key] = b64(b)))
+          faceBuf(fc, 'woff2')
+            .then(b => {
+              B64[fc.key] = b64(b);
+              if (fc.local) FMT[fc.key] = sniff(b);
+            })
             .catch(() => {}),
         );
     }
@@ -154,7 +258,11 @@ export function fontFaceCSS(keys: Iterable<string>) {
     const fc = FACES[key];
     if (!fc || !B64[key]) continue;
     const { f, sub, w, st } = fc;
-    css += `@font-face{font-family:"${f.family}";font-style:${st};font-weight:${w};src:url(data:font/woff2;base64,${B64[key]}) format("woff2");unicode-range:${(f.ur && f.ur[sub]) || SUBSET_RANGES[sub]}}`;
+    if (fc.local) {
+      const [mime, fmt] = FMT[key] || ['font/ttf', 'truetype'];
+      css += `@font-face{font-family:"${fc.local.family.replace(/"/g, '')}";font-style:${st};font-weight:${w};src:url(data:${mime};base64,${B64[key]}) format("${fmt}")}`;
+    } else
+      css += `@font-face{font-family:"${f.family}";font-style:${st};font-weight:${w};src:url(data:font/woff2;base64,${B64[key]}) format("woff2");unicode-range:${(f.ur && f.ur[sub]) || SUBSET_RANGES[sub]}}`;
   }
   return css;
 }
@@ -172,7 +280,7 @@ export function outlineD(G: Geometry): string | null {
     ls = G.ls || 0,
     lh = (G.lh || 1.2) * size,
     fontFor = (cp: number) => {
-      const sub = subsetOf(f, cp),
+      const sub = f ? subsetOf(f, cp) : '',
         fc = faces.find(x => x.sub === sub) || faces[0];
       return OT[fc.key];
     },

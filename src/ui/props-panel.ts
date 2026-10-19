@@ -9,13 +9,14 @@
 import type { Layer, PropKey } from '../model/types';
 import { FONTS, ICON, byId, esc, fmt, ic, r2, valueAt } from '../core/constants';
 import { INSP } from '../core/dom';
-import { beginEdit, setProp } from '../core/history';
+import { beginEdit, setProp, setTime } from '../core/history';
+import { type NodeType, currentNode, nodeType, setNodePos, setNodeType } from '../tools/motion-path';
 import { S } from '../core/state';
 import { WEB_FONTS } from '../model/font-catalog';
-import { pickWeight, webFont } from '../render/fonts';
+import { localFamilies, localFontsSupported, localLoaded, pickWeight, webFont } from '../render/fonts';
 import { FILTERS, addFilter, fxKey, removeFilter, syncFa } from '../model/filters';
 import { H9 } from '../tools/edit-tools';
-import { colf, krow, nrow, num } from './inspector';
+import { colf, krow, nrow, num, renderInspector } from './inspector';
 
 const PAINTED = ['rect', 'ellipse', 'path', 'text'];
 const I = {
@@ -100,6 +101,41 @@ export function transformSection(l: Layer) {
     }</section>`;
 }
 
+/* ---------- Path nodes (motion path keyframes) ---------- */
+
+const NT: Array<[NodeType, string, string]> = [
+  ['straight', 'Straight (corner)', '<path d="M4 17l8-9 8 9"/><circle cx="12" cy="8" r="1.6" fill="currentColor"/>'],
+  [
+    'mirrored',
+    'Mirrored',
+    '<path d="M4 17c1-6 4-9 8-9s7 3 8 9"/><path d="M5 8h14"/><circle cx="12" cy="8" r="1.6" fill="currentColor"/><circle cx="5" cy="8" r="1.2"/><circle cx="19" cy="8" r="1.2"/>',
+  ],
+  [
+    'asymmetric',
+    'Asymmetric',
+    '<path d="M4 17c1-6 4-9 8-9s5 2 8 9"/><path d="M3 8h13"/><circle cx="12" cy="8" r="1.6" fill="currentColor"/><circle cx="3" cy="8" r="1.2"/><circle cx="16" cy="8" r="1.2"/>',
+  ],
+  [
+    'disconnected',
+    'Disconnected',
+    '<path d="M4 17c1-5 4-9 8-9 2 3 5 6 8 9"/><path d="M12 8L6 5M12 8l5 3"/><circle cx="12" cy="8" r="1.6" fill="currentColor"/><circle cx="6" cy="5" r="1.2"/><circle cx="17" cy="11" r="1.2"/>',
+  ],
+];
+/** Type and position of the motion-path node at (or before) the playhead. */
+export function nodeSection(l: Layer) {
+  const i = currentNode(l);
+  if (i < 0) return '';
+  const tr = l.t.pos,
+    type = nodeType(l, i),
+    on = Math.abs(tr[i][0] - S.time) < 0.005;
+  return `<div class="sub">Path node <span class="muted">${i + 1} of ${tr.length} · ${fmt(tr[i][0])}s${on ? '' : ' (before the playhead)'}</span>
+      <span class="sp"></span><button class="btn ib" data-act="nodego" data-d="-1" ${i === 0 ? 'disabled' : ''} title="Previous node" aria-label="Previous node">‹</button><button class="btn ib" data-act="nodego" data-d="1" ${i === tr.length - 1 ? 'disabled' : ''} title="Next node" aria-label="Next node">›</button></div>
+    ${nrow('Type', `<div class="btns tight" role="group" aria-label="Node type">${NT.map(([v, t, p]) => tbtnAct('ntype', v, type === v, ic(p), t)).join('')}</div>`)}
+    ${nrow('Position', `<label class="nf"><span>X</span><input id="np-x" data-np="0" data-ni="${i}" data-on="${on ? 1 : 0}" inputmode="decimal" aria-label="Node X"></label><label class="nf"><span>Y</span><input id="np-y" data-np="1" data-ni="${i}" inputmode="decimal" aria-label="Node Y"></label>`)}`;
+}
+const tbtnAct = (act: string, val: string, on: boolean, icon: string, label: string) =>
+  `<button class="btn ib tg${on ? ' on' : ''}" data-act="${act}" data-v="${val}" aria-pressed="${on}" title="${label}" aria-label="${label}">${icon}</button>`;
+
 /* ---------- Text ---------- */
 
 export function textSection(l: Layer) {
@@ -128,11 +164,25 @@ export function textAppearanceSection(l: Layer) {
   );
   const opt = (v: string, t: string) =>
     `<option value="${esc(v)}"${v === G.family ? ' selected' : ''}>${esc(t)}</option>`;
+  const locals = localFamilies().filter(n => !WEB_FONTS.some(f => f.family === n)),
+    isLocal = !wf && locals.includes(G.family),
+    other = !wf && !isLocal && !FONTS.some(f => f[0] === G.family);
   const fontSel = `<select class="sel" data-g="family" id="g-family" aria-label="Font">
-      <optgroup label="System fonts">${FONTS.map(f => opt(f[0], f[1])).join('')}${known ? '' : opt(G.family, String(G.family).split(',')[0])}</optgroup>
-      <optgroup label="Google Fonts">${WEB_FONTS.map(f => opt(f.family, f.family)).join('')}</optgroup></select>`;
+      <optgroup label="Basic">${FONTS.map(f => opt(f[0], f[1])).join('')}</optgroup>
+      <optgroup label="Google Fonts">${WEB_FONTS.map(f => opt(f.family, f.family)).join('')}</optgroup>
+      <optgroup label="On this computer">${locals.map(n => opt(n, n)).join('')}${other ? opt(G.family, String(G.family).split(',')[0]) : ''}${
+        localFontsSupported() && !localLoaded()
+          ? `<option value="__local__">${locals.length ? 'Refresh fonts on this computer…' : 'Show fonts on this computer…'}</option>`
+          : ''
+      }<option value="__custom__">Type a font name…</option></optgroup></select>`;
+  const custom = S.fontCustom
+    ? nrow(
+        'Font name',
+        `<input class="txt" id="g-fname" data-fname value="${esc(other || isLocal ? G.family : '')}" placeholder="e.g. Segoe UI" spellcheck="false" aria-label="Font installed on this computer">`,
+      )
+    : '';
   return `<section class="sec"><h3>Text appearance</h3>
-    ${nrow('Font', fontSel)}
+    ${nrow('Font', fontSel)}${custom}
     ${nrow('Style', sel('data-tx-sel="style" id="tx-style" aria-label="Style"', styleOpts, w + '|' + (G.italic ? 1 : 0)))}
     <div class="row nk"><span class="rl"></span><div class="rf tx-tg">
       ${tbtn('bold', '', +w >= 600, '<b>B</b>', 'Bold')}${tbtn('italic', '', !!G.italic, '<i>I</i>', 'Italic')}${tbtn('deco', 'underline', has('underline'), '<u>U</u>', 'Underline')}${tbtn('deco', 'overline', has('overline'), '<span style="text-decoration:overline">O</span>', 'Overline')}${tbtn('deco', 'line-through', has('line-through'), '<s>S</s>', 'Strikethrough')}
@@ -198,13 +248,8 @@ export function appearanceSection(l: Layer) {
     );
     h += nrow(
       'Line join',
-      `<div class="btns tight">${tbtn('x:stroke-linejoin', 'miter', join === 'miter', I.joinMiter, 'Miter join')}${tbtn('x:stroke-linejoin', 'round', join === 'round', I.joinRound, 'Round join')}${tbtn('x:stroke-linejoin', 'bevel', join === 'bevel', I.joinBevel, 'Bevel join')}</div>`,
+      `<div class="btns tight">${tbtn('x:stroke-linejoin', 'miter', join === 'miter', I.joinMiter, 'Miter join')}${tbtn('x:stroke-linejoin', 'round', join === 'round', I.joinRound, 'Round join')}${tbtn('x:stroke-linejoin', 'bevel', join === 'bevel', I.joinBevel, 'Bevel join')}</div><label class="nf${join === 'miter' ? '' : ' ro'}" title="${join === 'miter' ? 'Miter limit: how far a sharp corner may stick out before it is cut flat, as a multiple of the stroke width' : 'Miter limit only applies to miter joins'}"><span>Miter</span><input data-x="stroke-miterlimit" id="x-miter" inputmode="decimal" value="${esc(X['stroke-miterlimit'] || '4')}" aria-label="Miter limit"${join === 'miter' ? '' : ' disabled'}></label>`,
     );
-    if (join === 'miter')
-      h += nrow(
-        'Miter limit',
-        `<label class="nf" title="How far a sharp corner may stick out before it is cut flat, as a multiple of the stroke width"><span>×</span><input data-x="stroke-miterlimit" id="x-miter" inputmode="decimal" value="${esc(X['stroke-miterlimit'] || '4')}" aria-label="Miter limit"></label>`,
-      );
     h += nrow(
       'Dashes',
       `<input class="txt mono" data-x="stroke-dasharray" id="x-dash" spellcheck="false" placeholder="dash, gap, dash, gap, …" value="${esc(X['stroke-dasharray'] || '')}" aria-label="Dash pattern">`,
@@ -256,7 +301,7 @@ export function filtersSection(l: Layer) {
 /* ---------- refresh and events ---------- */
 
 /** Values the generic refresh can't fill: rotate turns/degrees, the measured size, the opacity slider. */
-export function refreshProps(l: Layer) {
+export function refreshProps(l: Layer): void {
   const rot = valueAt(l, 'rot', S.time) || 0,
     turns = Math.trunc(rot / 360),
     deg = Math.round((rot - turns * 360) * 1000) / 1000;
@@ -274,6 +319,23 @@ export function refreshProps(l: Layer) {
     } catch (_) {}
     bw.value = bb ? fmt(bb.width) : '';
     byId('bb-h').value = bb ? fmt(bb.height) : '';
+  }
+  const nx = byId('np-x');
+  // the playhead moved onto another node: rebuild the panel for it
+  if (nx) {
+    const ci = currentNode(l),
+      on = l.t.pos && l.t.pos[ci] && Math.abs(l.t.pos[ci][0] - S.time) < 0.005 ? '1' : '0';
+    if (+nx.dataset.ni !== ci || nx.dataset.on !== on) return void setTimeout(renderInspector, 0);
+  }
+  if (nx) {
+    const i = +nx.dataset.ni,
+      q = l.t.pos && l.t.pos[i],
+      o = valueAt(l, 'org', S.time) || [0, 0];
+    if (q) {
+      if (nx !== document.activeElement) nx.value = fmt(q[1][0] + o[0]);
+      const ny = byId('np-y');
+      if (ny !== document.activeElement) ny.value = fmt(q[1][1] + o[1]);
+    }
   }
   const ww = byId('g-ww');
   if (ww && !l.geo.wrap) ww.value = byId('bb-w') ? byId('bb-w').value : '';
@@ -309,6 +371,18 @@ function swapPaint(l: Layer) {
 }
 /** Handle a button in these sections. Returns true when handled. */
 export function propsClick(a: string, b: HTMLElement, l: Layer) {
+  if (a === 'ntype') {
+    const ed = beginEdit();
+    setNodeType(l, currentNode(l), b.dataset.v as NodeType);
+    ed.end({ insp: true });
+    return true;
+  }
+  if (a === 'nodego') {
+    const tr = l.t.pos,
+      i = currentNode(l) + +b.dataset.d;
+    if (tr && tr[i]) setTime(tr[i][0]);
+    return true;
+  }
   if (a === 'orient') {
     const ed = beginEdit();
     l.or = !l.or;
@@ -429,6 +503,20 @@ export function propsChange(t: HTMLInputElement | HTMLSelectElement, l: Layer) {
     else l.blend = t.value === 'normal' ? undefined : t.value;
     if (!l.iso) delete l.iso;
     if (!l.blend) delete l.blend;
+    ed.end({ insp: true });
+    return true;
+  }
+  if (t.dataset.np !== undefined) {
+    const v = parseFloat(t.value),
+      i = +t.dataset.ni,
+      q = l.t.pos && l.t.pos[i];
+    if (!isFinite(v) || !q) return true;
+    const ed = beginEdit(),
+      o = valueAt(l, 'org', S.time) || [0, 0],
+      k = +t.dataset.np,
+      nv = q[1].slice();
+    nv[k] = v - o[k];
+    setNodePos(l, i, nv as [number, number]);
     ed.end({ insp: true });
     return true;
   }

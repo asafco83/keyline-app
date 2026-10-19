@@ -1,4 +1,5 @@
 // Keyline — tools/edit-tools
+import { startTextEdit } from './text-edit';
 import { bgPaint } from '../model/background';
 import type { Layer, XY } from '../model/types';
 import { $, FONTS, H, HINTS, byId, clone, fmt, r2, r3, xfp } from '../core/constants';
@@ -90,6 +91,8 @@ export function handleDrag(kind: string, p0: XY) {
     };
     return;
   }
+  // text: the side handles set the box width (lines wrap inside it) instead of stretching the letters
+  if (l.type === 'text' && (kind === 'e' || kind === 'w')) return textBoxDrag(l, kind, ed);
   /* Photoshop-style scaling: drag a handle; the opposite side stays put.
      Shift keeps proportions · Alt scales from the box center · Ctrl/Cmd scales around the origin · drag past the anchor to mirror */
   const g = byId('e-' + l.id),
@@ -159,24 +162,69 @@ export function handleDrag(kind: string, p0: XY) {
     },
   };
 }
+function textBoxDrag(l: Layer, kind: string, ed: { end(o?: any): void }) {
+  const G = l.geo,
+    el = byId('e-' + l.id + '-s'),
+    Mi = localMatrix(l).inverse();
+  if (!G.wrap || !(G.ww > 0)) {
+    const b = el.getBBox();
+    G.wrap = true;
+    G.ww = Math.max(10, Math.ceil(b.width) + 1);
+    G.x = r2(b.x);
+  }
+  const left = G.x,
+    right = G.x + G.ww;
+  S.drag = {
+    move(p) {
+      const m = xfp(Mi, p.x, p.y);
+      if (kind === 'e') G.ww = r2(Math.max(10, m.x - left));
+      else {
+        const x = Math.min(m.x, right - 10);
+        G.x = r2(x);
+        G.ww = r2(right - x);
+      }
+      renderStage();
+      frame();
+    },
+    up() {
+      ed.end({ insp: true });
+    },
+  };
+}
+/** Text tool: click for a text that grows with what you type, drag to draw a box of fixed width
+ *  (Keep width on, lines wrap inside it). Typing starts right away on the canvas. */
 export function createText(p: XY) {
-  const ed = beginEdit();
-  const l = mkLayer(
-    'text',
-    'Text',
-    { x: r2(p.x), y: r2(p.y), text: 'Text', size: 48, family: FONTS[0][0], weight: '600', anchor: 'start' },
-    { fill: darkBg() ? '#F3EEE4' : '#1A2030' },
-  );
-  addLayer(l);
-  backToSelect();
-  ed.end({ insp: true });
-  setTimeout(() => {
-    const ta = INSP.querySelector('[data-g="text"]');
-    if (ta) {
-      ta.focus();
-      ta.select();
-    }
-  }, 0);
+  let q = p;
+  S.drag = {
+    move(m) {
+      q = m;
+    },
+    up() {
+      const w = Math.abs(q.x - p.x),
+        boxed = w * S.scale > 8,
+        size = 48,
+        ed = beginEdit();
+      const l = mkLayer(
+        'text',
+        'Text',
+        {
+          x: r2(boxed ? Math.min(p.x, q.x) : p.x),
+          y: r2(Math.min(p.y, boxed ? q.y : p.y) + size * 0.8),
+          text: 'Text',
+          size,
+          family: FONTS[0][0],
+          weight: '600',
+          anchor: 'start',
+          ...(boxed ? { wrap: true, ww: r2(w) } : {}),
+        },
+        { fill: darkBg() ? '#F3EEE4' : '#1A2030' },
+      );
+      addLayer(l);
+      backToSelect();
+      ed.end({ insp: true });
+      startTextEdit(l, true);
+    },
+  };
 }
 /** Is the canvas background dark enough that new text should be light? */
 export function darkBg() {

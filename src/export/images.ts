@@ -1,5 +1,5 @@
 // Keyline — export/images
-import { prepareFonts, webFont } from '../render/fonts';
+import { isLocalFamily, prepareFonts, webFont } from '../render/fonts';
 import type { Asset, Layer } from '../model/types';
 import { $, byId, esc, fmt } from '../core/constants';
 import { save } from '../core/history';
@@ -260,7 +260,9 @@ export async function runExport() {
   } catch (e) {
     imgs = null;
   }
-  const texts = doc.layers.filter(l => l.type === 'text' && !l.hid && webFont(l.geo.family)).map(l => l.geo);
+  const texts = doc.layers
+    .filter(l => l.type === 'text' && !l.hid && (webFont(l.geo.family) || isLocalFamily(l.geo.family)))
+    .map(l => l.geo);
   if (texts.length) {
     $('#xStats').innerHTML = '<span>Preparing fonts…</span>';
     await prepareFonts(texts, doc.ex.fonts === 'embed' ? 'embed' : 'outline');

@@ -89,19 +89,119 @@ export function segmentDrag(l: Layer, i: number, p0: { x: number; y: number }) {
     },
   };
 }
-/** Drag one handle (0 = leaving key i, 1 = arriving at key i+1). */
+/* ---------- nodes (keyframes) and their handles ---------- */
+
+export type NodeType = 'straight' | 'mirrored' | 'asymmetric' | 'disconnected';
+type V = [number, number];
+const len = (v: V) => Math.hypot(v[0], v[1]);
+/** handle leaving node i (relative), or null at the last node */
+function outH(l: Layer, i: number): V | null {
+  const tr = l.t.pos;
+  if (i >= tr.length - 1) return null;
+  const c = segCtrl(l, i);
+  return [c[1][0] - c[0][0], c[1][1] - c[0][1]];
+}
+/** handle arriving at node i (relative), or null at the first node */
+function inH(l: Layer, i: number): V | null {
+  if (i <= 0) return null;
+  const c = segCtrl(l, i - 1);
+  return [c[2][0] - c[3][0], c[2][1] - c[3][1]];
+}
+function setOut(l: Layer, i: number, h: V) {
+  const c = segCtrl(l, i);
+  c[1] = [c[0][0] + h[0], c[0][1] + h[1]];
+  store(l.t.pos[i], c);
+}
+function setIn(l: Layer, i: number, h: V) {
+  const c = segCtrl(l, i - 1);
+  c[2] = [c[3][0] + h[0], c[3][1] + h[1]];
+  store(l.t.pos[i - 1], c);
+}
+/** The node the panel edits: the keyframe at the playhead, or the one before it. */
+export function currentNode(l: Layer) {
+  const tr = l.t.pos;
+  if (!tr || tr.length < 2) return -1;
+  let i = 0;
+  tr.forEach((q, k) => q[0] <= S.time + 0.005 && (i = k));
+  return i;
+}
+export function nodeType(l: Layer, i: number): NodeType {
+  const q = l.t.pos[i];
+  if (q[4]) return q[4] as NodeType;
+  const a = inH(l, i),
+    b = outH(l, i),
+    la = a ? len(a) : 0,
+    lb = b ? len(b) : 0;
+  if ((!a || la < 0.01) && (!b || lb < 0.01)) return 'straight';
+  if (!a || !b || la < 0.01 || lb < 0.01) return 'disconnected';
+  const cross = (a[0] * b[1] - a[1] * b[0]) / (la * lb),
+    dot = a[0] * b[0] + a[1] * b[1];
+  if (Math.abs(cross) > 0.03 || dot > 0) return 'disconnected';
+  return Math.abs(la - lb) < 0.5 ? 'mirrored' : 'asymmetric';
+}
+/** Change a node's type, reshaping the handles on both sides of it. */
+export function setNodeType(l: Layer, i: number, type: NodeType) {
+  const tr = l.t.pos,
+    P = (k: number) => tr[Math.max(0, Math.min(tr.length - 1, k))][1] as V,
+    cur = P(i),
+    a = inH(l, i),
+    b = outH(l, i);
+  if (type === 'straight') {
+    if (b) setOut(l, i, [0, 0]);
+    if (a) setIn(l, i, [0, 0]);
+  } else if (type === 'mirrored' || type === 'asymmetric') {
+    // direction: keep a handle that is already there, else follow the neighbours
+    let d: V =
+      b && len(b) > 0.01
+        ? b
+        : a && len(a) > 0.01
+          ? [-a[0], -a[1]]
+          : [P(i + 1)[0] - P(i - 1)[0], P(i + 1)[1] - P(i - 1)[1]];
+    const dl = len(d) || 1;
+    d = [d[0] / dl, d[1] / dl];
+    const nOut = Math.hypot(P(i + 1)[0] - cur[0], P(i + 1)[1] - cur[1]) / 3,
+      nIn = Math.hypot(cur[0] - P(i - 1)[0], cur[1] - P(i - 1)[1]) / 3;
+    let lo = b && len(b) > 0.01 ? len(b) : nOut,
+      li = a && len(a) > 0.01 ? len(a) : nIn;
+    if (type === 'mirrored') {
+      const m = a && b ? (lo + li) / 2 : b ? lo : li;
+      lo = li = m;
+    }
+    if (b) setOut(l, i, [d[0] * lo, d[1] * lo]);
+    if (a) setIn(l, i, [-d[0] * li, -d[1] * li]);
+  }
+  tr[i][4] = type;
+}
+/** Move a node (keyframe) to a position value. */
+export function setNodePos(l: Layer, i: number, v: V) {
+  l.t.pos[i][1] = [r2(v[0]), r2(v[1])];
+}
+/** Drag one handle (0 = leaving key i, 1 = arriving at key i+1). Mirrored and asymmetric nodes keep
+ *  the handle on the other side in line. */
 export function motionHandleDrag(l: Layer, i: number, which: number, p0: { x: number; y: number }) {
-  const q = l.t.pos[i],
+  const node = which === 0 ? i : i + 1,
+    type = nodeType(l, node),
     base = segCtrl(l, i),
+    other0 = which === 0 ? inH(l, node) : outH(l, node),
     s0 = toPos(l, p0.x, p0.y),
     ed = beginEdit();
   S.drag = {
-    move(p) {
+    move(p, e) {
       const m = toPos(l, p.x, p.y),
         c = clone(base) as [P, P, P, P],
-        h = c[1 + which];
-      c[1 + which] = [h[0] + m[0] - s0[0], h[1] + m[1] - s0[1]];
-      store(q, c);
+        hp = c[1 + which];
+      c[1 + which] = [hp[0] + m[0] - s0[0], hp[1] + m[1] - s0[1]];
+      store(l.t.pos[i], c);
+      // Alt breaks the pair, like the Convert Point tool
+      const linked = !e.altKey && other0 && (type === 'mirrored' || type === 'asymmetric');
+      if (linked) {
+        const end = c[which === 0 ? 0 : 3],
+          h: V = [c[1 + which][0] - end[0], c[1 + which][1] - end[1]],
+          hl = len(h) || 1,
+          ol = type === 'mirrored' ? hl : len(other0),
+          o: V = [(-h[0] / hl) * ol, (-h[1] / hl) * ol];
+        which === 0 ? setIn(l, node, o) : setOut(l, node, o);
+      } else if (e.altKey) l.t.pos[node][4] = 'disconnected';
       frame();
     },
     up() {

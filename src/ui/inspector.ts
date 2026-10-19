@@ -25,7 +25,7 @@ import { ASSETS, S, doc, layerById, selLayer, sortTrack } from '../core/state';
 import { subdivideAll } from '../geometry/nodes';
 import { toast } from '../io/open';
 import { fxOf } from '../model/filters';
-import { onFontLoad, pickWeight, webFont } from '../render/fonts';
+import { loadLocalFonts, onFontLoad, pickWeight, webFont } from '../render/fonts';
 import { descendants, kids } from '../model/tree';
 import { fit, frame, renderStage } from '../render/stage';
 import { addChildBone, boneTipL, shiftChildBones } from '../tools/bones';
@@ -34,6 +34,7 @@ import { align, alignBar, motionPick, setMotionPath } from './align';
 import {
   appearanceSection,
   filtersSection,
+  nodeSection,
   paintSection,
   propsChange,
   propsClick,
@@ -86,7 +87,7 @@ export function renderInspector() {
     pick = l.type === 'bone' ? '' : motionPick(l);
   if (curve || pick)
     h += `<section class="sec"><h3>Motion path</h3>${pick}
-    ${curve ? `<label class="check"><input type="checkbox" data-flag="sm" id="fl-sm" ${l.sm ? 'checked' : ''}> Smooth path through keyframes</label><p>Drag the path on the canvas to curve it; drag its handles to fine-tune; double-click a segment to straighten it.</p>` : ''}</section>`;
+    ${curve ? `<label class="check"><input type="checkbox" data-flag="sm" id="fl-sm" ${l.sm ? 'checked' : ''}> Smooth path through keyframes</label><p>Drag the path on the canvas to curve it; drag its handles to fine-tune (Alt moves one handle alone); double-click a segment to straighten it.</p>${nodeSection(l)}` : ''}</section>`;
   if (l.type === 'text') h += textAppearanceSection(l);
   if (painted) h += paintSection(l);
   if (l.type !== 'bone') h += appearanceSection(l) + filtersSection(l);
@@ -341,6 +342,14 @@ export function init(): void {
     const t = e.target as HTMLInputElement,
       l = selLayer();
     if (l && propsInput(t, l)) return frame();
+    if (l && t.dataset.g === 'text') {
+      // type in the panel and the canvas follows; one undo step per edit (closed on change)
+      if (!S.colorEd) S.colorEd = beginEdit();
+      l.geo.text = t.value;
+      renderStage();
+      frame();
+      return;
+    }
     if (t.dataset.col !== undefined && l) {
       if (!S.colorEd) S.colorEd = beginEdit();
       const r = parseField(l, t);
@@ -361,6 +370,13 @@ export function init(): void {
   INSP.addEventListener('change', (e: Event) => {
     const t = e.target as HTMLInputElement,
       l = selLayer();
+    if (S.colorEd && t.dataset.g === 'text' && l) {
+      const ed = S.colorEd;
+      S.colorEd = null;
+      l.geo.text = t.value;
+      ed.end({ insp: true });
+      return;
+    }
     if (S.colorEd && (t.dataset.col !== undefined || t.dataset.range !== undefined || t.id === 'd-bgc')) {
       const ed = S.colorEd;
       S.colorEd = null;
@@ -383,6 +399,35 @@ export function init(): void {
       const ed = beginEdit();
       setField(l, r[0], r[1]);
       ed.end();
+      return;
+    }
+    if (t.dataset.g === 'family' && (t.value === '__local__' || t.value === '__custom__')) {
+      const v = t.value;
+      t.value = l.geo.family;
+      if (v === '__custom__') {
+        S.fontCustom = true;
+        renderInspector();
+        byId('g-fname') && byId('g-fname').focus();
+        return;
+      }
+      loadLocalFonts()
+        .then(f => {
+          renderInspector();
+          toast(f.length ? `${f.length} fonts from this computer added to the list.` : 'No fonts were shared.');
+        })
+        .catch(() => {
+          toast('The browser didn’t share the fonts on this computer. You can type a font name instead.');
+          S.fontCustom = true;
+          renderInspector();
+        });
+      return;
+    }
+    if (t.dataset.fname !== undefined) {
+      const v = t.value.trim().replace(/["';<>]/g, '');
+      if (!v) return;
+      const ed = beginEdit();
+      l.geo.family = v;
+      ed.end({ insp: true });
       return;
     }
     if (t.dataset.g) {

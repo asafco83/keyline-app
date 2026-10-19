@@ -1,4 +1,5 @@
 // Keyline — tools/stage-input
+import { startTextEdit } from './text-edit';
 import { panDrag } from './hand';
 import type { Keyframe, Layer, XY } from '../model/types';
 import { motionHandleDrag, segmentDrag, straighten } from './motion-path';
@@ -12,7 +13,7 @@ import { fit, frame } from '../render/stage';
 import { boneCreate, fkDrag, ikDrag } from './bones';
 import { createText, handleDrag, nodeDrag, toggleSmooth } from './edit-tools';
 import { addNodeDown, convertDown, delNodeDown, finishPen, penDown, penHover, pencilDown } from './pen';
-import { SHAPE_TOOLS, createDrag } from './shapes';
+import { SHAPE_TOOLS, backToSelect, createDrag } from './shapes';
 
 /** Position keyframes of `l` that are selected in the timeline. */
 export function selectedPosKeys(l: Layer): Keyframe[] {
@@ -65,7 +66,8 @@ export function moveDrag(l: Layer, p0: XY) {
   };
 }
 
-let lastSeg: { id: string; i: number; t: number } | null = null;
+let lastSeg: { id: string; i: number; t: number } | null = null,
+  lastText: { id: string; t: number; x: number; y: number } | null = null;
 export function init(): void {
   WRAP.addEventListener('pointerdown', (e: PointerEvent) => {
     if (e.button !== 0 && e.button !== 1) return;
@@ -85,7 +87,19 @@ export function init(): void {
     if (t === 'convert') return convertDown(p, e, hitChain(e.target));
     if (t === 'pencil') return pencilDown(p);
     if (SHAPE_TOOLS.includes(t)) return createDrag(t, p);
-    if (t === 'text') return createText(p);
+    if (t === 'text') {
+      // clicking an existing text with the Text tool edits it
+      const hit = hitChain(e.target)
+        .map(id => layerById(id))
+        .find(x => x && x.type === 'text' && !isLocked(x));
+      if (hit) {
+        select(hit.id);
+        backToSelect();
+        e.preventDefault();
+        return startTextEdit(hit);
+      }
+      return createText(p);
+    }
     if (t === 'bone') return boneCreate(p);
     const bn = (e.target as any).closest('[data-bone]');
     if (bn && t === 'select') {
@@ -140,6 +154,21 @@ export function init(): void {
           return;
         }
         if (S.sel !== id || S.selSet.size > 1) select(id);
+        // double-click on a text starts typing (detected by timing: the canvas is redrawn after a press)
+        const now = Date.now();
+        if (
+          t === 'select' &&
+          l.type === 'text' &&
+          lastText &&
+          lastText.id === id &&
+          now - lastText.t < 400 &&
+          Math.hypot(e.clientX - lastText.x, e.clientY - lastText.y) < 5
+        ) {
+          lastText = null;
+          e.preventDefault(); // keep the focus in the text editor
+          return startTextEdit(l);
+        }
+        lastText = { id, t: now, x: e.clientX, y: e.clientY };
         if (t === 'select') moveDrag(l, p);
         return;
       }
@@ -188,12 +217,6 @@ export function init(): void {
     }
     const l = layerById(chain[0]);
     if (l && l.id === S.sel && l.type === 'path' && S.tool === 'select') setTool('node');
-    if (l && l.id === S.sel && l.type === 'text') {
-      const ta = INSP.querySelector('[data-g="text"]');
-      if (ta) {
-        ta.focus();
-        ta.select();
-      }
-    }
+    if (l && l.id === S.sel && l.type === 'text' && !isLocked(l)) startTextEdit(l);
   });
 }
