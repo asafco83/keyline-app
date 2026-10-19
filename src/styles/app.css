@@ -480,6 +480,25 @@ button {
   vector-effect: non-scaling-stroke;
   pointer-events: none;
 }
+.ov-mseg {
+  fill: none;
+  stroke: transparent;
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+}
+.ov-mhl {
+  stroke: var(--key);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.ov-mh {
+  fill: var(--key);
+  stroke: var(--panel);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  cursor: move;
+}
 .ov-kdot {
   fill: var(--key);
   stroke: var(--panel);

@@ -1,8 +1,9 @@
 // Keyline — ui/align
 // Align / distribute bar at the top of the inspector, and "Set motion path" (turn a path into position keyframes).
 // One selected layer aligns to the canvas; several align to the box around the selection.
-import type { Keyframe, Layer, Vec2 } from '../model/types';
-import { byId, clone, esc, ic, r2, r3, valueAt, xfp } from '../core/constants';
+import type { Keyframe, Layer, PathData } from '../model/types';
+import { ellNodes, rectNodes } from '../geometry/nodes';
+import { H, byId, esc, ic, r2, r3, valueAt, xfp } from '../core/constants';
 import { beginEdit, setProp } from '../core/history';
 import { S, doc, layerById } from '../core/state';
 import { parentMatrix, selectedRoots } from '../model/tree';
@@ -118,34 +119,68 @@ const PATHLIKE = ['path', 'rect', 'ellipse'];
 export function motionPick(l: Layer) {
   const paths = doc.layers.filter(o => o !== l && PATHLIKE.includes(o.type));
   if (!paths.length) return '';
-  return `<div class="row nk"><span class="rl">Motion</span><div class="rf"><select class="sel" id="motionPath" aria-label="Set motion path"><option value="">Set motion path…</option>${paths.map(o => `<option value="${o.id}">${esc(o.name)}</option>`).join('')}</select></div></div>`;
+  return `<select class="sel" id="motionPath" aria-label="Set motion path" title="Make the layer follow a shape over the whole animation"><option value="">Set motion path…</option>${paths.map(o => `<option value="${o.id}">${esc(o.name)}</option>`).join('')}</select>`;
 }
-/** Points along a shape, evenly spaced by length, in the moving layer's parent space. */
-export function samplePath(src: Layer, l: Layer, n?: number): Vec2[] {
-  const el = byId('e-' + src.id + '-s') as unknown as SVGGeometryElement;
-  if (!el || typeof el.getTotalLength !== 'function') return [];
-  const len = el.getTotalLength();
-  if (!(len > 0)) return [];
-  const count = n || Math.max(8, Math.min(40, Math.round(len / 30))),
-    M = parentMatrix(l).inverse().multiply(localMatrix(src)),
-    out: Vec2[] = [];
-  for (let i = 0; i <= count; i++) {
-    const p = el.getPointAtLength((len * i) / count),
-      q = xfp(M, p.x, p.y);
-    out.push([r2(q.x), r2(q.y)]);
-  }
-  return out;
+type N6 = number[];
+/** The shape's first subpath as nodes [x, y, inX, inY, outX, outY] in the moving layer's position space. */
+export function pathNodesFor(src: Layer, l: Layer): { n: N6[]; closed: boolean } | null {
+  const d: PathData =
+    src.type === 'rect' ? rectNodes(src.geo) : src.type === 'ellipse' ? ellNodes(src.geo) : H.get(src, 'd', S.time);
+  const sp = d && d[0];
+  if (!sp || sp.n.length < 2) return null;
+  const M = parentMatrix(l).inverse().multiply(localMatrix(src)),
+    o = valueAt(l, 'org', S.time) || [0, 0],
+    map = (x: number, y: number) => {
+      const q = xfp(M, x, y);
+      return [q.x - o[0], q.y - o[1]];
+    };
+  return {
+    closed: !!sp.c,
+    n: sp.n.map(q => [...map(q[0], q[1]), ...map(q[2], q[3]), ...map(q[4], q[5])]),
+  };
 }
-/** Replace the layer's position track with keyframes that follow the shape over the whole animation. */
+/** Replace the layer's position track with keyframes that follow the shape over the whole animation:
+ *  one keyframe per node, curved segments, timed by length so the speed stays even. */
 export function setMotionPath(l: Layer, srcId: string) {
   const src = layerById(srcId);
   if (!src) return false;
-  const pts = samplePath(src, l);
-  if (pts.length < 2) return false;
-  const ed = beginEdit(),
-    n = pts.length - 1;
-  l.t.pos = pts.map((p, i): Keyframe => [r3((doc.dur * i) / n), clone(p), 'linear']);
-  l.sm = true;
+  const P = pathNodesFor(src, l);
+  if (!P) return false;
+  const n = P.closed ? [...P.n, P.n[0]] : P.n,
+    segs: Array<[N6, N6]> = [];
+  for (let i = 0; i < n.length - 1; i++) segs.push([n[i], n[i + 1]]);
+  const len = segs.map(([a, b]) => {
+      let L = 0,
+        px = a[0],
+        py = a[1];
+      for (let k = 1; k <= 24; k++) {
+        const t = k / 24,
+          u = 1 - t,
+          x = u * u * u * a[0] + 3 * u * u * t * a[4] + 3 * u * t * t * b[2] + t * t * t * b[0],
+          y = u * u * u * a[1] + 3 * u * u * t * a[5] + 3 * u * t * t * b[3] + t * t * t * b[1];
+        L += Math.hypot(x - px, y - py);
+        px = x;
+        py = y;
+      }
+      return L;
+    }),
+    total = len.reduce((s, v) => s + v, 0);
+  if (!(total > 0)) return false;
+  const ed = beginEdit();
+  let acc = 0;
+  const keys: Keyframe[] = n.map((q, i) => {
+    const k: Keyframe = [r3((doc.dur * acc) / total), [r2(q[0]), r2(q[1])], 'linear'];
+    if (i < segs.length) {
+      const b = n[i + 1],
+        straight = Math.abs(q[4] - q[0]) + Math.abs(q[5] - q[1]) + Math.abs(b[2] - b[0]) + Math.abs(b[3] - b[1]) < 0.01;
+      if (!straight) k[3] = [r2(q[4] - q[0]), r2(q[5] - q[1]), r2(b[2] - b[0]), r2(b[3] - b[1])];
+      acc += len[i];
+    }
+    return k;
+  });
+  keys[keys.length - 1][0] = r3(doc.dur);
+  l.t.pos = keys;
+  l.sm = false;
   S.exp[l.id] = true;
   ed.end({ insp: true });
   return true;

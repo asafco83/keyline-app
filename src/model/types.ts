@@ -159,6 +159,8 @@ export interface ExportSettings {
   q: number;
   /** 2x images for high-DPI screens */
   hi: boolean;
+  /** web fonts: converted to outlines (default) or embedded */
+  fonts?: 'outline' | 'embed';
 }
 
 export interface Doc {
@@ -257,6 +259,8 @@ export interface EditorState {
   lexp: Record<string, boolean>;
   /** selected keyframes (references into Layer.t tracks) */
   keys: Set<Keyframe>;
+  /** where arrow keys act (last area clicked) */
+  kbArea?: 'stage' | 'timeline';
   /** selected path node [subpath, node] */
   node: [number, number] | null;
   undo: string[];

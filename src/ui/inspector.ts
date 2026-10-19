@@ -25,6 +25,7 @@ import { ASSETS, S, doc, layerById, selLayer, sortTrack } from '../core/state';
 import { subdivideAll } from '../geometry/nodes';
 import { toast } from '../io/open';
 import { fxOf } from '../model/filters';
+import { onFontLoad, pickWeight, webFont } from '../render/fonts';
 import { descendants, kids } from '../model/tree';
 import { fit, frame, renderStage } from '../render/stage';
 import { addChildBone, boneTipL, shiftChildBones } from '../tools/bones';
@@ -79,18 +80,13 @@ export function renderInspector() {
   h += `<section class="sec"><h3>Layer <span class="chip">${l.type}</span></h3>${nrow('Name', `<input class="txt" id="ln" data-name value="${esc(l.name)}" spellcheck="false">`)}</section>`;
   if (S.keys.size) h += keyPanel();
   const painted = ['rect', 'ellipse', 'path', 'text'].includes(l.type);
-  if (l.type === 'text') h += textSection(l, motionPick(l));
+  if (l.type === 'text') h += textSection(l);
   h += transformSection(l);
   const curve = l.t.pos && l.t.pos.length > 1,
-    pick = l.type === 'text' || l.type === 'bone' ? '' : motionPick(l);
+    pick = l.type === 'bone' ? '' : motionPick(l);
   if (curve || pick)
     h += `<section class="sec"><h3>Motion path</h3>${pick}
-    ${
-      curve
-        ? `<label class="check"><input type="checkbox" data-flag="sm" id="fl-sm" ${l.sm ? 'checked' : ''}> Curved path through keyframes</label>
-    <label class="check"><input type="checkbox" data-flag="or" id="fl-or" ${l.or ? 'checked' : ''}> Rotate along the path</label>`
-        : ''
-    }</section>`;
+    ${curve ? `<label class="check"><input type="checkbox" data-flag="sm" id="fl-sm" ${l.sm ? 'checked' : ''}> Smooth path through keyframes</label><p>Drag the path on the canvas to curve it; drag its handles to fine-tune; double-click a segment to straighten it.</p>` : ''}</section>`;
   if (l.type === 'text') h += textAppearanceSection(l);
   if (painted) h += paintSection(l);
   if (l.type !== 'bone') h += appearanceSection(l) + filtersSection(l);
@@ -335,6 +331,12 @@ export function docField(t: HTMLInputElement) {
 }
 
 export function init(): void {
+  // text depends on font metrics: redraw once a web font arrives
+  onFontLoad(() => {
+    renderStage();
+    frame();
+    if (selLayer()) refreshInspector(true);
+  });
   INSP.addEventListener('input', (e: Event) => {
     const t = e.target as HTMLInputElement,
       l = selLayer();
@@ -386,8 +388,14 @@ export function init(): void {
     if (t.dataset.g) {
       const g = t.dataset.g,
         ed = beginEdit();
-      if (['text', 'family', 'weight', 'anchor', 'deco'].includes(g)) l.geo[g] = t.value;
-      else {
+      if (['text', 'family', 'weight', 'anchor', 'deco'].includes(g)) {
+        l.geo[g] = t.value;
+        const wf = g === 'family' && webFont(t.value);
+        if (wf) {
+          l.geo.weight = String(pickWeight(wf, l.geo.weight));
+          if (!wf.italic) delete l.geo.italic;
+        }
+      } else {
         const v = parseFloat(t.value);
         if (!isFinite(v)) {
           refreshInspector(true);

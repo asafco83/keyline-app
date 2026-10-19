@@ -11,6 +11,7 @@ import { syncExportUI } from './dialog';
 import { detectEnc, updateExport } from './images';
 import { outDims, syncSizeUI } from './size';
 import { markup } from '../render/markup';
+import { fontFaceCSS } from '../render/fonts';
 import { KLEngine } from '../runtime/engine';
 
 export function roundV(v: any): any {
@@ -141,7 +142,7 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
         delete c.t[k];
         continue;
       }
-      c.t[k] = c.t[k].map(q => [r3(q[0]), roundV(q[1]), q[2]]);
+      c.t[k] = c.t[k].map(q => (q[3] ? [r3(q[0]), roundV(q[1]), q[2], q[3].map(r3)] : [r3(q[0]), roundV(q[1]), q[2]]));
     }
     return c;
   });
@@ -174,8 +175,11 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
       used[id] = 1;
       return pre + 'img-' + id;
     },
+    fonts: ex.fonts === 'embed' ? 'embed' : 'outline',
+    faces: new Set<string>(),
   };
   const body = markup(prep, null, ctx);
+  const faceCSS = fontFaceCSS(ctx.faces);
   const syms = Object.keys(used)
     .map(id => {
       const a = ASSETS[id];
@@ -186,7 +190,8 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
     size = ex.size === 'fixed' ? `width="${OW}" height="${OH}"` : 'width="100%"';
   let out = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="${svgId}" viewBox="${doc.vx || 0} ${doc.vy || 0} ${doc.w} ${doc.h}" ${size} shape-rendering="geometricPrecision" text-rendering="geometricPrecision">`;
   out += `<title>${esc(doc.name)}</title>`;
-  if (doc.defs || syms) out += `<defs>${doc.defs || ''}${syms}</defs>`;
+  if (doc.defs || syms || faceCSS)
+    out += `<defs>${faceCSS ? `<style>${faceCSS}</style>` : ''}${doc.defs || ''}${syms}</defs>`;
   const bga = bgAttrs(doc);
   if (bga)
     out += `<rect x="${doc.vx || 0}" y="${doc.vy || 0}" width="${doc.w}" height="${doc.h}" fill="${esc(bga.fill)}"${bga['fill-opacity'] != null ? ` fill-opacity="${bga['fill-opacity']}"` : ''}/>`;

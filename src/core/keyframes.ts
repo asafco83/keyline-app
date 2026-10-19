@@ -120,10 +120,15 @@ export function reverseKeys() {
   const ed = beginEdit();
   byTr.forEach((ks: Keyframe[], tr: Keyframe[]) => {
     ks.sort((a: Keyframe, b: Keyframe) => a[0] - b[0]);
-    const ez = ks.map((q: Keyframe) => q[2]);
+    const ez = ks.map((q: Keyframe) => q[2]),
+      cv = ks.map((q: Keyframe) => q[3]);
     ks.forEach((q: Keyframe) => (q[0] = r3(lo + hi - q[0])));
     ks.forEach((q: Keyframe, i: number) => {
       if (i > 0) q[2] = revEase(ez[i - 1]);
+      // a curved motion segment now runs the other way: its control points swap ends
+      const c = i > 0 ? cv[i - 1] : null;
+      if (c) q[3] = [c[2], c[3], c[0], c[1]];
+      else if (q.length > 3) q.length = 3;
     });
     sortTrack(tr);
   });

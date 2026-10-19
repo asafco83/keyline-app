@@ -1,10 +1,12 @@
 // Keyline runtime — the animation player that ships inside every exported SVG.
 // Keep it dependency-free: KLEngine.toString() is embedded verbatim in exports.
 
-/** Keyframe: [time in seconds, value, easing to the next key]. */
+/** Keyframe: [time in seconds, value, easing to the next key, (position only) curve to the next key].
+ *  The curve is [c1x, c1y, c2x, c2y]: the two control points of a cubic, c1 relative to this key's
+ *  value and c2 relative to the next key's value. */
 /** preset name or cubic-bezier [x1, y1, x2, y2] */
 export type Ease = string | number[];
-export type Keyframe = [number, any, Ease];
+export type Keyframe = [number, any, Ease, number[]?];
 export interface EngineLayer {
   id: string;
   /** transform origin in the layer's own space */
@@ -320,6 +322,17 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       );
     });
   }
+  function cb(A: Vec, h: number[], B: Vec, t: number): Vec {
+    var u = 1 - t,
+      w0 = u * u * u,
+      w1 = 3 * u * u * t,
+      w2 = 3 * u * t * t,
+      w3 = t * t * t;
+    return [
+      w0 * A[0] + w1 * (A[0] + h[0]) + w2 * (B[0] + h[2]) + w3 * B[0],
+      w0 * A[1] + w1 * (A[1] + h[1]) + w2 * (B[1] + h[3]) + w3 * B[1],
+    ];
+  }
   function at(L: EngineLayer, k: string, t: number): any {
     var tr = L.t[k],
       n = tr.length,
@@ -334,6 +347,7 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       b = tr[i + 1];
       if (t < b[0]) {
         p = ez(a[2], (t - a[0]) / (b[0] - a[0]));
+        if (k === 'pos' && a[3]) return cb(a[1], a[3], b[1], p);
         if (k === 'pos' && L.sm && n > 2) return cr((tr[i - 1] || a)[1], a[1], b[1], (tr[i + 2] || b)[1], p);
         return mix(K[k] || (typeof a[1] === 'string' ? 'c' : typeof a[1] === 'object' ? 'v' : 'n'), a[1], b[1], p);
       }

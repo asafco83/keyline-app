@@ -14,6 +14,7 @@ import { openFlow, toast } from '../io/open';
 import { saveProject, saveProjectAs } from '../io/save';
 import { isLocked } from '../model/tree';
 import { finishPen, penBackspace } from '../tools/pen';
+import { selectedPosKeys } from '../tools/stage-input';
 import { applyEase } from './easing';
 import { FM, closeFileMenu } from './file-menu';
 import { renderInspector } from './inspector';
@@ -22,6 +23,16 @@ import { FRAME, MENU, renderTimeline } from './timeline';
 import { closeModal } from './topbar';
 
 export function init(): void {
+  // which area arrow keys act on: the timeline (move keyframes in time) or the canvas (nudge)
+  window.addEventListener(
+    'pointerdown',
+    (e: PointerEvent) => {
+      const t = e.target as Element;
+      if (t.closest('#wrap')) S.kbArea = 'stage';
+      else if (t.closest('.tl-scroll, .tl-ctrl')) S.kbArea = 'timeline';
+    },
+    true,
+  );
   window.addEventListener('keyup', (e: KeyboardEvent) => {
     if (e.key !== ' ' || !S.spaceHeld) return;
     setSpace(false);
@@ -201,7 +212,8 @@ export function init(): void {
       jumpKey(k.toLowerCase() === 'k' ? 1 : -1);
       return;
     }
-    if ((k === 'ArrowLeft' || k === 'ArrowRight') && S.keys.size) {
+    // ←/→ shift selected keyframes in time while working in the timeline; on the canvas arrows nudge
+    if ((k === 'ArrowLeft' || k === 'ArrowRight') && S.keys.size && S.kbArea === 'timeline') {
       e.preventDefault();
       shiftKeys((k === 'ArrowRight' ? 1 : -1) * FRAME * (e.shiftKey ? 10 : 1));
       return;
@@ -213,13 +225,12 @@ export function init(): void {
     if (k.startsWith('Arrow') && l && !isLocked(l)) {
       e.preventDefault();
       const st = e.shiftKey ? 10 : 1,
-        p = clone(H.get(l, 'pos', S.time));
-      if (k === 'ArrowLeft') p[0] -= st;
-      if (k === 'ArrowRight') p[0] += st;
-      if (k === 'ArrowUp') p[1] -= st;
-      if (k === 'ArrowDown') p[1] += st;
+        p = clone(H.get(l, 'pos', S.time)),
+        d = [k === 'ArrowLeft' ? -st : k === 'ArrowRight' ? st : 0, k === 'ArrowUp' ? -st : k === 'ArrowDown' ? st : 0],
+        keys = selectedPosKeys(l);
       const ed = beginEdit();
-      setProp(l, 'pos', p.map(r2));
+      if (keys.length) keys.forEach(q => (q[1] = [r2(q[1][0] + d[0]), r2(q[1][1] + d[1])]));
+      else setProp(l, 'pos', [r2(p[0] + d[0]), r2(p[1] + d[1])]);
       ed.end();
       return;
     }
