@@ -113,6 +113,10 @@ export function init(): void {
     const nd = (e.target as any).closest('[data-node]');
     if (nd) return nodeDrag(nd.dataset.node.split(',').map(Number), p);
     const h = (e.target as any).closest('[data-h]');
+    if (h && (h.dataset.h === 'tbe' || h.dataset.h === 'tbw')) {
+      e.preventDefault(); // keep typing after resizing the box
+      return handleDrag(h.dataset.h, p);
+    }
     if (h) return handleDrag(h.dataset.h, p);
     const mh = (e.target as any).closest('[data-mh]'),
       ms = (e.target as any).closest('[data-mseg]'),

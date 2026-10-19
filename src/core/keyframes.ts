@@ -14,6 +14,10 @@ import { renderInspector } from '../ui/inspector';
 import { renameInline, renderLayers } from '../ui/layers-panel';
 import { MENU, keyOwners, laneTime, renderTimeline, resolveCollisions, selectKeyLayer } from '../ui/timeline';
 
+function isLineLayer(l: Layer) {
+  const d = l.type === 'path' && l.b.d;
+  return !!d && d.length === 1 && !d[0].c && d[0].n.length === 2;
+}
 export function propOK(l: Layer, k: PropKey) {
   const painted = ['rect', 'ellipse', 'path', 'text'].includes(l.type);
   return (
@@ -22,6 +26,8 @@ export function propOK(l: Layer, k: PropKey) {
     (['fill', 'stk', 'sw', 'fo', 'so', 'dof'].includes(k) && painted) ||
     (k === 'draw' && ['rect', 'ellipse', 'path'].includes(l.type)) ||
     (k === 'd' && l.type === 'path') ||
+    ((k === 'p0' || k === 'p1') && isLineLayer(l)) ||
+    (k === 'rad' && (l.type === 'rect' || !!l.shape)) ||
     (k.startsWith('fx.') && !!fxOf(l, k))
   );
 }

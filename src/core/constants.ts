@@ -47,6 +47,9 @@ export const PROPS: Record<PropKey, [label: string, kind: 'v' | 'n' | 'c' | 'm']
   draw: ['Draw', 'n'],
   dof: ['Dash offset', 'n'],
   d: ['Morph', 'm'],
+  p0: ['Line start', 'v'],
+  p1: ['Line end', 'v'],
+  rad: ['Corner radius', 'n'],
 };
 export const PORDER: PropKey[] = [
   'pos',
@@ -62,6 +65,9 @@ export const PORDER: PropKey[] = [
   'sw',
   'draw',
   'dof',
+  'rad',
+  'p0',
+  'p1',
   'd',
 ];
 /** Human name of a property (filters read as "Drop shadow · X"). */
@@ -86,16 +92,48 @@ export function layerTracks(l: Layer): PropKey[] {
 /** Values of properties a layer may never have set. */
 export const PDEF: Partial<Record<string, any>> = { skw: [0, 0], fo: 1, so: 1, dof: 0 };
 /** A property's value at time t, falling back to its default. */
+/** Properties whose resting value lives in the geometry: line ends in the path, corner radius in
+ *  the rectangle or the polygon / star settings. */
+function geoBase(l: Layer, k: string) {
+  if (k === 'p0' || k === 'p1') {
+    const q = l.b.d && l.b.d[0] && l.b.d[0].n[+k[1]];
+    return q ? [q[0], q[1]] : null;
+  }
+  if (k === 'rad') return l.type === 'rect' ? l.geo.rx || 0 : l.shape ? l.shape.rad || 0 : 0;
+  return undefined;
+}
 export function valueAt(l: Layer, k: string, t: number) {
+  const tr = l.t[k],
+    g = tr && tr.length ? undefined : geoBase(l, k);
+  if (g !== undefined) return g;
   const v = H.get(l, k, t);
   return v == null && PDEF[k] != null ? clone(PDEF[k]) : v;
 }
 export function baseOf(l: Layer, k: PropKey) {
+  const g = geoBase(l, k);
+  if (g !== undefined) return g;
   return k === 'org' ? l.o || [0, 0] : l.b[k] != null ? l.b[k] : clone(PDEF[k]);
 }
 export function setBase(l: Layer, k: PropKey, v: any) {
   if (k === 'org') l.o = v;
-  else (l.b as Record<string, any>)[k] = v;
+  else if (k === 'p0' || k === 'p1') {
+    const q = l.b.d && l.b.d[0] && l.b.d[0].n[+k[1]];
+    if (!q) return;
+    const dx = v[0] - q[0],
+      dy = v[1] - q[1];
+    for (let i = 0; i < 6; i += 2) {
+      q[i] += dx;
+      q[i + 1] += dy;
+    }
+  } else if (k === 'rad') {
+    if (l.type === 'rect') l.geo.rx = v;
+    else if (l.shape) {
+      // the path follows the polygon / star settings (and stays recognised as that shape)
+      l.shape.rad = v;
+      l.b.d = (H as any).poly(l.shape, v);
+      l.shape.sig = JSON.stringify(l.b.d);
+    }
+  } else (l.b as Record<string, any>)[k] = v;
 }
 export const EZFAM = [
   'Standard',

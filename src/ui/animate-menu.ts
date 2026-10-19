@@ -30,6 +30,11 @@ export const ANIM_GROUPS: Array<Array<[PropKey, string, string?]>> = [
     ['draw', 'Draw (stroke offset)', 'D'],
     ['dof', 'Dash offset', 'F'],
   ],
+  [
+    ['rad', 'Corner radius'],
+    ['p0', 'Line start'],
+    ['p1', 'Line end'],
+  ],
   [['d', 'Morph path', 'M']],
 ];
 const BY_KEY: Record<string, PropKey> = {};

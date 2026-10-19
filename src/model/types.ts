@@ -17,6 +17,9 @@ export type LayerType = 'group' | 'rect' | 'ellipse' | 'path' | 'text' | 'image'
 
 /** Animatable properties. `org` is stored on `Layer.o`, the rest on `Layer.b`. */
 export type PropKey =
+  | 'p0'
+  | 'p1'
+  | 'rad'
   | 'pos'
   | 'org'
   | 'rot'

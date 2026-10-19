@@ -18,6 +18,8 @@ export interface EngineLayer {
   t: Record<string, Keyframe[]>;
   /** curved motion path */ sm?: boolean | 1;
   /** orient along motion path */ or?: boolean | 1;
+  /** polygon / star settings, so an animated corner radius ("rad") can rebuild the path */
+  shape?: { kind: string; cx: number; cy: number; r: number; rot: number; n: number; ratio?: number };
   /** extra animated attributes: track key → [element id suffix, attribute] (filter parameters) */
   fa?: Record<string, [string, string]>;
 }
@@ -53,6 +55,8 @@ export interface Composite {
   so: any;
   /** stroke dash offset (null = not set) */
   dof: any;
+  /** corner radius (null = not animated) */
+  rad: any;
 }
 type Handler = (this: KLPlayer, offsetMs: number) => void;
 export interface EngineData {
@@ -118,6 +122,9 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
   var K: Record<string, string> = {
     pos: 'v',
     org: 'v',
+    p0: 'v',
+    p1: 'v',
+    rad: 'n',
     rot: 'n',
     scl: 'v',
     op: 'n',
@@ -389,13 +396,92 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       stk: get(L, 'stk', t),
       sw: get(L, 'sw', t),
       draw: get(L, 'draw', t),
-      d: get(L, 'd', t),
+      d: shapeOf(L, t),
       kx: k[0],
       ky: k[1],
       fo: get(L, 'fo', t),
       so: get(L, 'so', t),
       dof: get(L, 'dof', t),
+      rad: L.t && L.t.rad && L.t.rad.length ? get(L, 'rad', t) : null,
     };
+  }
+  /** the path at time t: morph value, with animated line ends or corner radius applied */
+  function shapeOf(L: EngineLayer, t: number): EngineSubPath[] | undefined {
+    var d = get(L, 'd', t),
+      T = L.t || {};
+    if (L.shape && T.rad && T.rad.length) return poly(L.shape, get(L, 'rad', t), true);
+    if (d && d[0] && d[0].n.length === 2 && ((T.p0 && T.p0.length) || (T.p1 && T.p1.length))) {
+      var n = d[0].n.map(function (q: number[], i: number) {
+        var e = T['p' + i] && T['p' + i].length ? get(L, 'p' + i, t) : null;
+        if (!e) return q;
+        var dx = e[0] - q[0],
+          dy = e[1] - q[1];
+        return [q[0] + dx, q[1] + dy, q[2] + dx, q[3] + dy, q[4] + dx, q[5] + dy];
+      });
+      return [{ c: d[0].c, n: n }];
+    }
+    return d;
+  }
+  /** corners of a polygon / star, clockwise from the top */
+  function corners(s: NonNullable<EngineLayer['shape']>): number[][] {
+    var out: number[][] = [],
+      star = s.kind === 'star',
+      m = star ? s.n * 2 : s.n;
+    for (var i = 0; i < m; i++) {
+      var a = ((-90 + s.rot + (i * 360) / m) * Math.PI) / 180,
+        r = star && i % 2 ? s.r * (s.ratio == null ? 0.45 : s.ratio) : s.r;
+      out.push([s.cx + r * Math.cos(a), s.cy + r * Math.sin(a)]);
+    }
+    return out;
+  }
+  function dd(a: number[], b: number[]) {
+    return Math.hypot(a[0] - b[0], a[1] - b[1]);
+  }
+  /** largest corner radius every corner can take */
+  function maxRad(c: number[][]) {
+    var m = c.length,
+      best = Infinity;
+    for (var i = 0; i < m; i++) {
+      var p = c[(i + m - 1) % m],
+        v = c[i],
+        q = c[(i + 1) % m],
+        a = Math.atan2(p[1] - v[1], p[0] - v[0]),
+        b = Math.atan2(q[1] - v[1], q[0] - v[0]),
+        th = Math.abs(a - b);
+      if (th > Math.PI) th = 2 * Math.PI - th;
+      best = Math.min(best, (Math.min(dd(p, v), dd(q, v)) / 2) * Math.tan(th / 2));
+    }
+    return isFinite(best) ? Math.max(0, best) : 0;
+  }
+  function r2(v: number) {
+    return Math.round(v * 100) / 100;
+  }
+  /** polygon / star path; a corner radius > 0 makes each corner two nodes joined by a circular arc.
+   *  With an animated radius every corner is always two nodes, so the path keeps its node count. */
+  function poly(s: NonNullable<EngineLayer['shape']>, rad: number, keep?: boolean): EngineSubPath[] {
+    var c = corners(s),
+      m = c.length,
+      R = Math.max(0, Math.min(rad || 0, maxRad(c))),
+      n: number[][] = [];
+    for (var i = 0; i < m; i++) {
+      var v = c[i];
+      if (R <= 0 && !keep) {
+        n.push([r2(v[0]), r2(v[1]), r2(v[0]), r2(v[1]), r2(v[0]), r2(v[1])]);
+        continue;
+      }
+      var p = c[(i + m - 1) % m],
+        q = c[(i + 1) % m],
+        up = [(p[0] - v[0]) / dd(p, v), (p[1] - v[1]) / dd(p, v)],
+        uq = [(q[0] - v[0]) / dd(q, v), (q[1] - v[1]) / dd(q, v)],
+        th = Math.acos(Math.max(-1, Math.min(1, up[0] * uq[0] + up[1] * uq[1]))),
+        d = R / Math.tan(th / 2),
+        h = (4 / 3) * Math.tan((Math.PI - th) / 4) * R,
+        A = [v[0] + up[0] * d, v[1] + up[1] * d],
+        B = [v[0] + uq[0] * d, v[1] + uq[1] * d];
+      n.push([r2(A[0]), r2(A[1]), r2(A[0]), r2(A[1]), r2(A[0] - up[0] * h), r2(A[1] - up[1] * h)]);
+      n.push([r2(B[0]), r2(B[1]), r2(B[0] - uq[0] * h), r2(B[1] - uq[1] * h), r2(B[0]), r2(B[1])]);
+    }
+    return [{ c: true, n: n }];
   }
   function f(n: number) {
     return Math.round(n * 1000) / 1000;
@@ -464,6 +550,10 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       if (c.fo != null) s.setAttribute('fill-opacity', String(f(c.fo)));
       if (c.so != null) s.setAttribute('stroke-opacity', String(f(c.so)));
       if (c.d) s.setAttribute('d', dstr(c.d));
+      if (c.rad != null && !L.shape) {
+        s.setAttribute('rx', String(f(c.rad)));
+        s.setAttribute('ry', String(f(c.rad)));
+      }
       if (L.fa)
         for (var fk in L.fa) {
           var fe = el(D.p + L.id + L.fa[fk][0]),
@@ -718,6 +808,9 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     comp: comp,
     get: get,
     dstr: dstr,
+    poly: poly,
+    corners: corners,
+    maxRad: maxRad,
     ease: ez,
     loc: loc,
     EZ: EZ,

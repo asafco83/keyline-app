@@ -49,7 +49,10 @@ export function cssFor(anim: Layer[], pre: string, svgId: string) {
           fr.map(c => (gt ? `transform:${cssTf(c)};` : '') + (go ? `opacity:${r3(c.op)}` : '')),
           N,
         ) + `#${id}{transform-box:view-box;transform-origin:0 0;animation:${id}-g ${run}}`;
-    const sk = ['fill', 'fo', 'stk', 'so', 'sw', 'draw', 'dof', 'd'].filter(k => T[k]);
+    const shapeAnim = !!(T.p0 || T.p1 || (T.rad && l.shape)),
+      sk = ['fill', 'fo', 'stk', 'so', 'sw', 'draw', 'dof', 'd', 'rad'].filter(k =>
+        k === 'd' ? T.d || shapeAnim : k === 'rad' ? T.rad && !l.shape : T[k],
+      );
     if (sk.length)
       css +=
         kfBlock(
@@ -71,9 +74,11 @@ export function cssFor(anim: Layer[], pre: string, svgId: string) {
                             : `stroke-dashoffset:${r3(c.dof)}`
                           : k === 'sw'
                             ? `stroke-width:${r3(c.sw)}px`
-                            : k === 'draw'
-                              ? `stroke-dashoffset:${r3(100 - c.draw)}`
-                              : `d:path("${H.dstr(c.d)}")`,
+                            : k === 'rad'
+                              ? `rx:${r3(c.rad)}px;ry:${r3(c.rad)}px`
+                              : k === 'draw'
+                                ? `stroke-dashoffset:${r3(100 - c.draw)}`
+                                : `d:path("${H.dstr(c.d)}")`,
               )
               .join(';'),
           ),
@@ -221,6 +226,12 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
           if (l.b.skw && (l.b.skw[0] || l.b.skw[1])) b.skw = l.b.skw;
           const o: any = { id: l.id, o: l.o || [0, 0], b, t: l.t };
           if (l.fa) o.fa = l.fa;
+          // animated line ends move the nodes of the path; an animated corner radius rebuilds it
+          if (l.t.p0 || l.t.p1) b.d = l.b.d;
+          if (l.t.rad && l.shape) {
+            const { kind, cx, cy, r, rot, n, ratio } = l.shape;
+            o.shape = { kind, cx, cy, r, rot, n, ...(ratio != null ? { ratio } : {}) };
+          }
           if (l.sm) o.sm = 1;
           if (l.or) o.or = 1;
           return o;

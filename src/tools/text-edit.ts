@@ -1,7 +1,9 @@
 // Keyline — tools/text-edit
-// Typing text straight on the canvas. A <textarea> styled like the text is laid over it (same font,
-// size, spacing, alignment, colour, transform) while the SVG text is hidden; every keystroke updates
-// the layer, so the timeline, inspector and export follow live. Esc, Ctrl+Enter or clicking away ends it.
+// Typing text straight on the canvas. The SVG text stays visible and is redrawn on every keystroke, so
+// every style shows exactly as it will look (fills, strokes, opacity, filters, fonts). Over it lies a
+// <textarea> laid out the same way (font, size, spacing, alignment, transform) whose own letters are
+// invisible: it only supplies the caret and the selection. Esc, Ctrl+Enter or clicking away ends it.
+// While editing, the box shows side handles that set its width (and turn on Keep width).
 import type { Layer } from '../model/types';
 import { H, byId } from '../core/constants';
 import { beginEdit } from '../core/history';
@@ -16,6 +18,11 @@ let ta: HTMLTextAreaElement | null = null,
 
 export function textEditing() {
   return editing;
+}
+/** The edit box in the text's own space. */
+export function editBox(l: Layer) {
+  const L = layout(l);
+  return { x: L.left, y: L.top, w: L.w, h: L.h };
 }
 function layout(l: Layer) {
   const G = l.geo,
@@ -45,8 +52,8 @@ function place(l: Layer) {
     textDecoration: G.deco || 'none',
     textAlign: G.anchor === 'middle' ? 'center' : G.anchor === 'end' ? 'right' : 'left',
     whiteSpace: G.wrap && G.ww > 0 ? 'pre-wrap' : 'pre',
-    color: c.fill && c.fill !== 'none' ? c.fill : '#888',
-    caretColor: c.fill && c.fill !== 'none' ? c.fill : '#888',
+    color: 'transparent',
+    caretColor: c.fill && c.fill !== 'none' && !/^url/.test(c.fill) ? c.fill : '#5b7cfa',
   });
 }
 /** Start typing into a text layer on the canvas. `selectAll` selects the current text (new layers). */
