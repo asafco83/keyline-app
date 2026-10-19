@@ -10,7 +10,7 @@ import { docPt, drawOverlay } from '../render/overlay';
 import { fit, frame } from '../render/stage';
 import { boneCreate, fkDrag, ikDrag } from './bones';
 import { createText, handleDrag, nodeDrag, toggleSmooth } from './edit-tools';
-import { addNodeDown, delNodeDown, finishPen, penDown, penHover, pencilDown } from './pen';
+import { addNodeDown, convertDown, delNodeDown, finishPen, penDown, penHover, pencilDown } from './pen';
 import { SHAPE_TOOLS, createDrag } from './shapes';
 
 export function hitChain(target: any): string[] {
@@ -72,6 +72,7 @@ export function init(): void {
     if (t === 'pen') return penDown(p, e);
     if (t === 'addnode') return addNodeDown(p, e, hitChain(e.target));
     if (t === 'delnode') return delNodeDown(p, e, hitChain(e.target));
+    if (t === 'convert') return convertDown(p, e, hitChain(e.target));
     if (t === 'pencil') return pencilDown(p);
     if (SHAPE_TOOLS.includes(t)) return createDrag(t, p);
     if (t === 'text') return createText(p);

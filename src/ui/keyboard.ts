@@ -217,7 +217,9 @@ export function init(): void {
       ed.end();
       return;
     }
-    const id = Object.keys(TOOL_INFO).find(t => (TOOL_INFO[t].keys || []).includes(k.toLowerCase()));
+    const lk = k.toLowerCase(),
+      combo = e.shiftKey && /^[a-z]$/.test(lk) ? 'shift+' + lk : lk,
+      id = Object.keys(TOOL_INFO).find(t => (TOOL_INFO[t].keys || []).includes(combo));
     if (id && !e.altKey) pickTool(id);
   });
 }

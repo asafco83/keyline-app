@@ -8,6 +8,8 @@
 //                   Alt+anchor to convert it, an open end to continue the path.
 //  Add node (+)     click a segment of the selected path.
 //  Remove node (−)  click an anchor of the selected path.
+//  Convert (⇧C)     click a point: corner · drag a point: smooth handles · drag a handle: move it alone
+//                   (cusp) · drag a segment: reshape it. With the Pen, Alt gives the same on points and handles.
 //  Pencil (N)       freehand; the stroke is simplified and smoothed. End near the start to close it.
 import type { Layer, PathData, PathNode, XY } from '../model/types';
 import { H, clone, r2, xfp } from '../core/constants';
@@ -21,6 +23,7 @@ import {
   ellNodes,
   rectNodes,
   removeNodeAll,
+  reshapeSeg,
   revSp,
   simplifyPts,
   smoothNodes,
@@ -46,7 +49,8 @@ interface PenState {
 }
 type Hit =
   | { kind: 'anchor'; i: number; j: number; end: boolean; pt: XY }
-  | { kind: 'seg'; i: number; j: number; t: number; pt: XY };
+  | { kind: 'seg'; i: number; j: number; t: number; pt: XY }
+  | { kind: 'handle'; i: number; j: number; part: 1 | 2; pt: XY };
 
 const pen = (): PenState | null => S.pen;
 const px = (a: XY, b: XY) => Math.hypot(a.x - b.x, a.y - b.y) * S.scale;
@@ -65,6 +69,7 @@ function cursorSvg(kind: string) {
     corner: '<path d="M15 20l3-4 3 4"/>',
     convert: '<path d="M15 20l3-4 3 4"/>',
   };
+  if (kind === 'anchor') return CONVERT_CURSOR;
   const nib =
     '<path d="M2 2l7.5 3.4 4.6 8.7-8.7-4.6z"/><path d="M2 2l5.6 5.6"/><circle cx="8.6" cy="8.6" r="1.1"/><path d="M14.1 14.1l2.4 2.4" stroke-width="2.4"/>';
   const draw = (stroke: string, w: number) =>
@@ -72,6 +77,13 @@ function cursorSvg(kind: string) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">${draw('#fff', 3.2)}${draw('#111', 1.3)}</svg>`;
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}") 2 2, crosshair`;
 }
+/** The Convert Point tool's own cursor: a caret with its point at the hotspot. */
+const CONVERT_CURSOR = (() => {
+  const g = (s: string, w: number) =>
+    `<g fill="none" stroke="${s}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"><path d="M3 15L9 3l6 12"/><path d="M9 3v7"/></g>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">${g('#fff', 3.2)}${g('#111', 1.3)}</svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}") 9 3, crosshair`;
+})();
 const PENCIL_CURSOR = (() => {
   const g = (s: string, w: number) =>
     `<g fill="none" stroke="${s}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"><path d="M2 22l1.6-5.4L16.8 3.4a2 2 0 012.8 0l1 1a2 2 0 010 2.8L7.4 20.4z"/><path d="M14.6 5.6l3.8 3.8M3.6 16.6l3.8 3.8"/></g>`;
@@ -87,8 +99,8 @@ function setCursor(kind: string) {
 }
 /** Reset to the tool's own cursor when the tool changes. */
 export function toolCursor() {
-  if (['pen', 'addnode', 'delnode'].includes(S.tool))
-    setCursor(S.tool === 'addnode' ? 'add' : S.tool === 'delnode' ? 'del' : 'new');
+  if (['pen', 'addnode', 'delnode', 'convert'].includes(S.tool))
+    setCursor(S.tool === 'addnode' ? 'add' : S.tool === 'delnode' ? 'del' : S.tool === 'convert' ? 'anchor' : 'new');
   else if (S.tool === 'pencil') setCursor('');
   else WRAP.style.cursor = '';
 }
@@ -106,7 +118,8 @@ function shapeData(l: Layer): PathData {
   if (l.type === 'ellipse') return ellNodes(l.geo);
   return H.get(l, 'd', S.time) || [];
 }
-export function penHit(l: Layer, p: XY): Hit | null {
+/** What is under `p` on the selected path: an anchor, a handle (when `handles`), or a segment. */
+export function penHit(l: Layer, p: XY, handles = false): Hit | null {
   const M = localMatrix(l),
     d = shapeData(l),
     T = (x: number, y: number): XY => {
@@ -126,6 +139,24 @@ export function penHit(l: Layer, p: XY): Hit | null {
     }),
   );
   if (best) return best;
+  if (handles) {
+    bd = NEAR_ANCHOR;
+    d.forEach((sp, i) =>
+      sp.n.forEach((q, j) => {
+        ([1, 2] as const).forEach(part => {
+          const k = part === 1 ? 2 : 4;
+          if (q[k] === q[0] && q[k + 1] === q[1]) return;
+          const a = T(q[k], q[k + 1]),
+            dd = px(a, p);
+          if (dd < bd) {
+            bd = dd;
+            best = { kind: 'handle', i, j, part, pt: a };
+          }
+        });
+      }),
+    );
+    if (best) return best;
+  }
   bd = NEAR_SEG;
   d.forEach((sp, i) => {
     const segs = sp.c ? sp.n.length : sp.n.length - 1;
@@ -218,6 +249,70 @@ function convertDrag(l: Layer, h: Extract<Hit, { kind: 'anchor' }>, p0: XY) {
       ed.end({ insp: true });
     },
   };
+}
+
+/** Drag one handle on its own, breaking a smooth point into a cusp. Shift snaps its angle to 45°. */
+function handleDrag(l: Layer, h: Extract<Hit, { kind: 'handle' }>) {
+  const ed = beginEdit();
+  ensurePath(l);
+  const Mi = localMatrix(l).inverse(),
+    base = clone(H.get(l, 'd', S.time)),
+    k = h.part === 1 ? 2 : 4;
+  S.node = [h.i, h.j];
+  S.drag = {
+    move(p, e) {
+      const d = clone(base),
+        q = d[h.i].n[h.j],
+        m = xfp(Mi, p.x, p.y);
+      let o: number[] = [m.x, m.y];
+      if (e.shiftKey) o = snap45([q[0], q[1]], o);
+      q[k] = r2(o[0]);
+      q[k + 1] = r2(o[1]);
+      setProp(l, 'd', d);
+      frame();
+    },
+    up() {
+      ed.end({ insp: true });
+    },
+  };
+}
+/** Drag a segment to reshape the curve between its two points (only their handles move). */
+function segDrag(l: Layer, h: Extract<Hit, { kind: 'seg' }>, p0: XY) {
+  const ed = beginEdit();
+  ensurePath(l);
+  const Mi = localMatrix(l).inverse(),
+    base = clone(H.get(l, 'd', S.time)),
+    s0 = xfp(Mi, p0.x, p0.y);
+  let moved = false;
+  S.drag = {
+    move(p) {
+      if (!moved && px(p, p0) < 3) return;
+      moved = true;
+      const d = clone(base),
+        sp = d[h.i],
+        a = sp.n[h.j],
+        b = sp.n[(h.j + 1) % sp.n.length],
+        m = xfp(Mi, p.x, p.y);
+      reshapeSeg(a, b, h.t, m.x - s0.x, m.y - s0.y);
+      setProp(l, 'd', d);
+      frame();
+    },
+    up() {
+      ed.end({ insp: true });
+    },
+  };
+}
+/** Convert Point tool (Shift+C): click a point to make it a corner, drag a point to pull smooth
+ *  handles, drag a handle to move it on its own, drag a segment to reshape it. */
+export function convertDown(p: XY, e: PointerEvent, chain: string[]) {
+  const l = editableShape(),
+    h = l && penHit(l, p, true);
+  if (l && h) {
+    if (h.kind === 'anchor') return convertDrag(l, h, p);
+    if (h.kind === 'handle') return handleDrag(l, h);
+    return segDrag(l, h, p);
+  }
+  pickPathUnder(e, chain);
 }
 
 /* ---------- drawing ---------- */
@@ -354,7 +449,8 @@ export function penDown(p: XY, e: PointerEvent) {
     return placeNode(p, e);
   }
   const l = editableShape(),
-    h = l && penHit(l, p);
+    h = l && penHit(l, p, e.altKey);
+  if (l && h && h.kind === 'handle') return handleDrag(l, h);
   if (l && h && h.kind === 'anchor') {
     if (e.altKey) return convertDrag(l, h, p);
     if (h.end && canContinue(l)) return startContinue(l, h, p);
@@ -511,12 +607,15 @@ export function penHover(p: XY, e: { altKey: boolean }) {
     const n = P.nodes;
     if (n.length >= 2 && px(ptOf(n[0]), p) < NEAR_ANCHOR) kind = 'close';
     else if (n.length && px(ptOf(n[n.length - 1]), p) < NEAR_ANCHOR) kind = 'corner';
+  } else if (t === 'convert') {
+    kind = 'anchor';
   } else if (t === 'pen' || t === 'addnode' || t === 'delnode') {
     const l = editableShape(),
-      h = l && penHit(l, p);
+      h = l && penHit(l, p, e.altKey);
     if (t === 'pen') {
       kind = 'new';
-      if (h && h.kind === 'anchor') kind = e.altKey ? 'convert' : h.end && canContinue(l) ? 'cont' : 'del';
+      if (h && h.kind === 'handle') kind = 'convert';
+      else if (h && h.kind === 'anchor') kind = e.altKey ? 'convert' : h.end && canContinue(l) ? 'cont' : 'del';
       else if (h && h.kind === 'seg' && !e.altKey) kind = 'add';
     } else kind = t === 'addnode' ? 'add' : 'del';
     if (h && ((h.kind === 'seg' && kind === 'add') || (h.kind === 'anchor' && kind === 'del')))

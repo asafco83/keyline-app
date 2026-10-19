@@ -541,6 +541,7 @@ button {
 #wrap.t-pen #overlay *,
 #wrap.t-addnode #overlay *,
 #wrap.t-delnode #overlay *,
+#wrap.t-convert #overlay *,
 #wrap.t-pencil #overlay * {
   cursor: inherit;
 }
