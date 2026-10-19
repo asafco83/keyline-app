@@ -2,7 +2,8 @@
 // Keep it dependency-free: KLEngine.toString() is embedded verbatim in exports.
 
 /** Keyframe: [time in seconds, value, easing to the next key]. */
-export type Ease = string | [number, number, number, number];
+/** preset name or cubic-bezier [x1, y1, x2, y2] */
+export type Ease = string | number[];
 export type Keyframe = [number, any, Ease];
 export interface EngineLayer {
   id: string;
@@ -15,6 +16,32 @@ export interface EngineLayer {
   /** curved motion path */ sm?: boolean | 1;
   /** orient along motion path */ or?: boolean | 1;
 }
+type EaseFn = (p: number) => number;
+type Bezier = number[];
+type RGBA = number[];
+type Vec = number[];
+/** subpath: closed flag + cubic nodes [x, y, inX, inY, outX, outY] */
+export interface EngineSubPath {
+  c: boolean;
+  n: number[][];
+}
+/** A layer's resolved values at one moment. */
+export interface Composite {
+  x: number;
+  y: number;
+  r: number;
+  sx: number;
+  sy: number;
+  ox: number;
+  oy: number;
+  op: number;
+  fill: any;
+  stk: any;
+  sw: any;
+  draw: any;
+  d: EngineSubPath[] | undefined;
+}
+type Handler = (this: KLPlayer, offsetMs: number) => void;
 export interface EngineData {
   /** element id prefix */ p?: string;
   dur?: number;
@@ -63,9 +90,9 @@ export interface KLPlayer {
   readonly state: 'playing' | 'paused' | 'ended' | 'rollback' | 'destroyed';
   // editor helpers
   apply(t: number): void;
-  comp(L: EngineLayer, t: number): any;
+  comp(L: EngineLayer, t: number): Composite;
   get(L: EngineLayer, k: string, t: number): any;
-  dstr(sp: any): string;
+  dstr(sp: EngineSubPath[] | null | undefined): string;
   ease(n: Ease, p: number): number;
   loc(x: number): number;
   EZ: Record<string, number[]>;
@@ -75,8 +102,19 @@ export interface KLPlayer {
 export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
   // NOTE: this function is serialised with Function.prototype.toString() and embedded in every
   // exported SVG, so it must stay fully self-contained: no imports, no references to module scope.
-  var K = { pos: 'v', org: 'v', rot: 'n', scl: 'v', op: 'n', fill: 'c', stk: 'c', sw: 'n', draw: 'n', d: 'm' };
-  var EZ = {
+  var K: Record<string, string> = {
+    pos: 'v',
+    org: 'v',
+    rot: 'n',
+    scl: 'v',
+    op: 'n',
+    fill: 'c',
+    stk: 'c',
+    sw: 'n',
+    draw: 'n',
+    d: 'm',
+  };
+  var EZ: Record<string, Bezier> = {
     ease: [0.25, 0.1, 0.25, 1],
     in: [0.42, 0, 1, 1],
     out: [0, 0, 0.58, 1],
@@ -106,28 +144,28 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     outBack: [0.34, 1.56, 0.64, 1],
     inOutBack: [0.68, -0.6, 0.32, 1.6],
   };
-  var BC = {},
-    EL = {},
+  var BC: Record<string, EaseFn> = {},
+    EL: Record<string, Element | null> = {},
     C4 = (2 * Math.PI) / 3,
     C5 = (2 * Math.PI) / 4.5;
-  var FN = {
-    hold: function (p) {
+  var FN: Record<string, EaseFn> = {
+    hold: function (p: number) {
       return p < 1 ? 0 : 1;
     },
     outBounce: bounce,
-    inBounce: function (p) {
+    inBounce: function (p: number) {
       return 1 - bounce(1 - p);
     },
-    inOutBounce: function (p) {
+    inOutBounce: function (p: number) {
       return p < 0.5 ? (1 - bounce(1 - 2 * p)) / 2 : (1 + bounce(2 * p - 1)) / 2;
     },
-    outElastic: function (p) {
+    outElastic: function (p: number) {
       return p === 0 || p === 1 ? p : Math.pow(2, -10 * p) * Math.sin((p * 10 - 0.75) * C4) + 1;
     },
-    inElastic: function (p) {
+    inElastic: function (p: number) {
       return p === 0 || p === 1 ? p : -Math.pow(2, 10 * p - 10) * Math.sin((p * 10 - 10.75) * C4);
     },
-    inOutElastic: function (p) {
+    inOutElastic: function (p: number) {
       return p === 0 || p === 1
         ? p
         : p < 0.5
@@ -135,27 +173,27 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
           : (Math.pow(2, -20 * p + 10) * Math.sin((20 * p - 11.125) * C5)) / 2 + 1;
     },
   };
-  function bez(q) {
+  function bez(q: Bezier): EaseFn {
     var cx = 3 * q[0],
       bx = 3 * (q[2] - q[0]) - cx,
       ax = 1 - cx - bx,
       cy = 3 * q[1],
       by = 3 * (q[3] - q[1]) - cy,
       ay = 1 - cy - by;
-    function sx(t) {
+    function sx(t: number) {
       return ((ax * t + bx) * t + cx) * t;
     }
-    function sy(t) {
+    function sy(t: number) {
       return ((ay * t + by) * t + cy) * t;
     }
-    function dx(t) {
+    function dx(t: number) {
       return (3 * ax * t + 2 * bx) * t + cx;
     }
-    return function (x) {
+    return function (x: number) {
       var t = x,
-        i,
-        e,
-        d,
+        i: number,
+        e: number,
+        d: number,
         lo = 0,
         hi = 1;
       for (i = 0; i < 8; i++) {
@@ -176,7 +214,7 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       return sy(t);
     };
   }
-  function bounce(x) {
+  function bounce(x: number) {
     var n = 7.5625,
       d = 2.75;
     if (x < 1 / d) return n * x * x;
@@ -184,7 +222,7 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     if (x < 2.5 / d) return n * (x -= 2.25 / d) * x + 0.9375;
     return n * (x -= 2.625 / d) * x + 0.984375;
   }
-  function ez(n, p) {
+  function ez(n: Ease, p: number): number {
     if (!n || n === 'linear') return p;
     if (typeof n !== 'string') {
       var key = n.join(',');
@@ -194,11 +232,11 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     var f = BC[n] || (BC[n] = bez(EZ[n] || EZ.ease));
     return f(p);
   }
-  function pc(s) {
+  function pc(s: unknown): RGBA | null {
     if (typeof s !== 'string') return null;
-    s = s.trim();
-    if (s[0] === '#') {
-      var h = s.slice(1);
+    var str = s.trim();
+    if (str[0] === '#') {
+      var h = str.slice(1);
       if (h.length === 3 || h.length === 4) h = h.replace(/./g, '$&$&');
       if (h.length === 6) h += 'ff';
       if (h.length !== 8) return null;
@@ -209,7 +247,7 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
         parseInt(h.substr(6, 2), 16) / 255,
       ];
     }
-    var m = s.match(/^rgba?\(([^)]+)\)$/);
+    var m = str.match(/^rgba?\(([^)]+)\)$/);
     if (m) {
       var a = m[1]
         .split(/[\s,\/]+/)
@@ -220,45 +258,45 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     }
     return null;
   }
-  function mixC(a, b, p) {
+  function mixC(a: string, b: string, p: number): string {
     var A = pc(a),
       B = pc(b);
     if (!A || !B) return p < 1 ? a : b;
-    var c = [0, 1, 2].map(function (i) {
+    var c = [0, 1, 2].map(function (i: number) {
         return Math.round(A[i] + (B[i] - A[i]) * p);
       }),
       al = A[3] + (B[3] - A[3]) * p;
     return al >= 0.999 ? 'rgb(' + c.join(',') + ')' : 'rgba(' + c.join(',') + ',' + Math.round(al * 1000) / 1000 + ')';
   }
-  function same(a, b) {
+  function same(a: EngineSubPath[], b: EngineSubPath[]) {
     if (!a || !b || a.length !== b.length) return false;
     for (var i = 0; i < a.length; i++) if (a[i].n.length !== b[i].n.length) return false;
     return true;
   }
-  function mixM(a, b, p) {
+  function mixM(a: EngineSubPath[], b: EngineSubPath[], p: number): EngineSubPath[] {
     if (!same(a, b)) return p < 1 ? a : b;
-    return a.map(function (s, i) {
+    return a.map(function (s: EngineSubPath, i: number) {
       return {
         c: s.c,
-        n: s.n.map(function (q, j) {
+        n: s.n.map(function (q: number[], j: number) {
           var r = b[i].n[j];
-          return q.map(function (v, k) {
+          return q.map(function (v: number, k: number) {
             return v + (r[k] - v) * p;
           });
         }),
       };
     });
   }
-  function mix(k, a, b, p) {
+  function mix(k: string, a: any, b: any, p: number): any {
     if (k === 'c') return mixC(a, b, p);
     if (k === 'm') return mixM(a, b, p);
     if (k === 'v') return [a[0] + (b[0] - a[0]) * p, a[1] + (b[1] - a[1]) * p];
     return a + (b - a) * p;
   }
-  function cr(p0, p1, p2, p3, t) {
+  function cr(p0: Vec, p1: Vec, p2: Vec, p3: Vec, t: number): Vec {
     var t2 = t * t,
       t3 = t2 * t;
-    return [0, 1].map(function (i) {
+    return [0, 1].map(function (i: number) {
       return (
         0.5 *
         (2 * p1[i] +
@@ -268,13 +306,13 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       );
     });
   }
-  function at(L, k, t) {
+  function at(L: EngineLayer, k: string, t: number): any {
     var tr = L.t[k],
       n = tr.length,
-      i,
-      a,
-      b,
-      p;
+      i: number,
+      a: Keyframe,
+      b: Keyframe,
+      p: number;
     if (n === 1 || t <= tr[0][0]) return tr[0][1];
     if (t >= tr[n - 1][0]) return tr[n - 1][1];
     for (i = 0; i < n - 1; i++) {
@@ -288,11 +326,11 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     }
     return tr[n - 1][1];
   }
-  function get(L, k, t) {
+  function get(L: EngineLayer, k: string, t: number): any {
     var tr = L.t && L.t[k];
     return tr && tr.length ? at(L, k, t) : k === 'org' ? L.o || [0, 0] : L.b[k];
   }
-  function comp(L, t) {
+  function comp(L: EngineLayer, t: number): Composite {
     var o = get(L, 'org', t) || [0, 0],
       p = get(L, 'pos', t) || [0, 0],
       r = get(L, 'rot', t) || 0,
@@ -324,10 +362,10 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       d: get(L, 'd', t),
     };
   }
-  function f(n) {
+  function f(n: number) {
     return Math.round(n * 1000) / 1000;
   }
-  function tf(c) {
+  function tf(c: Composite) {
     return (
       'translate(' +
       f(c.x) +
@@ -346,15 +384,15 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       ')'
     );
   }
-  function dstr(sp) {
+  function dstr(sp: EngineSubPath[] | null | undefined) {
     var o = '';
-    function seg(a, b) {
+    function seg(a: number[], b: number[]) {
       if (a[4] === a[0] && a[5] === a[1] && b[2] === b[0] && b[3] === b[1]) o += 'L' + f(b[0]) + ' ' + f(b[1]);
       else o += 'C' + f(a[4]) + ' ' + f(a[5]) + ' ' + f(b[2]) + ' ' + f(b[3]) + ' ' + f(b[0]) + ' ' + f(b[1]);
     }
-    (sp || []).forEach(function (s) {
+    (sp || []).forEach(function (s: EngineSubPath) {
       var n = s.n,
-        i;
+        i: number;
       if (!n.length) return;
       o += 'M' + f(n[0][0]) + ' ' + f(n[0][1]);
       for (i = 1; i < n.length; i++) seg(n[i - 1], n[i]);
@@ -365,11 +403,11 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     });
     return o || 'M0 0';
   }
-  function el(id) {
+  function el(id: string) {
     if (!(id in EL)) EL[id] = root ? root.querySelector('#' + id) : null;
     return EL[id];
   }
-  function apply(t) {
+  function apply(t: number) {
     for (var i = 0; i < D.L.length; i++) {
       var L = D.L[i],
         g = el(D.p + L.id),
@@ -377,14 +415,14 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       if (!g || !s) continue;
       var c = comp(L, t);
       g.setAttribute('transform', tf(c));
-      g.setAttribute('opacity', f(c.op));
+      g.setAttribute('opacity', String(f(c.op)));
       if (c.fill != null) s.setAttribute('fill', c.fill);
       if (c.stk != null) s.setAttribute('stroke', c.stk);
-      if (c.sw != null) s.setAttribute('stroke-width', f(c.sw));
+      if (c.sw != null) s.setAttribute('stroke-width', String(f(c.sw)));
       if (c.draw != null && (c.draw < 100 || (L.t && L.t.draw))) {
         s.setAttribute('pathLength', '100');
         s.setAttribute('stroke-dasharray', '100 100');
-        s.setAttribute('stroke-dashoffset', f(100 - c.draw));
+        s.setAttribute('stroke-dashoffset', String(f(100 - c.draw)));
       }
       if (c.d) s.setAttribute('d', dstr(c.d));
     }
@@ -404,7 +442,7 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     ended = false,
     rb = false,
     dead = false,
-    HD = {},
+    HD: Record<string, Handler[]> = {},
     raf = 0;
   function tot() {
     return IT ? IT * T : T;
@@ -413,7 +451,7 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     return BASE > 0 ? 0 : tot();
   }
   var cur = s0();
-  function loc(x) {
+  function loc(x: number) {
     var c = Math.floor(x / T),
       r = x - c * T;
     if (IT) {
@@ -427,10 +465,10 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     }
     return AL && ((c % 2) + 2) % 2 === 1 ? T - r : r;
   }
-  function emit(n) {
+  function emit(n: string) {
     var a = HD[n];
     if (!a) return;
-    a.slice().forEach(function (fn) {
+    a.slice().forEach(function (fn: Handler) {
       try {
         fn.call(P, Math.round(cur * 1000));
       } catch (e) {}
@@ -458,7 +496,7 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     draw();
     emit('end');
   }
-  function tick(now) {
+  function tick(now: number) {
     if (!on || dead) return;
     cur += ((now - last) / 1000) * SPD * DIR;
     last = now;
@@ -484,7 +522,7 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     lastDraw = -1e9;
     raf = requestAnimationFrame(tick);
   }
-  var P: any = {
+  var P = {
     play: function () {
       if (dead || on) return P;
       if (ended) {
@@ -554,14 +592,14 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       emit('stop');
       return P;
     },
-    seek: function (pct) {
+    seek: function (pct: number) {
       if (dead) return P;
       cur = (Math.max(0, Math.min(100, +pct || 0)) / 100) * tot();
       ended = false;
       draw();
       return P;
     },
-    seekTo: function (ms) {
+    seekTo: function (ms: number) {
       if (dead) return P;
       cur = (+ms || 0) / 1000;
       if (IT) cur = Math.max(0, Math.min(tot(), cur));
@@ -569,10 +607,10 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       draw();
       return P;
     },
-    seekBy: function (ms) {
+    seekBy: function (ms: number) {
       return P.seekTo(cur * 1000 + (+ms || 0));
     },
-    set: function (k, v) {
+    set: function (k: string, v: any) {
       if (dead) return P;
       if (k === 'speed') SPD = Math.max(0.01, Math.min(100, +v || 1));
       else if (k === 'fps') FPS = Math.max(1, Math.min(100, +v || 100));
@@ -584,18 +622,18 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       else if (k === 'fill') FILL = +v < 0 ? -1 : 1;
       return P;
     },
-    ready: function (cb) {
+    ready: function (cb: (p: KLPlayer) => void) {
       if (typeof cb === 'function')
         setTimeout(function () {
           cb.call(P, P);
         }, 0);
       return P;
     },
-    on: function (names, fn, prepend) {
+    on: function (names: string, fn: Handler, prepend?: boolean) {
       if (typeof fn !== 'function') return P;
       String(names)
         .split(/[\s,]+/)
-        .forEach(function (n) {
+        .forEach(function (n: string) {
           if (!n) return;
           HD[n] = HD[n] || [];
           if (prepend) HD[n].unshift(fn);
@@ -603,10 +641,10 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
         });
       return P;
     },
-    off: function (n, fn) {
+    off: function (n: string, fn?: Handler) {
       if (HD[n])
         HD[n] = fn
-          ? HD[n].filter(function (f) {
+          ? HD[n].filter(function (f: Handler) {
               return f !== fn;
             })
           : [];
@@ -616,7 +654,7 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       if (dead) return;
       halt();
       HD = {};
-      (P._cleanup || []).forEach(function (f) {
+      (P._cleanup || []).forEach(function (f: () => void) {
         try {
           f();
         } catch (e) {}
@@ -625,10 +663,10 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       apply(loc(s0()));
       dead = true;
     },
-    onEnd: function (fn) {
+    onEnd: function (fn: Handler) {
       return P.on('end', fn);
     },
-    setRate: function (v) {
+    setRate: function (v: number) {
       return P.set('speed', v);
     },
     apply: apply,
@@ -638,9 +676,9 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     ease: ez,
     loc: loc,
     EZ: EZ,
-    _cleanup: [],
-  };
-  var G = function (f) {
+    _cleanup: [] as Array<() => void>,
+  } as unknown as KLPlayer;
+  var G = function (f: () => unknown): PropertyDescriptor {
     return { get: f, enumerable: true };
   };
   Object.defineProperties(P, {

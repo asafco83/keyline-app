@@ -1,8 +1,19 @@
 // Keyline — geometry/parse-path
 import { r3 } from '../core/constants';
 import { N } from './nodes';
+import type { PathData, PathNode, SubPath } from '../model/types';
 
-export function arcToCubic(x1?, y1?, rx?, ry?, phi?, fa?, fs?, x2?, y2?) {
+export function arcToCubic(
+  x1: number,
+  y1: number,
+  rx: number,
+  ry: number,
+  phi: number,
+  fa: number,
+  fs: number,
+  x2: number,
+  y2: number,
+): number[][] {
   const rad = (phi * Math.PI) / 180,
     cos = Math.cos(rad),
     sin = Math.sin(rad);
@@ -26,7 +37,7 @@ export function arcToCubic(x1?, y1?, rx?, ry?, phi?, fa?, fs?, x2?, y2?) {
     cyp = (-co * ry * x1p) / rx;
   const cx = cos * cxp - sin * cyp + (x1 + x2) / 2,
     cy = sin * cxp + cos * cyp + (y1 + y2) / 2;
-  const ang = (ux?, uy?, vx?, vy?) => Math.atan2(ux * vy - uy * vx, ux * vx + uy * vy);
+  const ang = (ux: number, uy: number, vx: number, vy: number) => Math.atan2(ux * vy - uy * vx, ux * vx + uy * vy);
   const t1 = ang(1, 0, (x1p - cxp) / rx, (y1p - cyp) / ry);
   let dt = ang((x1p - cxp) / rx, (y1p - cyp) / ry, (-x1p - cxp) / rx, (-y1p - cyp) / ry);
   if (!fs && dt > 0) dt -= 2 * Math.PI;
@@ -34,8 +45,8 @@ export function arcToCubic(x1?, y1?, rx?, ry?, phi?, fa?, fs?, x2?, y2?) {
   const segs = Math.max(1, Math.ceil(Math.abs(dt) / (Math.PI / 2))),
     d = dt / segs,
     k = (4 / 3) * Math.tan(d / 4),
-    out = [];
-  const map = (p?) => [cx + rx * p[0] * cos - ry * p[1] * sin, cy + rx * p[0] * sin + ry * p[1] * cos];
+    out: number[][] = [];
+  const map = (p: number[]) => [cx + rx * p[0] * cos - ry * p[1] * sin, cy + rx * p[0] * sin + ry * p[1] * cos];
   for (let i = 0; i < segs; i++) {
     const a1 = t1 + i * d,
       a2 = a1 + d,
@@ -43,21 +54,21 @@ export function arcToCubic(x1?, y1?, rx?, ry?, phi?, fa?, fs?, x2?, y2?) {
       s1 = Math.sin(a1),
       c2 = Math.cos(a2),
       s2 = Math.sin(a2);
-    out.push([].concat(map([c1 - k * s1, s1 + k * c1]), map([c2 + k * s2, s2 - k * c2]), map([c2, s2])));
+    out.push(([] as number[]).concat(map([c1 - k * s1, s1 + k * c1]), map([c2 + k * s2, s2 - k * c2]), map([c2, s2])));
   }
   return out;
 }
-export function parsePath(d?) {
-  const out = [];
-  let sp = null,
+export function parsePath(d: unknown): PathData {
+  const out: PathData = [];
+  let sp: SubPath | null = null,
     i = 0,
     cmd = '',
     x = 0,
     y = 0,
     sx = 0,
     sy = 0,
-    lc = null,
-    lq = null;
+    lc: number[] | null = null,
+    lq: number[] | null = null;
   const s = String(d || '');
   const ws = () => {
     while (i < s.length && /[\s,]/.test(s[i])) i++;
@@ -83,8 +94,8 @@ export function parsePath(d?) {
     sp = { c: false, n: [N(x, y)] };
     out.push(sp);
   };
-  const last = () => sp.n[sp.n.length - 1];
-  const cubic = (x1?, y1?, x2?, y2?, ex?, ey?) => {
+  const last = (): PathNode => sp.n[sp.n.length - 1];
+  const cubic = (x1: number, y1: number, x2: number, y2: number, ex: number, ey: number) => {
     if (!sp) start();
     const l = last();
     l[4] = r3(x1);
@@ -94,7 +105,7 @@ export function parsePath(d?) {
     y = ey;
     lc = [x2, y2];
   };
-  const line = (ex?, ey?) => {
+  const line = (ex: number, ey: number) => {
     if (!sp) start();
     sp.n.push(N(r3(ex), r3(ey)));
     x = ex;
@@ -161,7 +172,7 @@ export function parsePath(d?) {
           cubic(x1, y1, ox2 + a[0], oy2 + a[1], ox2 + a[2], oy2 + a[3]);
           lq = null;
         } else if (C === 'Q' || C === 'T') {
-          let qx, qy;
+          let qx: number, qy: number;
           if (C === 'Q') {
             qx = ox2 + num();
             qy = oy2 + num();
@@ -189,7 +200,7 @@ export function parsePath(d?) {
             fs = flag(),
             ex = ox2 + num(),
             ey = oy2 + num();
-          arcToCubic(cx0, cy0, rx, ry, ph, fa, fs, ex, ey).forEach((c?) => cubic(c[0], c[1], c[2], c[3], c[4], c[5]));
+          arcToCubic(cx0, cy0, rx, ry, ph, fa, fs, ex, ey).forEach(c => cubic(c[0], c[1], c[2], c[3], c[4], c[5]));
           lc = lq = null;
         } else {
           i++;
@@ -206,5 +217,5 @@ export function parsePath(d?) {
   } catch (e) {
     /* keep what parsed */
   }
-  return out.filter((p?) => p.n.length > 0);
+  return out.filter(p => p.n.length > 0);
 }

@@ -53,7 +53,7 @@ export function moveDrag(l?, p0?) {
 }
 
 export function init(): void {
-  WRAP.addEventListener('pointerdown', (e?) => {
+  WRAP.addEventListener('pointerdown', e => {
     if (e.button !== 0) return;
     const p = docPt(e);
     try {
@@ -79,14 +79,14 @@ export function init(): void {
     if (h) return handleDrag(h.dataset.h, p);
     const chain = hitChain(e.target);
     if (chain.length) {
-      const nb = chain.filter((c?) => {
+      const nb = chain.filter(c => {
         const x = layerById(c);
         return x && x.type !== 'bone';
       });
       let id =
         e.ctrlKey || e.metaKey ? chain[0] : S.sel && chain.includes(S.sel) ? S.sel : nb[nb.length - 1] || chain[0];
       if (t === 'node') {
-        const pth = chain.find((c?) => {
+        const pth = chain.find(c => {
           const x = layerById(c);
           return x && x.type === 'path';
         });
@@ -108,7 +108,7 @@ export function init(): void {
       select(null);
     }
   });
-  WRAP.addEventListener('pointermove', (e?) => {
+  WRAP.addEventListener('pointermove', e => {
     const p = docPt(e);
     S.lastPt = p;
     if (S.drag) S.drag.move(p, e);
@@ -119,7 +119,7 @@ export function init(): void {
   });
   WRAP.addEventListener('pointerup', endDrag);
   WRAP.addEventListener('pointercancel', endDrag);
-  WRAP.addEventListener('dblclick', (e?) => {
+  WRAP.addEventListener('dblclick', e => {
     if (S.tool === 'pen' && S.pen) {
       const n = S.pen.nodes;
       if (n.length > 1) {
@@ -154,7 +154,7 @@ export function init(): void {
   });
   WRAP.addEventListener(
     'wheel',
-    (e?) => {
+    e => {
       if (!(e.ctrlKey || e.metaKey)) return;
       e.preventDefault();
       S.zoom = clamp(S.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1), 0.1, 8);

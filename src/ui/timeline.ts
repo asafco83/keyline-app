@@ -1,4 +1,5 @@
 // Keyline — ui/timeline
+import type { Keyframe, Layer, PropKey } from '../model/types';
 import { $, ICON, PORDER, PROPS, clamp, clone, esc, fmt, r3 } from '../core/constants';
 import { TLB, TLS } from '../core/dom';
 import { beginEdit, setTime } from '../core/history';
@@ -28,15 +29,15 @@ export function renderTimeline() {
   const W = doc.dur * S.pps,
     LW = W + 48,
     list = treeRows()
-      .map((r?) => r[0])
+      .map(r => r[0])
       .filter(isAnim);
   let h = `<div class="tl-row tl-ruler"><div class="tl-name">Animated layers</div><div class="tl-lane" id="ruler" style="width:${LW}px">${ticks(W)}</div></div>`;
   if (!list.length)
     h += `<div class="tl-empty">Layers with keyframes appear here. Select a layer, move the playhead, then change it with Auto-key on, or click ◆ beside a property in the inspector.</div>`;
   for (const l of list) {
-    const tracks = PORDER.filter((k?) => l.t[k] && l.t[k].length),
+    const tracks = PORDER.filter(k => l.t[k] && l.t[k].length),
       ex = S.exp[l.id] !== false;
-    const times = [...new Set<any>(tracks.flatMap((k?) => l.t[k].map((q?) => q[0])))],
+    const times = [...new Set<any>(tracks.flatMap(k => l.t[k].map(q => q[0])))],
       par = l.parent && layerById(l.parent);
     h += `<div class="tl-row tl-layer${S.selSet.has(l.id) ? ' sel' : ''}${isHidden(l) ? ' hid' : ''}" data-lid="${l.id}">
       <div class="tl-name"><button class="tl-ic" data-act="exp" aria-label="${ex ? 'Hide' : 'Show'} animators">${ex ? ICON.down : ICON.right}</button>
@@ -45,16 +46,16 @@ export function renderTimeline() {
           ? `<span class="tl-path" title="${esc(
               ancestors(l)
                 .reverse()
-                .map((a?) => a.name)
+                .map(a => a.name)
                 .join(' › '),
             )}">${esc(par.name)} ›</span>`
           : ''
       }
       <span class="tl-lname" data-act="sel" title="Double-click to rename">${esc(l.name)}</span><span class="tl-type">${l.type}</span></div>
       <div class="tl-lane" data-act="lane" style="width:${LW}px"><div class="tl-bar" style="width:${W}px"></div>${times
-        .map((t?) => {
-          const kat = tracks.flatMap((k?) => l.t[k].filter((q?) => Math.abs(q[0] - t) < 0.004));
-          return `<button class="sdot${kat.length && kat.every((q?) => S.keys.has(q)) ? ' sel' : ''}" data-lid="${l.id}" data-t="${t}" style="left:${t * S.pps}px" aria-label="All ${esc(l.name)} keyframes at ${fmt(t)}s" title="${fmt(t)}s · all keyframes"></button>`;
+        .map(t => {
+          const kat = tracks.flatMap(k => l.t[k].filter(q => Math.abs(q[0] - t) < 0.004));
+          return `<button class="sdot${kat.length && kat.every(q => S.keys.has(q)) ? ' sel' : ''}" data-lid="${l.id}" data-t="${t}" style="left:${t * S.pps}px" aria-label="All ${esc(l.name)} keyframes at ${fmt(t)}s" title="${fmt(t)}s · all keyframes"></button>`;
         })
         .join('')}</div></div>`;
     if (ex)
@@ -76,14 +77,14 @@ export function renderTimeline() {
       }
   }
   TLB.innerHTML = h + '<div class="tl-ph" id="playhead"></div>';
-  TLB.querySelectorAll('.kf,.seg').forEach((el?) => {
+  TLB.querySelectorAll('.kf,.seg').forEach(el => {
     const l = layerById(el.dataset.lid);
     el._k = l.t[el.dataset.prop][+el.dataset.i];
   });
-  TLB.querySelectorAll('.sdot').forEach((el?) => {
+  TLB.querySelectorAll('.sdot').forEach(el => {
     const l = layerById(el.dataset.lid),
       t = +el.dataset.t;
-    el._ks = Object.values<any>(l.t).flatMap((tr?) => tr.filter((q?) => Math.abs(q[0] - t) < 0.004));
+    el._ks = Object.values<any>(l.t).flatMap(tr => tr.filter(q => Math.abs(q[0] - t) < 0.004));
   });
   updatePlayhead();
 }
@@ -93,7 +94,7 @@ export function updatePlayhead() {
   const x = tln() + S.time * S.pps;
   ph.style.left = x + 'px';
   ph.style.visibility = x - TLS.scrollLeft < tln() - 1 ? 'hidden' : 'visible';
-  TLB.querySelectorAll('.tl-prop').forEach((r?) => {
+  TLB.querySelectorAll('.tl-prop').forEach(r => {
     const l = layerById(r.dataset.lid),
       tr = l && l.t[r.dataset.prop];
     const b = r.querySelector('.kb');
@@ -101,7 +102,7 @@ export function updatePlayhead() {
       b.classList.add('has');
       b.classList.toggle(
         'on',
-        tr.some((q?) => Math.abs(q[0] - S.time) < 0.005),
+        tr.some(q => Math.abs(q[0] - S.time) < 0.005),
       );
     }
   });
@@ -116,8 +117,8 @@ export function laneTime(e?, lane?) {
   return clamp((e.clientX - r.left) / S.pps, 0, doc.dur);
 }
 export function dragWin(move?, up?) {
-  const mv = (e?) => move(e),
-    u = (e?) => {
+  const mv = e => move(e),
+    u = e => {
       window.removeEventListener('pointermove', mv);
       window.removeEventListener('pointerup', u);
       window.removeEventListener('pointercancel', u);
@@ -134,10 +135,15 @@ export function selectKeyLayer(id?) {
     S.node = null;
   }
 }
-export function keyOwners() {
-  const m = new Map<any, any>();
-  doc.layers.forEach((l?) => {
-    for (const k in l.t) (l.t[k] || []).forEach((q?) => m.set(q, { l, k, tr: l.t[k] }));
+export interface KeyOwner {
+  l: Layer;
+  k: PropKey;
+  tr: Keyframe[];
+}
+export function keyOwners(): Map<Keyframe, KeyOwner> {
+  const m = new Map<Keyframe, KeyOwner>();
+  doc.layers.forEach(l => {
+    for (const k in l.t) (l.t[k] || []).forEach(q => m.set(q, { l, k: k as PropKey, tr: l.t[k] }));
   });
   return m;
 }
@@ -146,13 +152,13 @@ export function snapT(t?, excl?) {
   let best = null,
     bd = 7 / S.pps;
   const cand = [S.time, 0, doc.dur];
-  doc.layers.forEach((l?) => {
+  doc.layers.forEach(l => {
     for (const k in l.t)
-      l.t[k].forEach((q?) => {
+      l.t[k].forEach(q => {
         if (!excl.has(q)) cand.push(q[0]);
       });
   });
-  cand.forEach((c?) => {
+  cand.forEach(c => {
     const d = Math.abs(c - t);
     if (d < bd) {
       bd = d;
@@ -163,7 +169,7 @@ export function snapT(t?, excl?) {
 }
 export const TIP = $('#tltip');
 export const MARQ = $('#tlmarq');
-export const MENU = $('#ctxmenu');
+export const MENU: any = $('#ctxmenu');
 export function showTip(ev?, txt?) {
   TIP.textContent = txt;
   TIP.hidden = false;
@@ -171,7 +177,7 @@ export function showTip(ev?, txt?) {
   TIP.style.top = Math.max(4, ev.clientY - 32) + 'px';
 }
 export function resolveCollisions() {
-  doc.layers.forEach((l?) => {
+  doc.layers.forEach(l => {
     for (const k in l.t) {
       const tr = l.t[k];
       sortTrack(tr);
@@ -197,7 +203,7 @@ export function keyDrag(e?, grab?) {
     tMax = 0,
     anchor = 0;
   dragWin(
-    (ev?) => {
+    ev => {
       const dx = ev.clientX - x0;
       if (!moved) {
         if (Math.abs(dx) < 3) return;
@@ -205,7 +211,7 @@ export function keyDrag(e?, grab?) {
         if (dupMode) {
           const ow = keyOwners(),
             ns = new Set<any>();
-          [...S.keys].forEach((q?) => {
+          [...S.keys].forEach(q => {
             const o = ow.get(q);
             if (!o) return;
             const c = clone(q);
@@ -216,8 +222,8 @@ export function keyDrag(e?, grab?) {
           S.keys = ns;
           renderTimeline();
         }
-        items = [...S.keys].map((q?) => ({ q, t0: q[0] }));
-        const ts = items.map((i?) => i.t0);
+        items = [...S.keys].map(q => ({ q, t0: q[0] }));
+        const ts = items.map(i => i.t0);
         tMin = Math.min(...ts);
         tMax = Math.max(...ts);
         gT0 = g[0];
@@ -230,13 +236,13 @@ export function keyDrag(e?, grab?) {
         let f = (tg - anchor) / (gT0 - anchor);
         if (!isFinite(f)) f = 1;
         f = Math.max(0.02, f);
-        items.forEach((i?) => {
+        items.forEach(i => {
           i.q[0] = r3(clamp(anchor + (i.t0 - anchor) * f, 0, doc.dur));
         });
         showTip(ev, `Stretch ×${f.toFixed(2)} · span ${fmt((tMax - tMin) * f)}s`);
       } else {
         const d = clamp(tg - gT0, -tMin, doc.dur - tMax);
-        items.forEach((i?) => {
+        items.forEach(i => {
           i.q[0] = r3(i.t0 + d);
         });
         showTip(
@@ -244,10 +250,10 @@ export function keyDrag(e?, grab?) {
           `${fmt(g[0])}s  ${d >= 0 ? '+' : '−'}${fmt(Math.abs(d))}s${dupMode ? ' · copy' : ''}${snap ? '' : ' · free'}`,
         );
       }
-      TLB.querySelectorAll('.kf').forEach((el?) => {
+      TLB.querySelectorAll('.kf').forEach(el => {
         el.style.left = el._k[0] * S.pps + 'px';
       });
-      doc.layers.forEach((L?) => Object.values<any>(L.t).forEach(sortTrack));
+      doc.layers.forEach(L => Object.values<any>(L.t).forEach(sortTrack));
       frame();
     },
     () => {
@@ -257,7 +263,7 @@ export function keyDrag(e?, grab?) {
         S.time = g[0];
         S.ptime = S.time;
       }
-      doc.layers.forEach((L?) => Object.values<any>(L.t).forEach(sortTrack));
+      doc.layers.forEach(L => Object.values<any>(L.t).forEach(sortTrack));
       ed.end({ insp: true });
     },
   );
@@ -268,12 +274,12 @@ export function marquee(e?, lane?) {
     add = e.shiftKey || e.ctrlKey || e.metaKey,
     base = new Set<any>(add ? S.keys : []);
   let moved = false;
-  const hit = (el?, L?, T?, R?, B?) => {
+  const hit = (el, L, T, R, B) => {
     const r = el.getBoundingClientRect();
     return r.right >= L && r.left <= R && r.bottom >= T && r.top <= B;
   };
   dragWin(
-    (ev?) => {
+    ev => {
       if (!moved && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 4) return;
       moved = true;
       const L = Math.min(x0, ev.clientX),
@@ -283,20 +289,20 @@ export function marquee(e?, lane?) {
       Object.assign(MARQ.style, { left: L + 'px', top: T + 'px', width: R - L + 'px', height: B - T + 'px' });
       MARQ.hidden = false;
       const sel = new Set<any>(base);
-      TLB.querySelectorAll('.kf').forEach((el?) => {
+      TLB.querySelectorAll('.kf').forEach(el => {
         if (hit(el, L, T, R, B)) sel.add(el._k);
       });
-      TLB.querySelectorAll('.sdot').forEach((el?) => {
-        if (hit(el, L, T, R, B)) el._ks.forEach((q?) => sel.add(q));
+      TLB.querySelectorAll('.sdot').forEach(el => {
+        if (hit(el, L, T, R, B)) el._ks.forEach(q => sel.add(q));
       });
       S.keys = sel;
-      TLB.querySelectorAll('.kf').forEach((el?) => el.classList.toggle('sel', sel.has(el._k)));
-      TLB.querySelectorAll('.sdot').forEach((el?) =>
-        el.classList.toggle('sel', el._ks.length > 0 && el._ks.every((q?) => sel.has(q))),
+      TLB.querySelectorAll('.kf').forEach(el => el.classList.toggle('sel', sel.has(el._k)));
+      TLB.querySelectorAll('.sdot').forEach(el =>
+        el.classList.toggle('sel', el._ks.length > 0 && el._ks.every(q => sel.has(q))),
       );
       showTip(ev, `${sel.size} keyframe${sel.size === 1 ? '' : 's'}`);
     },
-    (ev?) => {
+    ev => {
       MARQ.hidden = true;
       TIP.hidden = true;
       if (!moved) {
@@ -320,7 +326,7 @@ export function marquee(e?, lane?) {
 
 export function init(): void {
   TLS.addEventListener('scroll', () => updatePlayhead());
-  TLB.addEventListener('pointerdown', (e?) => {
+  TLB.addEventListener('pointerdown', e => {
     if (e.button !== 0) return;
     closeMenu();
     const seg = (e.target as any).closest('.seg');
@@ -339,15 +345,15 @@ export function init(): void {
     if (kf) {
       e.preventDefault();
       const ks = kf._ks || [kf._k],
-        allIn = ks.length > 0 && ks.every((q?) => S.keys.has(q));
+        allIn = ks.length > 0 && ks.every(q => S.keys.has(q));
       if (e.shiftKey) {
-        ks.forEach((q?) => (allIn ? S.keys.delete(q) : S.keys.add(q)));
+        ks.forEach(q => (allIn ? S.keys.delete(q) : S.keys.add(q)));
       } else if (!allIn) {
         if (!(e.ctrlKey || e.metaKey)) S.keys.clear();
-        ks.forEach((q?) => S.keys.add(q));
+        ks.forEach(q => S.keys.add(q));
       }
       selectKeyLayer(kf.dataset.lid);
-      TLB.querySelectorAll('.kf').forEach((el?) => el.classList.toggle('sel', S.keys.has(el._k)));
+      TLB.querySelectorAll('.kf').forEach(el => el.classList.toggle('sel', S.keys.has(el._k)));
       if (!S.keys.size || (e.shiftKey && allIn)) {
         renderTimeline();
         renderInspector();
@@ -361,7 +367,7 @@ export function init(): void {
     if (ruler) {
       e.preventDefault();
       setTime(laneTime(e, ruler));
-      dragWin((ev?) => setTime(laneTime(ev, ruler)));
+      dragWin(ev => setTime(laneTime(ev, ruler)));
       return;
     }
     const lane = (e.target as any).closest('[data-act="lane"]');

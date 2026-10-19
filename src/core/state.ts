@@ -1,19 +1,21 @@
 // Keyline — core/state
 import { SWATCH } from './constants';
+import type { KLPlayer } from '../runtime/engine';
+import type { Asset, Doc, EditorState, Keyframe, Layer, LayerType, Geometry, BaseValues } from '../model/types';
 
-export let doc;
-export let eng;
-export function setDoc(d?) {
+export let doc: Doc;
+export let eng: KLPlayer;
+export function setDoc(d: Doc) {
   doc = d;
 }
-export function setEng(e?) {
+export function setEng(e: KLPlayer) {
   eng = e;
 }
-export const ASSETS: any = {};
-export const URLS: any = {};
-export const S: any = {
+export const ASSETS: Record<string, Asset> = {};
+export const URLS: Record<string, string> = {};
+export const S: EditorState = {
   sel: null,
-  selSet: new Set<any>(),
+  selSet: new Set<string>(),
   tool: 'select',
   time: 0,
   ptime: 0,
@@ -25,7 +27,7 @@ export const S: any = {
   scale: 1,
   exp: {},
   lexp: {},
-  keys: new Set<any>(),
+  keys: new Set<Keyframe>(),
   node: null,
   undo: [],
   redo: [],
@@ -44,7 +46,7 @@ export const S: any = {
 };
 export let idc = 0;
 export let aidc = 0;
-export function setIdc(v?) {
+export function setIdc(v: number) {
   idc = v;
 }
 export function nextAid() {
@@ -54,15 +56,15 @@ export function uid() {
   return 'l' + ++idc;
 }
 export function syncIdc() {
-  idc = doc.layers.reduce((m?, l?) => Math.max(m, parseInt(String(l.id).slice(1)) || 0), 0);
+  idc = doc.layers.reduce((m: number, l) => Math.max(m, parseInt(String(l.id).slice(1)) || 0), 0);
 }
 export function syncAidc() {
-  aidc = Object.keys(ASSETS).reduce((m?, k?) => Math.max(m, parseInt(k.slice(1)) || 0), 0);
+  aidc = Object.keys(ASSETS).reduce((m: number, k) => Math.max(m, parseInt(k.slice(1)) || 0), 0);
 }
-export function layerById(id?) {
-  return doc && doc.layers.find((l?) => l.id === id);
+export function layerById(id: string | null | undefined): Layer | undefined {
+  return doc && doc.layers.find(l => l.id === id);
 }
-export function selLayer() {
+export function selLayer(): Layer | null | undefined {
   return S.sel ? layerById(S.sel) : null;
 }
 export function nextColor() {
@@ -71,7 +73,7 @@ export function nextColor() {
 export function randPre() {
   return 'kl' + Math.random().toString(36).slice(2, 6);
 }
-export function blankDoc(w?, h?): any {
+export function blankDoc(w: number, h: number): Doc {
   return {
     name: 'Untitled animation',
     w,
@@ -106,7 +108,7 @@ export function blankDoc(w?, h?): any {
     },
   };
 }
-export function mkLayer(type?, name?, geo?, b?): any {
+export function mkLayer(type: LayerType, name: string, geo?: Geometry, b?: Partial<BaseValues>): Layer {
   return {
     id: uid(),
     name,
@@ -127,6 +129,6 @@ export function mkLayer(type?, name?, geo?, b?): any {
     extra: {},
   };
 }
-export function sortTrack(tr?) {
-  tr.sort((a?, b?) => a[0] - b[0]);
+export function sortTrack(tr: Keyframe[]) {
+  tr.sort((a, b) => a[0] - b[0]);
 }

@@ -38,7 +38,7 @@ export function originDrag(l?) {
       const q = xfp(Mi, p.x, p.y);
       let o = [q.x, q.y];
       const near: any = pts
-        .map((pt?) => [pt, Math.hypot(pt[0] - o[0], pt[1] - o[1])])
+        .map(pt => [pt, Math.hypot(pt[0] - o[0], pt[1] - o[1])])
         .sort((x?: any, y?: any) => x[1] - y[1])[0];
       if (e.shiftKey || near[1] * S.scale < 8) o = near[0].slice();
       reOrigin(l, o);
@@ -65,7 +65,7 @@ export function handleDrag(kind?, p0?) {
   if (!l) return;
   if (kind === 'org') return originDrag(l);
   const PMi = parentMatrix(l).inverse(),
-    L = (p?) => xfp(PMi, p.x, p.y),
+    L = p => xfp(PMi, p.x, p.y),
     c = H.comp(l, S.time),
     C = { x: c.x, y: c.y },
     ed = beginEdit(),
@@ -96,7 +96,7 @@ export function handleDrag(kind?, p0?) {
     kind
   ];
   if (!UV) return;
-  const at = (u?, v?) => [b.x + b.width * u, b.y + b.height * v],
+  const at = (u, v) => [b.x + b.width * u, b.y + b.height * v],
     Hl = at(UV[0], UV[1]),
     ax = UV[0] !== 0.5,
     ay = UV[1] !== 0.5;
@@ -106,7 +106,7 @@ export function handleDrag(kind?, p0?) {
     rad = (c.r * Math.PI) / 180,
     cs = Math.cos(rad),
     sn = Math.sin(rad);
-  const T = (pt?, s?, t?) => {
+  const T = (pt, s, t) => {
     const dx = (pt[0] - o[0]) * s[0],
       dy = (pt[1] - o[1]) * s[1];
     return [t[0] + o[0] + dx * cs - dy * sn, t[1] + o[1] + dx * sn + dy * cs];
@@ -153,7 +153,7 @@ export function handleDrag(kind?, p0?) {
 export function newShape(t?) {
   const col = nextColor(),
     base = t === 'rect' ? 'Rectangle' : t === 'ellipse' ? 'Ellipse' : 'Star',
-    n = doc.layers.filter((l?) => l.name.startsWith(base)).length + 1;
+    n = doc.layers.filter(l => l.name.startsWith(base)).length + 1;
   if (t === 'rect') return mkLayer('rect', base + ' ' + n, { x: 0, y: 0, w: 0, h: 0, rx: 0 }, { fill: col });
   if (t === 'ellipse') return mkLayer('ellipse', base + ' ' + n, { cx: 0, cy: 0, rx: 0, ry: 0 }, { fill: col });
   return mkLayer('path', base + ' ' + n, {}, { fill: col, d: [] });
@@ -236,7 +236,7 @@ export function createText(p?) {
 export function lum(c?) {
   const h = toHex(c);
   if (!h) return 1;
-  const v = [1, 3, 5].map((i?) => parseInt(h.substr(i, 2), 16) / 255);
+  const v = [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16) / 255);
   return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
 }
 export function penDown(p?) {

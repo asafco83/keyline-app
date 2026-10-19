@@ -29,7 +29,7 @@ export const LINK_OFF = ic(
 export function usedImageIds() {
   return [
     ...new Set<any>(
-      doc.layers.filter((l?) => l.type === 'image' && !isHidden(l) && ASSETS[l.geo.asset]).map((l?) => l.geo.asset),
+      doc.layers.filter(l => l.type === 'image' && !isHidden(l) && ASSETS[l.geo.asset]).map(l => l.geo.asset),
     ),
   ];
 }
@@ -38,7 +38,7 @@ export function syncSizeUI() {
     fixed = ex.size === 'fixed',
     [w, h] = outDims(),
     hasImg = usedImageIds().length > 0,
-    set = (id?, v?) => {
+    set = (id, v) => {
       const e = $('#' + id);
       if (e !== document.activeElement) e.value = v;
     };
@@ -53,10 +53,10 @@ export function syncSizeUI() {
   lk.innerHTML = ex.lock !== false ? LINK_ON : LINK_OFF;
   lk.classList.toggle('on', ex.lock !== false);
   lk.setAttribute('aria-pressed', String(ex.lock !== false));
-  const anyImg = Object.values<any>(ASSETS).some((a?) => a.kind === 'image');
+  const anyImg = Object.values<any>(ASSETS).some(a => a.kind === 'image');
   $('#xImgGrp').hidden = !hasImg && !anyImg;
   $('#xImgNone').hidden = hasImg;
-  ['xOptRow', 'xFmtRow', 'xQRow', 'xHiRow', 'xImgDet'].forEach((id?) => {
+  ['xOptRow', 'xFmtRow', 'xQRow', 'xHiRow', 'xImgDet'].forEach(id => {
     const e = $('#' + id);
     if (e && !hasImg) e.hidden = true;
   });
@@ -98,24 +98,24 @@ export function setDims(w?, h?) {
 export let dimT = 0;
 
 export function init(): void {
-  $('#xW').addEventListener('change', (e?) => {
+  $('#xW').addEventListener('change', e => {
     const v = parseFloat((e.target as any).value);
     if (!(v > 0)) return syncSizeUI();
     const [, h] = outDims();
     setDims(v, doc.ex.lock !== false ? (v * doc.h) / doc.w : h);
   });
-  $('#xH').addEventListener('change', (e?) => {
+  $('#xH').addEventListener('change', e => {
     const v = parseFloat((e.target as any).value);
     if (!(v > 0)) return syncSizeUI();
     const [w] = outDims();
     setDims(doc.ex.lock !== false ? (v * doc.w) / doc.h : w, v);
   });
-  $('#xPct').addEventListener('change', (e?) => {
+  $('#xPct').addEventListener('change', e => {
     const v = parseFloat((e.target as any).value);
     if (!(v > 0)) return syncSizeUI();
     setDims((doc.w * v) / 100, (doc.h * v) / 100);
   });
-  $('#xPreset').addEventListener('change', (e?) => {
+  $('#xPreset').addEventListener('change', e => {
     const v = parseFloat((e.target as any).value);
     (e.target as any).value = '';
     if (v > 0) setDims((doc.w * v) / 100, (doc.h * v) / 100);
@@ -131,40 +131,40 @@ export function init(): void {
       syncSizeUI();
     }
   });
-  ['xW', 'xH', 'xPct', 'xMaxW'].forEach((id?) =>
-    $('#' + id).addEventListener('input', (e?) => {
+  ['xW', 'xH', 'xPct', 'xMaxW'].forEach(id =>
+    $('#' + id).addEventListener('input', e => {
       clearTimeout(dimT);
       dimT = setTimeout(() => (e.target as any).dispatchEvent(new Event('change')), 450);
     }),
   );
-  $('#xMaxW').addEventListener('change', (e?) => {
+  $('#xMaxW').addEventListener('change', e => {
     const v = parseFloat((e.target as any).value);
     doc.ex.maxW = v > 0 ? Math.round(clamp(v, 16, 20000)) : 0;
     save();
     syncSizeUI();
     updateExport();
   });
-  $('#xOpt').addEventListener('change', (e?) => {
+  $('#xOpt').addEventListener('change', e => {
     doc.ex.opt = (e.target as any).checked;
     save();
     syncSizeUI();
     updateExport();
   });
-  $('#xFmt').addEventListener('change', (e?) => {
+  $('#xFmt').addEventListener('change', e => {
     doc.ex.fmt = (e.target as any).value;
     save();
     syncSizeUI();
     updateExport();
   });
-  $('#xQ').addEventListener('input', (e?) => {
+  $('#xQ').addEventListener('input', e => {
     $('#xQv').textContent = (e.target as any).value + '%';
   });
-  $('#xQ').addEventListener('change', (e?) => {
+  $('#xQ').addEventListener('change', e => {
     doc.ex.q = parseInt((e.target as any).value) || 82;
     save();
     updateExport();
   });
-  $('#xHi').addEventListener('change', (e?) => {
+  $('#xHi').addEventListener('change', e => {
     doc.ex.hi = (e.target as any).checked;
     save();
     updateExport();

@@ -1,4 +1,5 @@
 // Keyline — core/keyframes
+import type { ClipKey, Ease, Keyframe, Layer, PropKey } from '../model/types';
 import { $, H, clamp, clone, r3 } from './constants';
 import { TLB } from './dom';
 import { beginEdit, deleteKeys, removeTrack, select, setTime, toggleKey } from './history';
@@ -12,7 +13,7 @@ import { renderInspector } from '../ui/inspector';
 import { renameInline, renderLayers } from '../ui/layers-panel';
 import { MENU, keyOwners, laneTime, renderTimeline, resolveCollisions, selectKeyLayer } from '../ui/timeline';
 
-export function propOK(l?, k?) {
+export function propOK(l: Layer, k: PropKey) {
   return (
     ['pos', 'org', 'rot', 'scl', 'op'].includes(k) ||
     (['fill', 'stk', 'sw'].includes(k) && ['rect', 'ellipse', 'path', 'text'].includes(l.type)) ||
@@ -21,35 +22,35 @@ export function propOK(l?, k?) {
   );
 }
 export function keySpan() {
-  const ts = [...S.keys].map((q?) => q[0]);
+  const ts = [...S.keys].map(q => q[0]);
   return [Math.min(...ts), Math.max(...ts)];
 }
-export function copyKeys(silent?) {
+export function copyKeys(silent?: boolean) {
   const ow = keyOwners(),
-    ks = [...S.keys].filter((q?) => ow.get(q));
+    ks = [...S.keys].filter(q => ow.get(q));
   if (!ks.length) return false;
-  const base = Math.min(...ks.map((q?) => q[0]));
-  S.clip = ks.map((q?) => {
+  const base = Math.min(...ks.map(q => q[0]));
+  S.clip = ks.map(q => {
     const o = ow.get(q);
     return { lid: o.l.id, k: o.k, dt: r3(q[0] - base), v: clone(q[1]), e: clone(q[2]) };
   });
   if (!silent) toast(`Copied ${ks.length} keyframe${ks.length > 1 ? 's' : ''}. Paste with Ctrl+V at the playhead.`);
   return true;
 }
-export function pasteKeys(at?, clip?) {
+export function pasteKeys(at?: number | null, clip?: ClipKey[]) {
   clip = clip || S.clip;
   if (!clip || !clip.length) {
     toast('Copy some keyframes first.');
     return;
   }
   const t0 = at == null ? S.time : at,
-    src = new Set<any>(clip.map((c?) => c.lid)),
+    src = new Set<string>(clip.map(c => c.lid)),
     tgt = selLayer(),
     retarget = src.size === 1 && tgt && !src.has(tgt.id);
   const ed = beginEdit(),
-    ns = new Set<any>();
+    ns = new Set<Keyframe>();
   let skipped = 0;
-  clip.forEach((c?) => {
+  clip.forEach(c => {
     const l = retarget ? tgt : layerById(c.lid);
     if (!l || !propOK(l, c.k)) {
       skipped++;
@@ -57,8 +58,8 @@ export function pasteKeys(at?, clip?) {
     }
     const t = r3(clamp(t0 + c.dt, 0, doc.dur)),
       tr = l.t[c.k] || (l.t[c.k] = []),
-      nk = [t, clone(c.v), clone(c.e)],
-      ex = tr.findIndex((q?) => Math.abs(q[0] - t) < 0.004);
+      nk: Keyframe = [t, clone(c.v), clone(c.e)],
+      ex = tr.findIndex(q => Math.abs(q[0] - t) < 0.004);
     if (ex >= 0) tr.splice(ex, 1, nk);
     else tr.push(nk);
     sortTrack(tr);
@@ -81,17 +82,17 @@ export function duplicateKeys() {
   S.clip = keep;
   pasteKeys(keySpan()[1] + 0.25, c);
 }
-export function shiftKeys(dt?) {
+export function shiftKeys(dt: number) {
   if (!S.keys.size) return;
   const [lo, hi] = keySpan(),
     d = clamp(dt, -lo, doc.dur - hi);
   if (Math.abs(d) < 1e-6) return;
   const ed = beginEdit();
-  S.keys.forEach((q?) => (q[0] = r3(q[0] + d)));
+  S.keys.forEach(q => (q[0] = r3(q[0] + d)));
   resolveCollisions();
   ed.end({ insp: true });
 }
-export function revEase(e?) {
+export function revEase(e: Ease): Ease {
   if (!e || e === 'ease') e = H.EZ.ease;
   if (Array.isArray(e)) return [r3(1 - e[2]), r3(1 - e[3]), r3(1 - e[0]), r3(1 - e[1])];
   if (e === 'in') return 'out';
@@ -104,20 +105,20 @@ export function revEase(e?) {
 export function reverseKeys() {
   if (S.keys.size < 2) return;
   const ow = keyOwners(),
-    byTr = new Map<any, any>(),
+    byTr = new Map<Keyframe[], Keyframe[]>(),
     [lo, hi] = keySpan();
-  S.keys.forEach((q?) => {
+  S.keys.forEach(q => {
     const o = ow.get(q);
     if (!o) return;
     if (!byTr.has(o.tr)) byTr.set(o.tr, []);
     byTr.get(o.tr).push(q);
   });
   const ed = beginEdit();
-  byTr.forEach((ks?, tr?) => {
-    ks.sort((a?, b?) => a[0] - b[0]);
-    const ez = ks.map((q?) => q[2]);
-    ks.forEach((q?) => (q[0] = r3(lo + hi - q[0])));
-    ks.forEach((q?, i?) => {
+  byTr.forEach((ks: Keyframe[], tr: Keyframe[]) => {
+    ks.sort((a: Keyframe, b: Keyframe) => a[0] - b[0]);
+    const ez = ks.map((q: Keyframe) => q[2]);
+    ks.forEach((q: Keyframe) => (q[0] = r3(lo + hi - q[0])));
+    ks.forEach((q: Keyframe, i: number) => {
       if (i > 0) q[2] = revEase(ez[i - 1]);
     });
     sortTrack(tr);
@@ -126,51 +127,52 @@ export function reverseKeys() {
   toast('Keyframes reversed.');
 }
 export function distributeKeys() {
-  const ts = [...new Set<any>([...S.keys].map((q?) => r3(q[0])))].sort((a?, b?) => a - b);
+  const ts = [...new Set<number>([...S.keys].map(q => r3(q[0])))].sort((a, b) => a - b);
   if (ts.length < 3) {
     toast('Select keyframes at three or more different times to distribute them.');
     return;
   }
   const lo = ts[0],
     hi = ts[ts.length - 1],
-    map = new Map<any, any>(ts.map((t?, i?) => [t, r3(lo + ((hi - lo) * i) / (ts.length - 1))]));
+    map = new Map<number, number>(ts.map((t, i) => [t, r3(lo + ((hi - lo) * i) / (ts.length - 1))]));
   const ed = beginEdit();
-  S.keys.forEach((q?) => (q[0] = map.get(r3(q[0]))));
+  S.keys.forEach(q => (q[0] = map.get(r3(q[0]))));
   resolveCollisions();
   ed.end({ insp: true });
 }
 export function selectAllKeys() {
-  S.keys = new Set<any>();
-  doc.layers.forEach((l?) => Object.values<any>(l.t).forEach((tr?) => tr.forEach((q?) => S.keys.add(q))));
-  doc.layers.forEach((l?) => {
+  S.keys = new Set<Keyframe>();
+  doc.layers.forEach(l => Object.values(l.t).forEach(tr => tr.forEach(q => S.keys.add(q))));
+  doc.layers.forEach(l => {
     if (isAnim(l)) S.exp[l.id] = S.exp[l.id];
   });
   renderTimeline();
   renderInspector();
   frame();
 }
-export function jumpKey(dir?) {
+export function jumpKey(dir: number) {
   const l = selLayer(),
     src = l && isAnim(l) ? [l] : doc.layers;
-  const ts = [
-    ...new Set<any>(src.flatMap((x?) => Object.values<any>(x.t).flatMap((tr?) => tr.map((q?) => q[0])))),
-  ].sort((a?, b?) => a - b);
+  const ts = [...new Set<number>(src.flatMap(x => Object.values(x.t).flatMap(tr => tr.map(q => q[0]))))].sort(
+    (a, b) => a - b,
+  );
   const t =
     dir > 0
-      ? ts.find((v?) => v > S.time + 0.002)
+      ? ts.find(v => v > S.time + 0.002)
       : ts
           .slice()
           .reverse()
-          .find((v?) => v < S.time - 0.002);
+          .find(v => v < S.time - 0.002);
   if (t != null) setTime(t);
 }
 export function closeMenu() {
   MENU.hidden = true;
 }
-export function openMenu(x?, y?, row?) {
+type MenuItem = [id: string, label: string, enabled?: boolean, shortcut?: string];
+export function openMenu(x: number, y: number, row?: unknown) {
   const n = S.keys.size,
     has = n > 0;
-  const items = [
+  const items: Array<MenuItem | '-'> = [
     ['h', 'Keyframes' + (n ? ` (${n})` : '')],
     ['copy', 'Copy', has, 'Ctrl C'],
     ['paste', 'Paste at playhead', !!(S.clip && S.clip.length), 'Ctrl V'],
@@ -192,9 +194,9 @@ export function openMenu(x?, y?, row?) {
     ['row', 'Select this row', !!row, ''],
     ['all', 'Select all keyframes', true, 'Ctrl A'],
   ];
-  const groups = [];
-  let gcur = [];
-  items.forEach((it?) => {
+  const groups: MenuItem[][] = [];
+  let gcur: MenuItem[] = [];
+  items.forEach(it => {
     if (it === '-') {
       groups.push(gcur);
       gcur = [];
@@ -202,14 +204,14 @@ export function openMenu(x?, y?, row?) {
   });
   groups.push(gcur);
   MENU.innerHTML = groups
-    .map((g?) => {
-      const btns = g.filter((it?) => it[0] !== 'h' && it[2]);
+    .map(g => {
+      const btns = g.filter(it => it[0] !== 'h' && it[2]);
       if (!btns.length) return '';
-      const head = g.find((it?) => it[0] === 'h');
+      const head = g.find(it => it[0] === 'h');
       return (
         (head ? `<div class="ctx-h">${head[1]}</div>` : '') +
         btns
-          .map((it?) => `<button role="menuitem" data-m="${it[0]}"><span>${it[1]}</span><kbd>${it[3]}</kbd></button>`)
+          .map(it => `<button role="menuitem" data-m="${it[0]}"><span>${it[1]}</span><kbd>${it[3]}</kbd></button>`)
           .join('')
       );
     })
@@ -225,14 +227,14 @@ export function openMenu(x?, y?, row?) {
 }
 
 export function init(): void {
-  TLB.addEventListener('contextmenu', (e?) => {
+  TLB.addEventListener('contextmenu', (e: MouseEvent) => {
     const kf = (e.target as any).closest('.kf, .sdot, .seg'),
       lane = (e.target as any).closest('[data-act="lane"]');
     if (!kf && !lane) return;
     e.preventDefault();
     if (kf) {
       const ks = kf._ks || [kf._k];
-      if (!ks.every((q?) => S.keys.has(q))) {
+      if (!ks.every((q: Keyframe) => S.keys.has(q))) {
         S.keys = new Set<any>(ks);
         selectKeyLayer(kf.dataset.lid);
         renderLayers();
@@ -247,7 +249,7 @@ export function init(): void {
     const row = (e.target as any).closest('.tl-prop');
     openMenu(e.clientX, e.clientY, row ? { lid: row.dataset.lid, prop: row.dataset.prop } : null);
   });
-  MENU.addEventListener('click', (e?) => {
+  MENU.addEventListener('click', (e: MouseEvent) => {
     const b = (e.target as any).closest('[data-m]');
     if (!b || b.disabled) return;
     const m = b.dataset.m,
@@ -270,7 +272,7 @@ export function init(): void {
       frame();
     } else if (m === 'all') selectAllKeys();
   });
-  MENU.addEventListener('keydown', (e?) => {
+  MENU.addEventListener('keydown', (e: KeyboardEvent) => {
     const bs = [...MENU.querySelectorAll('button:not(:disabled)')],
       i = bs.indexOf(document.activeElement);
     if (e.key === 'ArrowDown') {
@@ -286,14 +288,14 @@ export function init(): void {
       closeMenu();
     }
   });
-  document.addEventListener('pointerdown', (e?) => {
-    if (!MENU.hidden && !MENU.contains(e.target)) closeMenu();
+  document.addEventListener('pointerdown', (e: PointerEvent) => {
+    if (!MENU.hidden && !MENU.contains(e.target as Node)) closeMenu();
   });
-  $('#tSnap').addEventListener('click', (e?) => {
+  $('#tSnap').addEventListener('click', (e: MouseEvent) => {
     S.snap = !S.snap;
-    e.currentTarget.classList.toggle('on', S.snap);
+    (e.currentTarget as HTMLElement).classList.toggle('on', S.snap);
   });
-  TLB.addEventListener('click', (e?) => {
+  TLB.addEventListener('click', (e: MouseEvent) => {
     const b = (e.target as any).closest('[data-act]');
     if (!b) return;
     const row = b.closest('[data-lid]');
@@ -312,7 +314,7 @@ export function init(): void {
       removeTrack(l, row.dataset.prop);
     }
   });
-  TLB.addEventListener('dblclick', (e?) => {
+  TLB.addEventListener('dblclick', (e: MouseEvent) => {
     const nm = (e.target as any).closest('.tl-lname');
     if (nm) {
       renameInline(nm, layerById(nm.closest('[data-lid]').dataset.lid));
@@ -324,7 +326,7 @@ export function init(): void {
         l = layerById(row.dataset.lid),
         k = row.dataset.prop;
       setTime(Math.round(laneTime(e, lane) * 20) / 20);
-      if (!l.t[k].some((q?) => Math.abs(q[0] - S.time) < 0.005)) toggleKey(l, k);
+      if (!l.t[k].some(q => Math.abs(q[0] - S.time) < 0.005)) toggleKey(l, k);
     }
   });
 }

@@ -48,8 +48,8 @@ export function resetView() {
 }
 
 export function init(): void {
-  (document.querySelectorAll as any)('.modal').forEach((m?) => {
-    m.addEventListener('click', (e?) => {
+  (document.querySelectorAll as any)('.modal').forEach(m => {
+    m.addEventListener('click', e => {
       if (e.target === m || (e.target as any).closest('[data-close]')) closeModal(m);
     });
   });
@@ -63,7 +63,7 @@ export function init(): void {
     S.pickPlace = true;
     $('#fSvg').click();
   });
-  $('#fSvg').addEventListener('change', async (e?) => {
+  $('#fSvg').addEventListener('change', async e => {
     const fs = [...(e.target as any).files];
     (e.target as any).value = '';
     if (!fs.length) return;
@@ -86,24 +86,24 @@ export function init(): void {
     }
     if (importSVG(t, $('#iReplace').checked)) $('#mImport').hidden = true;
   });
-  ['dragover', 'dragenter'].forEach((ev?) =>
-    drop.addEventListener(ev, (e?) => {
+  ['dragover', 'dragenter'].forEach(ev =>
+    drop.addEventListener(ev, e => {
       e.preventDefault();
       drop.classList.add('over');
     }),
   );
-  ['dragleave', 'drop'].forEach((ev?) => drop.addEventListener(ev, () => drop.classList.remove('over')));
-  drop.addEventListener('drop', (e?) => {
+  ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, () => drop.classList.remove('over')));
+  drop.addEventListener('drop', e => {
     e.preventDefault();
     const fs = [...e.dataTransfer.files];
     if (!fs.length) return;
     $('#mImport').hidden = true;
     importFiles(fs, null, true);
   });
-  WRAP.addEventListener('dragover', (e?) => {
+  WRAP.addEventListener('dragover', e => {
     e.preventDefault();
   });
-  WRAP.addEventListener('drop', (e?) => {
+  WRAP.addEventListener('drop', e => {
     e.preventDefault();
     const p = docPt(e);
     let aid = '';
@@ -117,15 +117,15 @@ export function init(): void {
     const fs = [...e.dataTransfer.files];
     if (fs.length) importFiles(fs, p, true);
   });
-  document.addEventListener('paste', (e?) => {
+  document.addEventListener('paste', e => {
     if ((e.target as any).closest && (e.target as any).closest('input,textarea')) return;
     const cd = e.clipboardData;
     if (!cd) return;
-    const fs = [...(cd.files || [])].filter((f?) => /^image\//.test(f.type));
+    const fs = [...(cd.files || [])].filter(f => /^image\//.test(f.type));
     if (fs.length) {
       e.preventDefault();
       importFiles(
-        fs.map((f?, i?) =>
+        fs.map((f, i) =>
           f.name ? f : new File([f], 'pasted-' + (i + 1) + '.' + (f.type.split('/')[1] || 'png'), { type: f.type }),
         ),
         null,
