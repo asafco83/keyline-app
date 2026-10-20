@@ -6,6 +6,7 @@ import type { Composite } from '../runtime/engine';
 import type { Layer } from '../model/types';
 import { H, esc, r3 } from '../core/constants';
 import { isBox, kids } from '../model/tree';
+import { maskFolder, maskedContent } from '../core/masks';
 
 /** How markup is produced: for the editor canvas or for an exported file. */
 export interface MarkupCtx {
@@ -132,6 +133,24 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
 export function markup(list: Layer[], pid: string | null, ctx: MarkupCtx): string {
   return kids(pid, list)
     .filter(l => !l.hid)
-    .map(l => layerSVG(l, ctx, H.comp(l, ctx.t), isBox(l) ? markup(list, l.id, ctx) : ''))
+    .map(l => {
+      const inner = l.mask ? maskGroupSVG(list, l, ctx) : isBox(l) ? markup(list, l.id, ctx) : '';
+      const svg = layerSVG(l, ctx, H.comp(l, ctx.t), inner);
+      // a hyperlink wraps the layer in <a> in exports (in the editor clicks select)
+      return l.link && !ctx.editor
+        ? `<a href="${esc(l.link.url)}"${l.link.target === '_self' ? '' : ' target="_blank" rel="noopener"'} style="cursor:pointer">${svg}</a>`
+        : svg;
+    })
     .join('');
+}
+function maskGroupSVG(list: Layer[], g: Layer, ctx: MarkupCtx): string {
+  const F = maskFolder(g, list),
+    others = kids(g.id, list).filter(k => k !== F && !k.hid);
+  const othersSVG: string = others
+    .map(k =>
+      layerSVG(k, ctx, H.comp(k, ctx.t), k.mask ? maskGroupSVG(list, k, ctx) : isBox(k) ? markup(list, k.id, ctx) : ''),
+    )
+    .join('');
+  const folderSVG = F && !F.hid ? layerSVG(F, ctx, H.comp(F, ctx.t), markup(list, F.id, ctx)) : '';
+  return maskedContent(g, ctx.pre, folderSVG, othersSVG, !F || !!F.hid);
 }

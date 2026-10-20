@@ -1,0 +1,26 @@
+# Feature suggestions
+
+Ideas for later, from comparing Keyline with SVGator and other animation apps (Rive, Jitter, LottieFiles Creator, Keyshape, After Effects). Export formats are left out on purpose.
+
+Gradients and trim path have been taken off this list and are being built.
+
+## Big impact
+
+- **Stagger / offset**: shift the selected layers' animations by N seconds each, for cascades. This is one of the most requested features in these tools.
+- **Text animators**: animate text per letter, word or line, for example fading or sliding letters in one by one.
+- **Per-element interactivity**: hover or click on a specific layer plays an animation or jumps to a time. Rive goes further with full state machines.
+
+## Workflow
+
+- **Animation presets**: fade, slide, pop, bounce and similar effects, applied in one click.
+- **Onion skin**: faint copies of nearby frames on the canvas while animating.
+- **Graph editor**: value and speed curves across keyframes, beyond per-keyframe easing.
+- **Symbols / library**: reusable components, like SVGator's "Save to library".
+- **Path tools**: outline stroke (stroke → fill), offset path, simplify, reverse path direction.
+- **Copy / paste extras**: copy and paste a layer's style or animation onto other layers.
+- **Multi-select editing**: change a property on all selected layers at once.
+
+## Polish
+
+- **Wiggle / loop modifiers**: random jitter, and repeating part of a track.
+- **Accessibility in exports**: title and description, and respecting reduced-motion settings.

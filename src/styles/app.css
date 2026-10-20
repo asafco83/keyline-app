@@ -2268,3 +2268,58 @@ details summary {
   opacity: 0.35;
   cursor: default;
 }
+
+/* layer right-click menu with submenus */
+.ctx.lm {
+  min-width: 220px;
+  overflow: visible;
+}
+.lm-it {
+  position: relative;
+}
+.lm-it > button {
+  width: 100%;
+}
+.lm-arrow {
+  font-style: normal;
+  color: var(--muted);
+  font-size: 10px;
+}
+.lm-sub {
+  position: absolute;
+  left: calc(100% + 2px);
+  top: -5px;
+  display: none;
+  max-height: 70vh;
+  overflow: auto;
+}
+.lm.flip .lm-sub {
+  left: auto;
+  right: calc(100% + 2px);
+}
+.lm-it.has-sub:hover > .lm-sub,
+.lm-it.has-sub:focus-within > .lm-sub,
+.lm-it.has-sub.open > .lm-sub {
+  display: grid;
+}
+.dlg.dlg-sm {
+  width: min(440px, calc(100vw - 32px));
+}
+.dlg footer .sp {
+  flex: 1;
+}
+.lp-mask {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 0 3px;
+  margin-left: 4px;
+}
+.lp-link {
+  color: var(--muted);
+  display: inline-flex;
+  margin-left: 4px;
+}

@@ -528,6 +528,38 @@
     <div class="tl-marq" id="tlmarq" hidden></div>
     <div class="tl-tip" id="tltip" hidden></div>
     <div class="ctx" id="ctxmenu" role="menu" hidden></div>
+    <div class="ctx lm" id="layermenu" role="menu" aria-label="Layer" hidden></div>
+    <div class="modal" id="mLink" hidden>
+      <div class="dlg dlg-sm" role="dialog" aria-modal="true" aria-labelledby="hlTitle">
+        <header>
+          <h2 id="hlTitle">Hyperlink</h2>
+          <button class="btn ghost ib" data-close aria-label="Close">✕</button>
+        </header>
+        <div class="body">
+          <div class="row nk">
+            <span class="rl">Link</span>
+            <div class="rf">
+              <input class="txt" id="hlUrl" placeholder="https://…" spellcheck="false" inputmode="url" />
+            </div>
+          </div>
+          <div class="row nk">
+            <span class="rl">Opens</span>
+            <div class="rf">
+              <select class="sel" id="hlTarget">
+                <option value="_blank">New tab</option>
+                <option value="_self">Same tab</option>
+              </select>
+            </div>
+          </div>
+          <p class="note" id="hlErr" hidden>Use a web address (https://…), mailto:, tel: or #anchor.</p>
+          <p class="note">Clicking the layer in the exported SVG opens the link.</p>
+        </div>
+        <footer>
+          <button class="btn danger" id="hlRemove" hidden>Remove link</button><span class="sp"></span
+          ><button class="btn" data-close>Cancel</button><button class="btn pri" id="hlDone">Done</button>
+        </footer>
+      </div>
+    </div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>

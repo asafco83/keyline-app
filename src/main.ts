@@ -20,6 +20,7 @@ import { init as init16 } from './app/boot';
 import { init as initHand } from './tools/hand';
 import { init as initAnim } from './ui/animate-menu';
 import { init as initZoom } from './ui/zoom-menu';
+import { init as initLayerMenu } from './ui/layer-menu';
 
 // Same order as the original single-file build
 init0(); // ui/tools-rail
@@ -27,6 +28,7 @@ init1(); // tools/stage-input
 initHand(); // tools/hand
 initAnim(); // ui/animate-menu
 initZoom(); // ui/zoom-menu
+initLayerMenu(); // ui/layer-menu
 init2(); // ui/layers-panel
 init3(); // ui/timeline
 init4(); // core/keyframes
