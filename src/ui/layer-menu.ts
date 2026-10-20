@@ -18,6 +18,7 @@ import { openExport } from '../export/build';
 import { hitChain, insideBox } from '../tools/stage-input';
 import { docPt } from '../render/overlay';
 import { canMask, makeMask, releaseMask } from '../core/masks';
+import { BOOL_OPS, type BoolOp, boolTargets, booleanOp } from '../core/booleans';
 
 /* ---------- layer clipboard ---------- */
 
@@ -222,6 +223,13 @@ function items(): Item[] {
     },
     { id: 'export', label: 'Export selection…', on: any, key: 'Ctrl ⇧ E' },
     '-',
+    {
+      id: 'bool',
+      label: 'Boolean',
+      on: !!boolTargets(),
+      sub: BOOL_OPS.map(([k, label]) => ({ id: 'bool:' + k, label, on: true })),
+    },
+    '-',
     { id: 'clip', label: 'Create clipping path', on: canMask() },
     { id: 'mask', label: 'Create mask', on: canMask() },
     { id: 'unmask', label: l && l.mask === 'clip' ? 'Release clipping path' : 'Release mask', on: one && !!l.mask },
@@ -306,6 +314,7 @@ function run(id: string) {
   else if (id === 'export') exportSelection();
   else if (id === 'clip' || id === 'mask') makeMask(id === 'clip' ? 'clip' : 'mask');
   else if (id === 'unmask') l && releaseMask(l);
+  else if (id.startsWith('bool:')) booleanOp(id.slice(5) as BoolOp);
   else if (id.startsWith('al:')) align(id.slice(3));
   else if (id === 'front' || id === 'back') l && arrangeEnd(l, id === 'front');
   else if (id === 'fwd' || id === 'bwd') l && arrange(l, id === 'fwd' ? 1 : -1);

@@ -159,6 +159,15 @@ Shortcuts: Ctrl X / C / V, Ctrl ⇧ V (paste in place), Ctrl ⇧ O (center origi
 - A _clipping path_ uses only the mask's shape.
 - Mask layers stay normal layers: select them in the Layers panel to move, edit or animate them. A drag inside the selection box moves them even though they aren't drawn.
 
+**Boolean operations** (second row of the align bar, or right-click ▸ Boolean): select two or more shapes or paths.
+
+- _Union_ combines them.
+- _Subtract_ cuts the upper ones out of the bottom one.
+- _Intersect_ keeps only the overlap.
+- _Exclude_ keeps where they don't overlap.
+
+They're combined as they look at the playhead into one new path, which takes the bottom layer's place and style. Undo restores the originals.
+
 **Hyperlink:** gives a layer a link (web address, mailto:, tel: or #anchor) that opens in a new tab or the same one. Clicking the layer in the exported SVG follows it.
 
 **Timeline length:** the timeline always fills its panel, past the end of the animation (that part is shaded). The white line marks the end: drag it to change the length (it snaps to 0.05s; Shift for 0.01s) and a tag shows the length while you drag. The Length box follows along, and typing in it still works. With the end line focused, ←/→ change the length by 0.1s (Shift: 1s).

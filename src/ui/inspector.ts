@@ -32,6 +32,7 @@ import { fit, frame, renderStage } from '../render/stage';
 import { addChildBone, boneTipL, shiftChildBones } from '../tools/bones';
 import { setAnchor } from '../tools/edit-tools';
 import { align, alignBar, motionPick, setMotionPath } from './align';
+import { booleanOp } from '../core/booleans';
 import {
   appearanceSection,
   filtersSection,
@@ -588,6 +589,8 @@ export function init(): void {
     }
     const al = (e.target as any).closest('[data-align]');
     if (al) return align(al.dataset.align);
+    const bo = (e.target as any).closest('[data-bool]');
+    if (bo) return void booleanOp(bo.dataset.bool);
     const tx = (e.target as any).closest('[data-tx]');
     if (tx && l) return propsToggle(tx, l);
     const an = (e.target as any).closest('[data-anchor]');
