@@ -4,6 +4,7 @@ import type { Layer } from '../model/types';
 import { $, H, ICON, NOFILL, TICON, clone, esc, r2, r3 } from '../core/constants';
 import { LP } from '../core/dom';
 import { beginEdit, select } from '../core/history';
+import { makeMask, releaseMask } from '../core/masks';
 import { S, doc, layerById, mkLayer, selLayer, uid } from '../core/state';
 import { toast } from '../io/open';
 import {
@@ -307,6 +308,11 @@ export function init(): void {
   $('#lDup').addEventListener('click', () => selLayer() && duplicate(selLayer()));
   $('#lGroup').addEventListener('click', groupSel);
   $('#lUngroup').addEventListener('click', () => ungroup(selLayer()));
+  $('#lMask').addEventListener('click', () => makeMask('mask'));
+  $('#lUnmask').addEventListener('click', () => {
+    const l = selLayer();
+    if (l && l.mask) releaseMask(l);
+  });
   $('#lDel').addEventListener('click', deleteSel);
   $('#sideTabs').addEventListener('click', (e: MouseEvent) => {
     const b = (e.target as any).closest('button');

@@ -8,6 +8,7 @@ import { beginEdit } from '../core/history';
 import { propOK } from '../core/keyframes';
 import { S, layerById, sortTrack } from '../core/state';
 import { isLocked, kids, pidOf } from '../model/tree';
+import { canMask } from '../core/masks';
 
 /** Menu sections, in SVGator's order. Letters are Shift shortcuts (Shift+C is the Convert Point tool). */
 export const ANIM_GROUPS: Array<Array<[PropKey, string, string?]>> = [
@@ -121,6 +122,13 @@ export function syncLayerActions(sel: Layer | null | undefined) {
   ($('#lAnim') as HTMLButtonElement).disabled = !canAnimate();
   ($('#lUngroup') as HTMLButtonElement).disabled = !(sel && sel.type === 'group' && !isLocked(sel));
   ($('#lDel') as HTMLButtonElement).disabled = !S.selSet.size;
+  ($('#lMask') as HTMLButtonElement).disabled = !canMask();
+  const un = $('#lUnmask') as HTMLButtonElement,
+    m = S.selSet.size === 1 && sel && sel.mask && !isLocked(sel) ? sel.mask : null,
+    lab = m === 'clip' ? 'Release clipping path' : 'Release mask';
+  un.disabled = !m;
+  un.setAttribute('aria-label', lab);
+  un.title = lab;
   if (!canAnimate()) closeAnimMenu();
 }
 
@@ -131,6 +139,8 @@ export function init(): void {
   $('#lDup').innerHTML = ICON.duplicate;
   $('#lGroup').innerHTML = ICON.group;
   $('#lUngroup').innerHTML = ICON.ungroup;
+  $('#lMask').innerHTML = ICON.mask;
+  $('#lUnmask').innerHTML = ICON.unmask;
   $('#lAnim').addEventListener('click', () => (MENU().hidden ? openAnimMenu() : closeAnimMenu()));
   MENU().addEventListener('click', (e: MouseEvent) => {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-k]');

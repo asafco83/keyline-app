@@ -3527,3 +3527,8 @@ select.sel {
 .stage:has(#rulerX:not([hidden])) .ab-label {
   display: none;
 }
+
+/* with rulers on, the HUD moves clear of the left ruler (20px) so the ? stays visible */
+.stage:has(#rulerY:not([hidden])) .hud {
+  left: 34px;
+}
