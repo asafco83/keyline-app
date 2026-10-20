@@ -61,7 +61,7 @@ export function gnum(g: string, lab: string, unit?: string) {
   return `<label class="nf"><span>${lab}</span><input id="g-${g}" data-g="${g}" inputmode="decimal" spellcheck="false" aria-label="${lab}">${unit ? `<em>${unit}</em>` : ''}</label>`;
 }
 export function colf(f: string) {
-  return `<div class="cf"><input type="color" data-f="${f}" data-col id="c-${f.replace(/\./g, '_')}" aria-label="Pick color"><input class="txt mono" data-f="${f}" id="t-${f.replace(/\./g, '_')}" spellcheck="false" aria-label="Color value"></div>`;
+  return `<div class="cf"><span class="swt"><input type="color" data-f="${f}" data-col id="c-${f.replace(/\./g, '_')}" aria-label="Pick color"></span><input class="txt mono" data-f="${f}" id="t-${f.replace(/\./g, '_')}" spellcheck="false" aria-label="Color value"></div>`;
 }
 export function krow(k: string, label: string, body: string) {
   return `<div class="row"><button class="kb" data-kb="${k}" aria-label="Keyframe ${label}" title="Add / remove keyframe at playhead"></button><span class="rl">${label}</span><div class="rf">${body}</div></div>`;
@@ -145,7 +145,7 @@ export function renderInspector() {
 export function docPanel() {
   return `<section class="sec"><h3>Document</h3>
     ${nrow('Canvas', `<label class="nf"><span>W</span><input id="d-w" data-doc="w" inputmode="numeric"></label><label class="nf"><span>H</span><input id="d-h" data-doc="h" inputmode="numeric"></label>`)}
-    ${nrow('Background', `<div class="cf"><input type="color" id="d-bgc" data-doc="bg" aria-label="Background color"><input class="txt mono" id="d-bg" data-doc="bg" placeholder="none" spellcheck="false" aria-label="Background value"></div>`)}
+    ${nrow('Background', `<div class="cf"><span class="swt"><input type="color" id="d-bgc" data-doc="bg" aria-label="Background color"></span><input class="txt mono" id="d-bg" data-doc="bg" placeholder="none" spellcheck="false" aria-label="Background value"></div>`)}
     ${nrow('Opacity', `<label class="nf" title="0% makes the background transparent"><span>α</span><input id="d-bga" data-doc="bgA" inputmode="decimal" aria-label="Background opacity"><em>%</em></label>`)}
     ${nrow('Length', `<label class="nf"><span>t</span><input id="d-dur" data-doc="dur" inputmode="decimal"><em>s</em></label>`)}
     ${nrow('Repeat', `<select class="sel" id="d-it" data-doc="it"><option value="0">Loop forever</option><option value="1">Play once</option><option value="2">2 times</option><option value="3">3 times</option><option value="5">5 times</option></select>`)}
@@ -167,6 +167,8 @@ export function refreshDocFields() {
   const bp = bgPaint(doc);
   set('d-bg', doc.bg ? bp.color : 'none');
   set('d-bgc', toHex(bp.color) || '#ffffff');
+  const bgc = byId('d-bgc');
+  if (bgc) swatch(bgc, doc.bg ? bp.color : 'none', bp.alpha);
   set('d-bga', fmt(bp.alpha * 100, 1));
   set('d-dur', fmt(doc.dur));
   set('d-it', String(doc.it || 0));
@@ -185,8 +187,10 @@ export function refreshInspector(full?: boolean) {
     let v = valueAt(l, k, S.time);
     if (i !== undefined && i !== '') v = v ? v[+i] : 0;
     if (propKind(l, k) === 'c') {
-      if (inp.type === 'color') inp.value = toHex(v) || '#000000';
-      else inp.value = v == null ? '' : v;
+      if (inp.type === 'color') {
+        inp.value = toHex(v) || '#000000';
+        swatch(inp, v);
+      } else inp.value = v == null ? '' : v;
     } else inp.value = fmt(m ? v * +m : v);
   });
   INSP.querySelectorAll('[data-kb]').forEach((b: HTMLElement) => {
@@ -224,6 +228,19 @@ export function refreshInspector(full?: boolean) {
       );
     });
   }
+}
+/** Show "no colour" on a colour swatch (a checkerboard with a red line, like other design apps), and
+ *  let the checkerboard show through partly transparent colours. */
+export function swatch(inp: HTMLInputElement, v: unknown, alpha?: number) {
+  const box = inp.parentElement;
+  if (!box || !box.classList.contains('swt')) return;
+  const s = typeof v === 'string' ? v.trim().toLowerCase() : '',
+    q = s ? H.pc(s) : null,
+    a = alpha != null ? alpha : q ? q[3] : 1,
+    none = !s || s === 'none' || s === 'transparent' || a <= 0;
+  box.classList.toggle('none', none);
+  inp.style.opacity = none ? '0' : a < 1 ? String(Math.max(0.15, a)) : '';
+  box.title = none ? 'No colour' : '';
 }
 export function toHex(raw: unknown): string | null {
   if (typeof raw !== 'string') return null;
@@ -358,6 +375,7 @@ export function init(): void {
       return;
     }
     if (t.dataset.col !== undefined && l) {
+      swatch(t, t.value);
       if (!S.colorEd) S.colorEd = beginEdit();
       const r = parseField(l, t);
       if (r) {
