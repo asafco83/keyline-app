@@ -1,4 +1,4 @@
-// Keyline — model/filters
+// SVGcinema — model/filters
 // Layer filters (Blur, Drop shadow). Each parameter is an animatable track keyed `fx.<filter id>.<param>`,
 // stored like any other property in Layer.b / Layer.t. The runtime animates them through Layer.fa.
 import type { Layer } from './types';

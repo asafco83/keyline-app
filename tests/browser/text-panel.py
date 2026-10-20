@@ -14,7 +14,7 @@ async def main():
         def check(n,c,i=None):
             R[n]=('ok' if c else 'FAIL')+('' if i is None else f' {i}')
             if not c: F.append(n)
-        tid=await ev("st.doc.layers.find(l=>l.name==='Made with Keyline').id"); await ev(f"hi.select('{tid}')")
+        tid=await ev("st.doc.layers.find(l=>l.name==='Made with SVGcinema').id"); await ev(f"hi.select('{tid}')")
         L=f"st.layerById('{tid}')"
         heads=await ev("[...document.querySelectorAll('#insp .sec h3')].map(h=>h.childNodes[0].textContent.trim())")
         check('sections', all(x in heads for x in ['Text','Transforms','Text appearance','Fill & stroke','Appearance','Filters']), heads)

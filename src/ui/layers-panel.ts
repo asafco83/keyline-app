@@ -1,4 +1,4 @@
-// Keyline — ui/layers-panel
+// SVGcinema — ui/layers-panel
 import { syncLayerActions } from './animate-menu';
 import type { Layer } from '../model/types';
 import { $, H, ICON, NOFILL, TICON, clone, esc, r2, r3 } from '../core/constants';

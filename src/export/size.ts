@@ -1,4 +1,4 @@
-// Keyline — export/size
+// SVGcinema — export/size
 import { $, clamp, fmt, ic } from '../core/constants';
 import { save } from '../core/history';
 import { ASSETS, doc } from '../core/state';

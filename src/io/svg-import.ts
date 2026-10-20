@@ -1,4 +1,4 @@
-// Keyline — io/svg-import
+// SVGcinema — io/svg-import
 import type { LayerType, PathData, PathNode } from '../model/types';
 import { FONTS, NOFILL, NS } from '../core/constants';
 import { beginEdit } from '../core/history';

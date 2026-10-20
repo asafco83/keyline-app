@@ -1,4 +1,4 @@
-// Keyline — ui/theme
+// SVGcinema — ui/theme
 // Light / dark theme. Until the user picks one, the editor follows the system setting; the
 // button in the top bar (right of Keyboard shortcuts) switches to the other theme and remembers
 // the choice. (index.html applies a saved choice before the first paint, so there is no flash.)

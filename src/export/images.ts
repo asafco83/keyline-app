@@ -1,4 +1,4 @@
-// Keyline — export/images
+// SVGcinema — export/images
 import { isLocalFamily, prepareFonts, webFont } from '../render/fonts';
 import type { Asset, Layer } from '../model/types';
 import { $, byId, esc, fmt } from '../core/constants';

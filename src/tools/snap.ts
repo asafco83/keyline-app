@@ -1,4 +1,4 @@
-// Keyline — tools/snap
+// SVGcinema — tools/snap
 // Snapping while drawing and moving: to other objects (edges and centres of their boxes, and the
 // canvas), to points (path nodes), to guides, to the grid and to whole pixels. Each option can be
 // switched off; Enable snapping (Alt+S) switches them all. Matches are shown as magenta lines.

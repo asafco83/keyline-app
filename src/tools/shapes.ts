@@ -1,4 +1,4 @@
-// Keyline — tools/shapes
+// SVGcinema — tools/shapes
 // Ellipse (O), Rectangle (M), Polygon, Star, Line (L).
 // Drag to draw. Shift constrains (square, circle, upright polygon/star, 45° line), Alt draws from the
 // centre. While dragging a polygon or star, ↑/↓ change the number of sides or points.

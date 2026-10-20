@@ -1,4 +1,4 @@
-// Keyline — tools/stage-input
+// SVGcinema — tools/stage-input
 import { gradHandleDrag } from './gradient-handles';
 import { startTextEdit } from './text-edit';
 import { panDrag } from './hand';

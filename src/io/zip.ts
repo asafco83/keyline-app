@@ -1,4 +1,4 @@
-// Keyline — io/zip
+// SVGcinema — io/zip
 import { ASSETS, doc } from '../core/state';
 import { slug } from '../export/images';
 
@@ -110,7 +110,7 @@ export async function readZip(buf: ArrayBuffer): Promise<ZipReader> {
       e = i;
       break;
     }
-  if (e < 0) throw new Error('the file is damaged or not a Keyline project');
+  if (e < 0) throw new Error('the file is damaged or not an SVGcinema project');
   const n = dv.getUint16(e + 10, true),
     dec = new TextDecoder(),
     ent: Record<string, { method: number; data: Uint8Array }> = {};
@@ -190,7 +190,7 @@ export async function buildKLP(includeAll?: boolean) {
   const manifest = {
     format: 'keyline-project',
     version: 3,
-    app: 'Keyline',
+    app: 'SVGcinema',
     name: doc.name,
     saved: new Date().toISOString(),
     canvas: [doc.w, doc.h],

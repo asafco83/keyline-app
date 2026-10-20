@@ -1,4 +1,4 @@
-// Keyline — tools/bones
+// SVGcinema — tools/bones
 import type { Geometry, Layer, XY } from '../model/types';
 import { H, NOFILL, byId, clamp, fmt, r2, xfp } from '../core/constants';
 import { OV, svgEl } from '../core/dom';

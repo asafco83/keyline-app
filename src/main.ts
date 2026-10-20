@@ -1,4 +1,4 @@
-// Keyline — entry point
+// SVGcinema — entry point
 import './styles/app.css';
 import { init as init0 } from './ui/tools-rail';
 import { init as init1 } from './tools/stage-input';

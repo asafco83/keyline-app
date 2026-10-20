@@ -1,4 +1,4 @@
-// Keyline — core/constants
+// SVGcinema — core/constants
 import type { Layer, PropKey } from '../model/types';
 import { fxKeys, fxOf } from '../model/filters';
 import { KLEngine } from '../runtime/engine';

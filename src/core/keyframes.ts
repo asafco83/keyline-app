@@ -1,4 +1,4 @@
-// Keyline — core/keyframes
+// SVGcinema — core/keyframes
 import { fxOf } from '../model/filters';
 import type { ClipKey, Ease, Keyframe, Layer, PropKey } from '../model/types';
 import { $, H, clamp, clone, r3 } from './constants';

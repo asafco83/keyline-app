@@ -1,4 +1,4 @@
-// Keyline — core/dom
+// SVGcinema — core/dom
 import { $, NS } from './constants';
 
 /** Panel elements. Typed loosely until the UI modules are migrated (see README → Typing). */

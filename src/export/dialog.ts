@@ -1,4 +1,4 @@
-// Keyline — export/dialog
+// SVGcinema — export/dialog
 import { facesFor, isLocalFamily, isRTL, webFont } from '../render/fonts';
 import { $, fmt } from '../core/constants';
 import { doc } from '../core/state';

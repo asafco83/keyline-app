@@ -1,6 +1,6 @@
 # Feature suggestions
 
-Ideas for later, from comparing Keyline with SVGator and other animation apps (Rive, Jitter, LottieFiles Creator, Keyshape, After Effects). Export formats are left out on purpose.
+Ideas for later, from comparing SVGcinema with SVGator and other animation apps (Rive, Jitter, LottieFiles Creator, Keyshape, After Effects). Export formats are left out on purpose.
 
 Gradients and trim path have been taken off this list and are being built.
 

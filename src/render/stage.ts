@@ -1,4 +1,4 @@
-// Keyline — render/stage
+// SVGcinema — render/stage
 import { bgPaint } from '../model/background';
 import type { Layer } from '../model/types';
 import { $, byId, r2 } from '../core/constants';

@@ -1,4 +1,4 @@
-// Keyline — render/overlay
+// SVGcinema — render/overlay
 import type { Layer, PathData, PathNode } from '../model/types';
 import { H, byId, fmt, r2, xfp } from '../core/constants';
 import { CONTENT, OV, svgEl } from '../core/dom';

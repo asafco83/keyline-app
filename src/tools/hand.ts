@@ -1,4 +1,4 @@
-// Keyline — tools/hand
+// SVGcinema — tools/hand
 import { zoomChanged } from '../ui/zoom-menu';
 // Panning and zooming the work area: the Hand tool (H), Space-drag from any tool,
 // middle-mouse drag, wheel to scroll, Ctrl/Cmd+wheel to zoom at the pointer.

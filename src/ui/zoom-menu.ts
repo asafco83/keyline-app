@@ -1,4 +1,4 @@
-// Keyline — ui/zoom-menu
+// SVGcinema — ui/zoom-menu
 // Click the zoom percentage for a menu (as in SVGator): a slider and a typed value, then
 // Fit selection (2), Fit (1), Zoom 100% (0), Zoom in (Ctrl +) and Zoom out (Ctrl −).
 import { $ } from '../core/constants';

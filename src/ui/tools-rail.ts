@@ -1,4 +1,4 @@
-// Keyline — ui/tools-rail
+// SVGcinema — ui/tools-rail
 // The tool rail. Grouped tools share one button that shows the group's last-used tool;
 // click it to use that tool, press and hold (or right-click, or press ↓ / → on the keyboard)
 // to open a flyout with the whole group.

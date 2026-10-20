@@ -1,4 +1,4 @@
-// Keyline — ui/keyboard
+// SVGcinema — ui/keyboard
 import { zoomShortcut } from './zoom-menu';
 import { animateShortcut } from './animate-menu';
 import { viewShortcut } from './view-menu';

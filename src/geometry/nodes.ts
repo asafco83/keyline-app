@@ -1,4 +1,4 @@
-// Keyline — geometry/nodes
+// SVGcinema — geometry/nodes
 import { H, KAPPA, r2 } from '../core/constants';
 import type { Geometry, Layer, PathData, PathNode, SubPath } from '../model/types';
 

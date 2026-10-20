@@ -1,4 +1,4 @@
-// Keyline — ui/animate-menu
+// SVGcinema — ui/animate-menu
 // The Animate button at the bottom of the Layers panel (as in SVGator): pick a property and every
 // selected layer that has it gets a keyframe at the playhead, so it joins the timeline.
 // Shortcuts: Shift + the letter shown next to each property.

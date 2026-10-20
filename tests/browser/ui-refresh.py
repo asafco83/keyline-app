@@ -33,6 +33,8 @@ async def main():
         check('with rulers on, the ? sits clear of the left ruler', clear)
         await pg.click('#bTheme'); dark=await bg(); r1=await px()
         check('rulers repaint as soon as the theme switches', r0!=r1, (r0,r1))
+        lf=await ev("[...document.querySelectorAll('.brand .logo .lg-a, .brand .logo .lg-b')].filter((e,i,a)=>i==0||e.classList[0]!==a[0].classList[0]).slice(0,2).map(e=>getComputedStyle(e).fill)")
+        check('SVGcinema: page title, and the white logo in the dark theme', await ev("document.title")=='SVGcinema' and await ev("document.querySelector('.brand .logo').getAttribute('aria-label')")=='SVGcinema' and lf==['rgb(114, 138, 252)','rgb(255, 255, 255)'], lf)
         await ev("(async()=>{const v=await import('/src/core/view.ts');v.VIEW.rulers=false;const g=await import('/src/render/guides.ts');g.drawRulers()})()")
         check('the rail button switches to dark and remembers it', await ev("document.documentElement.dataset.theme")=='dark' and await ev("localStorage.getItem('keyline:theme')")=='dark' and dark!=light, (light,dark))
         check('the button now offers light', await ev("document.getElementById('bTheme').getAttribute('aria-label')")=='Switch to light theme')

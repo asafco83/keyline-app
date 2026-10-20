@@ -1,4 +1,4 @@
-// Keyline — render/text-layout
+// SVGcinema — render/text-layout
 // Breaks text into lines: on newlines, and (with "Keep width") wherever a line would pass the box width.
 // SVG text does not wrap by itself, so the lines are written out as <tspan>s, in the editor and the export alike.
 import type { Geometry } from '../model/types';

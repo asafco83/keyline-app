@@ -1,4 +1,4 @@
-// Keyline — render/markup
+// SVGcinema — render/markup
 import { filterSVG } from '../model/filters';
 import { anchorX, textLines } from './text-layout';
 import { ensureFaces, facesFor, familyCSS, isLocalFamily, outlineD, webFont } from './fonts';

@@ -1,4 +1,4 @@
-// Keyline — ui/inspector
+// SVGcinema — ui/inspector
 import { bgPaint, parseBg, setBg } from '../model/background';
 import type { Ease, Layer, PathData, PropKey, Vec2 } from '../model/types';
 import {

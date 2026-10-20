@@ -1,4 +1,4 @@
-// Keyline — ui/align
+// SVGcinema — ui/align
 // Align / distribute bar at the top of the inspector, and "Set motion path" (turn a path into position keyframes).
 // One selected layer aligns to the canvas; several align to the box around the selection.
 import type { Keyframe, Layer, PathData } from '../model/types';

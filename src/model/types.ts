@@ -1,4 +1,4 @@
-// Keyline — model/types
+// SVGcinema — model/types
 // The editor's document model. The runtime's EngineLayer is the exported subset of Layer.
 import type { ShapeParams } from '../geometry/nodes';
 import type { Ease, EngineSubPath, Keyframe } from '../runtime/engine';

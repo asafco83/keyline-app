@@ -1,4 +1,4 @@
-// Keyline — ui/timeline
+// SVGcinema — ui/timeline
 import type { Keyframe, Layer, PropKey } from '../model/types';
 import { $, ICON, clamp, clone, esc, fmt, isFrozen, layerTracks, propLabel, r3 } from '../core/constants';
 import { TLB, TLS } from '../core/dom';

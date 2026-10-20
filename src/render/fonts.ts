@@ -1,4 +1,4 @@
-// Keyline — render/fonts
+// SVGcinema — render/fonts
 // Web fonts (Google Fonts via @fontsource on jsDelivr): loading them into the editor, and preparing
 // them for export, either as outlines (text → <path>) or embedded in the SVG as base64 @font-face.
 //
