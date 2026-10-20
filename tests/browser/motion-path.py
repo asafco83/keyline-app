@@ -24,7 +24,7 @@ async def main():
             R[n]=('ok' if c else 'FAIL')+('' if i is None else f' {i}')
             if not c: F.append(n)
         await ev("hi.setTime(2)")
-        tid=await ev("st.doc.layers.find(l=>l.type==='text').id"); L=f"st.layerById('{tid}')"
+        tid=await ev("st.doc.layers.find(l=>l.name==='Title').id"); L=f"st.layerById('{tid}')"
         await ev(f"hi.select('{tid}')")
         rows=await ev("(()=>{const s=[...document.querySelectorAll('#insp .sec')].find(s=>s.querySelector('h3').textContent.startsWith('Transforms'));return [...s.querySelectorAll('.rl')].map(r=>r.textContent)})()")
         check('transform order', rows==['Position','Scale','Skew','Rotate','Origin','Anchor'], rows)

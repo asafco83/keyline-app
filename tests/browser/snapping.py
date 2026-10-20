@@ -16,6 +16,8 @@ async def main():
             await pg.mouse.move(*a); await pg.mouse.down(); await pg.mouse.move(*b2,steps=steps)
             if up: await pg.mouse.up(); await pg.wait_for_timeout(100)
         await ev("hi.setTime(0)")
+        # only the shapes drawn here may be snap targets (the sample has points and edges everywhere)
+        await ev("(()=>{st.doc.layers.forEach(l=>l.hid=true);hi.select(null);hi.commit({insp:true})})()")
         await ev("TR.pickTool('rect')"); await drag((600,350),(700,450)); a=await ev("st.S.sel")
         await ev("TR.pickTool('rect')"); await drag((800,500),(860,560)); bid=await ev("st.S.sel"); await ev("TR.pickTool('select')")
         boxA=await ev(f"OVL.boxOf(st.layerById('{a}'))"); boxB0=await ev(f"OVL.boxOf(st.layerById('{bid}'))")

@@ -40,7 +40,8 @@ describe('typing a background', () => {
 });
 
 describe('exported background', () => {
-  const rect = () => /<rect [^>]*width="640" height="400"[^>]*\/>/.exec(buildExport(null).code)?.[0];
+  // the background is the rect right after the title (the sample also has a full-size Sky layer)
+  const rect = () => /<\/title><rect [^>]*width="640" height="400"[^>]*\/>/.exec(buildExport(null).code)?.[0];
 
   it('is omitted when transparent', () => {
     setDoc(sampleDoc());

@@ -12,7 +12,7 @@ async def main():
         def check(n,c,i=None):
             R[n]=('ok' if c else 'FAIL')+('' if i is None else f' {i}')
             if not c: F.append(n)
-        tid=await ev("st.doc.layers.find(l=>l.type==='text').id"); L=f"st.layerById('{tid}')"
+        tid=await ev("st.doc.layers.find(l=>l.name==='Title').id"); L=f"st.layerById('{tid}')"
         await ev(f"hi.select('{tid}')"); await ev("hi.setTime(1.4)"); await pg.wait_for_timeout(100)
         held=await ev(f"K.H.get({L},'op',1.4)")
         row=f".tl-prop[data-lid='{tid}'][data-prop='op']"

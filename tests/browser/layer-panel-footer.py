@@ -20,7 +20,7 @@ async def main():
         check('actions sit at the bottom of the layers panel, icon-only', all(lay.values()), lay)
         await ev("hi.select(null)"); d=await dis()
         check('nothing selected: Animate, Ungroup, Delete greyed; Group available', d=={'anim':True,'ungroup':True,'group':False,'del':True}, d)
-        rid=await ev("st.doc.layers.find(l=>l.type==='ellipse').id"); await ev(f"hi.select('{rid}')"); d=await dis()
+        rid=await ev("st.doc.layers.find(l=>l.name==='Sun').id"); await ev(f"hi.select('{rid}')"); d=await dis()
         check('shape selected: Animate and Delete on, Ungroup greyed', d=={'anim':False,'ungroup':True,'group':False,'del':False}, d)
         await pg.click('#lAnim'); m=await menu()
         check('Animate menu lists the shape properties with shortcuts', m==['Position⇧ P','Origin⇧ A','Scale⇧ S','Rotate⇧ R','Skew⇧ X','Opacity⇧ O','Fill color','Fill opacity','Stroke color⇧ B','Stroke opacity','Stroke width⇧ W','Trim end (draw on)⇧ D','Dash offset⇧ F'], m)

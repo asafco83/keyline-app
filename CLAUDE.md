@@ -128,6 +128,10 @@ unit tests. `paper` (booleans, lazy-loaded) and `opentype.js` (text to outlines)
   header / collapsing / ◆ states, colour field, units, hint, slider fill, Animate button…); extend it
   for UI changes. To add a layer to the selection in tests use `hi.select(id, 'toggle')` (there is no
   `'add'` mode).
+- The sample scene (`src/model/sample.ts`) is a tour of every feature and the browser tests run on it.
+  In tests, pick sample layers **by name** (`l.name==='Title'`), never "the first ellipse / text / mask",
+  and keep the names and order its header comment lists. `tests/sample.test.ts` checks it still
+  showcases everything; when you add a feature, add it to the sample and that test.
 - **Pitfall (own screenshots):** when starting a dev server yourself for screenshots, run it in its
   own process group (`setsid`) and stop the group; killing `npx` leaves `vite` running on the port, and
   `pkill -f "vite …"` can match the calling shell's own command line and kill it.
