@@ -15,7 +15,7 @@ export interface ViewPrefs {
   rulers: boolean;
   guides: boolean;
 }
-const KEY = 'kl-view';
+const KEY = 'cin-view';
 export const VIEW: ViewPrefs = {
   snap: true,
   sObjects: true,

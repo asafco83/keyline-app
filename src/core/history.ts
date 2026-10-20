@@ -78,7 +78,7 @@ export function save() {
   clearTimeout(saveT);
   saveT = setTimeout(() => {
     try {
-      localStorage.setItem('keyline:doc', JSON.stringify(doc));
+      localStorage.setItem('svgcinema:doc', JSON.stringify(doc));
     } catch (e) {}
   }, 300);
   $('#pname').value = doc.name;

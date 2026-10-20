@@ -2,7 +2,7 @@
 import asyncio, sys, json, os
 from playwright.async_api import async_playwright
 import os
-OUT=os.environ.get('KL_OUT','/tmp/keyline-shots/'); os.makedirs(OUT, exist_ok=True)
+OUT=os.environ.get('CIN_OUT','/tmp/svgcinema-shots/'); os.makedirs(OUT, exist_ok=True)
 URL=sys.argv[1]
 SVG='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g id="grp"><rect x="5" y="5" width="40" height="30" fill="#f00"/><circle cx="70" cy="60" r="20" fill="#0a0"/></g><path d="M10 90 Q50 50 90 90" stroke="#00f" fill="none"/></svg>'
 async def main():
@@ -159,19 +159,19 @@ async def main():
         async def playback():
             await pg.keyboard.press('Space'); await pg.wait_for_timeout(600); await pg.keyboard.press('Space')
         await step('play / pause', playback())
-        klp=None
+        proj=None
         async def saveopen():
-            nonlocal klp
+            nonlocal proj
             await pg.evaluate('()=>{ window.showSaveFilePicker=undefined; }'); await pg.keyboard.press('Control+s'); await pg.wait_for_timeout(300)
             async with pg.expect_download() as dl: await pg.click('#sGo')
-            d=await dl.value; klp=OUT+'smoke.klp'; await d.save_as(klp)
+            d=await dl.value; proj=OUT+'smoke.SVGcinema'; await d.save_as(proj)
             before=await count()
-            await pg.set_input_files('#fProj', klp); await pg.wait_for_timeout(900)
+            await pg.set_input_files('#fProj', proj); await pg.wait_for_timeout(900)
             dz=await pg.query_selector('#mDiscard:not([hidden]) #dDiscard')
             if dz: await dz.click(); await pg.wait_for_timeout(900)
             after=await count()
             if before!=after: raise Exception(f'layer count changed on reopen {before}->{after}')
-        await step('save .klp and reopen', saveopen())
+        await step('save .SVGcinema and reopen', saveopen())
         n2=await count()
         print(json.dumps({'steps':steps,'layers':[n0,n1,n2],'errors':errs},indent=1)); print('FAILS', [n for n,ok in steps if not ok])
         await b.close()

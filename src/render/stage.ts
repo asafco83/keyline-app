@@ -8,7 +8,7 @@ import { renderAssets } from '../io/assets';
 import { ancestors, isBox, visibleLayers } from '../model/tree';
 import { markup } from './markup';
 import { drawOverlay } from './overlay';
-import { KLEngine } from '../runtime/engine';
+import { CinEngine } from '../runtime/engine';
 import { refreshInspector, renderInspector } from '../ui/inspector';
 import { renderLayers } from '../ui/layers-panel';
 import { renderTimeline, updatePlayhead } from '../ui/timeline';
@@ -39,7 +39,7 @@ export function renderStage() {
     href: (id: string) => URLS[id] || (ASSETS[id] && ASSETS[id].data) || '',
   });
   const vis = visibleLayers();
-  setEng(KLEngine({ p: 'e-', L: vis, dur: doc.dur }, CONTENT));
+  setEng(CinEngine({ p: 'e-', L: vis, dur: doc.dur }, CONTENT));
   const measure = (l: Layer) => {
     const g = byId('e-' + l.id);
     if (!g) return;

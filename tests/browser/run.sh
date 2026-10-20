@@ -3,11 +3,11 @@
 #   tests/browser/run.sh            all of them
 #   tests/browser/run.sh cp gh      only some (file names without .py)
 # Feature tests run against a fresh Vite dev server (port 5199) because they import /src modules;
-# the smoke test runs against a production build (port 5301). Screenshots go to $KL_OUT
-# (default /tmp/keyline-shots/). Exit code 1 when any check fails.
+# the smoke test runs against a production build (port 5301). Screenshots go to $CIN_OUT
+# (default /tmp/svgcinema-shots/). Exit code 1 when any check fails.
 cd "$(dirname "$0")/../.." || exit 1
 DIR=tests/browser
-LOG=${KL_OUT:-/tmp/keyline-shots/}; mkdir -p "$LOG"
+LOG=${CIN_OUT:-/tmp/svgcinema-shots/}; mkdir -p "$LOG"
 want=("$@")
 pick() { [ ${#want[@]} -eq 0 ] && return 0; for w in "${want[@]}"; do [ "$w" = "$1" ] && return 0; done; return 1; }
 

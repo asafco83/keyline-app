@@ -305,7 +305,7 @@ export function init(): void {
     dragIds = selectedRoots().map(l => l.id);
     e.dataTransfer.effectAllowed = 'move';
     try {
-      e.dataTransfer.setData('text/x-keyline-layer', id);
+      e.dataTransfer.setData('text/x-svgcinema-layer', id);
     } catch (_) {}
   });
   LP.addEventListener('dragover', (e: DragEvent) => {

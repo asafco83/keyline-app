@@ -8,7 +8,7 @@ export function confirmDiscard(msg?: string): Promise<boolean> {
   if (!S.dirty || !doc.layers.length) return Promise.resolve(true);
   return new Promise<boolean>(res => {
     discardResolve = res;
-    $('#dMsg').textContent = msg || 'This project has changes that aren’t saved to a .klp file.';
+    $('#dMsg').textContent = msg || 'This project has changes that aren’t saved to a .SVGcinema file.';
     $('#mDiscard').hidden = false;
     $('#dSave').focus();
   });

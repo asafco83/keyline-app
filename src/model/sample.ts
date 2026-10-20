@@ -390,7 +390,7 @@ export function sampleDoc(): any {
     { fill: '#9FB3D9' },
   );
   credit.parent = sig.id;
-  credit.link = { url: 'https://asafco83.github.io/keyline-app/', target: '_blank' };
+  credit.link = { url: 'https://asafco83.github.io/svgcinema/', target: '_blank' };
   const maskF = mkLayer('group', 'Masks', {}, NOFILL);
   maskF.maskSrc = true;
   maskF.parent = sig.id;

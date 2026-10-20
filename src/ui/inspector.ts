@@ -160,7 +160,7 @@ export function renderInspector() {
 
 /* ---------- collapsible sections ---------- */
 
-const CLOSED_STORE = 'keyline:inspClosed';
+const CLOSED_STORE = 'svgcinema:inspClosed';
 let closedSecs: Set<string> | null = null;
 function closedSet(): Set<string> {
   if (!closedSecs) {

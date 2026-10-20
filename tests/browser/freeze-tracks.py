@@ -1,7 +1,7 @@
 import asyncio, sys, json
 from playwright.async_api import async_playwright
 import os
-OUT=os.environ.get('KL_OUT','/tmp/keyline-shots/'); os.makedirs(OUT, exist_ok=True)
+OUT=os.environ.get('CIN_OUT','/tmp/svgcinema-shots/'); os.makedirs(OUT, exist_ok=True)
 async def main():
     async with async_playwright() as p:
         b=await p.chromium.launch(); pg=await b.new_page(device_scale_factor=2); await pg.set_viewport_size({'width':1440,'height':1000})
@@ -33,7 +33,7 @@ async def main():
         await pg.click('[data-kb=op]')
         check('key button blocked while frozen', await ev(f"!{L}.t.op"))
         code=await ev("st.doc.ex.mode='js', B.buildExport(null).code")
-        lay=await ev(f"(()=>{{const c=B.buildExport(null).code,m=c.match(/P=KLEngine\((\{{.*?\}}),s\);/);const d=JSON.parse(m[1]);const x=d.L.find(q=>q.id.endsWith('{tid}')||q.id==='{tid}');return x?Object.keys(x.t):null}})()")
+        lay=await ev(f"(()=>{{const c=B.buildExport(null).code,m=c.match(/P=CinEngine\((\{{.*?\}}),s\);/);const d=JSON.parse(m[1]);const x=d.L.find(q=>q.id.endsWith('{tid}')||q.id==='{tid}');return x?Object.keys(x.t):null}})()")
         check('export ignores frozen keyframes', lay is not None and 'op' not in lay, lay)
         # select all keys excludes frozen
         await ev("(async()=>{const k=await import('/src/core/keyframes.ts'); k.selectAllKeys()})()")

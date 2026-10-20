@@ -4,10 +4,12 @@ import { ASSETS, S, doc } from '../core/state';
 import { slug } from '../export/images';
 import { markClean, persistFile } from './file-state';
 import { toast } from './open';
-import { buildKLP, usedAssetIds } from './zip';
+import { buildProject, usedAssetIds } from './zip';
 import { kb } from '../ui/inspector';
 
-export const KLP_TYPES = [{ description: 'SVGcinema project', accept: { 'application/x-keyline-project': ['.klp'] } }];
+export const PROJECT_TYPES = [
+  { description: 'SVGcinema project', accept: { 'application/x-svgcinema-project': ['.SVGcinema'] } },
+];
 export function canPick() {
   return typeof (window as any).showSaveFilePicker === 'function';
 }
@@ -20,7 +22,7 @@ export async function writeHandle(handle: any, blob: Blob) {
   await w.write(blob);
   await w.close();
 }
-export async function downloadKLP(name: string, blob: Blob) {
+export async function downloadProject(name: string, blob: Blob) {
   if ((window as any).claude && (window as any).claude.use) {
     let dl = null;
     try {
@@ -28,19 +30,19 @@ export async function downloadKLP(name: string, blob: Blob) {
     } catch (e) {}
     if (dl) {
       try {
-        await dl.save({ filename: name + '.klp', data: blob });
-        return name + '.klp';
+        await dl.save({ filename: name + '.SVGcinema', data: blob });
+        return name + '.SVGcinema';
       } catch (err) {
         if (err && err.code === 'declined') return null;
         if (err && (err.code === 'rejected_extension' || err.code === 'extension_not_enabled')) {
           try {
-            await dl.save({ filename: name + '.klp.zip', data: blob });
+            await dl.save({ filename: name + '.SVGcinema.zip', data: blob });
             toast(
               'This viewer can only download .zip files, so it was saved as ' +
                 name +
-                '.klp.zip. SVGcinema opens it as it is.',
+                '.SVGcinema.zip. SVGcinema opens it as it is.',
             );
-            return name + '.klp.zip';
+            return name + '.SVGcinema.zip';
           } catch (e2) {
             if (e2 && e2.code === 'declined') return null;
           }
@@ -52,16 +54,16 @@ export async function downloadKLP(name: string, blob: Blob) {
   }
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = name + '.klp';
+  a.download = name + '.SVGcinema';
   document.body.appendChild(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-  return name + '.klp';
+  return name + '.SVGcinema';
 }
 export async function saveProject() {
   if (!S.file || !S.file.name) return saveProjectAs();
-  const blob = await buildKLP(S.saveAll !== false);
+  const blob = await buildProject(S.saveAll !== false);
   if (S.file.handle) {
     try {
       await writeHandle(S.file.handle, blob);
@@ -74,8 +76,8 @@ export async function saveProject() {
       return saveProjectAs();
     }
   }
-  const name = S.file.name.replace(/\.klp(\.zip)?$/i, '');
-  const got = await downloadKLP(name, blob);
+  const name = S.file.name.replace(/\.svgcinema(\.zip)?$/i, '');
+  const got = await downloadProject(name, blob);
   if (got) {
     S.file = { name: got, handle: null };
     persistFile();
@@ -93,13 +95,13 @@ export function saveProjectAs(): Promise<boolean> {
       used = usedAssetIds(),
       unused = Object.keys(ASSETS).filter(id => !used.has(id)),
       size = (ids: string[]) => ids.reduce((s, id) => s + (ASSETS[id].size || 0), 0);
-    $('#sName').value = S.file && S.file.name ? S.file.name.replace(/\.klp(\.zip)?$/i, '') : slug(doc.name);
+    $('#sName').value = S.file && S.file.name ? S.file.name.replace(/\.svgcinema(\.zip)?$/i, '') : slug(doc.name);
     $('#sAll').checked = S.saveAll !== false;
     $('#sAll').closest('label').hidden = !unused.length;
     $('#sStats').innerHTML =
       `<span>Layers <b>${doc.layers.length}</b></span><span>Assets <b>${all}</b>${all ? ` · ${kb(size(Object.keys(ASSETS)))}` : ''}</span>${unused.length ? `<span>Unused <b>${unused.length}</b></span>` : ''}`;
     $('#sNote').innerHTML =
-      'A .klp file holds the whole project: layers, keyframes, easing presets, export settings and every image, so it opens exactly as you left it. ' +
+      'A .SVGcinema file holds the whole project: layers, keyframes, easing presets, export settings and every image, so it opens exactly as you left it. ' +
       (canPick()
         ? 'Next you’ll choose where to save it. After that, Save overwrites the same file.'
         : 'It goes to your downloads folder.');
@@ -130,16 +132,16 @@ export function init(): void {
   });
   $('#sGo').addEventListener('click', async () => {
     const name = ($('#sName').value.trim() || slug(doc.name))
-      .replace(/\.klp(\.zip)?$/i, '')
+      .replace(/\.svgcinema(\.zip)?$/i, '')
       .replace(/[\\/:*?"<>|]+/g, '-');
     S.saveAll = $('#sAll').checked;
-    const blob = await buildKLP(S.saveAll);
+    const blob = await buildProject(S.saveAll);
     if (canPick()) {
       try {
         const handle = await (window as any).showSaveFilePicker({
-          suggestedName: name + '.klp',
-          types: KLP_TYPES,
-          id: 'keyline',
+          suggestedName: name + '.SVGcinema',
+          types: PROJECT_TYPES,
+          id: 'svgcinema',
         });
         await writeHandle(handle, blob);
         S.file = { name: handle.name, handle };
@@ -152,7 +154,7 @@ export function init(): void {
         if (e && e.name === 'AbortError') return; /* sandboxed or blocked: fall back to download */
       }
     }
-    const got = await downloadKLP(name, blob);
+    const got = await downloadProject(name, blob);
     if (got) {
       S.file = { name: got, handle: null };
       persistFile();

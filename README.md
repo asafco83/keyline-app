@@ -73,7 +73,7 @@ src/
   io/                    Files
     assets.ts            Image import (incl. TIFF/HEIC conversion), IndexedDB, asset panel
     svg-import.ts        SVG → editable layers (keeps group hierarchy)
-    zip.ts               Minimal zip writer/reader and the .klp builder
+    zip.ts               Minimal zip writer/reader and the .SVGcinema builder
     save.ts  open.ts  guard.ts  file-state.ts   Save/Save as, open, unsaved-changes prompt
 
   export/
@@ -90,7 +90,7 @@ tests/                   Vitest: runtime player and easing, zip container, path 
 
 ## How the pieces fit
 
-**The runtime is embedded by serialising a function.** `export/build.ts` writes `KLEngine.toString()` into each exported SVG.
+**The runtime is embedded by serialising a function.** `export/build.ts` writes `CinEngine.toString()` into each exported SVG.
 
 - **Keep it self-contained.** `src/runtime/engine.ts` must not import anything or touch module scope.
 - **The test guards this.** `tests/engine.test.ts` rebuilds the function from its source text and runs it.
@@ -227,13 +227,13 @@ The guides are saved with the project; the other view settings are remembered in
 
 **Web fonts in exports:** Google Fonts are converted to outlines by default (no font download, identical everywhere, also inside `<img>`). _Embed font_ instead keeps live, selectable text and embeds only the alphabets the text uses, which is smaller for long text. Right-to-left text is always embedded so its letters keep their order. Fonts from this computer are converted or embedded the same way once the browser has shared them (embedding includes the whole font file); otherwise the SVG only names the font.
 
-## The `.klp` project format
+## The `.SVGcinema` project format
 
-A `.klp` file is a standard zip archive:
+A `.SVGcinema` file is a standard zip archive:
 
 | Entry                      | Contents                                                                            |
 | -------------------------- | ----------------------------------------------------------------------------------- |
-| `manifest.json`            | `format: "keyline-project"`, version, name, save time, canvas size, counts          |
+| `manifest.json`            | `format: "svgcinema-project"`, version, name, save time, canvas size, counts        |
 | `project.json`             | The document: layers, keyframes, easing presets, export settings                    |
 | `assets/index.json`        | One entry per asset: id, name, kind, MIME type, size in pixels and bytes, file path |
 | `assets/<id>-<name>.<ext>` | Each image as its original file                                                     |
@@ -260,7 +260,7 @@ Conventions:
 ## Tests
 
 - `tests/engine.test.ts`: easing, interpolation, the player API, and that the player can be embedded.
-- `tests/zip.test.ts`: the `.klp` container.
+- `tests/zip.test.ts`: the `.SVGcinema` container.
 - `tests/geometry.test.ts`: path parsing and morph helpers.
 - `tests/output.test.ts`: compares the exported SVG (JS and CSS modes, every trigger) and every embed snippet against `tests/fixtures/export-sample.json`. It also checks that no editor TypeScript syntax leaks into a snippet. After an intended change to the output, regenerate the reference with `UPDATE_FIXTURES=1 npx vitest run tests/output.test.ts` and review the diff.
 
@@ -276,7 +276,7 @@ The site is served at `https://<user>.github.io/<repo>/`. The Vite `base: './'` 
 
 The code is ready for a Tauri shell without changes. When it gets wrapped:
 
-- **Files:** replace the browser file APIs in `io/save.ts` and `io/open.ts` with Tauri's dialog and fs plugins. This gives true overwrite-on-save, recent files and `.klp` file associations.
+- **Files:** replace the browser file APIs in `io/save.ts` and `io/open.ts` with Tauri's dialog and fs plugins. This gives true overwrite-on-save, recent files and `.SVGcinema` file associations.
 - **Image encoding:** add native encoders (mozjpeg, oxipng, ravif) behind the same `optimizeAsset` interface in `export/images.ts`.
 - **Video and GIF export:** these become practical with native libraries.
 

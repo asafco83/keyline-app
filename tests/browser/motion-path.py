@@ -1,7 +1,7 @@
 import asyncio, sys, json, os, re
 from playwright.async_api import async_playwright
 import os
-OUT=os.environ.get('KL_OUT','/tmp/keyline-shots/'); os.makedirs(OUT, exist_ok=True)
+OUT=os.environ.get('CIN_OUT','/tmp/svgcinema-shots/'); os.makedirs(OUT, exist_ok=True)
 FX=OUT+'fonts/ex/'
 async def font_route(route):
     url=route.request.url
@@ -81,7 +81,7 @@ async def main():
         tb=await ev(f"(()=>{{const r=document.getElementById('e-{tid}-s').getBoundingClientRect();return [r.x+r.width*0.2,r.y+r.height/2]}})()")
         print('dbg', await ev(f"(()=>{{const e=document.elementFromPoint({tb[0]},{tb[1]});return e.tagName+' '+e.getAttribute('class')+' '+(e.closest('[data-lid]')||{{}}).id+' keys '+st.S.keys.size+' '+(document.activeElement||{{}}).tagName}})()"))
         await pg.mouse.move(tb[0],tb[1]); await pg.mouse.down(); await pg.mouse.move(tb[0]+30,tb[1],steps=5); await pg.mouse.up()
-        print('dbg2', await ev("st.S.keys.size+' '+st.S.sel+' '+!!document.querySelector('.kl-tedit')"))
+        print('dbg2', await ev("st.S.keys.size+' '+st.S.sel+' '+!!document.querySelector('.cin-tedit')"))
         after=await ev(f"{L}.t.pos.map(q=>q[1])")
         dx=[a[0]-b0[0] for a,b0 in zip(after,before)]
         check('drag moves all selected position keys', all(abs(d-dx[0])<0.01 for d in dx) and dx[0]>10, dx)

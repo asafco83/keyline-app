@@ -1,5 +1,5 @@
 {
-  "name": "keyline",
+  "name": "svgcinema",
   "version": "0.1.0",
   "description": "SVGcinema: browser-based SVG animation editor that exports a single self-contained animated SVG.",
   "scripts": {

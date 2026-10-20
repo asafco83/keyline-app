@@ -11,7 +11,7 @@
     <script>
       // apply a saved light/dark choice before the first paint (see src/ui/theme.ts)
       try {
-        var t = localStorage.getItem('keyline:theme');
+        var t = localStorage.getItem('svgcinema:theme');
         if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
       } catch (e) {}
     </script>
@@ -577,7 +577,7 @@
             <dt>Del</dt>
             <dd>Delete selected keyframes, node, or layer</dd>
             <dt>Ctrl S · Ctrl ⇧ S</dt>
-            <dd>Save · save as (.klp project file)</dd>
+            <dd>Save · save as (.SVGcinema project file)</dd>
             <dt>Ctrl O · Ctrl I · Ctrl E</dt>
             <dd>Open project · import files · export SVG</dd>
             <dt>Ctrl Z · Ctrl ⇧ Z</dt>
@@ -640,7 +640,7 @@
       accept="image/*,.svg,.tif,.tiff,.heic,.heif,.avif,.bmp,.ico,.jxl,.apng"
       hidden
     />
-    <input type="file" id="fProj" accept=".klp,.zip,.json" hidden />
+    <input type="file" id="fProj" accept=".SVGcinema,.zip,.json" hidden />
     <div class="ctx filemenu" id="fileMenu" role="menu" aria-label="File" hidden>
       <button role="menuitem" id="bNew"><span>New project…</span><kbd></kbd></button>
       <button role="menuitem" id="bOpen"><span>Open…</span><kbd>Ctrl O</kbd></button>
@@ -662,7 +662,7 @@
             <span class="rl">File name</span>
             <div class="rf">
               <input class="txt" id="sName" spellcheck="false" /><span class="chip" style="align-self: center"
-                >.klp</span
+                >.SVGcinema</span
               >
             </div>
           </div>
@@ -679,7 +679,9 @@
           <h2 id="dTitle">Save changes first?</h2>
           <button class="btn ghost ib" data-close aria-label="Close">✕</button>
         </header>
-        <div class="body"><p class="note" id="dMsg">This project has changes that aren’t saved to a .klp file.</p></div>
+        <div class="body">
+          <p class="note" id="dMsg">This project has changes that aren’t saved to a .SVGcinema file.</p>
+        </div>
         <footer>
           <button class="btn" id="dCancel">Cancel</button><button class="btn danger" id="dDiscard">Don’t save</button
           ><button class="btn pri" id="dSave">Save</button>

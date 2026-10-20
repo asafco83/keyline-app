@@ -1,5 +1,5 @@
 // SVGcinema runtime — the animation player that ships inside every exported SVG.
-// Keep it dependency-free: KLEngine.toString() is embedded verbatim in exports.
+// Keep it dependency-free: CinEngine.toString() is embedded verbatim in exports.
 
 /** Keyframe: [time in seconds, value, easing to the next key, (position only) curve to the next key].
  *  The curve is [c1x, c1y, c2x, c2y]: the two control points of a cubic, c1 relative to this key's
@@ -59,7 +59,7 @@ export interface Composite {
   /** trim path [start %, end %, offset %], or null when the whole stroke shows */
   trim: number[] | null;
 }
-type Handler = (this: KLPlayer, offsetMs: number) => void;
+type Handler = (this: CinPlayer, offsetMs: number) => void;
 export interface EngineData {
   /** element id prefix */ p?: string;
   dur?: number;
@@ -71,25 +71,25 @@ export interface EngineData {
   L: EngineLayer[];
 }
 /** Public player API (SVGator compatible). */
-export interface KLPlayer {
-  play(): KLPlayer;
-  pause(): KLPlayer;
-  toggle(): KLPlayer;
-  togglePlay(): KLPlayer;
-  restart(): KLPlayer;
-  reverse(): KLPlayer;
-  rollback(): KLPlayer;
-  stop(): KLPlayer;
-  seek(percent: number): KLPlayer;
-  seekTo(ms: number): KLPlayer;
-  seekBy(ms: number): KLPlayer;
-  set(prop: 'speed' | 'fps' | 'iterations' | 'direction' | 'alternate' | 'fill', value: any): KLPlayer;
-  ready(cb: (p: KLPlayer) => void): KLPlayer;
-  on(events: string, fn: (offsetMs: number) => void, prepend?: boolean): KLPlayer;
-  off(event: string, fn?: (offsetMs: number) => void): KLPlayer;
+export interface CinPlayer {
+  play(): CinPlayer;
+  pause(): CinPlayer;
+  toggle(): CinPlayer;
+  togglePlay(): CinPlayer;
+  restart(): CinPlayer;
+  reverse(): CinPlayer;
+  rollback(): CinPlayer;
+  stop(): CinPlayer;
+  seek(percent: number): CinPlayer;
+  seekTo(ms: number): CinPlayer;
+  seekBy(ms: number): CinPlayer;
+  set(prop: 'speed' | 'fps' | 'iterations' | 'direction' | 'alternate' | 'fill', value: any): CinPlayer;
+  ready(cb: (p: CinPlayer) => void): CinPlayer;
+  on(events: string, fn: (offsetMs: number) => void, prepend?: boolean): CinPlayer;
+  off(event: string, fn?: (offsetMs: number) => void): CinPlayer;
   destruct(): void;
-  onEnd(fn: () => void): KLPlayer;
-  setRate(v: number): KLPlayer;
+  onEnd(fn: () => void): CinPlayer;
+  setRate(v: number): CinPlayer;
   readonly currentTime: number;
   readonly duration: number;
   readonly totalTime: number;
@@ -127,7 +127,7 @@ export interface KLPlayer {
   _cleanup: Array<() => void>;
 }
 
-export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
+export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
   // NOTE: this function is serialised with Function.prototype.toString() and embedded in every
   // exported SVG, so it must stay fully self-contained: no imports, no references to module scope.
   var K: Record<string, string> = {
@@ -953,7 +953,7 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       else if (k === 'fill') FILL = +v < 0 ? -1 : 1;
       return P;
     },
-    ready: function (cb: (p: KLPlayer) => void) {
+    ready: function (cb: (p: CinPlayer) => void) {
       if (typeof cb === 'function')
         setTimeout(function () {
           cb.call(P, P);
@@ -1016,7 +1016,7 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     loc: loc,
     EZ: EZ,
     _cleanup: [] as Array<() => void>,
-  } as unknown as KLPlayer;
+  } as unknown as CinPlayer;
   var G = function (f: () => unknown): PropertyDescriptor {
     return { get: f, enumerable: true };
   };

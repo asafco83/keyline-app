@@ -2,7 +2,7 @@
 
 SVGcinema (formerly Keyline) is a browser SVG animation editor modelled on SVGator. You draw or import artwork, animate
 properties on a timeline, and export one self-contained animated `.svg` (a JS player inside it, or
-pure CSS). Live site: https://asafco83.github.io/keyline-app/ (GitHub Pages, deployed from `master`).
+pure CSS). Live site: https://asafco83.github.io/svgcinema/ (GitHub Pages, deployed from `master`).
 
 `README.md` is the user-facing feature list; keep it up to date with every feature.
 `featureSuggestions.md` lists features that are planned but not built yet.
@@ -17,7 +17,7 @@ For every feature or fix:
      format `index.html` and `README.md` when you touch them), `npx tsc --noEmit -p .`, `npx vitest run`
    - the browser tests: `tests/browser/run.sh` (see below); add or update a browser test for the change.
 3. Update `README.md` when behaviour changes.
-4. Commit, push, open a PR with `gh api repos/asafco83/keyline-app/pulls …`, wait for CI to pass, then
+4. Commit, push, open a PR with `gh api repos/asafco83/svgcinema/pulls …`, wait for CI to pass, then
    merge with `merge_method=merge`.
 5. Wait for the "Deploy to GitHub Pages" run for the merge commit, then check the live site.
    On the live site **only inspect** (load it, check the new code/UI is there); never change the
@@ -34,10 +34,10 @@ PR bodies end with the "Generated with Claude Code" line and the session URL.
 
 - If a control doesn't apply, **hide it**. Exception: the layer action buttons (Layers panel) grey out.
 - Ask questions when a request is ambiguous; propose a recommendation with the question.
-- Reference images are often SVGator screenshots: match the behaviour, keep Keyline's own look.
+- Reference images are often SVGator screenshots: match the behaviour, keep SVGcinema's own look.
 - Keyboard shortcuts must not clash: check `src/ui/keyboard.ts` and `src/ui/view-menu.ts` first.
 - For visual changes, the owner wants a **mockup first** (a Design canvas artifact, "Keyline UI
-  refresh"), iterated on and approved before implementing; then the app must **match the mockup
+  refresh", from before the rename), iterated on and approved before implementing; then the app must **match the mockup
   closely** (sizes, spacing, icons, layout). Check by screenshotting the app at the same size and state
   as the mockup and comparing side by side, not from memory.
 - Every animatable property keeps its **own row and ◆ toggle** (e.g. fill colour and fill opacity are
@@ -45,19 +45,20 @@ PR bodies end with the "Generated with Claude Code" line and the session URL.
 - Icons should read clearly at small sizes; prefer Adobe-like metaphors (e.g. line ends / joins drawn as
   the stroke shape with the path knocked out).
 
-**Name:** the app is **SVGcinema** everywhere users see it (title, top-bar logo, dialogs, messages,
-sample, docs). Internal identifiers keep the old name on purpose, because saved projects and settings
-depend on them: the `.klp` format (`keyline-project`), `keyline:*` storage keys and events, the `kl`
-export id prefix, `KLEngine`, and the repo / site URL (`keyline-app`). The logo is inlined in
-`index.html` (`.brand .logo`); its colours are the `--logo-a` / `--logo-b` tokens (black version in the
-light theme, white in the dark). The source files are in `public/brand/`.
+**Name:** the app is **SVGcinema** (formerly Keyline), everywhere, including internals: projects are
+`.SVGcinema` files (a zip with format `svgcinema-project`; the fallback download is `.SVGcinema.zip`),
+storage keys and events are `svgcinema:*`, exported ids use the `cin-` prefix, the runtime is
+`CinEngine` / `CinPlayer`, and the repo is `asafco83/svgcinema`. Old Keyline files and settings are not
+read (no backward compatibility, by the owner's choice). The logo is inlined in `index.html`
+(`.brand .logo`); its colours are the `--logo-a` / `--logo-b` tokens (black version in the light theme,
+white in the dark). The source files are in `public/brand/`.
 
 ## Stack and layout
 
 Vite 5 + TypeScript (strict), no framework (DOM strings + event delegation). Vitest + happy-dom for
 unit tests. `paper` (booleans, lazy-loaded) and `opentype.js` (text to outlines) are the only runtime deps.
 
-- `src/runtime/engine.ts` — **KLEngine**, the animation runtime. It is self-contained (no imports)
+- `src/runtime/engine.ts` — **CinEngine**, the animation runtime. It is self-contained (no imports)
   because it is serialised into the exported SVG; the editor also uses it (`H` in `core/constants`).
   Write it in plain ES5-style code (`var`, `function`), like the rest of the file.
 - `src/model/` — data types (`types.ts`), layer tree, filters, fonts, sample document.
@@ -70,7 +71,7 @@ unit tests. `paper` (booleans, lazy-loaded) and `opentype.js` (text to outlines)
 - `src/ui/` — panels and menus: `inspector.ts` + `props-panel.ts` (right panel), `timeline.ts`,
   `layers-panel.ts`, `layer-menu.ts` (right-click), `color-picker.ts` (the colour window), …
 - `src/export/build.ts` — export (JS or CSS mode), `dialog.ts` the Export dialog.
-- `src/io/` — open/save `.klp` projects (zip), SVG import, assets.
+- `src/io/` — open/save `.SVGcinema` projects (zip), SVG import, assets.
 
 ## UI conventions (from the UI refresh)
 
@@ -85,7 +86,7 @@ unit tests. `paper` (booleans, lazy-loaded) and `opentype.js` (text to outlines)
   only for code views. Don't put numbers back in JetBrains Mono: its dotted zero reads as an 8 at small
   sizes, and the Google Fonts build has no slashed-zero alternate.
 - **Theme:** `src/ui/theme.ts`. The button `#bTheme` is in the top bar right of `#bKeys`; the choice is
-  saved in `localStorage['keyline:theme']` and applied before first paint by an inline script in
+  saved in `localStorage['svgcinema:theme']` and applied before first paint by an inline script in
   `index.html`. Anything that paints with colours read from CSS in script (the rulers in
   `render/guides.ts`) must listen for `THEME_EVENT` and repaint.
 - **Sliders** draw a filled track from the CSS variable `--p`; `src/ui/ranges.ts` keeps it in step
@@ -93,7 +94,7 @@ unit tests. `paper` (booleans, lazy-loaded) and `opentype.js` (text to outlines)
 - **Inspector:** a header (`.insp-head`: layer name `#ln` + type chip) above the align / boolean bar.
   Section headings can collapse: `applyCollapse()` appends a `.sec-tg` button to each `.sec > h3`
   (last in the DOM, shown first via CSS `order`) so the heading's **first text node stays the title**
-  (tests read `h3.childNodes[0]`). Closed sections are remembered in `keyline:inspClosed`.
+  (tests read `h3.childNodes[0]`). Closed sections are remembered in `svgcinema:inspClosed`.
   `krow()` rows have a ◆ (`.kb`: grey = off, `.has` = animated, amber label; `.on` = key at playhead);
   `nrow()` rows are indented to line up with them. Colour fields (`colf`): swatch + value in one
   `.cbox`, eyedropper beside it.

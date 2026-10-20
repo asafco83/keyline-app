@@ -20,7 +20,7 @@ export interface LocalFace {
   data: { blob(): Promise<Blob> };
 }
 const LOCAL: Record<string, LocalFace[]> = {};
-const LS_KEY = 'kl-local-fonts';
+const LS_KEY = 'cin-local-fonts';
 export function localFontsSupported() {
   return typeof window !== 'undefined' && 'queryLocalFonts' in window;
 }

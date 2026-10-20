@@ -16,7 +16,7 @@ export const IDB = {
   open() {
     return new Promise<IDBDatabase | null>(res => {
       try {
-        const r = indexedDB.open('keyline', 1);
+        const r = indexedDB.open('svgcinema', 1);
         r.onupgradeneeded = () => r.result.createObjectStore('kv');
         r.onsuccess = () => {
           IDB.db = r.result;
@@ -222,7 +222,7 @@ export async function importFiles(files: File[], at: { x: number; y: number } | 
   let n = 0;
   const errs: string[] = [];
   for (const f of files) {
-    if (/\.(klp|zip|json)$/i.test(f.name)) {
+    if (/\.(svgcinema|zip|json)$/i.test(f.name)) {
       if (await confirmDiscard('Opening another project closes this one. Save your changes first?'))
         await loadProjectFile(f, null);
       return;
@@ -307,7 +307,7 @@ export function init(): void {
     const t = (e.target as any).closest('[data-aid]');
     if (!t) return;
     e.dataTransfer.effectAllowed = 'copy';
-    e.dataTransfer.setData('text/x-keyline-asset', t.dataset.aid);
+    e.dataTransfer.setData('text/x-svgcinema-asset', t.dataset.aid);
   });
   AG.addEventListener('dragover', (e: DragEvent) => {
     if ([...e.dataTransfer.types].includes('Files')) {

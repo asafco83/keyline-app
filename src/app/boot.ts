@@ -20,7 +20,7 @@ export async function boot() {
   BM.innerHTML = ic('<path d="M4 7h16M4 12h16M4 17h16"/>', 18);
   updatePlayBtn();
   try {
-    S.dirty = localStorage.getItem('keyline:dirty') === '1';
+    S.dirty = localStorage.getItem('svgcinema:dirty') === '1';
   } catch (e) {}
   try {
     const fi = await Promise.race([IDB.get('file'), new Promise<any>(r => setTimeout(() => r(null), 1200))]);
@@ -28,7 +28,7 @@ export async function boot() {
   } catch (e) {}
   let saved = null;
   try {
-    saved = localStorage.getItem('keyline:doc');
+    saved = localStorage.getItem('svgcinema:doc');
   } catch (e) {}
   if (saved) {
     try {
