@@ -133,7 +133,7 @@ Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to 
 
 **Light and dark theme:** the editor follows the system setting until you pick one with the half-circle button in the top bar, right of Keyboard shortcuts; the choice is remembered. Numbers use the UI font with tabular digits, so zeros stay open and columns still line up.
 
-**Work area:** the artboard shows the project name and canvas size above its top-left corner. The timeline shows the current time and the total length (`0:01.50 / 0:03.00`), and the playhead carries a time flag in the ruler.
+**Work area:** the artboard shows the project name and canvas size above its top-left corner. The **?** at the bottom left shows the current tool's tips on hover (or when focused). The timeline shows the current time and the total length (`0:01.50 / 0:03.00`), and the playhead carries a time flag in the ruler.
 
 **Inspector** (properties of the selected layer):
 
