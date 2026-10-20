@@ -18,7 +18,7 @@ async def main():
             if not c: F.append(n)
         print(await ev("Object.keys(st).slice(0,12).join()"), errs)
         await ev("hi.setTime(2)")
-        tid=await ev("st.doc.layers.find(l=>l.type==='text').id"); L=f"st.layerById('{tid}')"
+        tid=await ev("st.doc.layers.find(l=>l.name==='Title').id"); L=f"st.layerById('{tid}')"
         await ev(f"hi.select('{tid}')")
         r=await ev(f"(()=>{{const r=document.getElementById('e-{tid}-s').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2,r.x,r.y,r.width,r.height]}})()")
         r[0]=r[2]+r[4]*0.08

@@ -17,7 +17,7 @@ async def main():
             await pg.mouse.move(*a); await pg.mouse.down(); await pg.mouse.move(*b2,steps=steps); await pg.mouse.up(); await pg.wait_for_timeout(120)
         handle=lambda k: ev(f"(()=>{{const e=document.querySelector('#overlay [data-h={k}]');if(!e)return null;const r=e.getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]}})()")
         await ev("hi.setTime(2)")
-        tid=await ev("st.doc.layers.find(l=>l.type==='text').id"); L=f"st.layerById('{tid}')"
+        tid=await ev("st.doc.layers.find(l=>l.name==='Title').id"); L=f"st.layerById('{tid}')"
         await ev(f"hi.select('{tid}')"); await pg.wait_for_timeout(100)
         # selected: side handle scales like any layer
         h=await handle('e'); s0=await ev(f"K.valueAt({L},'scl',st.S.time)[0]")

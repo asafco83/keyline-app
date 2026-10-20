@@ -95,6 +95,21 @@ tests/                   Vitest: runtime player and easing, zip container, path 
 
 **The editor canvas renders the exact SVG that gets exported.** `render/markup.ts` produces markup for both, and the canvas is animated by the same runtime that ships in the file. What you see while editing is what you get.
 
+## The sample scene
+
+The editor opens with a sample scene (also under File → New → **Open sample scene**). It doubles as a tour of what Keyline can animate; select a layer to see how it's done:
+
+- **Sky**: an animated linear gradient, night to dawn. **Night sky**: star shapes with an animated corner radius, a blink made of hold keyframes and an elastic pulse; the group fades out.
+- **Sunrise**: a group rising as one. **Glow** has a radial gradient, an animated blur filter and screen blending; **Rays** spin and scale; the **Sun** changes colour.
+- **Blob** morphs between shapes with a custom easing curve. **Comet** follows a curved motion path and turns along it; **Comet trail** shows travelling dashes (an animated dash offset).
+- **Hills** is a clipping group: the drifting **Mist** only shows inside the hill silhouette (the **Clip path** folder).
+- **Sprout** is a bone rig: three bones carry the stalk, leaves and flower, and sway with follow-through.
+- **Flag**: the **Pole** is a line whose end grows; the **Pennant** is a polygon with a gradient, a skew wave and an animated corner radius.
+- **Landscape**: **Horizon** draws on with Trim path; **Signature** is a mask group whose gradient wipe reveals a line that links to this editor.
+- **Title** slides and fades in with an animated drop shadow.
+
+`tests/sample.test.ts` checks the scene keeps showing all of these.
+
 ## Tools
 
 | Tool             | Key | Notes                                                                                                                                                                                                                                                                                                                                                                                        |

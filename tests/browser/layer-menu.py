@@ -70,7 +70,7 @@ async def main():
         check('export wraps in <a>', '<a href="https://example.com/x"' in code)
         # panel right-click + mask: select both, rect below ellipse? ellipse is above (later) after send to back of rect
         await ev(f"(()=>{{hi.select('{rid}'); st.S.selSet.add('{eid}'); hi.commit({{insp:true}})}})()")
-        row=await ev(f"(()=>{{const r=document.querySelector('#lp .lp-row[data-lid=\"{eid}\"]').getBoundingClientRect();return [r.x+40,r.y+r.height/2]}})()")
+        row=await ev(f"(()=>{{const e=document.querySelector('#lp .lp-row[data-lid=\"{eid}\"]');e.scrollIntoView({{block:'center'}});const r=e.getBoundingClientRect();return [r.x+40,r.y+r.height/2]}})()")
         await pg.mouse.click(*row, button='right'); await pg.wait_for_timeout(100)
         check('panel right-click keeps multi-selection', await ev("st.S.selSet.size")==2)
         await pick('Create mask')
@@ -78,7 +78,7 @@ async def main():
         check('mask group with Masks folder holding the top layer', g['mask']=='mask' and any(k[1] for k in g['kids']) and g['inF']==[eid], g)
         rows=await ev("[...document.querySelectorAll('#lp .lp-row')].map(r=>r.textContent.trim().replace(/\\s+/g,' ')).slice(0,5)")
         R['panel']=rows
-        dom=await ev("(()=>{const m=document.querySelector('#content mask');return m?[m.getAttribute('mask-type'), !!document.querySelector('#content [mask]'), !!m.querySelector('[id$=\"%s-s\"]')]:null})()" % eid)
+        dom=await ev("(()=>{const m=[...document.querySelectorAll('#content mask')].find(x=>x.querySelector('[id$=\"%s-s\"]'));return m?[m.getAttribute('mask-type'), !!document.querySelector('#content [mask]'), true]:null})()" % eid)
         check('canvas renders the mask', dom==['alpha',True,True], dom)
         # pixel test: outside ellipse but inside rect should be background now
         px=await ev("""(async()=>{const r=document.getElementById('e-%s-s').getBoundingClientRect();return [r.x+4,r.y+4]})()""" % rid)
@@ -89,10 +89,12 @@ async def main():
         await ev(f"hi.select('{eid}')"); await pg.wait_for_timeout(80)
         check('mask layer shows a selection box', await ev("document.querySelectorAll('#overlay .ov-box').length")>0)
         # clipping path variant + release
-        gid=await ev("st.doc.layers.find(l=>l.mask).id"); await ev(f"hi.select('{gid}')")
+        gid=await ev(f"st.layerById('{rid}').parent"); await ev(f"hi.select('{gid}')")
+        row=await ev(f"(()=>{{const e=document.querySelector('#lp .lp-row[data-lid=\"{gid}\"]');e.scrollIntoView({{block:'center'}});const r=e.getBoundingClientRect();return [r.x+40,r.y+r.height/2]}})()")
         await pg.mouse.click(*row, button='right'); await pick('Release mask')
-        check('release mask', await ev("!st.doc.layers.some(l=>l.mask||l.maskSrc)") and await ev(f"!st.layerById('{eid}').parent && !st.layerById('{rid}').parent"))
+        check('release mask', await ev(f"!st.layerById('{gid}')") and await ev(f"!st.layerById('{eid}').parent && !st.layerById('{rid}').parent"))
         await ev(f"(()=>{{hi.select('{rid}'); st.S.selSet.add('{eid}'); hi.commit({{insp:true}})}})()")
+        row=await ev(f"(()=>{{const e=document.querySelector('#lp .lp-row[data-lid=\"{eid}\"]');e.scrollIntoView({{block:'center'}});const r=e.getBoundingClientRect();return [r.x+40,r.y+r.height/2]}})()")
         await pg.mouse.click(*row, button='right'); await pick('Create clipping path')
         code=await ev("B.buildExport(null).code")
         check('clipping path: shape-only mask', 'fill:#fff!important' in code and await ev("st.selLayer().mask")=='clip')
