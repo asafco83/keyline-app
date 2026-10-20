@@ -45,6 +45,9 @@ export const PROPS: Record<PropKey, [label: string, kind: 'v' | 'n' | 'c' | 'm']
   so: ['Stroke opacity', 'n'],
   sw: ['Stroke width', 'n'],
   draw: ['Draw', 'n'],
+  ts: ['Trim start', 'n'],
+  te: ['Trim end', 'n'],
+  to: ['Trim offset', 'n'],
   dof: ['Dash offset', 'n'],
   d: ['Morph', 'm'],
   p0: ['Line start', 'v'],
@@ -64,6 +67,9 @@ export const PORDER: PropKey[] = [
   'so',
   'sw',
   'draw',
+  'ts',
+  'te',
+  'to',
   'dof',
   'rad',
   'p0',
@@ -96,7 +102,7 @@ export function isFrozen(l: Layer, k: string) {
   return !!(l.ft && l.ft[k] && l.ft[k].length);
 }
 /** Values of properties a layer may never have set. */
-export const PDEF: Partial<Record<string, any>> = { skw: [0, 0], fo: 1, so: 1, dof: 0 };
+export const PDEF: Partial<Record<string, any>> = { skw: [0, 0], fo: 1, so: 1, dof: 0, ts: 0, te: 100, to: 0 };
 /** A property's value at time t, falling back to its default. */
 /** Properties whose resting value lives in the geometry: line ends in the path, corner radius in
  *  the rectangle or the polygon / star settings. */

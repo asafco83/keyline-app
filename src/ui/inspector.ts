@@ -33,6 +33,7 @@ import { addChildBone, boneTipL, shiftChildBones } from '../tools/bones';
 import { setAnchor } from '../tools/edit-tools';
 import { align, alignBar, motionPick, setMotionPath } from './align';
 import { booleanOp } from '../core/booleans';
+import { gradClick, gradInput, gradPointer } from './gradient-ui';
 import {
   appearanceSection,
   filtersSection,
@@ -347,6 +348,7 @@ export function init(): void {
     const t = e.target as HTMLInputElement,
       l = selLayer();
     if (l && propsInput(t, l)) return frame();
+    if (l && gradInput(t, l, true)) return frame();
     if (l && t.dataset.g === 'text') {
       // type in the panel and the canvas follows; one undo step per edit (closed on change)
       if (!S.colorEd) S.colorEd = beginEdit();
@@ -390,6 +392,7 @@ export function init(): void {
     }
     if (t.dataset.doc !== undefined) return docField(t);
     if (!l) return;
+    if (gradInput(t, l, false)) return;
     if (propsChange(t, l)) return;
     if (t.id === 'motionPath') {
       if (t.value && !setMotionPath(l, t.value)) toast('That shape has no length to follow.');
@@ -587,6 +590,7 @@ export function init(): void {
       }
       return;
     }
+    if (l && gradClick(e, l)) return;
     const al = (e.target as any).closest('[data-align]');
     if (al) return align(al.dataset.align);
     const bo = (e.target as any).closest('[data-bool]');
@@ -667,6 +671,8 @@ export function init(): void {
     }
   });
   INSP.addEventListener('pointerdown', (e: PointerEvent) => {
+    const gl = selLayer();
+    if (gl && gradPointer(e, gl)) return;
     const hd = (e.target as any).closest('[data-hd]');
     if (hd && S.keys.size) {
       e.preventDefault();

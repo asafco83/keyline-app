@@ -53,7 +53,7 @@ function place(l: Layer) {
     textAlign: G.anchor === 'middle' ? 'center' : G.anchor === 'end' ? 'right' : 'left',
     whiteSpace: G.wrap && G.ww > 0 ? 'pre-wrap' : 'pre',
     color: 'transparent',
-    caretColor: c.fill && c.fill !== 'none' && !/^url/.test(c.fill) ? c.fill : '#5b7cfa',
+    caretColor: typeof c.fill === 'string' && c.fill !== 'none' && !/^url/.test(c.fill) ? c.fill : '#5b7cfa',
   });
 }
 /** Start typing into a text layer on the canvas. `selectAll` selects the current text (new layers). */

@@ -43,10 +43,32 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
   const a: Record<string, any> = Object.assign({}, l.extra || {});
   a.id = id + '-s';
   if (l.xf) a.transform = l.xf;
-  if (c.fill != null) a.fill = c.fill;
-  if (c.stk != null) a.stroke = c.stk;
+  // gradients: a <linearGradient> / <radialGradient> next to the shape (the runtime updates it)
+  let grads = '';
+  const paint = (v: any, suf: string) => {
+    if (!H.isG(v)) return v;
+    const gid = id + suf,
+      tag = v.g === 'rad' ? 'radialGradient' : 'linearGradient',
+      at = H.gAttrs(v);
+    grads += `<${tag} id="${gid}"${Object.keys(at)
+      .map(k => ` ${k}="${at[k]}"`)
+      .join('')}>${v.s
+      .map((q: [number, string]) => {
+        const c = H.pc(q[1]) || [0, 0, 0, 1];
+        return `<stop offset="${r3(q[0])}" stop-color="rgb(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])})" stop-opacity="${r3(c[3])}"/>`;
+      })
+      .join('')}</${tag}>`;
+    return `url(#${gid})`;
+  };
+  if (c.fill != null) a.fill = paint(c.fill, '-gf');
+  if (c.stk != null) a.stroke = paint(c.stk, '-gs');
   if (c.sw != null && (c.sw > 0 || (l.t.sw && l.t.sw.length))) a['stroke-width'] = r3(c.sw);
-  if (c.draw != null && (c.draw < 100 || (l.t.draw && l.t.draw.length))) {
+  if (c.trim) {
+    const td = H.trimDash(c.trim);
+    a.pathLength = 100;
+    a['stroke-dasharray'] = td[0];
+    a['stroke-dashoffset'] = td[1];
+  } else if (c.draw != null && (c.draw < 100 || (l.t.draw && l.t.draw.length))) {
     a.pathLength = 100;
     a['stroke-dasharray'] = '100 100';
     a['stroke-dashoffset'] = r3(100 - c.draw);
@@ -128,7 +150,7 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
     }
   } else if (isBox(l)) inner = `<g${attrs(a)}>${children || ''}</g>`;
   else inner = `<g${attrs(a)}>${G.markup || ''}</g>`;
-  return `<g id="${id}" transform="${tfStr(c)}" opacity="${r3(c.op)}"${ctx.editor ? ` data-lid="${l.id}"` : ''}>${fx}${inner}</g>`;
+  return `<g id="${id}" transform="${tfStr(c)}" opacity="${r3(c.op)}"${ctx.editor ? ` data-lid="${l.id}"` : ''}>${fx}${grads}${inner}</g>`;
 }
 export function markup(list: Layer[], pid: string | null, ctx: MarkupCtx): string {
   return kids(pid, list)
