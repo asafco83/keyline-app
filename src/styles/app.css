@@ -3532,3 +3532,63 @@ select.sel {
 .stage:has(#rulerY:not([hidden])) .hud {
   left: 34px;
 }
+
+/* layer tree guides: dotted lines from each group to its children (├ / └), and through rows
+   whose ancestors have more children below */
+.lp-row {
+  position: relative;
+}
+.lp-guides {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.lp-guides .lg {
+  position: absolute;
+  display: block;
+}
+.lp-guides .lg.v,
+.lp-guides .lg.e {
+  top: -2px;
+  width: 0;
+  border-left: 1px dotted var(--line-2);
+}
+.lp-guides .lg.v {
+  bottom: -2px;
+}
+.lp-guides .lg.e {
+  height: 14px;
+}
+.lp-guides .lg.h {
+  top: 12px;
+  height: 0;
+  border-top: 1px dotted var(--line-2);
+}
+.lp-row.sel .lp-guides .lg {
+  border-color: var(--accent-line);
+}
+/* a layer a mask / clip folder applies to: a small hook before its icon */
+.lp-sp {
+  display: flex;
+  align-items: center;
+}
+.lp-clip {
+  display: grid;
+  place-items: center;
+  width: 11px;
+  height: 11px;
+  margin-left: 5px;
+  flex: none;
+  color: var(--muted);
+}
+.tl-ic + .lp-clip {
+  margin: 0 2px 0 0;
+}
+.lp-row.sel .lp-clip {
+  color: var(--accent-fg);
+}
+.lp-mask.ic {
+  display: grid;
+  place-items: center;
+  padding: 1px 3px;
+}

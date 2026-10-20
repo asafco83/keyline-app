@@ -121,6 +121,8 @@ Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to 
 
 **Zoom:** click the percentage at the bottom of the work area for a menu with a slider (2%–3200%), a typed value, _Fit selection_ (2), _Fit_ (1), _Zoom 100%_ (0), _Zoom in_ (Ctrl +) and _Zoom out_ (Ctrl −). The − / + buttons beside it step the zoom; Ctrl+wheel zooms at the pointer.
 
+**Layers panel tree:** dotted lines join each group to its children, so nesting is easy to follow. Layers that a mask or clip folder applies to show a small hook before their icon (hover it for which folder), and the folder itself carries a mask badge.
+
 **Layers panel actions** grey out when they don't apply:
 
 - **The top bar**, left to right:
@@ -128,8 +130,8 @@ Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to 
   - **Duplicate** (Ctrl+D).
   - **Ungroup** (Ctrl+Shift+G).
   - **Group** (Ctrl+G); with nothing selected it adds an empty group.
-  - **Create mask**: with two or more layers selected, the top one masks the others (as in the right-click menu).
   - **Release mask**: on a selected mask or clipping group, puts its layers back.
+  - **Create mask**: with two or more layers selected, the top one masks the others (as in the right-click menu).
   - **Delete**.
 - **At the bottom:** the layer count ("1 of 9 selected") and, on the right, **Animate**, which opens a menu of the properties the selected layers can animate. Picking one adds a keyframe at the playhead. Shortcuts: Shift+P position, Shift+A origin, Shift+S scale, Shift+R rotate, Shift+X skew, Shift+O opacity, Shift+B stroke color, Shift+W stroke width, Shift+D draw, Shift+F dash offset, Shift+M morph. Fill color, fill opacity and stroke opacity have no shortcut (Shift+C is the Convert Point tool).
 
