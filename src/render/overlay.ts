@@ -11,6 +11,7 @@ import { currentNode, segCtrl } from '../tools/motion-path';
 import { editBox, followTextEdit, textEditing } from '../tools/text-edit';
 import { drawGuides } from './guides';
 import { drawGradHandles } from '../tools/gradient-handles';
+import { onPicker } from '../ui/color-picker';
 
 export function toDoc(x: number, y: number) {
   return new DOMPoint(x, y).matrixTransform(CONTENT.getScreenCTM().inverse());
@@ -78,6 +79,7 @@ export function obbOf(l: Layer): DOMPoint[] | null {
 export function quadPts(q: DOMPointReadOnly[]) {
   return q.map(p => r2(p.x) + ',' + r2(p.y)).join(' ');
 }
+onPicker(() => drawOverlay());
 export function drawOverlay() {
   OV.replaceChildren();
   followTextEdit();

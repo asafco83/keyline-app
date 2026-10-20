@@ -140,6 +140,12 @@ let T: PaintTarget | null = null,
   alpha = 1,
   anchor: HTMLElement | null = null;
 const POP = () => $('#cpop') as HTMLElement;
+// told when the window opens or closes (the canvas shows / hides gradient handles)
+const watchers: Array<() => void> = [];
+export function onPicker(fn: () => void) {
+  watchers.push(fn);
+}
+const tell = () => watchers.forEach(f => f());
 export function pickerOpen() {
   return !!T;
 }
@@ -309,6 +315,7 @@ export function openPicker(btn: HTMLElement, target: PaintTarget) {
   render();
   place();
   btn.setAttribute('aria-expanded', 'true');
+  tell();
 }
 export function closePicker() {
   if (!T) return;
@@ -318,6 +325,7 @@ export function closePicker() {
   if (anchor) anchor.setAttribute('aria-expanded', 'false');
   anchor = null;
   t.done();
+  tell();
 }
 function setType(t: PaintType) {
   const c = curColor(),
