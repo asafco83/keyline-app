@@ -4,6 +4,7 @@ import type { Ease, Layer, PathData, PropKey, Vec2 } from '../model/types';
 import {
   $,
   EZFAM,
+  ICON,
   FONTS,
   H,
   PROPS,
@@ -62,7 +63,7 @@ export function gnum(g: string, lab: string, unit?: string) {
   return `<label class="nf"><span>${lab}</span><input id="g-${g}" data-g="${g}" inputmode="decimal" spellcheck="false" aria-label="${lab}">${unit ? `<em>${unit}</em>` : ''}</label>`;
 }
 /** A colour swatch that opens the colour picker. `types`: which paints it offers. */
-const EYE = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4.5l5 5M17 7l-9.5 9.5L5 19l2.5-2.5L17 7z"/><path d="M13 5.5l5.5 5.5"/></svg>`;
+const EYE = ICON.eyedropper;
 /** the eyedropper button next to a swatch (only in browsers that have one) */
 export function eyeBtn(attrs: string) {
   return typeof (window as any).EyeDropper === 'function'

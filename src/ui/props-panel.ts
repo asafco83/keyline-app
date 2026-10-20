@@ -24,18 +24,36 @@ import { renderStage } from '../render/stage';
 const PAINTED = ['rect', 'ellipse', 'path', 'text'];
 const I = {
   link: ic('<path d="M9 15l6-6M10 6.5l1.5-1.5a4 4 0 015.7 5.7L15.7 12M8.3 12l-1.5 1.5a4 4 0 005.7 5.7L14 17.5"/>'),
-  pick: ic('<path d="M14.5 4.5l5 5M17 7l-9.5 9.5L5 19l2.5-2.5L17 7z"/><path d="M13 5.5l5.5 5.5"/>'),
+  pick: ICON.eyedropper,
   swap: ic('<path d="M7 4v13M4 14l3 3 3-3M17 20V7M14 10l3-3 3 3"/>'),
   alignL: ic('<path d="M4 5h16M4 10h10M4 15h16M4 20h10"/>'),
   alignC: ic('<path d="M4 5h16M7 10h10M4 15h16M7 20h10"/>'),
   alignR: ic('<path d="M4 5h16M10 10h10M4 15h16M10 20h10"/>'),
   keepW: ic('<path d="M4 5v14M20 5v14M7 12h10M10 9l-3 3 3 3M14 9l3 3-3 3"/>'),
-  capButt: ic('<path d="M4 12h12" stroke-width="5" stroke-linecap="butt"/><path d="M16 6v12" stroke-width="1"/>'),
-  capRound: ic('<path d="M4 12h10" stroke-width="5" stroke-linecap="round"/><path d="M16 6v12" stroke-width="1"/>'),
-  capSquare: ic('<path d="M4 12h10" stroke-width="5" stroke-linecap="square"/><path d="M16 6v12" stroke-width="1"/>'),
-  joinMiter: ic('<path d="M5 19V5h14" stroke-width="4" stroke-linejoin="miter" stroke-linecap="butt"/>'),
-  joinRound: ic('<path d="M5 19V5h14" stroke-width="4" stroke-linejoin="round" stroke-linecap="butt"/>'),
-  joinBevel: ic('<path d="M5 19V5h14" stroke-width="4" stroke-linejoin="bevel" stroke-linecap="butt"/>'),
+  capButt: ic(
+    '<path fill="currentColor" stroke="none" d="M2 6.5h13v11H2z"/><path class="knock" fill="none" stroke-width="1.7" stroke-linecap="round" d="M2 12h13"/><circle class="knockf" stroke="none" cx="15" cy="12" r="2"/>',
+    18,
+  ),
+  capRound: ic(
+    '<path fill="currentColor" stroke="none" d="M2 6.5h13a5.5 5.5 0 010 11H2z"/><path class="knock" fill="none" stroke-width="1.7" stroke-linecap="round" d="M2 12h13"/><circle class="knockf" stroke="none" cx="15" cy="12" r="2"/>',
+    18,
+  ),
+  capSquare: ic(
+    '<path fill="currentColor" stroke="none" d="M2 6.5h18.5v11H2z"/><path class="knock" fill="none" stroke-width="1.7" stroke-linecap="round" d="M2 12h13"/><circle class="knockf" stroke="none" cx="15" cy="12" r="2"/>',
+    18,
+  ),
+  joinMiter: ic(
+    '<path fill="currentColor" stroke="none" d="M3 22V2h20v10h-10v10z"/><path class="knock" fill="none" stroke-width="1.7" stroke-linecap="round" d="M8 22V7h15"/>',
+    18,
+  ),
+  joinRound: ic(
+    '<path fill="currentColor" stroke="none" d="M3 22V12A10 10 0 0113 2h10v10h-10v10z"/><path class="knock" fill="none" stroke-width="1.7" stroke-linecap="round" d="M8 22V7h15"/>',
+    18,
+  ),
+  joinBevel: ic(
+    '<path fill="currentColor" stroke="none" d="M3 22V8.5L9.5 2H23v10h-10v10z"/><path class="knock" fill="none" stroke-width="1.7" stroke-linecap="round" d="M8 22V7h15"/>',
+    18,
+  ),
   orient: ic('<path d="M4 19c2-8 7-12 14-13"/><path d="M14 3.5l4.5 2.5-2.5 4.5"/><circle cx="4" cy="19" r="1.5"/>'),
   up: ic('<path d="M12 19V5M6 11l6-6 6 6"/>'),
   down: ic('<path d="M12 5v14M6 13l6 6 6-6"/>'),
@@ -311,11 +329,11 @@ export function appearanceSection(l: Layer) {
     h += `<div class="sub">Stroke style</div>`;
     h += nrow(
       'Line ends',
-      `<div class="btns tight">${tbtn('x:stroke-linecap', 'butt', lc === 'butt', I.capButt, 'Butt ends')}${tbtn('x:stroke-linecap', 'round', lc === 'round', I.capRound, 'Round ends')}${tbtn('x:stroke-linecap', 'square', lc === 'square', I.capSquare, 'Square ends')}</div>`,
+      `<div class="btns tight lj">${tbtn('x:stroke-linecap', 'butt', lc === 'butt', I.capButt, 'Butt ends')}${tbtn('x:stroke-linecap', 'round', lc === 'round', I.capRound, 'Round ends')}${tbtn('x:stroke-linecap', 'square', lc === 'square', I.capSquare, 'Square ends')}</div>`,
     );
     h += nrow(
       'Line join',
-      `<div class="btns tight">${tbtn('x:stroke-linejoin', 'miter', join === 'miter', I.joinMiter, 'Miter join')}${tbtn('x:stroke-linejoin', 'round', join === 'round', I.joinRound, 'Round join')}${tbtn('x:stroke-linejoin', 'bevel', join === 'bevel', I.joinBevel, 'Bevel join')}</div><label class="nf${join === 'miter' ? '' : ' ro'}" title="${join === 'miter' ? 'Miter limit: how far a sharp corner may stick out before it is cut flat, as a multiple of the stroke width' : 'Miter limit only applies to miter joins'}"><span>Miter</span><input data-x="stroke-miterlimit" id="x-miter" inputmode="decimal" value="${esc(X['stroke-miterlimit'] || '4')}" aria-label="Miter limit"${join === 'miter' ? '' : ' disabled'}></label>`,
+      `<div class="btns tight lj">${tbtn('x:stroke-linejoin', 'miter', join === 'miter', I.joinMiter, 'Miter join')}${tbtn('x:stroke-linejoin', 'round', join === 'round', I.joinRound, 'Round join')}${tbtn('x:stroke-linejoin', 'bevel', join === 'bevel', I.joinBevel, 'Bevel join')}</div><label class="nf${join === 'miter' ? '' : ' ro'}" title="${join === 'miter' ? 'Miter limit: how far a sharp corner may stick out before it is cut flat, as a multiple of the stroke width' : 'Miter limit only applies to miter joins'}"><span>Miter</span><input data-x="stroke-miterlimit" id="x-miter" inputmode="decimal" value="${esc(X['stroke-miterlimit'] || '4')}" aria-label="Miter limit"${join === 'miter' ? '' : ' disabled'}></label>`,
     );
     h += nrow(
       'Dashes',

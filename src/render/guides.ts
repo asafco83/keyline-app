@@ -8,6 +8,7 @@ import { beginEdit } from '../core/history';
 import { S, doc } from '../core/state';
 import { VIEW } from '../core/view';
 import { drawOverlay } from './overlay';
+import { THEME_EVENT } from '../ui/theme';
 
 const NS = 'http://www.w3.org/2000/svg',
   BIG = 100000,
@@ -214,6 +215,8 @@ export function init(): void {
   $('#rulerX').addEventListener('pointerdown', start('y'));
   $('#rulerY').addEventListener('pointerdown', start('x'));
   window.addEventListener('resize', () => drawRulers());
+  // the rulers paint with theme colours read from CSS: repaint them when the theme changes
+  window.addEventListener(THEME_EVENT, () => drawRulers());
   void NS;
   void RW;
 }

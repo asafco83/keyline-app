@@ -131,7 +131,7 @@ Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to 
   - **Delete**.
 - **At the bottom:** the layer count ("1 of 9 selected") and, on the right, **Animate**, which opens a menu of the properties the selected layers can animate. Picking one adds a keyframe at the playhead. Shortcuts: Shift+P position, Shift+A origin, Shift+S scale, Shift+R rotate, Shift+X skew, Shift+O opacity, Shift+B stroke color, Shift+W stroke width, Shift+D draw, Shift+F dash offset, Shift+M morph. Fill color, fill opacity and stroke opacity have no shortcut (Shift+C is the Convert Point tool).
 
-**Light and dark theme:** the editor follows the system setting until you pick one with the sun / moon button at the bottom of the tool rail; the choice is remembered.
+**Light and dark theme:** the editor follows the system setting until you pick one with the half-circle button in the top bar, right of Keyboard shortcuts; the choice is remembered. Numbers use the UI font with tabular digits, so zeros stay open and columns still line up.
 
 **Work area:** the artboard shows the project name and canvas size above its top-left corner. The timeline shows the current time and the total length (`0:01.50 / 0:03.00`), and the playhead carries a time flag in the ruler.
 
@@ -195,7 +195,7 @@ The guides are saved with the project; the other view settings are remembered in
 
 **Timeline length:** the timeline always fills its panel, past the end of the animation (that part is shaded). The white line marks the end: drag it to change the length (it snaps to 0.05s; Shift for 0.01s) and a tag shows the length while you drag. The Length box follows along, and typing in it still works. With the end line focused, ←/→ change the length by 0.1s (Shift: 1s).
 
-**Freezing a track:** hover a property row in the timeline and click the snowflake. The track keeps its keyframes but stops using them: the property holds the value it had at the playhead, the row and its keyframes turn grey, no keyframes can be added, and exports leave it out. Editing the property meanwhile changes the held value. Click the snowflake again to unfreeze and go back to the keyframes.
+**Freezing a track:** hover a property row in the timeline and click the snowflake, left of the property name. The track keeps its keyframes but stops using them: the property holds the value it had at the playhead, the row and its keyframes turn grey, no keyframes can be added, and exports leave it out. Editing the property meanwhile changes the held value. Click the snowflake again to unfreeze and go back to the keyframes.
 
 **Moving keyframes:** with position keyframes selected in the timeline, dragging the layer or using the arrow keys on the canvas moves all of them together (select them all to move the whole motion path). Arrow keys pressed while working in the timeline still move the selected keyframes in time.
 

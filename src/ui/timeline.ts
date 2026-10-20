@@ -89,8 +89,7 @@ export function renderTimeline() {
           keys += `<button class="kf${S.keys.has(q) ? ' sel' : ''}${q[2] === 'hold' ? ' hold' : ''}" data-lid="${l.id}" data-prop="${k}" data-i="${i}" style="left:${q[0] * S.pps}px" aria-label="${propLabel(l, k)} keyframe at ${fmt(q[0])}s" title="${propLabel(l, k)} · ${fmt(q[0])}s · ${esc(easeLabel(q[2]))}"></button>`;
         }
         const nm = propLabel(l, k);
-        h += `<div class="tl-row tl-prop${fz ? ' frozen' : ''}${S.selSet.has(l.id) ? ' sel' : ''}" data-lid="${l.id}" data-prop="${k}"><div class="tl-name"><span class="tl-pname">${nm}</span>
-        <button class="tl-ic tl-fz${fz ? ' on' : ''}" data-act="freeze" aria-pressed="${fz}" aria-label="${fz ? 'Unfreeze' : 'Freeze'} ${nm}" title="${fz ? `Frozen: ${nm} holds its value and its keyframes are not used. Click to unfreeze.` : `Freeze ${nm}: hold its current value and set the keyframes aside`}">${ICON.freeze}</button>
+        h += `<div class="tl-row tl-prop${fz ? ' frozen' : ''}${S.selSet.has(l.id) ? ' sel' : ''}" data-lid="${l.id}" data-prop="${k}"><div class="tl-name"><button class="tl-ic tl-fz${fz ? ' on' : ''}" data-act="freeze" aria-pressed="${fz}" aria-label="${fz ? 'Unfreeze' : 'Freeze'} ${nm}" title="${fz ? `Frozen: ${nm} holds its value and its keyframes are not used. Click to unfreeze.` : `Freeze ${nm}: hold its current value and set the keyframes aside`}">${ICON.freeze}</button><span class="tl-pname">${nm}</span>
         <button class="kb" data-act="key" ${fz ? 'disabled ' : ''}aria-label="Add or remove ${nm} keyframe at playhead"></button>
         <button class="tl-ic tl-x" data-act="rmtrack" aria-label="Remove ${nm} animation">${ICON.x}</button></div>
         <div class="tl-lane" data-act="lane" style="width:${LW}px">${out}${segs}${keys}</div></div>`;
