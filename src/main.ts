@@ -23,6 +23,7 @@ import { init as initZoom } from './ui/zoom-menu';
 import { init as initLayerMenu } from './ui/layer-menu';
 import { init as initViewMenu } from './ui/view-menu';
 import { init as initGuides } from './render/guides';
+import { init as initPicker } from './ui/color-picker';
 
 // Same order as the original single-file build
 init0(); // ui/tools-rail
@@ -33,6 +34,7 @@ initZoom(); // ui/zoom-menu
 initLayerMenu(); // ui/layer-menu
 initViewMenu(); // ui/view-menu
 initGuides(); // render/guides
+initPicker(); // ui/color-picker
 init2(); // ui/layers-panel
 init3(); // ui/timeline
 init4(); // core/keyframes

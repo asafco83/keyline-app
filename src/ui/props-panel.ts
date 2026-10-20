@@ -17,7 +17,6 @@ import { localFamilies, localFontsSupported, localLoaded, pickWeight, webFont } 
 import { FILTERS, addFilter, fxKey, removeFilter, syncFa } from '../model/filters';
 import { H9 } from '../tools/edit-tools';
 import { colf, gnum, krow, nrow, num, renderInspector } from './inspector';
-import { gradStale, paintRow } from './gradient-ui';
 import { isLine, liveShape, setShape } from '../tools/shapes';
 import { type ShapeParams, maxCornerRadius } from '../geometry/nodes';
 import { renderStage } from '../render/stage';
@@ -269,17 +268,12 @@ export function textAppearanceSection(l: Layer) {
 
 /* ---------- Fill & stroke ---------- */
 
-function picker(k: string) {
-  return typeof (window as any).EyeDropper === 'function'
-    ? `<button class="btn ib" data-act="pick" data-k="${k}" title="Pick a colour from the screen" aria-label="Pick a colour from the screen">${I.pick}</button>`
-    : '';
-}
 export function paintSection(l: Layer) {
   if (!PAINTED.includes(l.type)) return '';
   return `<section class="sec"><h3>Fill & stroke <button class="btn ib h3b" data-act="swap" title="Swap fill and stroke" aria-label="Swap fill and stroke">${I.swap}</button></h3>
-    ${paintRow(l, 'fill', 'Fill', colf('fill') + picker('fill'))}
+    ${krow('fill', 'Fill', colf('fill', 'none,solid,lin,rad'))}
     ${krow('fo', 'Opacity', num('fo::100', 'α', '%'))}
-    ${paintRow(l, 'stk', 'Stroke', colf('stk') + picker('stk'))}
+    ${krow('stk', 'Stroke', colf('stk', 'none,solid,lin,rad'))}
     ${krow('so', 'Opacity', num('so::100', 'α', '%'))}
     ${krow('sw', 'Width', num('sw', 'W', 'px'))}
   </section>`;
@@ -413,7 +407,6 @@ export function refreshProps(l: Layer): void {
     const rn = byId('sh-rad');
     if (rn !== document.activeElement) rn.value = fmt(v);
   }
-  if (gradStale(l)) return void setTimeout(renderInspector, 0);
   const nx = byId('np-x');
   // the playhead moved onto another node: rebuild the panel for it
   if (nx) {

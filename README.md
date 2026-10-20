@@ -138,10 +138,11 @@ Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to 
 - **Transforms:** position, scale (with a keep-proportions link), skew X/Y, rotate as turns + degrees (with a _rotate along the motion path_ toggle when the layer has one), origin, anchor grid, flip.
 - **Motion path:** _Set motion path_ makes the layer follow a path, rectangle or ellipse over the whole animation (one keyframe per point, timed for an even speed). On the canvas, drag a segment of the path to curve it, drag its handles to fine-tune, double-click a segment to straighten it. **Path node** (below it) edits the keyframe at the playhead, or the one before it: its type (straight, mirrored, asymmetric, disconnected) and position; ‹ › step between nodes. Alt-drag a handle to move it alone.
 - **Text appearance:** font (basic stacks, 31 Google Fonts including Hebrew ones, and fonts on this computer — Chrome/Edge can list them after you allow it; elsewhere type a font name), style (weight × italic), bold / italic / underline / overline / strikethrough, size, letter spacing, alignment, line height, and **Keep width**: when on, the box keeps its width and lines break to fit it.
-- **Fill & stroke:** _Solid_, _Linear_ or _Radial_ for each.
-  - **Gradient editor:** drag stops along the bar and click it to add one. A stop has a colour, opacity and position. Linear gradients have an angle; radial ones have a centre and radius.
+- **Fill & stroke:** click a colour swatch to open the colour window. Its top row picks the type: _None_, _Solid_, _Linear_ or _Radial_.
+  - **Colour:** saturation/brightness area, hue and opacity sliders, an eyedropper (in browsers that support it), and Hex / R G B / A fields. Changes show live; clicking outside or pressing Esc closes the window as one undo step.
+  - **Gradient editor:** drag stops along the bar and click it to add one. The colour part edits the selected stop. A stop has a colour, opacity and position. Linear gradients have an angle; radial ones have a centre and radius.
   - **Animating:** gradients animate like colours, blending stops, angle, centre and radius, and even fading from a solid colour. In CSS-only exports, gradients animate their stop colours only.
-  - **Other controls:** colours with an eyedropper (in browsers that support it), fill and stroke opacity, stroke width, and a swap button.
+  - **Other controls:** fill and stroke opacity, stroke width, and a swap button. The document background uses the same window (None or Solid).
 - **Appearance:** _Trim path_ (Start / End / Offset %, all animatable) shows part of a stroke, for draw-on and travelling-dash effects. Also: paint order, blending, isolate, opacity slider, line ends, line join, miter limit, dash pattern, dash offset, path length, draw.
 - **Filters:** blur and drop shadow, reorderable, every parameter animatable (in JS export mode; CSS mode exports filters as static).
 

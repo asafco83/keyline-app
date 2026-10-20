@@ -7,6 +7,7 @@ import {
   FONTS,
   H,
   PROPS,
+  propLabel,
   propKind,
   isFrozen,
   byId,
@@ -33,7 +34,7 @@ import { addChildBone, boneTipL, shiftChildBones } from '../tools/bones';
 import { setAnchor } from '../tools/edit-tools';
 import { align, alignBar, motionPick, setMotionPath } from './align';
 import { booleanOp } from '../core/booleans';
-import { gradClick, gradInput, gradPointer } from './gradient-ui';
+import { openPicker, showSwatch, toValue, rgbaOf, isNone } from './color-picker';
 import {
   appearanceSection,
   filtersSection,
@@ -60,8 +61,9 @@ export function num(f: string, lab: string, unit?: string) {
 export function gnum(g: string, lab: string, unit?: string) {
   return `<label class="nf"><span>${lab}</span><input id="g-${g}" data-g="${g}" inputmode="decimal" spellcheck="false" aria-label="${lab}">${unit ? `<em>${unit}</em>` : ''}</label>`;
 }
-export function colf(f: string) {
-  return `<div class="cf"><span class="swt"><input type="color" data-f="${f}" data-col id="c-${f.replace(/\./g, '_')}" aria-label="Pick color"></span><input class="txt mono" data-f="${f}" id="t-${f.replace(/\./g, '_')}" spellcheck="false" aria-label="Color value"></div>`;
+/** A colour swatch that opens the colour picker. `types`: which paints it offers. */
+export function colf(f: string, types = 'solid') {
+  return `<button class="pswatch" data-paint="${f}" data-ptypes="${types}" id="c-${f.replace(/\./g, '_')}" aria-haspopup="dialog" aria-expanded="false" aria-label="Colour"><i></i></button>`;
 }
 export function krow(k: string, label: string, body: string) {
   return `<div class="row"><button class="kb" data-kb="${k}" aria-label="Keyframe ${label}" title="Add / remove keyframe at playhead"></button><span class="rl">${label}</span><div class="rf">${body}</div></div>`;
@@ -142,11 +144,59 @@ export function renderInspector() {
   refreshInspector(true);
   drawEz();
 }
+/** the document background as a paint value ('none' when transparent) */
+function docBgValue() {
+  const bp = bgPaint(doc);
+  if (!doc.bg || bp.alpha <= 0) return 'none';
+  const q = rgbaOf(bp.color);
+  return toValue([q[0], q[1], q[2], bp.alpha]);
+}
+/** Open the colour picker for a swatch: a layer's fill / stroke / filter colour, or the background. */
+function openPaint(btn: HTMLElement, l: Layer | null) {
+  const begin = () => {
+      if (!S.colorEd) S.colorEd = beginEdit();
+    },
+    done = () => {
+      const ed = S.colorEd;
+      S.colorEd = null;
+      if (ed) ed.end({ insp: true });
+    };
+  if (btn.dataset.docpaint !== undefined)
+    return openPicker(btn, {
+      label: 'Background',
+      types: ['none', 'solid'],
+      get: docBgValue,
+      set(v) {
+        begin();
+        const q = rgbaOf(isNone(v) ? bgPaint(doc).color : v);
+        setBg(doc, { color: toValue([q[0], q[1], q[2], 1]), alpha: isNone(v) ? 0 : q[3] });
+        renderStage();
+        frame();
+      },
+      done,
+    });
+  if (!l) return;
+  const k = btn.dataset.paint as PropKey,
+    label = k === 'fill' ? 'Fill' : k === 'stk' ? 'Stroke' : propLabel(l, k);
+  openPicker(btn, {
+    label,
+    types: (btn.dataset.ptypes || 'solid').split(',') as any,
+    get: () => valueAt(l, k, S.time),
+    set(v) {
+      begin();
+      setProp(l, k, v);
+      // a stroke colour needs a width to be seen
+      if (k === 'stk' && !isNone(v) && !(valueAt(l, 'sw', S.time) > 0)) setProp(l, 'sw', 2);
+      renderStage();
+      frame();
+    },
+    done,
+  });
+}
 export function docPanel() {
   return `<section class="sec"><h3>Document</h3>
     ${nrow('Canvas', `<label class="nf"><span>W</span><input id="d-w" data-doc="w" inputmode="numeric"></label><label class="nf"><span>H</span><input id="d-h" data-doc="h" inputmode="numeric"></label>`)}
-    ${nrow('Background', `<div class="cf"><span class="swt"><input type="color" id="d-bgc" data-doc="bg" aria-label="Background color"></span><input class="txt mono" id="d-bg" data-doc="bg" placeholder="none" spellcheck="false" aria-label="Background value"></div>`)}
-    ${nrow('Opacity', `<label class="nf" title="0% makes the background transparent"><span>α</span><input id="d-bga" data-doc="bgA" inputmode="decimal" aria-label="Background opacity"><em>%</em></label>`)}
+    ${nrow('Background', `<button class="pswatch" id="d-bgc" data-docpaint aria-haspopup="dialog" aria-expanded="false" aria-label="Background colour"><i></i></button>`)}
     ${nrow('Length', `<label class="nf"><span>t</span><input id="d-dur" data-doc="dur" inputmode="decimal"><em>s</em></label>`)}
     ${nrow('Repeat', `<select class="sel" id="d-it" data-doc="it"><option value="0">Loop forever</option><option value="1">Play once</option><option value="2">2 times</option><option value="3">3 times</option><option value="5">5 times</option></select>`)}
     ${nrow('Direction', `<select class="sel" id="d-dir" data-doc="dir"><option value="normal">Normal</option><option value="alternate">Alternate</option><option value="reverse">Reverse</option><option value="alternate-reverse">Reverse, then alternate</option></select>`)}</section>
@@ -165,11 +215,8 @@ export function refreshDocFields() {
   set('d-w', doc.w);
   set('d-h', doc.h);
   const bp = bgPaint(doc);
-  set('d-bg', doc.bg ? bp.color : 'none');
-  set('d-bgc', toHex(bp.color) || '#ffffff');
   const bgc = byId('d-bgc');
-  if (bgc) swatch(bgc, doc.bg ? bp.color : 'none', bp.alpha);
-  set('d-bga', fmt(bp.alpha * 100, 1));
+  if (bgc) showSwatch(bgc, docBgValue());
   set('d-dur', fmt(doc.dur));
   set('d-it', String(doc.it || 0));
   set('d-dir', doc.dir);
@@ -181,6 +228,7 @@ export function refreshInspector(full?: boolean) {
   if (td !== document.activeElement) td.value = fmt(doc.dur);
   const l = selLayer();
   if (!l) return;
+  INSP.querySelectorAll('[data-paint]').forEach((b: HTMLElement) => showSwatch(b, valueAt(l, b.dataset.paint, S.time)));
   INSP.querySelectorAll('[data-f]').forEach((inp: HTMLInputElement) => {
     if (inp === document.activeElement) return;
     const [k, i, m] = inp.dataset.f.split(':') as [PropKey, string, string];
@@ -365,7 +413,6 @@ export function init(): void {
     const t = e.target as HTMLInputElement,
       l = selLayer();
     if (l && propsInput(t, l)) return frame();
-    if (l && gradInput(t, l, true)) return frame();
     if (l && t.dataset.g === 'text') {
       // type in the panel and the canvas follows; one undo step per edit (closed on change)
       if (!S.colorEd) S.colorEd = beginEdit();
@@ -410,7 +457,6 @@ export function init(): void {
     }
     if (t.dataset.doc !== undefined) return docField(t);
     if (!l) return;
-    if (gradInput(t, l, false)) return;
     if (propsChange(t, l)) return;
     if (t.id === 'motionPath') {
       if (t.value && !setMotionPath(l, t.value)) toast('That shape has no length to follow.');
@@ -608,7 +654,8 @@ export function init(): void {
       }
       return;
     }
-    if (l && gradClick(e, l)) return;
+    const ps = (e.target as any).closest('[data-paint],[data-docpaint]');
+    if (ps) return openPaint(ps, l);
     const al = (e.target as any).closest('[data-align]');
     if (al) return align(al.dataset.align);
     const bo = (e.target as any).closest('[data-bool]');
@@ -689,8 +736,6 @@ export function init(): void {
     }
   });
   INSP.addEventListener('pointerdown', (e: PointerEvent) => {
-    const gl = selLayer();
-    if (gl && gradPointer(e, gl)) return;
     const hd = (e.target as any).closest('[data-hd]');
     if (hd && S.keys.size) {
       e.preventDefault();
