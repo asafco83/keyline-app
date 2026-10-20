@@ -1,12 +1,12 @@
 // Keyline — ui/view-menu
 // The snapping (magnet) and grid menus in the canvas bar, and their shortcuts:
-// Alt+S snapping on/off, Alt+R rulers, Alt+L guides.
+// Alt+S snapping on/off, Alt+R rulers, Alt+L guides, Alt+B bones.
 import { $, ic } from '../core/constants';
 import { VIEW, type ViewPrefs, onView, setView } from '../core/view';
 import { drawBackGrid } from '../render/guides';
 import { drawOverlay } from '../render/overlay';
 import { beginEdit } from '../core/history';
-import { doc } from '../core/state';
+import { S, doc } from '../core/state';
 
 const MAG = ic('<path d="M6 4v8a6 6 0 0012 0V4"/><path d="M6 4h4v8a2 2 0 004 0V4h4"/><path d="M6 8h4M14 8h4"/>'),
   GRID = ic('<path d="M4 4h16v16H4zM4 9.3h16M4 14.6h16M9.3 4v16M14.6 4v16"/>');
@@ -31,6 +31,7 @@ function rows(kind: 'snap' | 'grid'): Row[] {
     '-',
     ['rulers', 'Show rulers', VIEW.rulers, 'Alt R'],
     ['guides', 'Show guides', VIEW.guides, 'Alt L'],
+    ['bones', 'Show bones', S.showBones, 'Alt B'],
     '-',
     ['clearGuides', 'Clear guides', false],
   ];
@@ -78,6 +79,11 @@ function syncButtons() {
   $('#vGrid').classList.toggle('on', VIEW.gridFront || VIEW.gridBack || VIEW.rulers);
 }
 function toggle(k: string) {
+  if (k === 'bones') {
+    S.showBones = !S.showBones;
+    drawOverlay();
+    return;
+  }
   if (k === 'clearGuides') {
     const ed = beginEdit();
     doc.guides = { x: [], y: [] };
@@ -89,7 +95,16 @@ function toggle(k: string) {
 /** Alt+S / Alt+R / Alt+L. Returns true when handled. */
 export function viewShortcut(e: KeyboardEvent) {
   if (!e.altKey || e.ctrlKey || e.metaKey) return false;
-  const k = e.code === 'KeyS' ? 'snap' : e.code === 'KeyR' ? 'rulers' : e.code === 'KeyL' ? 'guides' : '';
+  const k =
+    e.code === 'KeyS'
+      ? 'snap'
+      : e.code === 'KeyR'
+        ? 'rulers'
+        : e.code === 'KeyL'
+          ? 'guides'
+          : e.code === 'KeyB'
+            ? 'bones'
+            : '';
   if (!k) return false;
   toggle(k);
   return true;

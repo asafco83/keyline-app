@@ -171,9 +171,4 @@ export function init(): void {
   });
   $('#zIn').addEventListener('click', () => zoomAt(1.25));
   $('#zOut').addEventListener('click', () => zoomAt(1 / 1.25));
-  $('#zBones').addEventListener('click', (e: MouseEvent) => {
-    S.showBones = !S.showBones;
-    (e.currentTarget as HTMLElement).classList.toggle('on', S.showBones);
-    frame();
-  });
 }

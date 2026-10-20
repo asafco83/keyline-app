@@ -176,6 +176,7 @@ They're combined as they look at the playhead into one new path, which takes the
 - **Snapping** (Alt+S turns it on or off) works while moving and drawing. It can snap to objects (the edges and centres of other layers and of the canvas), to points (path nodes), to guides, to the grid, and to whole pixels. Matches show as magenta lines, and holding Ctrl/Cmd skips snapping.
 - **Grid:** a back grid sits behind the artwork and a front grid over it. The grid size is set in the grid menu.
 - **Rulers** (Alt+R): drag from a ruler to make a guide.
+- **Show bones** (Alt+B) shows or hides bones on the canvas.
 - **Guides** (Alt+L shows or hides them): drag a guide to move it, or drop it on a ruler to remove it. _Clear guides_ removes them all.
 
 The guides are saved with the project; the other view settings are remembered in this browser.
