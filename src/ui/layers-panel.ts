@@ -27,7 +27,7 @@ const MASK_IC =
   '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><circle cx="12" cy="12" r="5" fill="currentColor" fill-opacity=".4"/></svg>';
 /** The "clipped" hook shown before layers that a mask or clip folder applies to. */
 const CLIP_IC =
-  '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 10.5h4.5V3"/><path d="M4.8 5.2L7 3l2.2 2.2"/></svg>';
+  '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 10.5H5V3"/><path d="M2.8 5.2L5 3l2.2 2.2"/></svg>';
 export function renderLayers() {
   const rows = treeRows(null, 0, [], true);
   if (!rows.length)
