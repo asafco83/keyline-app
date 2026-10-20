@@ -484,8 +484,34 @@ describe('gradients and trim path', () => {
     );
     expect(m.p).toEqual([0, 0.25, 1, 0.75]);
   });
+  it('trim dashes paint only the trimmed part (no stray dot from a dash at the ends)', () => {
+    // the dashes a dasharray / dashoffset pair puts on a path of length 100, as [start, end]
+    const pieces = ([da, off]: string[]) => {
+      const [d, g] = da.split(' ').map(Number),
+        per = d + g,
+        out: number[][] = [];
+      for (let s = -Number(off) - 5 * per; s < 100 + 1e-9; s += per) {
+        const a = Math.max(0, s),
+          b = Math.min(100, s + d);
+        if (s + d >= -1e-9 && s <= 100 + 1e-9) out.push([+a.toFixed(3), +b.toFixed(3)]);
+      }
+      return out;
+    };
+    expect(pieces(H.trimDash([0, 0, 0]))).toEqual([]);
+    expect(pieces(H.trimDash([30, 30, 50]))).toEqual([]);
+    expect(pieces(H.trimDash([0, 7.08, 0]))).toEqual([[0, 7.08]]);
+    expect(pieces(H.trimDash([0, 100, 0]))).toEqual([[0, 100]]);
+    expect(pieces(H.trimDash([50, 100, 0]))).toEqual([[50, 100]]);
+    expect(pieces(H.trimDash([20, 60, 0]))).toEqual([[20, 60]]);
+    // crossing the end wraps around to the start (closed shapes)
+    expect(pieces(H.trimDash([60, 90, 30]))).toEqual([
+      [0, 20],
+      [90, 100],
+    ]);
+    expect(pieces(H.trimDash([10, 30, 150]))).toEqual([[60, 80]]);
+  });
   it('trims the stroke', () => {
-    expect(H.trimDash([10, 50, 5])).toEqual(['40 60', '-15']);
+    expect(H.trimDash([10, 50, 5])).toEqual(['40 160', '-15']);
     const L: EngineLayer = {
       id: 't',
       b: {},

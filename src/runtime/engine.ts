@@ -523,9 +523,16 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
   function trimDash(tr: number[]): string[] {
     var s0 = Math.max(0, Math.min(100, Math.min(tr[0], tr[1]))),
       e0 = Math.max(0, Math.min(100, Math.max(tr[0], tr[1]))),
-      len = e0 - s0;
-    // one dash of the visible length per pathLength (100), so the offset wraps around closed shapes
-    return [f(len) + ' ' + f(100 - len), String(f(-(s0 + tr[2])))];
+      len = e0 - s0,
+      raw = s0 + (tr[2] || 0),
+      a = ((raw % 100) + 100) % 100;
+    // A zero-length dash still paints its line cap (a dot with round caps), so nothing may sit on
+    // the path unless it is part of the trim: an empty trim parks its dash off the path (repeats
+    // at a ± 150), and a trim that doesn't cross the end repeats every 200 (never at 100, the end).
+    if (len < 1e-6) return ['0 300', String(f(150 - a))];
+    if (a + len <= 100 + 1e-6) return [f(len) + ' ' + f(200 - len), String(f(-a))];
+    // crossing the end: one dash per pathLength (100), so it wraps around to the start
+    return [f(len) + ' ' + f(100 - len), String(f(-raw))];
   }
   /** the path at time t: morph value, with animated line ends or corner radius applied */
   function shapeOf(L: EngineLayer, t: number): EngineSubPath[] | undefined {
