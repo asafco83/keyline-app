@@ -2332,3 +2332,121 @@ details summary {
   display: inline-flex;
   margin-left: 4px;
 }
+
+/* snapping, grid, rulers and guides */
+:root {
+  --grid: rgba(80, 90, 120, 0.16);
+  --grid-major: rgba(80, 90, 120, 0.34);
+  --guide: #00b7ff;
+  --snap: #ff3ea5;
+}
+.ov-grid {
+  pointer-events: none;
+}
+.ov-guide {
+  stroke: var(--guide);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.ov-guide-hit {
+  stroke: transparent;
+  stroke-width: 7;
+  vector-effect: non-scaling-stroke;
+  cursor: grab;
+}
+.ov-snap {
+  stroke: var(--snap);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.ruler {
+  position: absolute;
+  z-index: 3;
+  display: block;
+  background: var(--panel);
+}
+.ruler[hidden] {
+  display: none;
+}
+.ruler.rx {
+  left: 20px;
+  right: 0;
+  top: 0;
+  height: 20px;
+  width: calc(100% - 20px);
+  cursor: ns-resize;
+}
+.ruler.ry {
+  top: 20px;
+  left: 0;
+  width: 20px;
+  height: calc(100% - 20px);
+  cursor: ew-resize;
+}
+.ruler.rc {
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.guide-tip {
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--fg);
+  color: var(--panel);
+  font: 600 11px var(--f-num);
+}
+.zoom .btn.vb {
+  gap: 2px;
+  padding: 0 6px;
+}
+.zoom .btn.vb.on {
+  color: var(--accent);
+}
+.zoom .vsep {
+  width: 1px;
+  align-self: stretch;
+  margin: 4px 2px;
+  background: var(--line);
+}
+.view-menu button .vm-chk {
+  width: 12px;
+  color: var(--accent);
+  font-weight: 700;
+}
+.view-menu button {
+  justify-content: flex-start;
+}
+.view-menu button kbd {
+  margin-left: auto;
+}
+.view-menu button.dim {
+  opacity: 0.5;
+}
+.vm-size {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+.vm-size input {
+  width: 56px;
+  height: 24px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--panel-2);
+  padding: 0 6px;
+  font-family: var(--f-num);
+}
+.vm-size em {
+  font-style: normal;
+  color: var(--muted);
+}

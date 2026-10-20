@@ -8,7 +8,9 @@ import { INSP, WRAP } from '../core/dom';
 import { beginEdit, select, setProp, setTool } from '../core/history';
 import { S, layerById } from '../core/state';
 import { isLocked, parentMatrix } from '../model/tree';
-import { docPt, drawOverlay, obbOf } from '../render/overlay';
+import { boxOf, docPt, drawOverlay, obbOf } from '../render/overlay';
+import { clearSnap, selfAndKids, snapMove, snapPoint, snapTargets } from './snap';
+import { guideDrag } from '../render/guides';
 import { fit, frame } from '../render/stage';
 import { boneCreate, fkDrag, ikDrag } from './bones';
 import { createText, handleDrag, nodeDrag, toggleSmooth } from './edit-tools';
@@ -50,6 +52,10 @@ export function endDrag(e: PointerEvent) {
     S.drag = null;
     const p = (e.type === 'pointercancel' || (!e.clientX && !e.clientY)) && S.lastPt ? S.lastPt : docPt(e);
     if (d.up) d.up(p, e);
+    if (S.snapLines) {
+      S.snapLines = null;
+      drawOverlay();
+    }
   }
 }
 export function moveDrag(l: Layer, p0: XY) {
@@ -59,24 +65,35 @@ export function moveDrag(l: Layer, p0: XY) {
     // position keyframes selected in the timeline move together (the whole motion path when all are)
     keys = selectedPosKeys(l),
     keyStart = keys.map(q => clone(q[1])),
+    // snapping: the layer's box against everything else
+    T = snapTargets(selfAndKids(l)),
+    box0 = boxOf(l),
     ed = beginEdit();
   let moved = false;
   S.drag = {
     move(p, e) {
-      const lp = xfp(PMi, p.x, p.y);
-      let dx = lp.x - lp0.x,
-        dy = lp.y - lp0.y;
-      if (!moved && Math.hypot(p.x - p0.x, p.y - p0.y) * S.scale < 3) return;
+      let ddx = p.x - p0.x,
+        ddy = p.y - p0.y;
+      if (!moved && Math.hypot(ddx, ddy) * S.scale < 3) return;
       moved = true;
       if (e.shiftKey) {
-        if (Math.abs(dx) > Math.abs(dy)) dy = 0;
-        else dx = 0;
+        if (Math.abs(ddx) > Math.abs(ddy)) ddy = 0;
+        else ddx = 0;
       }
+      if (box0 && !e.ctrlKey && !e.metaKey) {
+        const [sx, sy] = snapMove(box0, ddx, ddy, T);
+        ddx = e.shiftKey && ddx === 0 ? 0 : sx;
+        ddy = e.shiftKey && ddy === 0 ? 0 : sy;
+      } else clearSnap();
+      const lp = xfp(PMi, p0.x + ddx, p0.y + ddy),
+        dx = lp.x - lp0.x,
+        dy = lp.y - lp0.y;
       if (keys.length) keys.forEach((q, i) => (q[1] = [r2(keyStart[i][0] + dx), r2(keyStart[i][1] + dy)]));
       else setProp(l, 'pos', [r2(start[0] + dx), r2(start[1] + dy)]);
       frame();
     },
     up() {
+      clearSnap();
       ed.end();
     },
   };
@@ -102,7 +119,11 @@ export function init(): void {
     if (t === 'delnode') return delNodeDown(p, e, hitChain(e.target));
     if (t === 'convert') return convertDown(p, e, hitChain(e.target));
     if (t === 'pencil') return pencilDown(p);
-    if (SHAPE_TOOLS.includes(t)) return createDrag(t, p);
+    if (SHAPE_TOOLS.includes(t)) {
+      createDrag(t, snapPoint(p, snapTargets()));
+      if (S.drag) S.drag.snapPt = true;
+      return;
+    }
     if (t === 'text') {
       // clicking an existing text with the Text tool edits it
       const hit = hitChain(e.target)
@@ -128,6 +149,12 @@ export function init(): void {
     }
     const nd = (e.target as any).closest('[data-node]');
     if (nd) return nodeDrag(nd.dataset.node.split(',').map(Number), p);
+    const gd = (e.target as any).closest('[data-guide]');
+    if (gd && t === 'select') {
+      const [ax, i] = gd.dataset.guide.split(':');
+      e.preventDefault();
+      return guideDrag(ax, +i, e);
+    }
     const h = (e.target as any).closest('[data-h]');
     if (h && (h.dataset.h === 'tbe' || h.dataset.h === 'tbw')) {
       e.preventDefault(); // keep typing after resizing the box
@@ -202,8 +229,14 @@ export function init(): void {
     }
   });
   WRAP.addEventListener('pointermove', (e: PointerEvent) => {
-    const p = docPt(e);
+    let p: XY = docPt(e);
     S.lastPt = p;
+    // drags that place points (drawing, nodes, handles) snap the pointer; Ctrl/Cmd skips snapping
+    if (S.drag && S.drag.snapPt && !e.ctrlKey && !e.metaKey) {
+      const d = S.drag as any;
+      d._T = d._T || snapTargets(S.drag.snapPt);
+      p = snapPoint(p, d._T);
+    }
     if (S.drag) S.drag.move && S.drag.move(p, e);
     else penHover(p, e);
   });

@@ -182,6 +182,8 @@ export interface ExportSettings {
 
 export interface Doc {
   name: string;
+  /** ruler guides, in document units: vertical lines at x, horizontal lines at y */
+  guides?: { x: number[]; y: number[] };
   w: number;
   h: number;
   vx: number;
@@ -249,6 +251,8 @@ export interface Drag {
   /** where to draw the label */
   lp?: XY;
   rot?: any;
+  /** snap the pointer to points / grid / guides while dragging (layers to leave out) */
+  snapPt?: Set<string> | true;
   /** keys pressed during the gesture (e.g. ↑/↓ for polygon sides); return true if handled */
   key?(k: string, e: KeyboardEvent): boolean;
 }
@@ -275,6 +279,8 @@ export interface EditorState {
   lexp: Record<string, boolean>;
   /** selected keyframes (references into Layer.t tracks) */
   keys: Set<Keyframe>;
+  /** snap guide lines to draw while dragging (doc units) */
+  snapLines?: { x: number[]; y: number[] } | null;
   /** export just these layers (Export selection) */
   exportOnly?: Set<string> | null;
   /** where arrow keys act (last area clicked) */
