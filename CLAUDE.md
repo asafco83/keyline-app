@@ -6,6 +6,8 @@ pure CSS). Live site: https://asafco83.github.io/svgcinema/ (GitHub Pages, deplo
 
 `README.md` is the user-facing feature list; keep it up to date with every feature.
 `featureSuggestions.md` lists features that are planned but not built yet.
+`LICENSE`: PolyForm Noncommercial 1.0.0, plus a permission letting people use their exported files
+(with the embedded player) for any purpose, including commercially. Keep the PolyForm text unchanged.
 
 ## How we work (the owner's workflow)
 

@@ -287,3 +287,7 @@ SVGcinema targets current Chrome, Edge, Firefox and Safari.
 - **Save overwriting the same file** needs the File System Access API (Chrome and Edge). Other browsers download a fresh copy.
 - **AVIF export** appears only where the browser can encode it.
 - **CSS-only morph** uses `d: path()`, which Safari does not support.
+
+## License
+
+SVGcinema is free for noncommercial use under the [PolyForm Noncommercial License 1.0.0](LICENSE): you may use, copy, change and share the code, but not sell it or use it to make money. The animations you export are yours to use for anything, including commercial work. See [LICENSE](LICENSE) for the full terms.
