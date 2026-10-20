@@ -5,7 +5,7 @@
 //   colour    saturation/brightness area, hue and opacity sliders, eyedropper, hex and R G B A fields
 // For a gradient the colour part edits the selected stop. Changes apply live; closing the window
 // (click outside, Esc) commits them as one undo step.
-import { $, H, clamp, clone, esc, fmt, r3 } from '../core/constants';
+import { $, H, ICON, clamp, clone, esc, fmt, r3 } from '../core/constants';
 
 export type PaintType = 'none' | 'solid' | 'lin' | 'rad';
 export type Grad = {
@@ -237,7 +237,7 @@ function render() {
     const eye = typeof (window as any).EyeDropper === 'function';
     h += `<div class="cp-sv" data-cpsv><i class="cp-knob"></i></div>
       <div class="cp-mid">
-        ${eye ? `<button class="btn ib" data-cpeye title="Pick a colour from the screen" aria-label="Pick a colour from the screen"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M14.5 4.5l5 5M17 7l-9.5 9.5L5 19l2.5-2.5L17 7z"/><path d="M13 5.5l5.5 5.5"/></svg></button>` : ''}
+        ${eye ? `<button class="btn ib" data-cpeye title="Pick a colour from the screen" aria-label="Pick a colour from the screen">${ICON.eyedropper}</button>` : ''}
         <span class="cp-prev"><i></i></span>
         <div class="cp-sliders"><div class="cp-hue" data-cphue><i></i></div><div class="cp-alpha" data-cpalpha><b></b><i></i></div></div>
       </div>

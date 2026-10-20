@@ -25,7 +25,9 @@
   --shade-sm: rgba(20, 24, 40, 0.1);
   --f-ui: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --f-mark: 'Instrument Serif', Georgia, 'Times New Roman', serif;
-  --f-num: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  /* numbers use the UI font with tabular digits: its zero is open, so it can't be read as an 8 */
+  --f-num: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-code: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
@@ -97,6 +99,7 @@ body {
   background: var(--bg);
   color: var(--fg);
   font: 13px/1.4 var(--f-ui);
+  font-variant-numeric: tabular-nums;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -962,8 +965,9 @@ button {
   background: var(--panel-2);
   flex: none;
 }
+/* select.sel, not .sel: 'sel' is also the selected-state class on rows, keyframes and stops */
 .txt,
-.sel,
+select.sel,
 textarea.ta {
   width: 100%;
   min-width: 0;
@@ -975,7 +979,7 @@ textarea.ta {
   font-size: 12px;
 }
 .txt:hover,
-.sel:hover,
+select.sel:hover,
 textarea.ta:hover {
   border-color: var(--line);
 }
@@ -989,7 +993,7 @@ textarea.ta {
   resize: vertical;
 }
 .txt:focus,
-.sel:focus,
+select.sel:focus,
 textarea.ta:focus {
   border-color: var(--accent);
   outline: none;
@@ -1392,7 +1396,8 @@ textarea.ta:focus {
   background: var(--accent-soft);
 }
 .tl-prop .tl-name {
-  padding-left: 34px;
+  /* the freeze toggle sits in the indent, left of the property name */
+  padding-left: 12px;
   gap: 2px;
 }
 .tl-pname {
@@ -2166,7 +2171,7 @@ textarea.ta:focus {
   margin: 0;
 }
 .note code {
-  font-family: var(--f-num);
+  font-family: var(--f-code);
   font-size: 11px;
   background: var(--panel-2);
   border: 1px solid var(--line);
@@ -2225,7 +2230,7 @@ textarea.code.tall {
 textarea.code {
   width: 100%;
   height: 150px;
-  font: 11px/1.45 var(--f-num);
+  font: 11px/1.45 var(--f-code);
   background: var(--panel-2);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -3438,4 +3443,27 @@ select.sel {
   background-repeat: no-repeat;
   background-position: right 8px center;
   text-overflow: ellipsis;
+}
+
+/* line ends / joins: the knocked-out path line takes the button's background colour */
+.btns.lj .btn.ib svg {
+  width: 18px;
+  height: 18px;
+}
+.btns.lj .knock {
+  stroke: var(--panel-2);
+}
+.btns.lj .knockf {
+  fill: var(--panel-2);
+}
+.btns.lj .btn.on .knock {
+  stroke: var(--raised);
+}
+.btns.lj .btn.on .knockf {
+  fill: var(--raised);
+}
+
+/* with rulers on, the artboard label would sit under the top ruler (which shows the size anyway) */
+.stage:has(#rulerX:not([hidden])) .ab-label {
+  display: none;
 }

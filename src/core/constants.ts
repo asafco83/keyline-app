@@ -173,6 +173,9 @@ export function ic(p: string, s = 16) {
   return `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 }
 export const ICON: Record<string, string> = {
+  eyedropper: ic(
+    '<path d="M14.2 6.2l2.9-2.9a2.3 2.3 0 013.3 3.3l-2.9 2.9" fill="currentColor"/><path d="M12 6.8l5.2 5.2"/><path d="M13.6 8.4L5.7 16.3c-.4.4-.6.9-.6 1.4V19h1.3c.5 0 1-.2 1.4-.6l7.9-7.9"/><path d="M3.6 20.4l1.4-1.4"/>',
+  ),
   bone: ic('<circle cx="6" cy="18" r="2.5"/><path d="M8 16L18 6M8 16l2.5-6.5L18 6l-6.5 2.5z"/>'),
   select: ic('<path d="M5 3.5l13 6.2-5.6 1.7-1.9 5.8z"/><path d="M12.4 11.4l5 5"/>'),
   node: ic(
