@@ -63,7 +63,7 @@ export function startTextEdit(l: Layer, selectAll?: boolean) {
   editing = l.id;
   edit = beginEdit();
   ta = document.createElement('textarea');
-  ta.className = 'kl-tedit';
+  ta.className = 'cin-tedit';
   ta.spellcheck = false;
   ta.setAttribute('aria-label', 'Text');
   ta.value = String(l.geo.text || '');

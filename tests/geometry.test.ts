@@ -14,9 +14,9 @@ import {
   splitSegAt,
   starNodes,
 } from '../src/geometry/nodes';
-import { KLEngine } from '../src/runtime/engine';
+import { CinEngine } from '../src/runtime/engine';
 
-const H = KLEngine({ L: [] }, null);
+const H = CinEngine({ L: [] }, null);
 const count = (v: any[]) => v.map(s => s.n.length);
 
 describe('SVG path parsing', () => {

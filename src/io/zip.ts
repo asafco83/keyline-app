@@ -173,7 +173,7 @@ export function dataToBytes(d: string) {
 export function usedAssetIds() {
   return new Set<string>(doc.layers.filter(l => l.type === 'image').map(l => l.geo.asset));
 }
-export async function buildKLP(includeAll?: boolean) {
+export async function buildProject(includeAll?: boolean) {
   const enc = new TextEncoder(),
     used = usedAssetIds(),
     ids = Object.keys(ASSETS).filter(id => includeAll || used.has(id)),
@@ -188,7 +188,7 @@ export async function buildKLP(includeAll?: boolean) {
     files.push({ name: file, data: bytes, compress: a.kind === 'svg' || /bmp|x-icon|tiff/.test(a.mime || '') });
   });
   const manifest = {
-    format: 'keyline-project',
+    format: 'svgcinema-project',
     version: 3,
     app: 'SVGcinema',
     name: doc.name,

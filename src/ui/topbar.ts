@@ -112,7 +112,7 @@ export function init(): void {
     const p = docPt(e);
     let aid = '';
     try {
-      aid = e.dataTransfer.getData('text/x-keyline-asset');
+      aid = e.dataTransfer.getData('text/x-svgcinema-asset');
     } catch (_) {}
     if (aid && ASSETS[aid]) {
       placeAsset(ASSETS[aid], p);

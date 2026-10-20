@@ -4,22 +4,22 @@ import { crc32, makeZip, readZip } from '../src/io/zip';
 const enc = new TextEncoder(),
   dec = new TextDecoder();
 
-describe('zip (.klp container)', () => {
+describe('zip (.SVGcinema container)', () => {
   it('computes the standard CRC-32', () => {
     expect(crc32(enc.encode('123456789'))).toBe(0xcbf43926);
   });
 
   it('round-trips stored and deflated entries', async () => {
-    const big = 'keyline '.repeat(2000);
+    const big = 'svgcinema '.repeat(2000);
     const bin = new Uint8Array(256).map((_, i) => i);
     const blob = await makeZip([
-      { name: 'manifest.json', data: enc.encode('{"format":"keyline-project"}'), compress: true },
+      { name: 'manifest.json', data: enc.encode('{"format":"svgcinema-project"}'), compress: true },
       { name: 'project.json', data: enc.encode(big), compress: true },
       { name: 'assets/a1.bin', data: bin, compress: false },
     ]);
     const z = await readZip(await blob.arrayBuffer());
     expect(z.names).toEqual(['manifest.json', 'project.json', 'assets/a1.bin']);
-    expect(JSON.parse(await z.text('manifest.json')).format).toBe('keyline-project');
+    expect(JSON.parse(await z.text('manifest.json')).format).toBe('svgcinema-project');
     expect(await z.text('project.json')).toBe(big);
     expect(Array.from(await z.get('assets/a1.bin'))).toEqual(Array.from(bin));
     expect(await z.get('missing.txt')).toBeNull();

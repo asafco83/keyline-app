@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { KLEngine, type EngineLayer } from '../src/runtime/engine';
+import { CinEngine, type EngineLayer } from '../src/runtime/engine';
 
 const layer = (t: EngineLayer['t'], b: Record<string, any> = {}): EngineLayer => ({
   id: 'a',
@@ -7,7 +7,7 @@ const layer = (t: EngineLayer['t'], b: Record<string, any> = {}): EngineLayer =>
   b: { pos: [0, 0], rot: 0, scl: [1, 1], op: 1, ...b },
   t,
 });
-const H = KLEngine({ L: [] }, null);
+const H = CinEngine({ L: [] }, null);
 
 describe('easing', () => {
   const names = [
@@ -146,7 +146,7 @@ describe('player API', () => {
     vi.useRealTimers();
   });
   const make = (extra = {}) =>
-    KLEngine(
+    CinEngine(
       {
         p: 'x-',
         dur: 2,
@@ -211,14 +211,14 @@ describe('player API', () => {
     expect(P.state).toBe('destroyed');
   });
   it('maps alternate iterations backwards', () => {
-    const P = KLEngine({ dur: 2, it: 0, dir: 'alternate', L: [] }, null);
+    const P = CinEngine({ dur: 2, it: 0, dir: 'alternate', L: [] }, null);
     expect(P.loc(2.5)).toBeCloseTo(1.5);
   });
 });
 
 describe('embedding', () => {
-  it('KLEngine is self-contained so it can be serialised into exported SVGs', () => {
-    const Rebuilt = new Function('return ' + KLEngine.toString())();
+  it('CinEngine is self-contained so it can be serialised into exported SVGs', () => {
+    const Rebuilt = new Function('return ' + CinEngine.toString())();
     const L = layer({
       pos: [
         [0, [0, 0], 'linear'],
@@ -228,7 +228,7 @@ describe('embedding', () => {
     expect(Rebuilt({ L: [] }, null).comp(L, 0.5).x).toBeCloseTo(5);
   });
   it('contains nothing that would break the SVG CDATA block', () => {
-    expect(KLEngine.toString()).not.toContain(']]>');
+    expect(CinEngine.toString()).not.toContain(']]>');
   });
 });
 
@@ -280,7 +280,7 @@ describe('skew, opacities, dash offset and filter tracks', () => {
       ],
     });
     L.fa = { 'fx.f1.sd': ['-f1', 'stdDeviation'], 'fx.f1.col': ['-f1', 'flood-color'] };
-    const P = KLEngine({ p: 'x-', dur: 1, L: [L] }, document.body);
+    const P = CinEngine({ p: 'x-', dur: 1, L: [L] }, document.body);
     P.apply(0.5);
     const fe = document.getElementById('x-a-f1');
     expect(fe.getAttribute('stdDeviation')).toBe('4');

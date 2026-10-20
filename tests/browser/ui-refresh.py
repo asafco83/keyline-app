@@ -1,7 +1,7 @@
 import asyncio, sys, json
 from playwright.async_api import async_playwright
 import os
-OUT=os.environ.get('KL_OUT','/tmp/keyline-shots/'); os.makedirs(OUT, exist_ok=True)
+OUT=os.environ.get('CIN_OUT','/tmp/svgcinema-shots/'); os.makedirs(OUT, exist_ok=True)
 # The refreshed UI: light/dark toggle, collapsible inspector sections, keyframe toggle states,
 # the artboard label, the timecode total and the playhead's time flag.
 async def main():
@@ -16,7 +16,7 @@ async def main():
         def check(n,c,i=None):
             R[n]=('ok' if c else 'FAIL')+('' if i is None else f' {i}')
             if not c: F.append(n)
-        await ev("localStorage.removeItem('keyline:theme'); localStorage.removeItem('keyline:inspClosed')")
+        await ev("localStorage.removeItem('svgcinema:theme'); localStorage.removeItem('svgcinema:inspClosed')")
         await pg.reload(wait_until='domcontentloaded'); await pg.wait_for_timeout(2000)
         await pg.evaluate("async()=>{ window.st=await import('/src/core/state.ts'); window.hi=await import('/src/core/history.ts'); }")
 
@@ -36,7 +36,7 @@ async def main():
         lf=await ev("[...document.querySelectorAll('.brand .logo .lg-a, .brand .logo .lg-b')].filter((e,i,a)=>i==0||e.classList[0]!==a[0].classList[0]).slice(0,2).map(e=>getComputedStyle(e).fill)")
         check('SVGcinema: page title, and the white logo in the dark theme', await ev("document.title")=='SVGcinema' and await ev("document.querySelector('.brand .logo').getAttribute('aria-label')")=='SVGcinema' and lf==['rgb(114, 138, 252)','rgb(255, 255, 255)'], lf)
         await ev("(async()=>{const v=await import('/src/core/view.ts');v.VIEW.rulers=false;const g=await import('/src/render/guides.ts');g.drawRulers()})()")
-        check('the rail button switches to dark and remembers it', await ev("document.documentElement.dataset.theme")=='dark' and await ev("localStorage.getItem('keyline:theme')")=='dark' and dark!=light, (light,dark))
+        check('the rail button switches to dark and remembers it', await ev("document.documentElement.dataset.theme")=='dark' and await ev("localStorage.getItem('svgcinema:theme')")=='dark' and dark!=light, (light,dark))
         check('the button now offers light', await ev("document.getElementById('bTheme').getAttribute('aria-label')")=='Switch to light theme')
         await pg.reload(wait_until='domcontentloaded'); await pg.wait_for_timeout(1500)
         check('dark is kept after a reload', await ev("document.documentElement.dataset.theme")=='dark' and await bg()==dark)

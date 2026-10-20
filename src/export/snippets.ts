@@ -22,10 +22,10 @@ export function snippet(fw: string): string {
     css = ex.mode === 'css',
     file = slug(doc.name) + '.svg',
     pre =
-      (String(ex.prefix || 'kl')
+      (String(ex.prefix || 'cin')
         .toLowerCase()
         .replace(/[^a-z0-9-]/g, '')
-        .replace(/^[^a-z]+/, '') || 'kl') + '-',
+        .replace(/^[^a-z]+/, '') || 'cin') + '-',
     id = pre + 'svg';
   const label = doc.name.replace(/"/g, ''),
     comp = (slug(doc.name).replace(/(^|-)(\w)/g, (m, a, b) => b.toUpperCase()) || 'Animation').replace(/^\d/, 'A$&');

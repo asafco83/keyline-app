@@ -1,7 +1,7 @@
 import asyncio, sys, json
 from playwright.async_api import async_playwright
 import os
-OUT=os.environ.get('KL_OUT','/tmp/keyline-shots/'); os.makedirs(OUT, exist_ok=True)
+OUT=os.environ.get('CIN_OUT','/tmp/svgcinema-shots/'); os.makedirs(OUT, exist_ok=True)
 async def main():
     async with async_playwright() as p:
         b=await p.chromium.launch(); pg=await b.new_page(device_scale_factor=2)
@@ -27,23 +27,23 @@ async def main():
         # enter edit mode
         r=await ev(f"(()=>{{const r=document.getElementById('e-{tid}-s').getBoundingClientRect();return [r.x+r.width*0.08,r.y+r.height/2]}})()")
         await pg.mouse.dblclick(*r); await pg.wait_for_timeout(200)
-        check('edit mode', await ev("document.activeElement && document.activeElement.className==='kl-tedit'"))
+        check('edit mode', await ev("document.activeElement && document.activeElement.className==='cin-tedit'"))
         check('edit box handles only', await handle('tbe') is not None and await handle('tbw') is not None and await handle('e') is None and await handle('nw') is None)
-        check('text stays visible with its styles', await ev(f"!document.getElementById('e-{tid}-s').getAttribute('visibility') && getComputedStyle(document.querySelector('.kl-tedit')).color==='rgba(0, 0, 0, 0)'"))
+        check('text stays visible with its styles', await ev(f"!document.getElementById('e-{tid}-s').getAttribute('visibility') && getComputedStyle(document.querySelector('.cin-tedit')).color==='rgba(0, 0, 0, 0)'"))
         await pg.screenshot(path=OUT+'te3-edit.png', clip={'x':r[0]-60,'y':r[1]-70,'width':420,'height':140})
         # drag the right edit handle narrower: Keep width turns on, text wraps, still typing
         h=await handle('tbe'); x0=await ev(f"{L}.geo.x")
         await drag(h,(h[0]-140,h[1]))
         g=await ev(f"[{L}.geo.wrap,{L}.geo.ww,document.querySelectorAll('#e-{tid}-s tspan').length,JSON.stringify({L}.b.scl)]")
         check('edit handle sets the width and Keep width', g[0] and g[2]>1 and g[3]=='[1,1]', g)
-        check('still editing after resizing', await ev("document.activeElement && document.activeElement.className==='kl-tedit'"))
+        check('still editing after resizing', await ev("document.activeElement && document.activeElement.className==='cin-tedit'"))
         await pg.keyboard.press('End'); await pg.keyboard.type(' more')
         check('typing continues', (await ev(f"{L}.geo.text")).endswith(' more'))
         h=await handle('tbw'); right=await ev(f"{L}.geo.x+{L}.geo.ww")
         await drag(h,(h[0]-50,h[1]))
         check('left handle keeps the right edge', abs(await ev(f"{L}.geo.x+{L}.geo.ww")-right)<0.6, (right, await ev(f"{L}.geo.x+{L}.geo.ww")))
         # editor box follows the text box
-        ta=await ev("(()=>{const b=document.querySelector('.kl-tedit').getBoundingClientRect();return [b.x,b.width]})()")
+        ta=await ev("(()=>{const b=document.querySelector('.cin-tedit').getBoundingClientRect();return [b.x,b.width]})()")
         bx=await ev("(()=>{const p=document.querySelector('#overlay .ov-box').getBoundingClientRect();return [p.x,p.width]})()")
         check('editor matches the box', abs(ta[0]-bx[0])<2 and abs(ta[1]-bx[1])<2, (ta,bx))
         await pg.keyboard.press('Escape')
@@ -52,7 +52,7 @@ async def main():
         await ev("TR.pickTool('text')")
         r=await ev(f"(()=>{{const r=document.getElementById('e-{tid}-s').getBoundingClientRect();return [r.x+r.width*0.1,r.y+r.height*0.3]}})()")
         await pg.mouse.click(*r); await pg.wait_for_timeout(150)
-        check('text tool click edits', await ev("document.activeElement && document.activeElement.className==='kl-tedit'") and await ev("st.S.tool")=='select')
+        check('text tool click edits', await ev("document.activeElement && document.activeElement.className==='cin-tedit'") and await ev("st.S.tool")=='select')
         await pg.keyboard.press('Escape')
         # corner radius animatable: rect
         await ev("TR.pickTool('rect')"); await drag((800,450),(900,550)); await ev("TR.pickTool('select')")

@@ -7,7 +7,7 @@ import { setDoc, doc } from '../src/core/state';
 import { sampleDoc } from '../src/model/sample';
 import { buildExport } from '../src/export/build';
 import { snippet } from '../src/export/snippets';
-import { KLEngine } from '../src/runtime/engine';
+import { CinEngine } from '../src/runtime/engine';
 
 const FIXTURE = resolve(process.cwd(), 'tests/fixtures/export-sample.json');
 const FW = ['html', 'react', 'next', 'vue', 'angular', 'svelte', 'api'];
@@ -26,12 +26,12 @@ function generate() {
   const out: Record<string, string> = {};
   for (const c of CASES) {
     setDoc(sampleDoc());
-    Object.assign(doc.ex, { prefix: 'kl', ids: 'gen', size: 'resp', out: 'pause' }, c);
+    Object.assign(doc.ex, { prefix: 'cin', ids: 'gen', size: 'resp', out: 'pause' }, c);
     const key = Object.entries(c)
       .map(([k, v]) => `${k}=${v}`)
       .join(',');
     // the runtime is checked by its own tests; keep this fixture about markup, CSS and wiring
-    out['svg:' + key] = buildExport(null).code.split(KLEngine.toString()).join('<KLEngine>');
+    out['svg:' + key] = buildExport(null).code.split(CinEngine.toString()).join('<CinEngine>');
     for (const fw of FW) out[`snippet:${fw}:${c.mode}`] = snippet(fw);
   }
   return out;

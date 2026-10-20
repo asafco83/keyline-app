@@ -1,7 +1,7 @@
 import asyncio, sys, json
 from playwright.async_api import async_playwright
 import os
-OUT=os.environ.get('KL_OUT','/tmp/keyline-shots/'); os.makedirs(OUT, exist_ok=True)
+OUT=os.environ.get('CIN_OUT','/tmp/svgcinema-shots/'); os.makedirs(OUT, exist_ok=True)
 URL=(sys.argv[1] if len(sys.argv)>1 else 'http://localhost:5199/'); SHOT=(OUT+'tools')
 async def main():
     async with async_playwright() as p:

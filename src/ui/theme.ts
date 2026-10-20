@@ -4,8 +4,8 @@
 // the choice. (index.html applies a saved choice before the first paint, so there is no flash.)
 // Anything drawn with colours read from CSS in script (the rulers) listens for THEME_EVENT.
 export type Theme = 'light' | 'dark';
-const STORE = 'keyline:theme';
-export const THEME_EVENT = 'keyline:theme';
+const STORE = 'svgcinema:theme';
+export const THEME_EVENT = 'svgcinema:theme';
 
 // half-filled circle; the filled half flips with the theme
 const ICON_LIGHT =

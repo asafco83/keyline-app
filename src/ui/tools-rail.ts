@@ -8,7 +8,7 @@ import { S } from '../core/state';
 import { fitView } from '../tools/hand';
 
 const HOLD_MS = 320;
-const STORE = 'keyline:toolGroup';
+const STORE = 'svgcinema:toolGroup';
 
 function tip(id: string) {
   const t = TOOL_INFO[id];

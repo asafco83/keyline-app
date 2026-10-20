@@ -1,7 +1,7 @@
 // SVGcinema — core/constants
 import type { Layer, PropKey } from '../model/types';
 import { fxKeys, fxOf } from '../model/filters';
-import { KLEngine } from '../runtime/engine';
+import { CinEngine } from '../runtime/engine';
 
 export function $(s: string): any {
   return document.querySelector(s);
@@ -28,7 +28,7 @@ export function esc(s: unknown) {
 export function clamp(v: number, a: number, b: number) {
   return Math.max(a, Math.min(b, v));
 }
-export const H = KLEngine({ L: [] }, null);
+export const H = CinEngine({ L: [] }, null);
 export function xfp(M: DOMMatrixInit, x: number, y: number) {
   return new DOMPoint(x, y).matrixTransform(M);
 }

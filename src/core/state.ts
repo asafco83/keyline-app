@@ -1,14 +1,14 @@
 // SVGcinema — core/state
 import { SWATCH } from './constants';
-import type { KLPlayer } from '../runtime/engine';
+import type { CinPlayer } from '../runtime/engine';
 import type { Asset, Doc, EditorState, Keyframe, Layer, LayerType, Geometry, BaseValues } from '../model/types';
 
 export let doc: Doc;
-export let eng: KLPlayer;
+export let eng: CinPlayer;
 export function setDoc(d: Doc) {
   doc = d;
 }
-export function setEng(e: KLPlayer) {
+export function setEng(e: CinPlayer) {
   eng = e;
 }
 export const ASSETS: Record<string, Asset> = {};
@@ -74,7 +74,7 @@ export function nextColor() {
   return SWATCH[S.swatch++ % SWATCH.length];
 }
 export function randPre() {
-  return 'kl' + Math.random().toString(36).slice(2, 6);
+  return 'cin' + Math.random().toString(36).slice(2, 6);
 }
 export function blankDoc(w: number, h: number): Doc {
   return {

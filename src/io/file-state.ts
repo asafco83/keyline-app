@@ -8,7 +8,7 @@ export function markDirty() {
   if (!S.dirty) {
     S.dirty = true;
     try {
-      localStorage.setItem('keyline:dirty', '1');
+      localStorage.setItem('svgcinema:dirty', '1');
     } catch (e) {}
   }
   updateFileInfo();
@@ -16,7 +16,7 @@ export function markDirty() {
 export function markClean() {
   S.dirty = false;
   try {
-    localStorage.setItem('keyline:dirty', '0');
+    localStorage.setItem('svgcinema:dirty', '0');
   } catch (e) {}
   updateFileInfo();
 }
@@ -33,7 +33,7 @@ export function updateFileInfo() {
       ? 'Save overwrites this file'
       : f && f.name
         ? 'Save downloads a new copy of this file'
-        : 'Use Save to keep this project as a .klp file';
+        : 'Use Save to keep this project as a .SVGcinema file';
 }
 export function persistFile() {
   IDB.set('file', S.file ? { name: S.file.name, handle: S.file.handle || null } : null).then(ok => {

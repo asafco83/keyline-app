@@ -12,7 +12,7 @@ import { detectEnc, updateExport } from './images';
 import { outDims, syncSizeUI } from './size';
 import { markup } from '../render/markup';
 import { fontFaceCSS } from '../render/fonts';
-import { KLEngine } from '../runtime/engine';
+import { CinEngine } from '../runtime/engine';
 
 export function roundV(v: any): any {
   if (typeof v === 'number') return r3(v);
@@ -166,10 +166,10 @@ export function idMapFor(prep: Layer[]) {
 export function buildExport(imgs: Record<string, OptImage> | null) {
   const ex = doc.ex,
     pre =
-      (String(ex.prefix || 'kl')
+      (String(ex.prefix || 'cin')
         .toLowerCase()
         .replace(/[^a-z0-9-]/g, '')
-        .replace(/^[^a-z]+/, '') || 'kl') + '-',
+        .replace(/^[^a-z]+/, '') || 'cin') + '-',
     svgId = pre + 'svg';
   if (ex.mode === 'css' && (ex.trigger === 'click' || ex.trigger === 'scroll' || ex.trigger === 'api'))
     ex.trigger = 'load';
@@ -284,7 +284,7 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
           return o;
         }),
       };
-      out += `<script><![CDATA[\n(function(){var KLEngine=${KLEngine.toString()};\nvar s=document.getElementById(${JSON.stringify(svgId)});if(!s)return;var P=KLEngine(${JSON.stringify(data)},s);s.player=s.svgatorPlayer=P;P.stop();${triggerJS(ex.trigger, ex.out, /reverse/.test(doc.dir) ? -1 : 1)}})();\n]]><\/script>`;
+      out += `<script><![CDATA[\n(function(){var CinEngine=${CinEngine.toString()};\nvar s=document.getElementById(${JSON.stringify(svgId)});if(!s)return;var P=CinEngine(${JSON.stringify(data)},s);s.player=s.svgatorPlayer=P;P.stop();${triggerJS(ex.trigger, ex.out, /reverse/.test(doc.dir) ? -1 : 1)}})();\n]]><\/script>`;
     }
   }
   return {

@@ -131,7 +131,7 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
     if (ctx.editor && G.wrap && G.ww > 0) {
       const sz = G.size || 16;
       inner =
-        `<rect class="kl-tbox" x="${r3(G.x)}" y="${r3(G.y - sz * 0.8 - (lh - sz) / 2)}" width="${r3(G.ww)}" height="${r3(Math.max(1, lines.length) * lh)}" fill="transparent"/>` +
+        `<rect class="cin-tbox" x="${r3(G.x)}" y="${r3(G.y - sz * 0.8 - (lh - sz) / 2)}" width="${r3(G.ww)}" height="${r3(Math.max(1, lines.length) * lh)}" fill="transparent"/>` +
         inner;
     }
   } else if (l.type === 'image') {

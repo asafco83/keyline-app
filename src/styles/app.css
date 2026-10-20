@@ -2508,14 +2508,14 @@ details summary {
 }
 
 /* typing text on the canvas */
-.kl-tedit::selection {
+.cin-tedit::selection {
   background: rgba(91, 124, 250, 0.35);
   color: transparent;
 }
 .ov-tbh {
   fill: var(--panel);
 }
-.kl-tedit {
+.cin-tedit {
   position: fixed;
   left: 0;
   top: 0;

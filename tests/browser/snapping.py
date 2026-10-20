@@ -1,13 +1,13 @@
 import asyncio, sys, json
 from playwright.async_api import async_playwright
 import os
-OUT=os.environ.get('KL_OUT','/tmp/keyline-shots/'); os.makedirs(OUT, exist_ok=True)
+OUT=os.environ.get('CIN_OUT','/tmp/svgcinema-shots/'); os.makedirs(OUT, exist_ok=True)
 async def main():
     async with async_playwright() as p:
         b=await p.chromium.launch(); pg=await b.new_page(device_scale_factor=1); await pg.set_viewport_size({'width':1440,'height':1000}); pg.set_default_timeout(5000)
         errs=[]; pg.on('pageerror',lambda e: errs.append(str(e)))
         await pg.goto((sys.argv[1] if len(sys.argv)>1 else 'http://localhost:5199/')); await pg.wait_for_timeout(2500)
-        await pg.evaluate("async()=>{ localStorage.removeItem('kl-view'); window.st=await import('/src/core/state.ts'); window.hi=await import('/src/core/history.ts'); window.TR=await import('/src/ui/tools-rail.ts'); window.V=await import('/src/core/view.ts'); window.OVL=await import('/src/render/overlay.ts')}")
+        await pg.evaluate("async()=>{ localStorage.removeItem('cin-view'); window.st=await import('/src/core/state.ts'); window.hi=await import('/src/core/history.ts'); window.TR=await import('/src/ui/tools-rail.ts'); window.V=await import('/src/core/view.ts'); window.OVL=await import('/src/render/overlay.ts')}")
         ev=pg.evaluate; R={}; F=[]
         def check(n,c,i=None):
             R[n]=('ok' if c else 'FAIL')+('' if i is None else f' {i}')
@@ -78,6 +78,6 @@ async def main():
         check('Alt+R hides rulers', await ev("document.getElementById('rulerX').hidden"))
         await pg.keyboard.press('Alt+r')
         await pg.screenshot(path=OUT+'snapt.png')
-        check('prefs remembered', '"rulers":true' in (await ev("localStorage.getItem('kl-view')") or ''))
+        check('prefs remembered', '"rulers":true' in (await ev("localStorage.getItem('cin-view')") or ''))
         R['errors']=errs; print(json.dumps(R,indent=1)); print('FAILS',F); await b.close()
 asyncio.run(main())

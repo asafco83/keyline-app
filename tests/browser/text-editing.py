@@ -1,8 +1,8 @@
 import asyncio, sys, json, base64
 from playwright.async_api import async_playwright
 import os
-OUT=os.environ.get('KL_OUT','/tmp/keyline-shots/'); os.makedirs(OUT, exist_ok=True)
-WOFF=base64.b64encode(open('/home/claude/keyline-app/tests/fixtures/heebo-latin-400-normal.woff','rb').read()).decode()
+OUT=os.environ.get('CIN_OUT','/tmp/svgcinema-shots/'); os.makedirs(OUT, exist_ok=True)
+WOFF=base64.b64encode(open(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','fixtures','heebo-latin-400-normal.woff'),'rb').read()).decode()
 async def main():
     async with async_playwright() as p:
         b=await p.chromium.launch(); pg=await b.new_page(device_scale_factor=1)
@@ -24,17 +24,17 @@ async def main():
         r[0]=r[2]+r[4]*0.08
         print('hit', await ev(f"(()=>{{const e=document.elementFromPoint({r[0]},{r[1]});return e.tagName+' '+(e.closest('[data-lid]')||{{}}).id}})()"), await ev("st.S.sel"))
         await pg.mouse.dblclick(r[0],r[1]); await pg.wait_for_timeout(200)
-        ta=await ev("(()=>{const t=document.querySelector('.kl-tedit');if(!t)return null;const b=t.getBoundingClientRect();return [b.x,b.y,b.width,b.height,document.activeElement===t]})()")
+        ta=await ev("(()=>{const t=document.querySelector('.cin-tedit');if(!t)return null;const b=t.getBoundingClientRect();return [b.x,b.y,b.width,b.height,document.activeElement===t]})()")
         check('double-click opens the editor on the canvas', ta and ta[4], ta)
         if ta: check('editor sits over the text', abs(ta[0]-r[2])<25 and abs(ta[1]+ta[3]/2-(r[3]+r[5]/2))<12, (ta,r[2:]))
-        check('svg text stays visible under a see-through editor', not await ev(f"document.getElementById('e-{tid}-s').getAttribute('visibility')") and await ev("getComputedStyle(document.querySelector('.kl-tedit')).color")=='rgba(0, 0, 0, 0)')
+        check('svg text stays visible under a see-through editor', not await ev(f"document.getElementById('e-{tid}-s').getAttribute('visibility')") and await ev("getComputedStyle(document.querySelector('.cin-tedit')).color")=='rgba(0, 0, 0, 0)')
         playing0=await ev("st.S.playing")
         await pg.keyboard.press('End'); await pg.keyboard.type(' big world')
         check('typing updates the layer live', await ev(f"{L}.geo.text")=='Good morning big world', await ev(f"{L}.geo.text"))
         check('space does not play', await ev("st.S.playing")==playing0)
         check('inspector follows', await ev("document.getElementById('g-text').value")=='Good morning big world')
         await pg.keyboard.press('Escape'); await pg.wait_for_timeout(100)
-        check('Esc ends editing', await ev("!document.querySelector('.kl-tedit')") and await ev(f"!document.getElementById('e-{tid}-s').getAttribute('visibility')"))
+        check('Esc ends editing', await ev("!document.querySelector('.cin-tedit')") and await ev(f"!document.getElementById('e-{tid}-s').getAttribute('visibility')"))
         await pg.keyboard.press('Control+z')
         check('one undo step', await ev(f"{L}.geo.text")=='Good morning', await ev(f"{L}.geo.text"))
         # inspector live typing
@@ -55,11 +55,11 @@ async def main():
         await pg.keyboard.press('t')
         await pg.mouse.move(500,250); await pg.mouse.down(); await pg.mouse.move(700,300,steps=5); await pg.mouse.up(); await pg.wait_for_timeout(150)
         nl=await ev("st.selLayer()")
-        check('text tool drag makes a fixed-width box and starts typing', await ev("st.doc.layers.length")==n0+1 and nl['geo'].get('wrap') and await ev("!!document.querySelector('.kl-tedit')"), nl and nl['geo'])
+        check('text tool drag makes a fixed-width box and starts typing', await ev("st.doc.layers.length")==n0+1 and nl['geo'].get('wrap') and await ev("!!document.querySelector('.cin-tedit')"), nl and nl['geo'])
         await pg.keyboard.type('Hello there')
         check('typing replaces the placeholder', await ev("st.selLayer().geo.text")=='Hello there')
         await pg.mouse.click(1000,700); await pg.wait_for_timeout(100)
-        check('click away ends editing', await ev("!document.querySelector('.kl-tedit')"))
+        check('click away ends editing', await ev("!document.querySelector('.cin-tedit')"))
         # path node section
         await ev(f"hi.select('{tid}')")
         sun=await ev("st.doc.layers.find(l=>l.name==='Sun').id")

@@ -53,7 +53,7 @@ export async function loadProjectFile(f: File, handle: FileSystemFileHandle | nu
     if (u8[0] === 0x50 && u8[1] === 0x4b) {
       const z = await readZip(buf),
         man = JSON.parse((await z.text('manifest.json')) || '{}');
-      if (man.format !== 'keyline-project') throw new Error('it isn’t an SVGcinema project');
+      if (man.format !== 'svgcinema-project') throw new Error('it isn’t an SVGcinema project');
       const d = JSON.parse(await z.text('project.json')),
         idx = JSON.parse((await z.text('assets/index.json')) || '[]'),
         assets: Record<string, Asset> = {},
@@ -75,12 +75,12 @@ export async function loadProjectFile(f: File, handle: FileSystemFileHandle | nu
       return true;
     }
     const d = JSON.parse(new TextDecoder().decode(u8)),
-      dd = d && d.format === 'keyline' ? d.doc : d;
+      dd = d && d.format === 'svgcinema' ? d.doc : d;
     if (!dd || !Array.isArray(dd.layers)) throw new Error('it isn’t an SVGcinema project');
     applyProject(dd, d.assets || {}, null);
     S.dirty = true;
     updateFileInfo();
-    toast('Opened an older project file. Use Save to keep it as .klp.');
+    toast('Opened an older project file. Use Save to keep it as .SVGcinema.');
     return true;
   } catch (e) {
     toast(`Couldn’t open ${f.name}: ${(e && e.message) || 'it isn’t an SVGcinema project'}.`);
@@ -96,17 +96,17 @@ export async function openFlow() {
           {
             description: 'SVGcinema project',
             accept: {
-              'application/x-keyline-project': ['.klp'],
+              'application/x-svgcinema-project': ['.SVGcinema'],
               'application/zip': ['.zip'],
               'application/json': ['.json'],
             },
           },
         ],
-        id: 'keyline',
+        id: 'svgcinema',
         multiple: false,
       });
       const f = await handle.getFile();
-      await loadProjectFile(f, /\.klp$/i.test(f.name) ? handle : null);
+      await loadProjectFile(f, /\.svgcinema$/i.test(f.name) ? handle : null);
       return;
     } catch (e) {
       if (e && e.name === 'AbortError') return;
