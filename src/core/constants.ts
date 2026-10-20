@@ -173,6 +173,12 @@ export function ic(p: string, s = 16) {
   return `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 }
 export const ICON: Record<string, string> = {
+  mask: ic(
+    '<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><circle cx="12" cy="12" r="5" fill="currentColor" fill-opacity=".35"/>',
+  ),
+  unmask: ic(
+    '<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><circle cx="12" cy="12" r="5"/><path d="M5.5 18.5l13-13"/>',
+  ),
   eyedropper: ic(
     '<path d="M14.2 6.2l2.9-2.9a2.3 2.3 0 013.3 3.3l-2.9 2.9" fill="currentColor"/><path d="M12 6.8l5.2 5.2"/><path d="M13.6 8.4L5.7 16.3c-.4.4-.6.9-.6 1.4V19h1.3c.5 0 1-.2 1.4-.6l7.9-7.9"/><path d="M3.6 20.4l1.4-1.4"/>',
   ),

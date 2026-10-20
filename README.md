@@ -128,12 +128,14 @@ Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to 
   - **Duplicate** (Ctrl+D).
   - **Ungroup** (Ctrl+Shift+G).
   - **Group** (Ctrl+G); with nothing selected it adds an empty group.
+  - **Create mask**: with two or more layers selected, the top one masks the others (as in the right-click menu).
+  - **Release mask**: on a selected mask or clipping group, puts its layers back.
   - **Delete**.
 - **At the bottom:** the layer count ("1 of 9 selected") and, on the right, **Animate**, which opens a menu of the properties the selected layers can animate. Picking one adds a keyframe at the playhead. Shortcuts: Shift+P position, Shift+A origin, Shift+S scale, Shift+R rotate, Shift+X skew, Shift+O opacity, Shift+B stroke color, Shift+W stroke width, Shift+D draw, Shift+F dash offset, Shift+M morph. Fill color, fill opacity and stroke opacity have no shortcut (Shift+C is the Convert Point tool).
 
 **Light and dark theme:** the editor follows the system setting until you pick one with the half-circle button in the top bar, right of Keyboard shortcuts; the choice is remembered. Numbers use the UI font with tabular digits, so zeros stay open and columns still line up.
 
-**Work area:** the artboard shows the project name and canvas size above its top-left corner. The **?** at the bottom left shows the current tool's tips on hover (or when focused). The timeline shows the current time and the total length (`0:01.50 / 0:03.00`), and the playhead carries a time flag in the ruler.
+**Work area:** the artboard shows the project name and canvas size above its top-left corner. The **?** at the bottom left shows the current tool's tips on hover (or when focused); with rulers on it moves clear of the left ruler. The timeline shows the current time and the total length (`0:01.50 / 0:03.00`), and the playhead carries a time flag in the ruler.
 
 **Inspector** (properties of the selected layer):
 

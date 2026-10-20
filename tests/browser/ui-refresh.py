@@ -29,6 +29,8 @@ async def main():
         await ev("(async()=>{const v=await import('/src/core/view.ts');v.VIEW.rulers=true;const g=await import('/src/render/guides.ts');g.drawRulers()})()"); await pg.wait_for_timeout(100)
         px=lambda: ev("(()=>{const c=document.getElementById('rulerX');return [...c.getContext('2d').getImageData(2,2,1,1).data].slice(0,3).join(',')})()")
         r0=await px()
+        clear=await ev("hintBtn.getBoundingClientRect().left >= rulerY.getBoundingClientRect().right")
+        check('with rulers on, the ? sits clear of the left ruler', clear)
         await pg.click('#bTheme'); dark=await bg(); r1=await px()
         check('rulers repaint as soon as the theme switches', r0!=r1, (r0,r1))
         await ev("(async()=>{const v=await import('/src/core/view.ts');v.VIEW.rulers=false;const g=await import('/src/render/guides.ts');g.drawRulers()})()")
