@@ -1,4 +1,5 @@
 // Keyline — tools/stage-input
+import { gradHandleDrag } from './gradient-handles';
 import { startTextEdit } from './text-edit';
 import { panDrag } from './hand';
 import type { Keyframe, Layer, XY } from '../model/types';
@@ -154,6 +155,11 @@ export function init(): void {
       const [ax, i] = gd.dataset.guide.split(':');
       e.preventDefault();
       return guideDrag(ax, +i, e);
+    }
+    const gh = (e.target as any).closest('[data-gh]');
+    if (gh && gradHandleDrag(gh.dataset.gh, p)) {
+      e.preventDefault(); // no text selection / native drag while dragging handles
+      return;
     }
     const h = (e.target as any).closest('[data-h]');
     if (h && (h.dataset.h === 'tbe' || h.dataset.h === 'tbw')) {

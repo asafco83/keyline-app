@@ -436,6 +436,54 @@ describe('gradients and trim path', () => {
     expect(H.gAttrs({ g: 'lin', a: 90, s: [] })).toEqual({ x1: '0', y1: '0.5', x2: '1', y2: '0.5' });
     expect(H.gAttrs({ g: 'rad', cx: 0.3, cy: 0.4, r: 0.6, s: [] }).r).toBe('0.6');
   });
+  it('places gradients from points and as turned ellipses', () => {
+    expect(H.gAttrs({ g: 'lin', a: 90, p: [0.1, 0.2, 0.9, 0.8], s: [] })).toEqual({
+      x1: '0.1',
+      y1: '0.2',
+      x2: '0.9',
+      y2: '0.8',
+    });
+    expect(H.gAttrs({ g: 'rad', s: [] }).gradientTransform).toBeUndefined();
+    expect(H.gAttrs({ g: 'rad', cx: 0.5, cy: 0.5, r: 0.5, ra: 30, rr: 0.5, s: [] }).gradientTransform).toBe(
+      'translate(0.5,0.5) rotate(30) scale(1,0.5) translate(-0.5,-0.5)',
+    );
+    const m = H.get(
+      {
+        id: 'g',
+        b: {},
+        t: {
+          fill: [
+            [
+              0,
+              {
+                g: 'lin',
+                s: [
+                  [0, '#000'],
+                  [1, '#fff'],
+                ],
+              },
+              'linear',
+            ],
+            [
+              1,
+              {
+                g: 'lin',
+                p: [0, 0, 1, 1],
+                s: [
+                  [0, '#000'],
+                  [1, '#fff'],
+                ],
+              },
+              'linear',
+            ],
+          ],
+        },
+      },
+      'fill',
+      0.5,
+    );
+    expect(m.p).toEqual([0, 0.25, 1, 0.75]);
+  });
   it('trims the stroke', () => {
     expect(H.trimDash([10, 50, 5])).toEqual(['40 60', '-15']);
     const L: EngineLayer = {

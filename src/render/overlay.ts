@@ -10,6 +10,7 @@ import { ellNodes, rectNodes } from '../geometry/nodes';
 import { currentNode, segCtrl } from '../tools/motion-path';
 import { editBox, followTextEdit, textEditing } from '../tools/text-edit';
 import { drawGuides } from './guides';
+import { drawGradHandles } from '../tools/gradient-handles';
 
 export function toDoc(x: number, y: number) {
   return new DOMPoint(x, y).matrixTransform(CONTENT.getScreenCTM().inverse());
@@ -172,6 +173,8 @@ export function drawOverlay() {
   }
   if (l.type === 'text' && textEditing() === l.id) return drawEditBox(l, u);
   OV.append(svgEl('polygon', { points: quadPts(Q), class: 'ov-box' }));
+  // the colour window is editing a gradient of this layer: show its handles instead
+  if (S.tool === 'select' && !isLocked(l) && drawGradHandles(l, u)) return;
   const nodeTool =
     S.tool === 'node' || S.tool === 'pen' || S.tool === 'addnode' || S.tool === 'delnode' || S.tool === 'convert';
   if (nodeTool && (l.type === 'path' || (S.tool !== 'node' && (l.type === 'rect' || l.type === 'ellipse')))) {

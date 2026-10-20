@@ -62,8 +62,18 @@ export function gnum(g: string, lab: string, unit?: string) {
   return `<label class="nf"><span>${lab}</span><input id="g-${g}" data-g="${g}" inputmode="decimal" spellcheck="false" aria-label="${lab}">${unit ? `<em>${unit}</em>` : ''}</label>`;
 }
 /** A colour swatch that opens the colour picker. `types`: which paints it offers. */
+const EYE = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4.5l5 5M17 7l-9.5 9.5L5 19l2.5-2.5L17 7z"/><path d="M13 5.5l5.5 5.5"/></svg>`;
+/** the eyedropper button next to a swatch (only in browsers that have one) */
+export function eyeBtn(attrs: string) {
+  return typeof (window as any).EyeDropper === 'function'
+    ? `<button class="btn ib" ${attrs} title="Pick a colour from the screen" aria-label="Pick a colour from the screen">${EYE}</button>`
+    : '';
+}
+/** A colour swatch that opens the colour window, an eyedropper and the value as text.
+ *  `types`: which paints the window offers. */
 export function colf(f: string, types = 'solid') {
-  return `<button class="pswatch" data-paint="${f}" data-ptypes="${types}" id="c-${f.replace(/\./g, '_')}" aria-haspopup="dialog" aria-expanded="false" aria-label="Colour"><i></i></button>`;
+  const id = f.replace(/\./g, '_');
+  return `<div class="cf"><button class="pswatch" data-paint="${f}" data-ptypes="${types}" id="c-${id}" aria-haspopup="dialog" aria-expanded="false" aria-label="Colour"><i></i></button>${eyeBtn(`data-act="pick" data-k="${f}"`)}<input class="txt mono" data-f="${f}" id="t-${id}" spellcheck="false" aria-label="Colour value"></div>`;
 }
 export function krow(k: string, label: string, body: string) {
   return `<div class="row"><button class="kb" data-kb="${k}" aria-label="Keyframe ${label}" title="Add / remove keyframe at playhead"></button><span class="rl">${label}</span><div class="rf">${body}</div></div>`;
@@ -180,6 +190,8 @@ function openPaint(btn: HTMLElement, l: Layer | null) {
     label = k === 'fill' ? 'Fill' : k === 'stk' ? 'Stroke' : propLabel(l, k);
   openPicker(btn, {
     label,
+    layer: l.id,
+    key: k,
     types: (btn.dataset.ptypes || 'solid').split(',') as any,
     get: () => valueAt(l, k, S.time),
     set(v) {
@@ -196,7 +208,7 @@ function openPaint(btn: HTMLElement, l: Layer | null) {
 export function docPanel() {
   return `<section class="sec"><h3>Document</h3>
     ${nrow('Canvas', `<label class="nf"><span>W</span><input id="d-w" data-doc="w" inputmode="numeric"></label><label class="nf"><span>H</span><input id="d-h" data-doc="h" inputmode="numeric"></label>`)}
-    ${nrow('Background', `<button class="pswatch" id="d-bgc" data-docpaint aria-haspopup="dialog" aria-expanded="false" aria-label="Background colour"><i></i></button>`)}
+    ${nrow('Background', `<div class="cf"><button class="pswatch" id="d-bgc" data-docpaint aria-haspopup="dialog" aria-expanded="false" aria-label="Background colour"><i></i></button>${eyeBtn('data-docpick')}<input class="txt mono" id="d-bg" data-doc="bg" placeholder="none" spellcheck="false" aria-label="Background value"></div>`)}
     ${nrow('Length', `<label class="nf"><span>t</span><input id="d-dur" data-doc="dur" inputmode="decimal"><em>s</em></label>`)}
     ${nrow('Repeat', `<select class="sel" id="d-it" data-doc="it"><option value="0">Loop forever</option><option value="1">Play once</option><option value="2">2 times</option><option value="3">3 times</option><option value="5">5 times</option></select>`)}
     ${nrow('Direction', `<select class="sel" id="d-dir" data-doc="dir"><option value="normal">Normal</option><option value="alternate">Alternate</option><option value="reverse">Reverse</option><option value="alternate-reverse">Reverse, then alternate</option></select>`)}</section>
@@ -217,6 +229,7 @@ export function refreshDocFields() {
   const bp = bgPaint(doc);
   const bgc = byId('d-bgc');
   if (bgc) showSwatch(bgc, docBgValue());
+  set('d-bg', docBgValue());
   set('d-dur', fmt(doc.dur));
   set('d-it', String(doc.it || 0));
   set('d-dir', doc.dir);
@@ -238,7 +251,7 @@ export function refreshInspector(full?: boolean) {
       if (inp.type === 'color') {
         inp.value = toHex(v) || '#000000';
         swatch(inp, v);
-      } else inp.value = v == null ? '' : v;
+      } else inp.value = H.isG(v) ? (v.g === 'rad' ? 'Radial' : 'Linear') : v == null ? '' : v;
     } else inp.value = fmt(m ? v * +m : v);
   });
   INSP.querySelectorAll('[data-kb]').forEach((b: HTMLElement) => {
@@ -328,6 +341,8 @@ export function parseField(l: Layer, inp: HTMLInputElement): [PropKey, any] | nu
   if (inp.dataset.rt) return [k, r3(rotFromFields())];
   if (kind === 'c') {
     v = inp.value.trim() || 'none';
+    // the field names the gradient type: leave the gradient alone
+    if (/^(linear|radial)$/i.test(v) && H.isG(valueAt(l, k, S.time))) return null;
   } else {
     v = parseFloat(inp.value);
     if (!isFinite(v)) return null;
@@ -652,6 +667,17 @@ export function init(): void {
           drawEz();
         }
       }
+      return;
+    }
+    if ((e.target as any).closest('[data-docpick]')) {
+      new (window as any).EyeDropper()
+        .open()
+        .then((r: { sRGBHex: string }) => {
+          const ed = beginEdit();
+          setBg(doc, { color: r.sRGBHex, alpha: 1 });
+          ed.end({ insp: true });
+        })
+        .catch(() => {});
       return;
     }
     const ps = (e.target as any).closest('[data-paint],[data-docpaint]');

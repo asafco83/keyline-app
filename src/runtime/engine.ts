@@ -116,6 +116,8 @@ export interface KLPlayer {
   isG(v: any): boolean;
   /** gradient geometry attributes */
   gAttrs(v: any): Record<string, string>;
+  /** a linear gradient's end points [x1, y1, x2, y2] (0–1 of the box) */
+  linP(v: any): number[];
   /** parse a colour into [r, g, b, a] */
   pc(s: unknown): number[] | null;
   /** stroke-dasharray and -dashoffset for a trim [start, end, offset] */
@@ -295,7 +297,9 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     }
     return null;
   }
-  /* ---- gradients: { g: 'lin' | 'rad', s: [[offset 0–1, colour], …], a: angle°, cx, cy, r (0–1 of the box) } ---- */
+  /* ---- gradients: { g: 'lin' | 'rad', s: [[offset 0–1, colour], …], a: angle°, cx, cy, r (0–1 of the box) }
+     linear: p = [x1, y1, x2, y2] places the end points (else they follow the angle a)
+     radial: ra = direction of the radius (°), rr = the other radius as a share of r (an ellipse) ---- */
   function isG(v: any): boolean {
     return !!v && typeof v === 'object' && (v.g === 'lin' || v.g === 'rad') && v.s && v.s.length > 0;
   }
@@ -319,6 +323,9 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
         cx: b.cx,
         cy: b.cy,
         r: b.r,
+        p: b.p,
+        ra: b.ra,
+        rr: b.rr,
         s: [
           [0, a],
           [1, a],
@@ -331,6 +338,9 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
         cx: a.cx,
         cy: a.cy,
         r: a.r,
+        p: a.p,
+        ra: a.ra,
+        rr: a.rr,
         s: [
           [0, b],
           [1, b],
@@ -356,7 +366,24 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     var n = function (x: any, y: any, d: number) {
       return (x == null ? d : x) + ((y == null ? d : y) - (x == null ? d : x)) * p;
     };
-    return { g: a.g, a: n(a.a, b.a, 90), cx: n(a.cx, b.cx, 0.5), cy: n(a.cy, b.cy, 0.5), r: n(a.r, b.r, 0.5), s: st };
+    var o: any = {
+      g: a.g,
+      a: n(a.a, b.a, 90),
+      cx: n(a.cx, b.cx, 0.5),
+      cy: n(a.cy, b.cy, 0.5),
+      r: n(a.r, b.r, 0.5),
+      s: st,
+    };
+    if (a.p || b.p) {
+      var pa = linP(a),
+        pb = linP(b);
+      o.p = pa.map(function (x: number, i: number) {
+        return x + (pb[i] - x) * p;
+      });
+    }
+    if (a.ra != null || b.ra != null) o.ra = n(a.ra, b.ra, 0);
+    if (a.rr != null || b.rr != null) o.rr = n(a.rr, b.rr, 1);
+    return o;
   }
   function mixC(a: any, b: any, p: number): any {
     if (isG(a) || isG(b)) return mixG(a, b, p);
@@ -586,13 +613,43 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     if (v.g === 'rad') {
       var cx = v.cx == null ? 0.5 : v.cx,
         cy = v.cy == null ? 0.5 : v.cy,
-        r = v.r == null ? 0.5 : v.r;
-      return { cx: String(f(cx)), cy: String(f(cy)), r: String(f(r)), fx: String(f(cx)), fy: String(f(cy)) };
+        r = v.r == null ? 0.5 : v.r,
+        ra = v.ra || 0,
+        rr = v.rr == null ? 1 : v.rr,
+        o: Record<string, string> = {
+          cx: String(f(cx)),
+          cy: String(f(cy)),
+          r: String(f(r)),
+          fx: String(f(cx)),
+          fy: String(f(cy)),
+        };
+      // an ellipse, turned: scale the other axis around the centre
+      if (f(ra) || f(rr) !== 1)
+        o.gradientTransform =
+          'translate(' +
+          f(cx) +
+          ',' +
+          f(cy) +
+          ') rotate(' +
+          f(ra) +
+          ') scale(1,' +
+          f(rr) +
+          ') translate(' +
+          f(-cx) +
+          ',' +
+          f(-cy) +
+          ')';
+      return o;
     }
+    var q = linP(v);
+    return { x1: String(f(q[0])), y1: String(f(q[1])), x2: String(f(q[2])), y2: String(f(q[3])) };
+  }
+  function linP(v: any): number[] {
+    if (v.p && v.p.length === 4) return v.p.slice();
     var a = (((v.a == null ? 90 : v.a) - 90) * Math.PI) / 180,
       dx = Math.cos(a) / 2,
       dy = Math.sin(a) / 2;
-    return { x1: String(f(0.5 - dx)), y1: String(f(0.5 - dy)), x2: String(f(0.5 + dx)), y2: String(f(0.5 + dy)) };
+    return [0.5 - dx, 0.5 - dy, 0.5 + dx, 0.5 + dy];
   }
   function f(n: number) {
     return Math.round(n * 1000) / 1000;
@@ -954,6 +1011,7 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     comp: comp,
     get: get,
     gAttrs: gAttrs,
+    linP: linP,
     trimDash: trimDash,
     isG: isG,
     pc: pc,

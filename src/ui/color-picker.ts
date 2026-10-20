@@ -8,7 +8,23 @@
 import { $, H, clamp, clone, esc, fmt, r3 } from '../core/constants';
 
 export type PaintType = 'none' | 'solid' | 'lin' | 'rad';
-export type Grad = { g: 'lin' | 'rad'; s: Array<[number, string]>; a?: number; cx?: number; cy?: number; r?: number };
+export type Grad = {
+  g: 'lin' | 'rad';
+  s: Array<[number, string]>;
+  a?: number;
+  p?: number[];
+  cx?: number;
+  cy?: number;
+  r?: number;
+  ra?: number;
+  rr?: number;
+};
+/** a linear gradient's angle (°, 0 = up) from its end points */
+export function linAngle(g: Grad) {
+  if (!g.p) return g.a ?? 90;
+  const [x1, y1, x2, y2] = g.p;
+  return r3(((((Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI + 90) % 360) + 360) % 360);
+}
 export interface PaintTarget {
   /** current value: a colour string, 'none', or a gradient */
   get(): any;
@@ -18,6 +34,9 @@ export interface PaintTarget {
   done(): void;
   types: PaintType[];
   label: string;
+  /** the layer and property being painted (lets the canvas show gradient handles) */
+  layer?: string;
+  key?: string;
 }
 
 /* ---------- colour maths ---------- */
@@ -124,6 +143,23 @@ const POP = () => $('#cpop') as HTMLElement;
 export function pickerOpen() {
   return !!T;
 }
+/** what the window is painting, for the canvas gradient handles */
+export function pickerPaint(): { layer: string; key: string; val: any } | null {
+  return T && T.layer ? { layer: T.layer, key: T.key, val } : null;
+}
+/** a change made outside the window (dragging a gradient handle on the canvas) */
+export function pickerApply(v: any) {
+  if (!T) return;
+  val = clone(v);
+  T.set(clone(val));
+  const p = POP();
+  p.querySelectorAll<HTMLInputElement>('[data-cpg]').forEach(e => {
+    const k = e.dataset.cpg,
+      g = val as Grad;
+    e.value = k === 'a' ? fmt(linAngle(g)) : fmt(((g as any)[k] ?? 0.5) * 100);
+  });
+  paint();
+}
 /** colour the picker edits: the solid value, or the selected stop */
 function curColor(): string {
   if (isG(val)) return val.s[Math.min(stop, val.s.length - 1)][1];
@@ -183,9 +219,9 @@ function render() {
       <div class="cp-grow">
         <label class="nf"><span>@</span><input data-cpoff inputmode="decimal" value="${fmt(g.s[i][0] * 100)}" aria-label="Stop position"><em>%</em></label>
         <button class="btn ib" data-cpdel ${g.s.length > 2 ? '' : 'disabled'} title="Remove this stop" aria-label="Remove stop">−</button>
-        ${
+        ${g.g === 'rad' ? '</div><div class="cp-grow">' : ''}${
           g.g === 'lin'
-            ? `<label class="nf"><span>∠</span><input data-cpg="a" inputmode="decimal" value="${fmt(g.a ?? 90)}" aria-label="Angle"><em>°</em></label>`
+            ? `<label class="nf"><span>∠</span><input data-cpg="a" inputmode="decimal" value="${fmt(linAngle(g))}" aria-label="Angle"><em>°</em></label>`
             : `<label class="nf"><span>X</span><input data-cpg="cx" inputmode="decimal" value="${fmt((g.cx ?? 0.5) * 100)}" aria-label="Center X"><em>%</em></label><label class="nf"><span>Y</span><input data-cpg="cy" inputmode="decimal" value="${fmt((g.cy ?? 0.5) * 100)}" aria-label="Center Y"><em>%</em></label><label class="nf"><span>R</span><input data-cpg="r" inputmode="decimal" value="${fmt((g.r ?? 0.5) * 100)}" aria-label="Radius"><em>%</em></label>`
         }
       </div>`;
@@ -448,7 +484,16 @@ export function init(): void {
     } else if (d.cpg && isG(val)) {
       const g = clone(val) as any,
         v = parseFloat(t.value);
-      if (isFinite(v))
+      if (isFinite(v) && d.cpg === 'a' && g.p) {
+        // placed end points: turn them around their middle
+        const [x1, y1, x2, y2] = g.p,
+          mx = (x1 + x2) / 2,
+          my = (y1 + y2) / 2,
+          h = Math.hypot(x2 - x1, y2 - y1) / 2,
+          t = ((v - 90) * Math.PI) / 180;
+        g.p = [mx - Math.cos(t) * h, my - Math.sin(t) * h, mx + Math.cos(t) * h, my + Math.sin(t) * h].map(r3);
+        g.a = r3(v);
+      } else if (isFinite(v))
         g[d.cpg] = d.cpg === 'a' ? r3(v) : r3(clamp(v, d.cpg === 'r' ? 1 : -100, d.cpg === 'r' ? 300 : 200) / 100);
       val = g;
       T.set(clone(val));
@@ -470,7 +515,14 @@ export function init(): void {
   document.addEventListener(
     'pointerdown',
     (e: PointerEvent) => {
-      if (T && !p.contains(e.target as Node) && e.target !== anchor && !(anchor && anchor.contains(e.target as Node)))
+      const t = e.target as Element;
+      if (
+        T &&
+        !p.contains(t) &&
+        t !== anchor &&
+        !(anchor && anchor.contains(t)) &&
+        !(t.closest && t.closest('[data-gh]'))
+      )
         closePicker();
     },
     true,
