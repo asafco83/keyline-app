@@ -68,10 +68,6 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
     a.pathLength = 100;
     a['stroke-dasharray'] = td[0];
     a['stroke-dashoffset'] = td[1];
-  } else if (c.draw != null && (c.draw < 100 || (l.t.draw && l.t.draw.length))) {
-    a.pathLength = 100;
-    a['stroke-dasharray'] = '100 100';
-    a['stroke-dashoffset'] = r3(100 - c.draw);
   } else if (c.dof != null && (c.dof !== 0 || (l.t.dof && l.t.dof.length))) a['stroke-dashoffset'] = r3(c.dof);
   if (c.fo != null && (c.fo < 1 || (l.t.fo && l.t.fo.length))) a['fill-opacity'] = r3(c.fo);
   if (c.so != null && (c.so < 1 || (l.t.so && l.t.so.length))) a['stroke-opacity'] = r3(c.so);

@@ -24,7 +24,7 @@ export function propOK(l: Layer, k: PropKey) {
     ['pos', 'org', 'rot', 'scl', 'op'].includes(k) ||
     (k === 'skw' && l.type !== 'bone') ||
     (['fill', 'stk', 'sw', 'fo', 'so', 'dof'].includes(k) && painted) ||
-    (['draw', 'ts', 'te', 'to'].includes(k) && ['rect', 'ellipse', 'path'].includes(l.type)) ||
+    (['ts', 'te', 'to'].includes(k) && ['rect', 'ellipse', 'path'].includes(l.type)) ||
     (k === 'd' && l.type === 'path') ||
     ((k === 'p0' || k === 'p1') && isLineLayer(l)) ||
     (k === 'rad' && (l.type === 'rect' || !!l.shape)) ||

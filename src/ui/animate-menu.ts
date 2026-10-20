@@ -28,7 +28,7 @@ export const ANIM_GROUPS: Array<Array<[PropKey, string, string?]>> = [
     ['stk', 'Stroke color', 'B'],
     ['so', 'Stroke opacity'],
     ['sw', 'Stroke width', 'W'],
-    ['draw', 'Draw (stroke offset)', 'D'],
+    ['te', 'Trim end (draw on)', 'D'],
     ['dof', 'Dash offset', 'F'],
   ],
   [

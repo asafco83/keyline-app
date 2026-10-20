@@ -23,7 +23,7 @@ async def main():
         rid=await ev("st.doc.layers.find(l=>l.type==='ellipse').id"); await ev(f"hi.select('{rid}')"); d=await dis()
         check('shape selected: Animate and Delete on, Ungroup greyed', d=={'anim':False,'ungroup':True,'group':False,'del':False}, d)
         await pg.click('#lAnim'); m=await menu()
-        check('Animate menu lists the shape properties with shortcuts', m==['Position⇧ P','Origin⇧ A','Scale⇧ S','Rotate⇧ R','Skew⇧ X','Opacity⇧ O','Fill color','Fill opacity','Stroke color⇧ B','Stroke opacity','Stroke width⇧ W','Draw (stroke offset)⇧ D','Dash offset⇧ F'], m)
+        check('Animate menu lists the shape properties with shortcuts', m==['Position⇧ P','Origin⇧ A','Scale⇧ S','Rotate⇧ R','Skew⇧ X','Opacity⇧ O','Fill color','Fill opacity','Stroke color⇧ B','Stroke opacity','Stroke width⇧ W','Trim end (draw on)⇧ D','Dash offset⇧ F'], m)
         geo=await ev("(()=>{const a=animMenu.getBoundingClientRect(),b=lAnim.getBoundingClientRect();return a.bottom<=b.top})()")
         check('menu opens upwards above the button', geo)
         await pg.screenshot(path=(OUT+'layer-panel-footer')+'-menu.png', clip={'x':60,'y':260,'width':300,'height':640})

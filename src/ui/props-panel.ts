@@ -350,9 +350,7 @@ export function appearanceSection(l: Layer) {
         krow('ts', 'Start', num('ts', 'S', '%')) +
         krow('te', 'End', num('te', 'E', '%')) +
         krow('to', 'Offset', num('to', 'O', '%')) +
-        `<p>Trim shows only part of the stroke, from Start to End, shifted along the path by Offset. Animate End from 0% to 100% to draw a line on.</p>` +
-        krow('draw', 'Draw', num('draw', 'D', '%')) +
-        `<p>Draw animates the stroke from 0% to 100% for a self-drawing line. While Draw is below 100% it replaces the dash pattern.</p>`;
+        `<p>Trim shows only part of the stroke, from Start to End, shifted along the path by Offset. Animate End from 0% to 100% to draw a line on. While the stroke is trimmed, trim replaces the dash pattern.</p>`;
   }
   return h + `</section>`;
 }

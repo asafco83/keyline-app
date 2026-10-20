@@ -45,7 +45,6 @@ export interface Composite {
   fill: any;
   stk: any;
   sw: any;
-  draw: any;
   d: EngineSubPath[] | undefined;
   /** skew, degrees */
   kx: number;
@@ -146,7 +145,6 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     fill: 'c',
     stk: 'c',
     sw: 'n',
-    draw: 'n',
     d: 'm',
     skw: 'v',
     fo: 'n',
@@ -499,7 +497,6 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       fill: get(L, 'fill', t),
       stk: get(L, 'stk', t),
       sw: get(L, 'sw', t),
-      draw: get(L, 'draw', t),
       d: shapeOf(L, t),
       kx: k[0],
       ky: k[1],
@@ -745,10 +742,6 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
         s.setAttribute('pathLength', '100');
         s.setAttribute('stroke-dasharray', td[0]);
         s.setAttribute('stroke-dashoffset', td[1]);
-      } else if (c.draw != null && (c.draw < 100 || (L.t && L.t.draw))) {
-        s.setAttribute('pathLength', '100');
-        s.setAttribute('stroke-dasharray', '100 100');
-        s.setAttribute('stroke-dashoffset', String(f(100 - c.draw)));
       } else if (c.dof != null) s.setAttribute('stroke-dashoffset', String(f(c.dof)));
       if (c.fo != null) s.setAttribute('fill-opacity', String(f(c.fo)));
       if (c.so != null) s.setAttribute('stroke-opacity', String(f(c.so)));
