@@ -12,7 +12,7 @@ import { renderInspector } from './inspector';
 import { renderLayers } from './layers-panel';
 
 export function tln() {
-  return parseFloat(getComputedStyle(TLB).getPropertyValue('--tln')) || 214;
+  return parseFloat(getComputedStyle(TLB).getPropertyValue('--tln')) || 232;
 }
 /** Seconds the timeline shows: at least the animation, and enough to fill the panel (SVGator-style);
  *  the time after the end is shaded and its end line can be dragged to change the length. */
@@ -24,7 +24,7 @@ export function shownSpan() {
 export function ticks(W: number, span = doc.dur) {
   const pps = S.pps,
     minor = pps >= 260 ? 0.1 : pps >= 110 ? 0.25 : 0.5,
-    major = pps >= 60 ? 1 : 2;
+    major = pps >= 260 ? 0.5 : pps >= 60 ? 1 : 2;
   let h = '';
   for (let t = 0; t <= span + 1e-6; t = r3(t + minor)) {
     const mj = Math.abs(t / major - Math.round(t / major)) < 1e-6;

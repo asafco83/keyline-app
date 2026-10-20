@@ -63,6 +63,16 @@ async def main():
         check('away from the keyframe the toggle shows "animated"', mid[0]==True and mid[1]==False, mid)
         check('fill opacity has its own row and toggle, apart from the colour', await ev("!!document.querySelector('#insp [data-kb=fill]') && !!document.querySelector('#insp [data-kb=so]')"))
         check('boolean operations are still in the inspector', await ev("document.querySelectorAll('#insp [data-bool]').length")==4)
+        check('a note says what the booleans need', await ev("(document.querySelector('.align-bar .ab-note')||{}).textContent")=='Booleans: select 2+ shapes')
+        cf=await ev("(()=>{const c=document.getElementById('c-fill').closest('.cf');return [c.firstElementChild.className, [...c.firstElementChild.children].map(e=>e.id), [...c.children].slice(1).map(e=>e.dataset.act||'')]})()")
+        check('colour field: swatch and value in one box, eyedropper beside it', cf[0]=='cbox' and cf[1]==['c-fill','t-fill'] and cf[2] in (['pick'],[]), cf)
+        units=await ev("['i-scl_0_100','i-skw_0'].map(id=>{const e=document.getElementById(id).parentElement.querySelector('em');return e&&getComputedStyle(e).display!=='none'?e.textContent:''})")
+        check('units show in the fields (%, °)', units==['%','°'], units)
+        check('layer count in the Layers footer', await ev("lCount.textContent")=='1 of '+str(await ev("st.doc.layers.length"))+' selected', await ev("lCount.textContent"))
+        check('hint: dot-separated, keys as chips', await ev("hint.querySelectorAll('i').length>=2 && hint.querySelector('kbd').textContent=='Ctrl'"))
+        await ev("hi.select(null)"); await ev(f"hi.select('{sid}')")
+        rp=await ev("(()=>{const r=document.getElementById('op-range');return [r.value, r.style.getPropertyValue('--p')]})()")
+        check('sliders fill up to the thumb', rp[1]==rp[0]+'%' or (rp[0]=='100' and rp[1]=='100%'), rp)
 
         # collapsible sections
         heads=await ev("[...document.querySelectorAll('#insp .sec h3')].map(h=>h.childNodes[0].textContent.trim())")

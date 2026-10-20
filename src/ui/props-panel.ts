@@ -86,7 +86,7 @@ const sel = (attrs: string, opts: Array<[string, string]>, cur: string) =>
 /* ---------- Transforms ---------- */
 
 function rotField(part: 'turn' | 'deg') {
-  return `<label class="nf"><span data-scrub="rot"${part === 'turn' ? ' data-scrub-step="0.02"' : ''}>${part === 'turn' ? '⟳' : '∠'}</span><input id="rot-${part}" data-f="rot" data-rt="${part}" inputmode="decimal" spellcheck="false" aria-label="Rotate ${part === 'turn' ? 'turns' : 'degrees'}"><em>${part === 'turn' ? 'turn' : 'deg'}</em></label>`;
+  return `<label class="nf"><span data-scrub="rot"${part === 'turn' ? ' data-scrub-step="0.02"' : ''}>${part === 'turn' ? '⟳' : '∠'}</span><input id="rot-${part}" data-f="rot" data-rt="${part}" inputmode="decimal" spellcheck="false" aria-label="Rotate ${part === 'turn' ? 'turns' : 'degrees'}">${part === 'turn' ? '' : '<em>°</em>'}</label>`;
 }
 export function transformSection(l: Layer) {
   const bone = l.type === 'bone',
@@ -96,7 +96,7 @@ export function transformSection(l: Layer) {
     ${krow('scl', 'Scale', num('scl:0:100', 'W', '%') + num('scl:1:100', 'H', '%') + `<button class="btn ib tg${S.sclLock ? ' on' : ''}" data-act="scllock" aria-pressed="${!!S.sclLock}" title="Keep proportions" aria-label="Keep proportions">${I.link}</button>`)}
     ${bone ? '' : krow('skw', 'Skew', num('skw:0', 'X', '°') + num('skw:1', 'Y', '°'))}
     ${krow('rot', 'Rotate', rotField('turn') + rotField('deg') + (onPath ? `<button class="btn ib tg${l.or ? ' on' : ''}" data-act="orient" aria-pressed="${!!l.or}" title="Rotate along the motion path" aria-label="Rotate along the motion path">${I.orient}</button>` : ''))}
-    ${bone ? '' : krow('org', 'Origin', num('org:0', 'X') + num('org:1', 'Y') + `<button class="btn ib" data-act="center" title="Center origin on the shape" aria-label="Center origin">◎</button>`)}
+    ${bone ? '' : krow('org', 'Origin', num('org:0', 'X') + num('org:1', 'Y') + `<button class="btn ib" data-act="center" title="Center origin on the shape" aria-label="Center origin">${ic('<circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/>', 14)}</button>`)}
     ${
       bone
         ? ''
@@ -344,7 +344,7 @@ export function appearanceSection(l: Layer) {
 export function filtersSection(l: Layer) {
   if (l.type === 'bone') return '';
   const list = l.fx || [];
-  let h = `<section class="sec"><h3>Filters</h3><div class="row nk"><span class="rl"></span><div class="rf">${sel(
+  let h = `<section class="sec"><h3>Filters</h3><div class="row nk"><span class="rl">Add</span><div class="rf">${sel(
     'data-fxadd id="fx-add" aria-label="Add filter"',
     [['', '+ Add filter…'], ...Object.entries(FILTERS).map(([k, d]) => [k, d.label] as [string, string])],
     '',

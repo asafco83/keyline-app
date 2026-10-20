@@ -5,10 +5,11 @@
 export type Theme = 'light' | 'dark';
 const STORE = 'keyline:theme';
 
-const MOON =
-  '<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.2 9.6A5.6 5.6 0 016.4 2.8 5.6 5.6 0 1013.2 9.6z"/></svg>';
-const SUN =
-  '<svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1"/></svg>';
+// half-filled circle (the mockup's contrast icon); the filled half flips with the theme
+const ICON_LIGHT =
+  '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5a5.5 5.5 0 000 11z" fill="currentColor"/></svg>';
+const ICON_DARK =
+  '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5a5.5 5.5 0 010 11z" fill="currentColor"/></svg>';
 
 /** The theme on screen now: the saved choice, else the system's. */
 export function currentTheme(): Theme {
@@ -30,7 +31,7 @@ export function toggleTheme() {
 export function themeButton() {
   const dark = currentTheme() === 'dark',
     label = dark ? 'Switch to light theme' : 'Switch to dark theme';
-  return `<button class="tool" id="bTheme" title="${label}" aria-label="${label}">${dark ? SUN : MOON}</button>`;
+  return `<button class="tool" id="bTheme" title="${label}" aria-label="${label}">${dark ? ICON_DARK : ICON_LIGHT}</button>`;
 }
 export function syncThemeButton() {
   const b = document.getElementById('bTheme');

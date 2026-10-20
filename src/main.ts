@@ -25,9 +25,11 @@ import { init as initViewMenu } from './ui/view-menu';
 import { init as initGuides } from './render/guides';
 import { init as initPicker } from './ui/color-picker';
 import { initTheme } from './ui/theme';
+import { init as initRanges } from './ui/ranges';
 
 // Same order as the original single-file build
 initTheme(); // ui/theme (before the rail renders its button)
+initRanges(); // ui/ranges (slider fill)
 init0(); // ui/tools-rail
 init1(); // tools/stage-input
 initHand(); // tools/hand

@@ -1,5 +1,5 @@
 // Keyline — app/boot
-import { $, HINTS, ICON, ic } from '../core/constants';
+import { $, HINTS, ICON, hintHTML, ic } from '../core/constants';
 import { WRAP } from '../core/dom';
 import { loop, updatePlayBtn } from '../core/playback';
 import { ASSETS, S, URLS, doc, setDoc, syncAidc, syncIdc } from '../core/state';
@@ -55,7 +55,7 @@ export async function boot() {
   syncAidc();
   syncIdc();
   $('#pname').value = doc.name;
-  $('#hint').textContent = HINTS.select;
+  $('#hint').innerHTML = hintHTML(HINTS.select);
   WRAP.className = 't-select';
   S.loading = true;
   fitTimeline();

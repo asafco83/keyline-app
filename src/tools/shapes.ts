@@ -4,7 +4,7 @@
 // centre. While dragging a polygon or star, ↑/↓ change the number of sides or points.
 // A click without a drag places a default-size shape.
 import type { Layer, XY } from '../model/types';
-import { $, HINTS, r2 } from '../core/constants';
+import { $, HINTS, hintHTML, r2 } from '../core/constants';
 import { WRAP } from '../core/dom';
 import { beginEdit } from '../core/history';
 import { S, doc, mkLayer, nextColor } from '../core/state';
@@ -54,7 +54,7 @@ export function backToSelect() {
   S.tool = 'select';
   WRAP.className = 't-select';
   WRAP.style.cursor = '';
-  $('#hint').textContent = HINTS.select;
+  $('#hint').innerHTML = hintHTML(HINTS.select);
   renderTools();
 }
 export function newShape(t: string) {

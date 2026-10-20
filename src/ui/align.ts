@@ -61,7 +61,7 @@ export function alignBar() {
   }).join('')}<span class="ab-sep"></span>${BOOL_OPS.map(([k, label, p]) => {
     const t = bools ? label : label + ' (select two or more shapes or paths)';
     return `<button class="btn ib" data-bool="${k}" title="${t}" aria-label="${t}"${bools ? '' : ' disabled'}>${ic(p)}</button>`;
-  }).join('')}</div>`;
+  }).join('')}${bools ? '' : '<span class="ab-note">Booleans: select 2+ shapes</span>'}</div>`;
 }
 /** Move a layer by a delta given in document units. */
 function nudge(l: Layer, dx: number, dy: number) {
