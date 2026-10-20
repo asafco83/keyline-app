@@ -34,7 +34,6 @@ export type PropKey =
   | 'stk'
   | 'so'
   | 'sw'
-  | 'draw'
   | 'dof'
   | 'd'
   /** filter parameter: fx.<filter id>.<param> */
@@ -49,7 +48,6 @@ export interface BaseValues {
   fill: string;
   stk: string;
   sw: number;
-  draw: number;
   d?: PathData;
   /** skew x/y in degrees */
   skw?: Vec2;

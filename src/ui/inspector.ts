@@ -407,7 +407,6 @@ export function parseField(l: Layer, inp: HTMLInputElement): [PropKey, any] | nu
       if (p && p.param.min != null) v = Math.max(p.param.min, v);
       if (p && p.param.scale === 100) v = Math.min(1, v);
     }
-    if (k === 'draw') v = clamp(v, 0, 100);
     if (k === 'sw') v = Math.max(0, v);
     v = r3(v);
   }
@@ -865,7 +864,6 @@ export function init(): void {
           fo: 0.5,
           so: 0.5,
           sw: 0.1,
-          draw: 0.5,
           dof: 1,
         })[k] ||
         (k.startsWith('fx.') ? 0.1 : 1),

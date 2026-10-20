@@ -119,10 +119,7 @@ export function mkLayer(type: LayerType, name: string, geo?: Geometry, b?: Parti
     type,
     parent: null,
     geo: geo || {},
-    b: Object.assign(
-      { pos: [0, 0], rot: 0, scl: [1, 1], op: 1, fill: '#5B7CFA', stk: 'none', sw: 0, draw: 100 },
-      b || {},
-    ),
+    b: Object.assign({ pos: [0, 0], rot: 0, scl: [1, 1], op: 1, fill: '#5B7CFA', stk: 'none', sw: 0 }, b || {}),
     t: {},
     o: null,
     sm: false,

@@ -44,7 +44,6 @@ export const PROPS: Record<PropKey, [label: string, kind: 'v' | 'n' | 'c' | 'm']
   stk: ['Stroke', 'c'],
   so: ['Stroke opacity', 'n'],
   sw: ['Stroke width', 'n'],
-  draw: ['Draw', 'n'],
   ts: ['Trim start', 'n'],
   te: ['Trim end', 'n'],
   to: ['Trim offset', 'n'],
@@ -66,7 +65,6 @@ export const PORDER: PropKey[] = [
   'stk',
   'so',
   'sw',
-  'draw',
   'ts',
   'te',
   'to',
@@ -168,7 +166,7 @@ export const FONTS = [
 ];
 export const SWATCH = ['#5B7CFA', '#F2B63D', '#2EC4A6', '#F25F5C', '#A07BFF', '#FF8A3D'];
 export const KAPPA = 0.5523;
-export const NOFILL: Record<'fill' | 'stk' | 'sw' | 'draw', null> = { fill: null, stk: null, sw: null, draw: null };
+export const NOFILL: Record<'fill' | 'stk' | 'sw', null> = { fill: null, stk: null, sw: null };
 export function ic(p: string, s = 16) {
   return `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 }

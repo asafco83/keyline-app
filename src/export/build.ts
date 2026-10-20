@@ -54,7 +54,7 @@ export function cssFor(anim: Layer[], pre: string, svgId: string) {
       gradK = (k: 'fill' | 'stk') => fr.some(c => H.isG(c[k])),
       gk = { fill: !!T.fill && gradK('fill'), stk: !!T.stk && gradK('stk') },
       trimAnim = !!(T.ts || T.te || T.to),
-      sk = ['fill', 'fo', 'stk', 'so', 'sw', 'draw', 'dof', 'd', 'rad', 'trim'].filter(k =>
+      sk = ['fill', 'fo', 'stk', 'so', 'sw', 'dof', 'd', 'rad', 'trim'].filter(k =>
         k === 'd'
           ? T.d || shapeAnim
           : k === 'rad'
@@ -63,7 +63,7 @@ export function cssFor(anim: Layer[], pre: string, svgId: string) {
               ? trimAnim
               : k === 'fill' || k === 'stk'
                 ? T[k] && !gk[k]
-                : (k === 'draw' || k === 'dof') && trimAnim
+                : k === 'dof' && trimAnim
                   ? false
                   : T[k],
       );
@@ -102,9 +102,7 @@ export function cssFor(anim: Layer[], pre: string, svgId: string) {
                       : k === 'so'
                         ? `stroke-opacity:${r3(c.so)}`
                         : k === 'dof'
-                          ? T.draw
-                            ? ''
-                            : `stroke-dashoffset:${r3(c.dof)}`
+                          ? `stroke-dashoffset:${r3(c.dof)}`
                           : k === 'sw'
                             ? `stroke-width:${r3(c.sw)}px`
                             : k === 'rad'
@@ -113,9 +111,7 @@ export function cssFor(anim: Layer[], pre: string, svgId: string) {
                                 ? c.trim
                                   ? `stroke-dasharray:${H.trimDash(c.trim)[0]};stroke-dashoffset:${H.trimDash(c.trim)[1]}`
                                   : ''
-                                : k === 'draw'
-                                  ? `stroke-dashoffset:${r3(100 - c.draw)}`
-                                  : `d:path("${H.dstr(c.d)}")`,
+                                : `d:path("${H.dstr(c.d)}")`,
               )
               .join(';'),
           ),
@@ -272,7 +268,6 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
             fill: null,
             stk: null,
             sw: null,
-            draw: null,
           };
           if (l.b.skw && (l.b.skw[0] || l.b.skw[1])) b.skw = l.b.skw;
           (['ts', 'te', 'to'] as const).forEach(k => l.b[k] != null && (b[k] = l.b[k]));

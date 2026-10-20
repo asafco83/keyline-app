@@ -102,7 +102,7 @@ export function sampleDoc(): any {
   );
   wave.parent = land.id;
   wave.extra = { 'stroke-linecap': 'round' };
-  wave.t.draw = [
+  wave.t.te = [
     [0.2, 0, 'inOutCubic'],
     [1.8, 100, 'ease'],
   ];
