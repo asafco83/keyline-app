@@ -2517,3 +2517,33 @@ details summary {
 .g-num {
   flex: 0 0 78px;
 }
+
+/* colour swatch: checkerboard behind (for transparency), and a red line for "no colour" */
+.swt {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  border-radius: 6px;
+  background: conic-gradient(#d6d9e0 25%, #fff 0 50%, #d6d9e0 0 75%, #fff 0) 0 0 / 8px 8px;
+}
+.swt input[type='color'] {
+  position: relative;
+  z-index: 1;
+}
+.swt.none::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background:
+    linear-gradient(
+      to top right,
+      transparent calc(50% - 1px),
+      #e5484d calc(50% - 1px) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    ),
+    conic-gradient(#d6d9e0 25%, #fff 0 50%, #d6d9e0 0 75%, #fff 0) 0 0 / 8px 8px;
+}
