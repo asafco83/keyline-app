@@ -86,6 +86,7 @@ src/
   app/boot.ts            Startup: restore the last project, assets and file handle
 
 tests/                   Vitest: runtime player and easing, zip container, path geometry, export output
+site/                    The landing page (one self-contained index.html), see site/README.md
 ```
 
 ## How the pieces fit
@@ -271,6 +272,8 @@ Conventions:
 One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**. Pages on a private repository needs a paid GitHub plan; otherwise make the repository public.
 
 The site is served at `https://<user>.github.io/<repo>/`. The Vite `base: './'` setting makes asset paths relative, so no extra configuration is needed.
+
+**Landing page:** `site/` holds the SVGcinema website that introduces the editor and links into it. `node site/build.mjs` builds `site/index.html`, which expects the editor in an `editor/` folder beside it. The Pages workflow does not publish it yet. See [`site/README.md`](site/README.md).
 
 ## Toward a desktop app (Tauri)
 
