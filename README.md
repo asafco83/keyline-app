@@ -11,6 +11,7 @@ npm test           # unit tests (Vitest)
 npm run typecheck  # TypeScript, no emit
 npm run build      # type-check + production build into dist/
 npm run preview    # serve dist/ locally
+tests/browser/run.sh  # browser tests (Playwright for Python), see tests/browser/README.md
 ```
 
 Requires Node 18 or newer (developed on Node 22).
