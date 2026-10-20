@@ -1,4 +1,4 @@
-// Keyline — ui/view-menu
+// SVGcinema — ui/view-menu
 // The snapping (magnet) and grid menus in the canvas bar, and their shortcuts:
 // Alt+S snapping on/off, Alt+R rulers, Alt+L guides, Alt+B bones.
 import { $, ic } from '../core/constants';

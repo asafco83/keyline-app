@@ -1,4 +1,11 @@
-# Keyline
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/brand/svgcinema-logo-white.svg" />
+    <img src="public/brand/svgcinema-logo-black.svg" alt="SVGcinema" height="40" />
+  </picture>
+</h1>
+
+(Formerly Keyline.)
 
 A browser-based SVG animation editor. You draw or import artwork, animate it on a keyframe timeline, and export **one self-contained animated SVG**. The SVG plays with a small built-in JavaScript player or with pure CSS.
 
@@ -97,7 +104,7 @@ tests/                   Vitest: runtime player and easing, zip container, path 
 
 ## The sample scene
 
-The editor opens with a sample scene (also under File → New → **Open sample scene**). It doubles as a tour of what Keyline can animate; select a layer to see how it's done:
+The editor opens with a sample scene (also under File → New → **Open sample scene**). It doubles as a tour of what SVGcinema can animate; select a layer to see how it's done:
 
 - **Sky**: an animated linear gradient, night to dawn. **Night sky**: star shapes with an animated corner radius, a blink made of hold keyframes and an elastic pulse; the group fades out.
 - **Sunrise**: a group rising as one. **Glow** has a radial gradient, an animated blur filter and screen blending; **Rays** spin and scale; the **Sun** changes colour.
@@ -275,7 +282,7 @@ The code is ready for a Tauri shell without changes. When it gets wrapped:
 
 ## Browser support
 
-Keyline targets current Chrome, Edge, Firefox and Safari.
+SVGcinema targets current Chrome, Edge, Firefox and Safari.
 
 - **Save overwriting the same file** needs the File System Access API (Chrome and Edge). Other browsers download a fresh copy.
 - **AVIF export** appears only where the browser can encode it.

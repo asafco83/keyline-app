@@ -1,4 +1,4 @@
-// Keyline — ui/color-picker
+// SVGcinema — ui/color-picker
 // Our own colour picker popup (the browser's can't hold gradient settings). One window for:
 //   type      None · Solid · Linear · Radial (which types are offered depends on the property)
 //   gradient  the stop bar (drag a stop, click the bar to add one, remove), angle or centre + radius

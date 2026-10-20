@@ -1,4 +1,4 @@
-// Keyline — model/tree
+// SVGcinema — model/tree
 import type { Layer } from './types';
 import { H, byId, r2, xfp } from '../core/constants';
 import { CONTENT } from '../core/dom';

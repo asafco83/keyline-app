@@ -1,4 +1,4 @@
-// Keyline — io/open
+// SVGcinema — io/open
 import { fitView, zoomAt } from '../tools/hand';
 import type { Asset, BaseValues, Doc, Layer, OpenFile } from '../model/types';
 import { $, clamp } from '../core/constants';
@@ -53,7 +53,7 @@ export async function loadProjectFile(f: File, handle: FileSystemFileHandle | nu
     if (u8[0] === 0x50 && u8[1] === 0x4b) {
       const z = await readZip(buf),
         man = JSON.parse((await z.text('manifest.json')) || '{}');
-      if (man.format !== 'keyline-project') throw new Error('it isn’t a Keyline project');
+      if (man.format !== 'keyline-project') throw new Error('it isn’t an SVGcinema project');
       const d = JSON.parse(await z.text('project.json')),
         idx = JSON.parse((await z.text('assets/index.json')) || '[]'),
         assets: Record<string, Asset> = {},
@@ -76,14 +76,14 @@ export async function loadProjectFile(f: File, handle: FileSystemFileHandle | nu
     }
     const d = JSON.parse(new TextDecoder().decode(u8)),
       dd = d && d.format === 'keyline' ? d.doc : d;
-    if (!dd || !Array.isArray(dd.layers)) throw new Error('it isn’t a Keyline project');
+    if (!dd || !Array.isArray(dd.layers)) throw new Error('it isn’t an SVGcinema project');
     applyProject(dd, d.assets || {}, null);
     S.dirty = true;
     updateFileInfo();
     toast('Opened an older project file. Use Save to keep it as .klp.');
     return true;
   } catch (e) {
-    toast(`Couldn’t open ${f.name}: ${(e && e.message) || 'it isn’t a Keyline project'}.`);
+    toast(`Couldn’t open ${f.name}: ${(e && e.message) || 'it isn’t an SVGcinema project'}.`);
     return false;
   }
 }
@@ -94,7 +94,7 @@ export async function openFlow() {
       const [handle] = await (window as any).showOpenFilePicker({
         types: [
           {
-            description: 'Keyline project',
+            description: 'SVGcinema project',
             accept: {
               'application/x-keyline-project': ['.klp'],
               'application/zip': ['.zip'],

@@ -1,4 +1,4 @@
-// Keyline — tools/motion-path
+// SVGcinema — tools/motion-path
 // Editing a layer's motion path on the canvas: drag a segment to curve it, drag its handles,
 // double-click a segment to straighten it. A curved segment stores its two control points on the
 // keyframe where it starts (Keyframe[3], see runtime/engine).

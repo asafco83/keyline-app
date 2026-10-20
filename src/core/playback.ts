@@ -1,4 +1,4 @@
-// Keyline — core/playback
+// SVGcinema — core/playback
 import { $, ICON } from './constants';
 import { S, doc } from './state';
 import { frame } from '../render/stage';

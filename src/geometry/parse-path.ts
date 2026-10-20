@@ -1,4 +1,4 @@
-// Keyline — geometry/parse-path
+// SVGcinema — geometry/parse-path
 import { r3 } from '../core/constants';
 import { N } from './nodes';
 import type { PathData, PathNode, SubPath } from '../model/types';

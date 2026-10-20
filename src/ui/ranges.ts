@@ -1,4 +1,4 @@
-// Keyline — ui/ranges
+// SVGcinema — ui/ranges
 // Sliders (<input type="range">) draw their filled part from a CSS variable, --p, the thumb's
 // position as a percentage. Native sliders can't style the filled part in every browser, so this
 // keeps --p in step with the value: on user input, when code sets `.value`, and when a panel

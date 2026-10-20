@@ -1,4 +1,4 @@
-// Keyline — io/save
+// SVGcinema — io/save
 import { $ } from '../core/constants';
 import { ASSETS, S, doc } from '../core/state';
 import { slug } from '../export/images';
@@ -7,7 +7,7 @@ import { toast } from './open';
 import { buildKLP, usedAssetIds } from './zip';
 import { kb } from '../ui/inspector';
 
-export const KLP_TYPES = [{ description: 'Keyline project', accept: { 'application/x-keyline-project': ['.klp'] } }];
+export const KLP_TYPES = [{ description: 'SVGcinema project', accept: { 'application/x-keyline-project': ['.klp'] } }];
 export function canPick() {
   return typeof (window as any).showSaveFilePicker === 'function';
 }
@@ -38,7 +38,7 @@ export async function downloadKLP(name: string, blob: Blob) {
             toast(
               'This viewer can only download .zip files, so it was saved as ' +
                 name +
-                '.klp.zip. Keyline opens it as it is.',
+                '.klp.zip. SVGcinema opens it as it is.',
             );
             return name + '.klp.zip';
           } catch (e2) {

@@ -1,4 +1,4 @@
-// Keyline — core/history
+// SVGcinema — core/history
 import type { Layer, PropKey, Tool } from '../model/types';
 import { $, H, HINTS, hintHTML, baseOf, clamp, clone, isFrozen, propLabel, r3, setBase, valueAt } from './constants';
 import { toast } from '../io/open';

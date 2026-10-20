@@ -1,4 +1,4 @@
-// Keyline — tools/pen
+// SVGcinema — tools/pen
 // The pen family, modelled on Adobe Illustrator:
 //  Pen (P)          click = corner point, drag = smooth point. While dragging: Alt breaks the handle,
 //                   Shift snaps to 45°, Space moves the point. Click the first point to close, click the

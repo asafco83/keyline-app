@@ -1,4 +1,4 @@
-// Keyline — core/booleans
+// SVGcinema — core/booleans
 // Boolean operations on vector layers (rectangles, ellipses, paths, polygons, stars):
 //   Union      — everything combined
 //   Subtract   — the bottom layer minus the ones above it

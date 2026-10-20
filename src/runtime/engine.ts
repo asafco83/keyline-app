@@ -1,4 +1,4 @@
-// Keyline runtime — the animation player that ships inside every exported SVG.
+// SVGcinema runtime — the animation player that ships inside every exported SVG.
 // Keep it dependency-free: KLEngine.toString() is embedded verbatim in exports.
 
 /** Keyframe: [time in seconds, value, easing to the next key, (position only) curve to the next key].

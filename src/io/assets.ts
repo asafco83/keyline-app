@@ -1,4 +1,4 @@
-// Keyline — io/assets
+// SVGcinema — io/assets
 import type { Asset } from '../model/types';
 import { $, ICON, NOFILL, esc, r2 } from '../core/constants';
 import { AG } from '../core/dom';

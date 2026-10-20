@@ -1,4 +1,4 @@
-// Keyline — model/background
+// SVGcinema — model/background
 // The canvas background is a colour (`Doc.bg`) plus an opacity (`Doc.bgA`, 0–1).
 // An empty `bg` also means fully transparent (projects saved before `bgA` existed).
 import type { Doc } from './types';

@@ -1,5 +1,5 @@
-// Keyline — model/sample
-// The scene a new editor opens with. It doubles as a tour of what Keyline can animate: every layer
+// SVGcinema — model/sample
+// The scene a new editor opens with. It doubles as a tour of what SVGcinema can animate: every layer
 // shows at least one feature (named in the comment above it). The browser tests rely on some of its
 // layers (Title on top with Landscape right below it, Sunrise › Sun / Rays, Landscape › Horizon /
 // Ground, Blob), so keep those names and that order when changing it.
@@ -376,11 +376,11 @@ export function sampleDoc(): any {
   sig.parent = land.id;
   const credit = mkLayer(
     'text',
-    'Made with Keyline',
+    'Made with SVGcinema',
     {
       x: 320,
       y: 389,
-      text: 'MADE WITH KEYLINE',
+      text: 'MADE WITH SVGCINEMA',
       size: 10,
       family: FONTS[0][0],
       weight: '600',

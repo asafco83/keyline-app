@@ -1,4 +1,4 @@
-// Keyline — model/font-catalog (generated from @fontsource package metadata)
+// SVGcinema — model/font-catalog (generated from @fontsource package metadata)
 // Google Fonts served from the @fontsource packages on jsDelivr. All are under the SIL Open Font License.
 export interface WebFont {
   id: string;

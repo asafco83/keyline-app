@@ -1,4 +1,4 @@
-// Keyline — render/guides
+// SVGcinema — render/guides
 // Grid (behind or in front of the artwork), rulers along the top and left of the canvas, and guides:
 // drag from a ruler to make one, drag it to move it, drag it back onto a ruler to remove it.
 import type { XY } from '../model/types';

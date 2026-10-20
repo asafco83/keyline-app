@@ -1,4 +1,4 @@
-// Keyline — tools/edit-tools
+// SVGcinema — tools/edit-tools
 import { startTextEdit } from './text-edit';
 import { bgPaint } from '../model/background';
 import type { Layer, XY } from '../model/types';

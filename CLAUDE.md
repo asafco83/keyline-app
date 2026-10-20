@@ -1,6 +1,6 @@
-# Keyline — notes for Claude
+# SVGcinema — notes for Claude
 
-Keyline is a browser SVG animation editor modelled on SVGator. You draw or import artwork, animate
+SVGcinema (formerly Keyline) is a browser SVG animation editor modelled on SVGator. You draw or import artwork, animate
 properties on a timeline, and export one self-contained animated `.svg` (a JS player inside it, or
 pure CSS). Live site: https://asafco83.github.io/keyline-app/ (GitHub Pages, deployed from `master`).
 
@@ -44,6 +44,13 @@ PR bodies end with the "Generated with Claude Code" line and the session URL.
   separate rows). Never drop existing functionality when restyling (booleans, Appearance, Filters…).
 - Icons should read clearly at small sizes; prefer Adobe-like metaphors (e.g. line ends / joins drawn as
   the stroke shape with the path knocked out).
+
+**Name:** the app is **SVGcinema** everywhere users see it (title, top-bar logo, dialogs, messages,
+sample, docs). Internal identifiers keep the old name on purpose, because saved projects and settings
+depend on them: the `.klp` format (`keyline-project`), `keyline:*` storage keys and events, the `kl`
+export id prefix, `KLEngine`, and the repo / site URL (`keyline-app`). The logo is inlined in
+`index.html` (`.brand .logo`); its colours are the `--logo-a` / `--logo-b` tokens (black version in the
+light theme, white in the dark). The source files are in `public/brand/`.
 
 ## Stack and layout
 

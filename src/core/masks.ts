@@ -1,4 +1,4 @@
-// Keyline — core/masks
+// SVGcinema — core/masks
 // Masks and clipping paths. "Create mask" puts the selected layers in a mask group: the top layer goes
 // into a "Masks" folder inside it, and everything else in the group shows only where the mask is
 // (by the mask's opacity, so soft and semi-transparent masks work). A clipping path is the same group

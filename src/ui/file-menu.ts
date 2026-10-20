@@ -1,4 +1,4 @@
-// Keyline — ui/file-menu
+// SVGcinema — ui/file-menu
 import { $ } from '../core/constants';
 import { openExport } from '../export/build';
 

@@ -1,4 +1,4 @@
-// Keyline — app/boot
+// SVGcinema — app/boot
 import { $, HINTS, ICON, hintHTML, ic } from '../core/constants';
 import { WRAP } from '../core/dom';
 import { loop, updatePlayBtn } from '../core/playback';

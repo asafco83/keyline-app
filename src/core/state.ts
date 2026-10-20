@@ -1,4 +1,4 @@
-// Keyline — core/state
+// SVGcinema — core/state
 import { SWATCH } from './constants';
 import type { KLPlayer } from '../runtime/engine';
 import type { Asset, Doc, EditorState, Keyframe, Layer, LayerType, Geometry, BaseValues } from '../model/types';

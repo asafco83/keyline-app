@@ -1,4 +1,4 @@
-// Keyline — export/snippets
+// SVGcinema — export/snippets
 import { $, clamp, r3 } from '../core/constants';
 import { save } from '../core/history';
 import { doc } from '../core/state';

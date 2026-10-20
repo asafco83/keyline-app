@@ -13,6 +13,9 @@
   --accent-fg: #2c47d8;
   --accent-soft: rgba(59, 91, 253, 0.09);
   --accent-line: rgba(59, 91, 253, 0.24);
+  /* the SVGcinema logo: black version (light theme) */
+  --logo-a: #3b5bfd;
+  --logo-b: #000000;
   --key: #cc8606;
   --key-text: #8a5a00;
   --key-soft: rgba(204, 134, 6, 0.3);
@@ -44,6 +47,8 @@
     --accent-fg: #a3b2ff;
     --accent-soft: rgba(113, 137, 255, 0.14);
     --accent-line: rgba(113, 137, 255, 0.3);
+    --logo-a: #728afc;
+    --logo-b: #ffffff;
     --key: #f2b63d;
     --key-text: #f2b63d;
     --key-soft: rgba(242, 182, 61, 0.32);
@@ -71,6 +76,9 @@
   --accent-fg: #a3b2ff;
   --accent-soft: rgba(113, 137, 255, 0.14);
   --accent-line: rgba(113, 137, 255, 0.3);
+  /* the SVGcinema logo: white version (dark theme) */
+  --logo-a: #728afc;
+  --logo-b: #ffffff;
   --key: #f2b63d;
   --key-text: #f2b63d;
   --key-soft: rgba(242, 182, 61, 0.32);
@@ -163,6 +171,19 @@ button {
 }
 .brand svg {
   flex: none;
+}
+/* the SVGcinema logo: "cinema" in --logo-a, "SVG" and the film strip in --logo-b */
+.brand .logo {
+  display: block;
+  height: 19px;
+  width: auto;
+  aspect-ratio: 90 / 13.329;
+}
+.logo .lg-a {
+  fill: var(--logo-a);
+}
+.logo .lg-b {
+  fill: var(--logo-b);
 }
 .pname {
   border: 1px solid transparent;

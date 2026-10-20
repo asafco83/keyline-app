@@ -1,4 +1,4 @@
-// Keyline — core/view
+// SVGcinema — core/view
 // Canvas view settings: snapping, grid, rulers and guides visibility. These are editor preferences
 // (kept in this browser), while the guides themselves belong to the document.
 export interface ViewPrefs {

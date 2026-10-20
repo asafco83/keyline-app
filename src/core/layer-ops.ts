@@ -1,4 +1,4 @@
-// Keyline — core/layer-ops
+// SVGcinema — core/layer-ops
 import type { Layer, PathData } from '../model/types';
 import { H, clone, fmt, r2, r3, xfp } from './constants';
 import { beginEdit } from './history';

@@ -1,4 +1,4 @@
-// Keyline — ui/layer-menu
+// SVGcinema — ui/layer-menu
 // Right-click menu for layers, on the canvas and in the Layers panel (modelled on SVGator's), the
 // layer clipboard (cut / copy / paste / paste in place), and the Hyperlink dialog.
 import type { Layer, PropKey } from '../model/types';

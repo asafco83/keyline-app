@@ -1,4 +1,4 @@
-// Keyline — ui/easing
+// SVGcinema — ui/easing
 import type { Ease } from '../model/types';
 import { $, EZFAM, H, clamp, clone, esc, fmt, r2, r3 } from '../core/constants';
 import { beginEdit } from '../core/history';

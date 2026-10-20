@@ -1,4 +1,4 @@
-// Keyline — export/build
+// SVGcinema — export/build
 import { bgAttrs } from '../model/background';
 import type { Composite } from '../runtime/engine';
 import type { Layer } from '../model/types';

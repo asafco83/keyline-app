@@ -1,4 +1,4 @@
-// Keyline — tools/text-edit
+// SVGcinema — tools/text-edit
 // Typing text straight on the canvas. The SVG text stays visible and is redrawn on every keystroke, so
 // every style shows exactly as it will look (fills, strokes, opacity, filters, fonts). Over it lies a
 // <textarea> laid out the same way (font, size, spacing, alignment, transform) whose own letters are

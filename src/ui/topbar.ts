@@ -1,4 +1,4 @@
-// Keyline — ui/topbar
+// SVGcinema — ui/topbar
 import { applyPan } from '../tools/hand';
 import { $, clamp } from '../core/constants';
 import { TLS, WRAP } from '../core/dom';
