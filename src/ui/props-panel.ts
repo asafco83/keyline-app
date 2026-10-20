@@ -91,7 +91,7 @@ function rotField(part: 'turn' | 'deg') {
 export function transformSection(l: Layer) {
   const bone = l.type === 'bone',
     onPath = !!(l.t.pos && l.t.pos.length > 1);
-  return `<section class="sec"><h3>Transforms <small>◆ adds a keyframe</small></h3>
+  return `<section class="sec"><h3>Transforms <span class="kleg" title="◆ beside a property adds or removes a keyframe at the playhead"><span><i></i>off</span><span><i class="a"></i>animated</span><span><i class="k"></i>key here</span></span></h3>
     ${krow('pos', 'Position', num('pos:0', 'X') + num('pos:1', 'Y'))}
     ${krow('scl', 'Scale', num('scl:0:100', 'W', '%') + num('scl:1:100', 'H', '%') + `<button class="btn ib tg${S.sclLock ? ' on' : ''}" data-act="scllock" aria-pressed="${!!S.sclLock}" title="Keep proportions" aria-label="Keep proportions">${I.link}</button>`)}
     ${bone ? '' : krow('skw', 'Skew', num('skw:0', 'X', '°') + num('skw:1', 'Y', '°'))}

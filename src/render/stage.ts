@@ -80,6 +80,12 @@ export function fit() {
   ART.style.marginLeft = (-doc.w * S.scale) / 2 + 'px';
   ART.style.marginTop = (-doc.h * S.scale) / 2 + 'px';
   $('#zValT').textContent = Math.round(S.scale * 100) + '%';
+  artLabel();
+}
+/** The project name and canvas size shown above the artboard. */
+export function artLabel(name: string = doc.name) {
+  $('#abName').textContent = name || 'Untitled animation';
+  $('#abSize').textContent = `${r2(doc.w)} × ${r2(doc.h)}`;
 }
 export function frame() {
   if (eng) eng.apply(S.time);
@@ -87,6 +93,7 @@ export function frame() {
   updatePlayhead();
   refreshInspector();
   $('#tc').textContent = tc(S.time);
+  $('#tcTot').textContent = '/ ' + tc(doc.dur);
 }
 export function tc(t: number) {
   return `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, '0')}`;

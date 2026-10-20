@@ -88,13 +88,14 @@ export function renderInspector() {
   const l = selLayer();
   if (!l) {
     INSP.innerHTML = docPanel();
+    applyCollapse();
     refreshDocFields();
     return;
   }
-  let h = alignBar();
+  let h = `<div class="insp-head"><input class="txt ih-name" id="ln" data-name value="${esc(l.name)}" spellcheck="false" aria-label="Layer name"><span class="chip">${l.type}</span></div>`;
+  h += alignBar();
   if (S.selSet.size > 1)
     h += `<section class="sec"><h3>${S.selSet.size} layers selected</h3><div class="btns"><button class="btn" data-act="grp">Group them</button><button class="btn danger" data-act="delsel">Delete all</button></div><p>The fields below edit “${esc(l.name)}”.</p></section>`;
-  h += `<section class="sec"><h3>Layer <span class="chip">${l.type}</span></h3>${nrow('Name', `<input class="txt" id="ln" data-name value="${esc(l.name)}" spellcheck="false">`)}</section>`;
   if (S.keys.size) h += keyPanel();
   const painted = ['rect', 'ellipse', 'path', 'text'].includes(l.type);
   if (l.type === 'text') h += textSection(l);
@@ -151,8 +152,60 @@ export function renderInspector() {
     }
   }
   INSP.innerHTML = h;
+  applyCollapse();
   refreshInspector(true);
   drawEz();
+}
+
+/* ---------- collapsible sections ---------- */
+
+const CLOSED_STORE = 'keyline:inspClosed';
+let closedSecs: Set<string> | null = null;
+function closedSet(): Set<string> {
+  if (!closedSecs) {
+    closedSecs = new Set();
+    try {
+      const v = JSON.parse(localStorage.getItem(CLOSED_STORE) || '[]');
+      if (Array.isArray(v)) v.forEach(k => typeof k === 'string' && closedSecs.add(k));
+    } catch (_) {}
+  }
+  return closedSecs;
+}
+/** A section's title: the heading's first text, without counts or buttons. */
+function secTitle(h3: Element) {
+  return (h3.childNodes[0]?.textContent || '').trim();
+}
+const CHEV =
+  '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5l3 3 3-3"/></svg>';
+/** Give each section heading a collapse toggle and restore the sections the user closed. */
+export function applyCollapse() {
+  const closed = closedSet();
+  INSP.querySelectorAll('.sec > h3').forEach((h3: Element) => {
+    const t = secTitle(h3),
+      shut = closed.has(t);
+    h3.parentElement.classList.toggle('closed', shut);
+    h3.insertAdjacentHTML(
+      'beforeend',
+      `<button class="sec-tg" data-sectg aria-expanded="${!shut}" aria-label="${shut ? 'Expand' : 'Collapse'} ${esc(t)}" title="${shut ? 'Show' : 'Hide'} this section">${CHEV}</button>`,
+    );
+  });
+}
+function toggleSection(h3: Element) {
+  const t = secTitle(h3),
+    closed = closedSet(),
+    shut = !closed.has(t);
+  if (shut) closed.add(t);
+  else closed.delete(t);
+  try {
+    localStorage.setItem(CLOSED_STORE, JSON.stringify([...closed]));
+  } catch (_) {}
+  h3.parentElement.classList.toggle('closed', shut);
+  const b = h3.querySelector('.sec-tg');
+  if (b) {
+    b.setAttribute('aria-expanded', String(!shut));
+    b.setAttribute('aria-label', `${shut ? 'Expand' : 'Collapse'} ${t}`);
+    b.setAttribute('title', `${shut ? 'Show' : 'Hide'} this section`);
+  }
 }
 /** the document background as a paint value ('none' when transparent) */
 function docBgValue() {
@@ -646,6 +699,15 @@ export function init(): void {
     }
   });
   INSP.addEventListener('click', (e: MouseEvent) => {
+    // a click on a section heading (not on a control inside it) opens or closes the section
+    const h3 = (e.target as any).closest('.sec > h3');
+    if (h3) {
+      const ctl = (e.target as any).closest('button, input, select, label, a');
+      if (!ctl || ctl.matches('[data-sectg]')) {
+        toggleSection(h3);
+        return;
+      }
+    }
     const kbt = (e.target as any).closest('[data-kb]'),
       l = selLayer();
     if (kbt && l) return toggleKey(l, kbt.dataset.kb);
