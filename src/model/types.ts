@@ -116,6 +116,12 @@ export interface Layer {
   /** frozen tracks: kept aside (not played, exported or keyed) while the property holds the value it
    *  had when frozen; unfreezing moves them back into `t` */
   ft?: Tracks;
+  /** group: a mask group ('mask' = by opacity, 'clip' = by shape); its `maskSrc` child is the mask */
+  mask?: 'mask' | 'clip';
+  /** group: the folder holding a mask group's mask layers */
+  maskSrc?: boolean;
+  /** hyperlink: clicking the layer in the exported SVG opens it */
+  link?: { url: string; target: '_blank' | '_self' };
   /** curved motion path */
   sm: boolean;
   /** orient along motion path */
@@ -269,6 +275,8 @@ export interface EditorState {
   lexp: Record<string, boolean>;
   /** selected keyframes (references into Layer.t tracks) */
   keys: Set<Keyframe>;
+  /** export just these layers (Export selection) */
+  exportOnly?: Set<string> | null;
   /** where arrow keys act (last area clicked) */
   kbArea?: 'stage' | 'timeline';
   /** selected path node [subpath, node] */

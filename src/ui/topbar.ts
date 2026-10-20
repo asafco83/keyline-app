@@ -17,6 +17,7 @@ import { tln } from './timeline';
 export function closeModal(m: HTMLElement) {
   m.hidden = true;
   if (m.id === 'mExport') {
+    S.exportOnly = null;
     const s = $('#xprev svg');
     if (s && s.player) s.player.destruct();
     $('#xprev').innerHTML = '';

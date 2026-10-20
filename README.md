@@ -144,6 +144,23 @@ Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to 
 
 **Typing text:** double-click a text on the canvas (or click it with the Text tool) to type in place. The real text stays visible with all its styles while you type; the panel's text box updates the canvas live too. While typing, the box has a handle on each side: drag one to set the width (Keep width turns on and lines wrap). When the text is only selected, its handles scale it like any layer. Space types a space while you edit. Esc, Ctrl+Enter or clicking away finishes. With the Text tool, click for text that grows as you type, or drag to draw a box of fixed width whose lines wrap.
 
+**Right-click menu** (on the canvas or in the Layers panel), modelled on SVGator's:
+
+- **Copy / Paste:** Cut, Copy, Paste, Paste in place, Duplicate.
+- **Layer commands:** Group, Ungroup, Delete, Center origin, Animate, Set motion path, Hyperlink, Convert to path, Export selection.
+- **Masks:** Create clipping path, Create mask, Release mask.
+- **Placement:** Align, Arrange, Lock, Rotate 90°, Flip horizontal / vertical.
+
+Shortcuts: Ctrl X / C / V, Ctrl ⇧ V (paste in place), Ctrl ⇧ O (center origin), Ctrl ⇧ P (convert to path), Ctrl ⇧ E (export selection), Ctrl L (lock), Ctrl ⇧ ] / [ (bring to front / send to back). Ctrl C / V copy keyframes when keyframes are selected, and layers otherwise.
+
+**Masks:** select two or more layers, then choose _Create mask_. The top layer goes into a _Masks_ folder inside a new _Mask group_, and the other layers show only where the mask is.
+
+- Masks work by opacity, so soft and semi-transparent masks behave as expected.
+- A _clipping path_ uses only the mask's shape.
+- Mask layers stay normal layers: select them in the Layers panel to move, edit or animate them. A drag inside the selection box moves them even though they aren't drawn.
+
+**Hyperlink:** gives a layer a link (web address, mailto:, tel: or #anchor) that opens in a new tab or the same one. Clicking the layer in the exported SVG follows it.
+
 **Timeline length:** the timeline always fills its panel, past the end of the animation (that part is shaded). The white line marks the end: drag it to change the length (it snaps to 0.05s; Shift for 0.01s) and a tag shows the length while you drag. The Length box follows along, and typing in it still works. With the end line focused, ←/→ change the length by 0.1s (Shift: 1s).
 
 **Freezing a track:** hover a property row in the timeline and click the snowflake. The track keeps its keyframes but stops using them: the property holds the value it had at the playhead, the row and its keyframes turn grey, no keyframes can be added, and exports leave it out. Editing the property meanwhile changes the held value. Click the snowflake again to unfreeze and go back to the keyframes.

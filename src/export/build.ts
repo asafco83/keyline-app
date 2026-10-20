@@ -140,7 +140,21 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
     svgId = pre + 'svg';
   if (ex.mode === 'css' && (ex.trigger === 'click' || ex.trigger === 'scroll' || ex.trigger === 'api'))
     ex.trigger = 'load';
-  const prep = doc.layers.map(l => {
+  // Export selection: only the chosen layers, inside the groups that hold them
+  let src = doc.layers;
+  if (S.exportOnly && S.exportOnly.size) {
+    const keep = new Set(S.exportOnly);
+    doc.layers.forEach(l => {
+      if (!S.exportOnly.has(l.id)) return;
+      let p = l.parent && doc.layers.find(x => x.id === l.parent);
+      while (p && !keep.has(p.id)) {
+        keep.add(p.id);
+        p = p.parent && doc.layers.find(x => x.id === p.parent);
+      }
+    });
+    src = doc.layers.filter(l => keep.has(l.id));
+  }
+  const prep = src.map(l => {
     const c = clone(l);
     for (const k in c.t) {
       if (!c.t[k].length) {

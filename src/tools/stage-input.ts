@@ -8,7 +8,7 @@ import { INSP, WRAP } from '../core/dom';
 import { beginEdit, select, setProp, setTool } from '../core/history';
 import { S, layerById } from '../core/state';
 import { isLocked, parentMatrix } from '../model/tree';
-import { docPt, drawOverlay } from '../render/overlay';
+import { docPt, drawOverlay, obbOf } from '../render/overlay';
 import { fit, frame } from '../render/stage';
 import { boneCreate, fkDrag, ikDrag } from './bones';
 import { createText, handleDrag, nodeDrag, toggleSmooth } from './edit-tools';
@@ -18,6 +18,22 @@ import { SHAPE_TOOLS, backToSelect, createDrag } from './shapes';
 /** Position keyframes of `l` that are selected in the timeline. */
 export function selectedPosKeys(l: Layer): Keyframe[] {
   return S.keys.size && l.t.pos ? l.t.pos.filter(q => S.keys.has(q)) : [];
+}
+export function insideBox(l: Layer, p: XY) {
+  const q = obbOf(l);
+  if (!q || q.length < 4) return false;
+  // point in convex quad: same side of all four edges
+  let sign = 0;
+  for (let i = 0; i < 4; i++) {
+    const a = q[i],
+      b = q[(i + 1) % 4],
+      c = (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
+    if (Math.abs(c) < 1e-9) continue;
+    const sg = Math.sign(c);
+    if (sign && sg !== sign) return false;
+    sign = sg;
+  }
+  return true;
 }
 export function hitChain(target: any): string[] {
   const chain: string[] = [];
@@ -177,6 +193,9 @@ export function init(): void {
         return;
       }
     }
+    // inside the selected layer's box (also for layers that aren't drawn, like masks): move it
+    const cur = S.sel && layerById(S.sel);
+    if (cur && t === 'select' && !isLocked(cur) && insideBox(cur, p)) return moveDrag(cur, p);
     if (S.sel || S.selSet.size) {
       S.keys.clear();
       select(null);

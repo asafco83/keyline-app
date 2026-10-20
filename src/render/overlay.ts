@@ -23,8 +23,32 @@ export function localMatrix(l: Layer): DOMMatrix {
 export function boxOf(l: Layer) {
   const s = byId('e-' + l.id + '-s');
   if (!s) return null;
-  const rc = s.getBoundingClientRect(),
-    a = toDoc(rc.left, rc.top),
+  const rc = s.getBoundingClientRect();
+  if (!rc.width && !rc.height) {
+    // not drawn (e.g. a mask's layers): measure from its geometry instead
+    let bb: DOMRect;
+    try {
+      bb = (s as any).getBBox();
+    } catch (_) {
+      return null;
+    }
+    const M = localMatrix(l),
+      pts = [
+        [bb.x, bb.y],
+        [bb.x + bb.width, bb.y],
+        [bb.x, bb.y + bb.height],
+        [bb.x + bb.width, bb.y + bb.height],
+      ].map(([x, y]) => xfp(M, x, y)),
+      xs = pts.map(p => p.x),
+      ys = pts.map(p => p.y);
+    return {
+      x: Math.min(...xs),
+      y: Math.min(...ys),
+      w: Math.max(...xs) - Math.min(...xs),
+      h: Math.max(...ys) - Math.min(...ys),
+    };
+  }
+  const a = toDoc(rc.left, rc.top),
     b = toDoc(rc.right, rc.bottom);
   return { x: a.x, y: a.y, w: Math.max(0, b.x - a.x), h: Math.max(0, b.y - a.y) };
 }

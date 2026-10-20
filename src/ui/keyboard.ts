@@ -1,6 +1,15 @@
 // Keyline — ui/keyboard
 import { zoomShortcut } from './zoom-menu';
 import { animateShortcut } from './animate-menu';
+import {
+  clearLayerClip,
+  closeLayerMenu,
+  copyLayers,
+  exportSelection,
+  hasLayerClip,
+  layerShortcut,
+  pasteLayers,
+} from './layer-menu';
 import { pickTool } from './tools-rail';
 import { setSpace } from '../tools/hand';
 import { $, H, TOOL_INFO, clone, r2 } from '../core/constants';
@@ -45,6 +54,10 @@ export function init(): void {
     const tg: any = e.target,
       typing = tg.closest && tg.closest('input,textarea,select');
     if (e.key === 'Escape') {
+      if (!$('#layermenu').hidden) {
+        closeLayerMenu();
+        return;
+      }
       if (!MENU.hidden) {
         closeMenu();
         return;
@@ -70,6 +83,7 @@ export function init(): void {
     }
     if (modk && kk === 'e' && !typing) {
       e.preventDefault();
+      if (e.shiftKey && selLayer()) return void exportSelection();
       openExport();
       return;
     }
@@ -101,10 +115,20 @@ export function init(): void {
       redo();
       return;
     }
+    if (layerShortcut(e)) {
+      e.preventDefault();
+      return;
+    }
+    // one clipboard: keyframes when keyframes are selected, otherwise layers
     if (mod && k.toLowerCase() === 'c') {
       if (S.keys.size) {
         e.preventDefault();
+        clearLayerClip();
         copyKeys();
+      } else if (selLayer()) {
+        e.preventDefault();
+        S.clip = null;
+        copyLayers();
       }
       return;
     }
@@ -112,6 +136,9 @@ export function init(): void {
       if (S.clip && S.clip.length) {
         e.preventDefault();
         pasteKeys();
+      } else if (hasLayerClip()) {
+        e.preventDefault();
+        pasteLayers();
       }
       return;
     }
