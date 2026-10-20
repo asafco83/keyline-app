@@ -95,14 +95,32 @@
               <defs id="docdefs"></defs>
               <clipPath id="abclip"><rect id="abrect"></rect></clipPath>
               <rect id="bgrect"></rect>
+              <g id="gridBack"></g>
               <g clip-path="url(#abclip)"><g id="content"></g></g>
               <g id="overlay"></g>
             </svg>
           </div>
         </div>
+        <canvas id="rulerX" class="ruler rx" hidden title="Drag down to add a horizontal guide"></canvas>
+        <canvas id="rulerY" class="ruler ry" hidden title="Drag right to add a vertical guide"></canvas>
+        <div id="rulerC" class="ruler rc" hidden></div>
+        <div class="guide-tip" id="guideTip" hidden></div>
         <div class="hud">
           <div class="hint" id="hint"></div>
           <div class="zoom">
+            <button class="btn vb" id="vSnap" aria-haspopup="menu" aria-expanded="false" title="Snapping (Alt+S)">
+              <span id="vSnapIc"></span><i class="tri" aria-hidden="true"></i>
+            </button>
+            <button
+              class="btn vb"
+              id="vGrid"
+              aria-haspopup="menu"
+              aria-expanded="false"
+              title="Grid, rulers and guides"
+            >
+              <span id="vGridIc"></span><i class="tri" aria-hidden="true"></i>
+            </button>
+            <span class="vsep"></span>
             <button class="btn ib" id="zOut" aria-label="Zoom out">−</button>
             <button class="btn zv" id="zVal" aria-haspopup="menu" aria-expanded="false" title="Zoom options">
               <span id="zValT">100%</span><i class="tri" aria-hidden="true"></i>
@@ -529,6 +547,7 @@
     <div class="tl-tip" id="tltip" hidden></div>
     <div class="ctx" id="ctxmenu" role="menu" hidden></div>
     <div class="ctx lm" id="layermenu" role="menu" aria-label="Layer" hidden></div>
+    <div class="ctx view-menu" id="viewMenu" role="menu" hidden></div>
     <div class="modal" id="mLink" hidden>
       <div class="dlg dlg-sm" role="dialog" aria-modal="true" aria-labelledby="hlTitle">
         <header>

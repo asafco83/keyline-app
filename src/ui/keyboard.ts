@@ -1,6 +1,7 @@
 // Keyline — ui/keyboard
 import { zoomShortcut } from './zoom-menu';
 import { animateShortcut } from './animate-menu';
+import { viewShortcut } from './view-menu';
 import {
   clearLayerClip,
   closeLayerMenu,
@@ -113,6 +114,10 @@ export function init(): void {
     if (mod && k.toLowerCase() === 'y') {
       e.preventDefault();
       redo();
+      return;
+    }
+    if (viewShortcut(e)) {
+      e.preventDefault();
       return;
     }
     if (layerShortcut(e)) {

@@ -9,6 +9,7 @@ import { cursorFor } from '../tools/edit-tools';
 import { ellNodes, rectNodes } from '../geometry/nodes';
 import { currentNode, segCtrl } from '../tools/motion-path';
 import { editBox, followTextEdit, textEditing } from '../tools/text-edit';
+import { drawGuides } from './guides';
 
 export function toDoc(x: number, y: number) {
   return new DOMPoint(x, y).matrixTransform(CONTENT.getScreenCTM().inverse());
@@ -79,6 +80,12 @@ export function quadPts(q: DOMPointReadOnly[]) {
 export function drawOverlay() {
   OV.replaceChildren();
   followTextEdit();
+  drawGuides();
+  if (S.snapLines) {
+    const big = 100000;
+    S.snapLines.x.forEach(x => OV.append(svgEl('line', { x1: x, y1: -big, x2: x, y2: big, class: 'ov-snap' })));
+    S.snapLines.y.forEach(y => OV.append(svgEl('line', { x1: -big, y1: y, x2: big, y2: y, class: 'ov-snap' })));
+  }
   const u = 1 / S.scale;
   if (S.pen || S.pencil || S.penHint) drawPen(u);
   if (S.tool !== 'select') drawLabel(u);

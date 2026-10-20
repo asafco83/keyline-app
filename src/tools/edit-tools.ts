@@ -248,6 +248,7 @@ export function nodeDrag([i, j, part]: number[], p0: XY) {
   S.node = [i, j];
   const smooth = isSmooth(base[i].n[j]);
   S.drag = {
+    snapPt: new Set([l.id]),
     move(p, e) {
       const lp = xfp(Mi, p.x, p.y),
         dx = lp.x - lp0.x,
