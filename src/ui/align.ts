@@ -8,6 +8,7 @@ import { beginEdit, setProp } from '../core/history';
 import { S, doc, layerById } from '../core/state';
 import { parentMatrix, selectedRoots } from '../model/tree';
 import { boxOf, localMatrix } from '../render/overlay';
+import { BOOL_OPS, boolTargets } from '../core/booleans';
 
 type Box = { x: number; y: number; w: number; h: number };
 export const ALIGN: Array<[string, string, string]> = [
@@ -48,7 +49,8 @@ function targets() {
   return selectedRoots().filter(l => !l.lock && byId('e-' + l.id + '-s'));
 }
 export function alignBar() {
-  const n = targets().length;
+  const n = targets().length,
+    bools = !!boolTargets();
   return `<div class="align-bar" role="toolbar" aria-label="Align and distribute">${ALIGN.map(([k, label, p]) => {
     const dist = k.startsWith('dist'),
       off = n === 0 || (dist && n < 3),
@@ -56,6 +58,9 @@ export function alignBar() {
         ? label + (off ? ' (select 3 or more layers)' : '')
         : label + (n > 1 ? ' (to selection)' : ' (to canvas)');
     return `<button class="btn ib" data-align="${k}" title="${t}" aria-label="${t}"${off ? ' disabled' : ''}>${ic(p)}</button>`;
+  }).join('')}<span class="ab-sep"></span>${BOOL_OPS.map(([k, label, p]) => {
+    const t = bools ? label : label + ' (select two or more shapes or paths)';
+    return `<button class="btn ib" data-bool="${k}" title="${t}" aria-label="${t}"${bools ? '' : ' disabled'}>${ic(p)}</button>`;
   }).join('')}</div>`;
 }
 /** Move a layer by a delta given in document units. */

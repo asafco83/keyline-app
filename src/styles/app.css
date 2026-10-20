@@ -2071,6 +2071,15 @@ details summary {
   padding: 8px 10px;
   border-bottom: 1px solid var(--line);
 }
+.align-bar {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  justify-items: center;
+  row-gap: 2px;
+}
+.align-bar .ab-sep {
+  display: none;
+}
 .align-bar .btn {
   width: 28px;
   height: 28px;
