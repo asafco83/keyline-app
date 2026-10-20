@@ -13,14 +13,18 @@ For every feature or fix:
 
 1. Branch from `master` (`feat/…`, `fix/…`, `chore/…`) and implement.
 2. Run the checks:
-   - `npx prettier --write src tests` (CI fails on formatting), `npx tsc --noEmit -p .`, `npx vitest run`
+   - `npx prettier --write src tests` (CI fails on formatting; CI runs `prettier --check .`, so also
+     format `index.html` and `README.md` when you touch them), `npx tsc --noEmit -p .`, `npx vitest run`
    - the browser tests: `tests/browser/run.sh` (see below); add or update a browser test for the change.
 3. Update `README.md` when behaviour changes.
 4. Commit, push, open a PR with `gh api repos/asafco83/keyline-app/pulls …`, wait for CI to pass, then
    merge with `merge_method=merge`.
 5. Wait for the "Deploy to GitHub Pages" run for the merge commit, then check the live site.
    On the live site **only inspect** (load it, check the new code/UI is there); never change the
-   owner's project there (it lives in that browser's storage).
+   owner's project there (it lives in that browser's storage). The workspace shell can't reach
+   github.io; use the built-in browser (the owner approves access) and read the page with
+   `find` / `read_page` rather than clicking. Toggling the theme there also counts as a change.
+   After merging, GitHub deletes the remote branch: switch the local checkout to `master` and pull.
 6. Report back briefly: what changed, what was tested, anything left open.
 
 Commit messages end with the attribution lines the session asks for (Co-Authored-By / session URL).
@@ -32,6 +36,14 @@ PR bodies end with the "Generated with Claude Code" line and the session URL.
 - Ask questions when a request is ambiguous; propose a recommendation with the question.
 - Reference images are often SVGator screenshots: match the behaviour, keep Keyline's own look.
 - Keyboard shortcuts must not clash: check `src/ui/keyboard.ts` and `src/ui/view-menu.ts` first.
+- For visual changes, the owner wants a **mockup first** (a Design canvas artifact, "Keyline UI
+  refresh"), iterated on and approved before implementing; then the app must **match the mockup
+  closely** (sizes, spacing, icons, layout). Check by screenshotting the app at the same size and state
+  as the mockup and comparing side by side, not from memory.
+- Every animatable property keeps its **own row and ◆ toggle** (e.g. fill colour and fill opacity are
+  separate rows). Never drop existing functionality when restyling (booleans, Appearance, Filters…).
+- Icons should read clearly at small sizes; prefer Adobe-like metaphors (e.g. line ends / joins drawn as
+  the stroke shape with the path knocked out).
 
 ## Stack and layout
 
@@ -52,6 +64,39 @@ unit tests. `paper` (booleans, lazy-loaded) and `opentype.js` (text to outlines)
   `layers-panel.ts`, `layer-menu.ts` (right-click), `color-picker.ts` (the colour window), …
 - `src/export/build.ts` — export (JS or CSS mode), `dialog.ts` the Export dialog.
 - `src/io/` — open/save `.klp` projects (zip), SVG import, assets.
+
+## UI conventions (from the UI refresh)
+
+- **Look:** panels sit flush, split by hairlines (`--line`); colour tokens live on `:root` in
+  `src/styles/app.css`, with a dark set under `prefers-color-scheme` and `[data-theme='dark']`. Use the
+  tokens (`--panel`, `--panel-2`, `--raised`, `--line`, `--line-2`, `--line-soft`, `--fg`, `--muted`,
+  `--accent`, `--accent-fg`, `--accent-soft`, `--accent-line`, `--key`, `--key-text`, `--key-soft`,
+  `--head`, `--mat`, `--dot`, `--shade`, `--shade-sm`), never raw colours. Later rules for the refresh
+  are appended near the end of `app.css` ("UI refresh: details matched to the mockup", …).
+- **Fonts:** `--f-ui` Instrument Sans for everything, `--f-mark` Instrument Serif for the wordmark,
+  `--f-num` = Instrument Sans with `tabular-nums` (set on `body`) for numbers, `--f-code` JetBrains Mono
+  only for code views. Don't put numbers back in JetBrains Mono: its dotted zero reads as an 8 at small
+  sizes, and the Google Fonts build has no slashed-zero alternate.
+- **Theme:** `src/ui/theme.ts`. The button `#bTheme` is in the top bar right of `#bKeys`; the choice is
+  saved in `localStorage['keyline:theme']` and applied before first paint by an inline script in
+  `index.html`. Anything that paints with colours read from CSS in script (the rulers in
+  `render/guides.ts`) must listen for `THEME_EVENT` and repaint.
+- **Sliders** draw a filled track from the CSS variable `--p`; `src/ui/ranges.ts` keeps it in step
+  (user input, programmatic `.value`, and sliders added by re-renders), so no per-slider code is needed.
+- **Inspector:** a header (`.insp-head`: layer name `#ln` + type chip) above the align / boolean bar.
+  Section headings can collapse: `applyCollapse()` appends a `.sec-tg` button to each `.sec > h3`
+  (last in the DOM, shown first via CSS `order`) so the heading's **first text node stays the title**
+  (tests read `h3.childNodes[0]`). Closed sections are remembered in `keyline:inspClosed`.
+  `krow()` rows have a ◆ (`.kb`: grey = off, `.has` = animated, amber label; `.on` = key at playhead);
+  `nrow()` rows are indented to line up with them. Colour fields (`colf`): swatch + value in one
+  `.cbox`, eyedropper beside it.
+- **Hint:** the tool tips are behind the `#hintBtn` "?" in the canvas HUD; set them with
+  `$('#hint').innerHTML = hintHTML(HINTS[t])` (splits on " · ", key names become `<kbd>`).
+- **Layers panel:** rows carry dotted tree guides (`.lp-guides`, computed per row in `renderLayers`)
+  and a clip hook (`.lp-clip`) on layers a mask / clip folder applies to. Action bar order: Up, Down |
+  Duplicate, Ungroup, Group, Release mask, Create mask, Delete (right) — `layer-actions.py` asserts it.
+- **Class-name pitfall:** `sel` is the _selected_ state class on layer rows, timeline rows, keyframes
+  and gradient stops, so dropdown styles must be written as `select.sel`, never bare `.sel`.
 
 ## Data model essentials
 
@@ -79,3 +124,10 @@ unit tests. `paper` (booleans, lazy-loaded) and `opentype.js` (text to outlines)
   `st.doc` is undefined in tests.
 - **Pitfall:** clicking the exact centre of a selected shape hits the origin handle; tests grab shapes
   off-centre.
+- `tests/browser/ui-refresh.py` covers the refreshed UI (theme toggle and ruler repaint, inspector
+  header / collapsing / ◆ states, colour field, units, hint, slider fill, Animate button…); extend it
+  for UI changes. To add a layer to the selection in tests use `hi.select(id, 'toggle')` (there is no
+  `'add'` mode).
+- **Pitfall (own screenshots):** when starting a dev server yourself for screenshots, run it in its
+  own process group (`setsid`) and stop the group; killing `npx` leaves `vite` running on the port, and
+  `pkill -f "vite …"` can match the calling shell's own command line and kill it.
