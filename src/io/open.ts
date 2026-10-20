@@ -9,7 +9,7 @@ import { assetURL, blobToData, saveAssets } from './assets';
 import { markClean, persistFile, updateFileInfo } from './file-state';
 import { confirmDiscard } from './guard';
 import { readZip } from './zip';
-import { fit, frame } from '../render/stage';
+import { artLabel, fit, frame } from '../render/stage';
 import { docField } from '../ui/inspector';
 import { renderTimeline } from '../ui/timeline';
 import { resetView } from '../ui/topbar';
@@ -154,8 +154,10 @@ export function init(): void {
   });
   $('#pname').addEventListener('change', (e: Event) => {
     doc.name = (e.target as any).value.trim() || 'Untitled animation';
+    artLabel();
     save();
   });
+  $('#pname').addEventListener('input', (e: Event) => artLabel((e.target as any).value.trim()));
   $('#tPlay').addEventListener('click', togglePlay);
   $('#tStart').addEventListener('click', () => {
     setTime(0);

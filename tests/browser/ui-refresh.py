@@ -1,0 +1,89 @@
+import asyncio, sys, json
+from playwright.async_api import async_playwright
+import os
+OUT=os.environ.get('KL_OUT','/tmp/keyline-shots/'); os.makedirs(OUT, exist_ok=True)
+# The refreshed UI: light/dark toggle, collapsible inspector sections, keyframe toggle states,
+# the artboard label, the timecode total and the playhead's time flag.
+async def main():
+    async with async_playwright() as p:
+        b=await p.chromium.launch(); ctx=await b.new_context(color_scheme='light'); pg=await ctx.new_page()
+        await pg.set_viewport_size({'width':1440,'height':900}); pg.set_default_timeout(5000)
+        errs=[]; pg.on('pageerror',lambda e: errs.append(str(e)))
+        url=(sys.argv[1] if len(sys.argv)>1 else 'http://localhost:5199/')
+        await pg.goto(url, wait_until='domcontentloaded'); await pg.wait_for_timeout(2500)
+        await pg.evaluate("async()=>{ window.st=await import('/src/core/state.ts'); window.hi=await import('/src/core/history.ts'); }")
+        ev=lambda js: pg.evaluate(js); R={}; F=[]
+        def check(n,c,i=None):
+            R[n]=('ok' if c else 'FAIL')+('' if i is None else f' {i}')
+            if not c: F.append(n)
+        await ev("localStorage.removeItem('keyline:theme'); localStorage.removeItem('keyline:inspClosed')")
+        await pg.reload(wait_until='domcontentloaded'); await pg.wait_for_timeout(2000)
+        await pg.evaluate("async()=>{ window.st=await import('/src/core/state.ts'); window.hi=await import('/src/core/history.ts'); }")
+
+        # theme toggle
+        bg=lambda: ev("getComputedStyle(document.body).backgroundColor")
+        light=await bg()
+        check('follows the system theme until a choice is made', not await ev("document.documentElement.dataset.theme") and await ev("document.getElementById('bTheme').getAttribute('aria-label')")=='Switch to dark theme')
+        await pg.click('#bTheme'); dark=await bg()
+        check('the rail button switches to dark and remembers it', await ev("document.documentElement.dataset.theme")=='dark' and await ev("localStorage.getItem('keyline:theme')")=='dark' and dark!=light, (light,dark))
+        check('the button now offers light', await ev("document.getElementById('bTheme').getAttribute('aria-label')")=='Switch to light theme')
+        await ev("hi.setTool('rect')"); await ev("hi.setTool('select')")
+        check('the button survives the rail re-rendering', await ev("!!document.getElementById('bTheme') && document.getElementById('bTheme').getAttribute('aria-label')=='Switch to light theme'"))
+        await pg.reload(wait_until='domcontentloaded'); await pg.wait_for_timeout(1500)
+        check('dark is kept after a reload', await ev("document.documentElement.dataset.theme")=='dark' and await bg()==dark)
+        await pg.screenshot(path=OUT+'ui-refresh-dark.png')
+        await pg.click('#bTheme')
+        check('and back to light', await ev("document.documentElement.dataset.theme")=='light' and await bg()==light)
+        await pg.evaluate("async()=>{ window.st=await import('/src/core/state.ts'); window.hi=await import('/src/core/history.ts'); }")
+
+        # artboard label, timecode total
+        lab=await ev("[abName.textContent, abSize.textContent]")
+        check('artboard label shows the project name and size', lab==[await ev("st.doc.name"), f"{await ev('st.doc.w')} × {await ev('st.doc.h')}"], lab)
+        await pg.fill('#pname','Morning'); lab2=await ev("abName.textContent")
+        check('label follows the project name while typing', lab2=='Morning', lab2)
+        await pg.press('#pname','Escape')
+        check('timecode shows the total length', await ev("tcTot.textContent")=='/ 0:03.00', await ev("tcTot.textContent"))
+
+        # playhead flag
+        await ev("hi.setTime(1.5)")
+        check('playhead flag shows the time', await ev("playhead.dataset.t")=='1.50s' and not await ev("playhead.classList.contains('at-start')"))
+        await ev("hi.setTime(0)")
+        check('at 0s the flag hangs right of the line', await ev("playhead.classList.contains('at-start')"))
+
+        # inspector header + keyframe states
+        sid=await ev("st.doc.layers.find(l=>l.name==='Sun').id"); await ev(f"hi.select('{sid}')")
+        check('layer name and type sit in the inspector header', await ev("document.querySelector('.insp-head #ln').value")=='Sun' and await ev("document.querySelector('.insp-head .chip').textContent")=='ellipse')
+        check('legend in the Transforms heading', await ev("!!document.querySelector('#insp .sec h3 .kleg')"))
+        kb=lambda k: ev(f"(()=>{{const b=document.querySelector('#insp [data-kb={k}]');return [b.classList.contains('has'),b.classList.contains('on'),getComputedStyle(b.closest('.row').querySelector('.rl')).color]}})()")
+        off=await kb('fo')
+        await pg.click('#insp [data-kb=fo]'); on=await kb('fo')
+        check('◆ on fill opacity: off, then a keyframe at the playhead', off[0]==False and on[0]==True and on[1]==True, (off,on))
+        check('an animated property label turns amber', on[2]!=off[2], (off[2],on[2]))
+        await ev("hi.setTime(1)"); await pg.wait_for_timeout(50); mid=await kb('fo')
+        check('away from the keyframe the toggle shows "animated"', mid[0]==True and mid[1]==False, mid)
+        check('fill opacity has its own row and toggle, apart from the colour', await ev("!!document.querySelector('#insp [data-kb=fill]') && !!document.querySelector('#insp [data-kb=so]')"))
+        check('boolean operations are still in the inspector', await ev("document.querySelectorAll('#insp [data-bool]').length")==4)
+
+        # collapsible sections
+        heads=await ev("[...document.querySelectorAll('#insp .sec h3')].map(h=>h.childNodes[0].textContent.trim())")
+        check('section titles stay the heading text', 'Transforms' in heads and 'Fill & stroke' in heads, heads)
+        check('every section heading has a collapse toggle', await ev("[...document.querySelectorAll('#insp .sec > h3')].every(h=>h.querySelector('.sec-tg'))"))
+        await pg.click('#insp .sec h3:has-text("Transforms")')
+        closed=lambda: ev("[...document.querySelectorAll('#insp .sec.closed h3')].map(h=>h.childNodes[0].textContent.trim())")
+        c1=await closed()
+        check('clicking a heading collapses the section', c1==['Transforms'] and not await ev("document.querySelector('#insp [data-kb=pos]').checkVisibility()"), c1)
+        await pg.click('#insp [data-act=swap]'); c2=await closed()
+        check('a button in a heading does not toggle it', c2==['Transforms'], c2)
+        await ev("hi.undo()")
+        pid=await ev("st.doc.layers.find(l=>l.name==='Blob').id"); await ev(f"hi.select('{pid}')")
+        check('collapsed sections stay collapsed for other layers', await closed()==['Transforms'])
+        await pg.reload(wait_until='domcontentloaded'); await pg.wait_for_timeout(1500)
+        await pg.evaluate("async()=>{ window.st=await import('/src/core/state.ts'); window.hi=await import('/src/core/history.ts'); }")
+        await ev(f"hi.select('{pid}')")
+        check('and after a reload', await closed()==['Transforms'])
+        await pg.focus('#insp .sec.closed .sec-tg'); await pg.keyboard.press('Enter')
+        check('the toggle opens it from the keyboard', await closed()==[] and await ev("document.querySelector('#insp .sec-tg').getAttribute('aria-expanded')")=='true')
+        await pg.screenshot(path=OUT+'ui-refresh-light.png')
+        R['errors']=errs; print(json.dumps(R,indent=1,ensure_ascii=False)); print('FAILS',F+(['errors'] if errs else []))
+        await b.close()
+asyncio.run(main())

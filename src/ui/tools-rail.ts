@@ -6,6 +6,7 @@ import { $, ICON, TOOLBAR, TOOL_INFO, groupOf, type ToolGroup } from '../core/co
 import { setTool } from '../core/history';
 import { S } from '../core/state';
 import { fitView } from '../tools/hand';
+import { themeButton } from './theme';
 
 const HOLD_MS = 320;
 const STORE = 'keyline:toolGroup';
@@ -26,9 +27,9 @@ function groupBtn(g: ToolGroup) {
   return `<button class="tool grp${on ? ' on' : ''}" data-group="${g.group}" data-tool="${id}" title="${tip(id)} · hold for ${g.label.toLowerCase()}" aria-label="${TOOL_INFO[id].label}" aria-pressed="${on}" aria-haspopup="menu" aria-expanded="false">${ICON[id]}${k ? `<kbd>${k}</kbd>` : ''}<i class="tri" aria-hidden="true"></i></button>`;
 }
 export function renderTools() {
-  $('#tools').innerHTML = TOOLBAR.map(e =>
-    !e ? '<span class="sep"></span>' : typeof e === 'string' ? toolBtn(e) : groupBtn(e),
-  ).join('');
+  $('#tools').innerHTML =
+    TOOLBAR.map(e => (!e ? '<span class="sep"></span>' : typeof e === 'string' ? toolBtn(e) : groupBtn(e))).join('') +
+    `<span class="sp"></span>${themeButton()}`;
   const fly = document.getElementById('toolfly');
   if (fly && !fly.hidden) closeFly();
 }
