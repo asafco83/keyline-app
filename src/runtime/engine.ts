@@ -57,6 +57,8 @@ export interface Composite {
   dof: any;
   /** corner radius (null = not animated) */
   rad: any;
+  /** trim path [start %, end %, offset %], or null when the whole stroke shows */
+  trim: number[] | null;
 }
 type Handler = (this: KLPlayer, offsetMs: number) => void;
 export interface EngineData {
@@ -110,6 +112,14 @@ export interface KLPlayer {
   comp(L: EngineLayer, t: number): Composite;
   get(L: EngineLayer, k: string, t: number): any;
   dstr(sp: EngineSubPath[] | null | undefined): string;
+  /** is the value a gradient ({ g: 'lin' | 'rad', s: stops, … }) */
+  isG(v: any): boolean;
+  /** gradient geometry attributes */
+  gAttrs(v: any): Record<string, string>;
+  /** parse a colour into [r, g, b, a] */
+  pc(s: unknown): number[] | null;
+  /** stroke-dasharray and -dashoffset for a trim [start, end, offset] */
+  trimDash(tr: number[]): string[];
   ease(n: Ease, p: number): number;
   loc(x: number): number;
   EZ: Record<string, number[]>;
@@ -125,6 +135,9 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     p0: 'v',
     p1: 'v',
     rad: 'n',
+    ts: 'n',
+    te: 'n',
+    to: 'n',
     rot: 'n',
     scl: 'v',
     op: 'n',
@@ -282,7 +295,71 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     }
     return null;
   }
-  function mixC(a: string, b: string, p: number): string {
+  /* ---- gradients: { g: 'lin' | 'rad', s: [[offset 0–1, colour], …], a: angle°, cx, cy, r (0–1 of the box) } ---- */
+  function isG(v: any): boolean {
+    return !!v && typeof v === 'object' && (v.g === 'lin' || v.g === 'rad') && v.s && v.s.length > 0;
+  }
+  /** colour of a gradient at offset o */
+  function gAt(G: any, o: number): string {
+    var st = G.s;
+    if (o <= st[0][0]) return st[0][1];
+    for (var i = 0; i < st.length - 1; i++)
+      if (o <= st[i + 1][0]) {
+        var w = st[i + 1][0] - st[i][0];
+        return mixC(st[i][1], st[i + 1][1], w > 0 ? (o - st[i][0]) / w : 0);
+      }
+    return st[st.length - 1][1];
+  }
+  function mixG(a: any, b: any, p: number): any {
+    // a solid colour blends into a gradient as a gradient of that one colour
+    if (!isG(a))
+      a = {
+        g: b.g,
+        a: b.a,
+        cx: b.cx,
+        cy: b.cy,
+        r: b.r,
+        s: [
+          [0, a],
+          [1, a],
+        ],
+      };
+    if (!isG(b))
+      b = {
+        g: a.g,
+        a: a.a,
+        cx: a.cx,
+        cy: a.cy,
+        r: a.r,
+        s: [
+          [0, b],
+          [1, b],
+        ],
+      };
+    if (a.g !== b.g) return p < 1 ? a : b;
+    var offs: number[] = [];
+    a.s.concat(b.s).forEach(function (q: any[]) {
+      if (offs.indexOf(q[0]) < 0) offs.push(q[0]);
+    });
+    offs.sort(function (x: number, y: number) {
+      return x - y;
+    });
+    // same stop count: blend stop by stop (offsets move); otherwise resample both on all offsets
+    var st =
+      a.s.length === b.s.length
+        ? a.s.map(function (q: any[], i: number) {
+            return [q[0] + (b.s[i][0] - q[0]) * p, mixC(q[1], b.s[i][1], p)];
+          })
+        : offs.map(function (o: number) {
+            return [o, mixC(gAt(a, o), gAt(b, o), p)];
+          });
+    var n = function (x: any, y: any, d: number) {
+      return (x == null ? d : x) + ((y == null ? d : y) - (x == null ? d : x)) * p;
+    };
+    return { g: a.g, a: n(a.a, b.a, 90), cx: n(a.cx, b.cx, 0.5), cy: n(a.cy, b.cy, 0.5), r: n(a.r, b.r, 0.5), s: st };
+  }
+  function mixC(a: any, b: any, p: number): any {
+    if (isG(a) || isG(b)) return mixG(a, b, p);
     var A = pc(a),
       B = pc(b);
     if (!A || !B) return p < 1 ? a : b;
@@ -403,7 +480,28 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       so: get(L, 'so', t),
       dof: get(L, 'dof', t),
       rad: L.t && L.t.rad && L.t.rad.length ? get(L, 'rad', t) : null,
+      trim: trimOf(L, t),
     };
+  }
+  /** trim start / end / offset (percent of the stroke), or null when nothing is trimmed */
+  function trimOf(L: EngineLayer, t: number): number[] | null {
+    var T = L.t || {},
+      on = ['ts', 'te', 'to'].some(function (k) {
+        return (T[k] && T[k].length) || (L.b && L.b[k] != null && L.b[k] !== (k === 'te' ? 100 : 0));
+      });
+    if (!on) return null;
+    var a = get(L, 'ts', t),
+      b = get(L, 'te', t),
+      o = get(L, 'to', t);
+    return [a == null ? 0 : a, b == null ? 100 : b, o == null ? 0 : o];
+  }
+  /** stroke-dasharray / dashoffset for a trim (with pathLength 100) */
+  function trimDash(tr: number[]): string[] {
+    var s0 = Math.max(0, Math.min(100, Math.min(tr[0], tr[1]))),
+      e0 = Math.max(0, Math.min(100, Math.max(tr[0], tr[1]))),
+      len = e0 - s0;
+    // one dash of the visible length per pathLength (100), so the offset wraps around closed shapes
+    return [f(len) + ' ' + f(100 - len), String(f(-(s0 + tr[2])))];
   }
   /** the path at time t: morph value, with animated line ends or corner radius applied */
   function shapeOf(L: EngineLayer, t: number): EngineSubPath[] | undefined {
@@ -483,6 +581,19 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     }
     return [{ c: true, n: n }];
   }
+  /** gradient geometry attributes (in the shape's bounding box, 0–1) */
+  function gAttrs(v: any): Record<string, string> {
+    if (v.g === 'rad') {
+      var cx = v.cx == null ? 0.5 : v.cx,
+        cy = v.cy == null ? 0.5 : v.cy,
+        r = v.r == null ? 0.5 : v.r;
+      return { cx: String(f(cx)), cy: String(f(cy)), r: String(f(r)), fx: String(f(cx)), fy: String(f(cy)) };
+    }
+    var a = (((v.a == null ? 90 : v.a) - 90) * Math.PI) / 180,
+      dx = Math.cos(a) / 2,
+      dy = Math.sin(a) / 2;
+    return { x1: String(f(0.5 - dx)), y1: String(f(0.5 - dy)), x2: String(f(0.5 + dx)), y2: String(f(0.5 + dy)) };
+  }
   function f(n: number) {
     return Math.round(n * 1000) / 1000;
   }
@@ -530,6 +641,36 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     if (!(id in EL)) EL[id] = root ? root.querySelector('#' + id) : null;
     return EL[id];
   }
+  /** a fill / stroke value as an attribute; a gradient updates (or makes) its element */
+  function paint(s: Element, id: string, v: any): string {
+    if (!isG(v)) return v;
+    var tag = v.g === 'rad' ? 'radialGradient' : 'linearGradient',
+      ge = el(id);
+    if (!ge || ge.tagName !== tag) {
+      var n = (s.ownerDocument || document).createElementNS('http://www.w3.org/2000/svg', tag);
+      n.setAttribute('id', id);
+      if (ge && ge.parentNode) ge.parentNode.replaceChild(n, ge);
+      else s.parentNode.insertBefore(n, s);
+      ge = n;
+      EL[id] = n;
+    }
+    var at = gAttrs(v);
+    for (var k in at) ge.setAttribute(k, at[k]);
+    var stops = ge.getElementsByTagName('stop');
+    while (stops.length > v.s.length) ge.removeChild(stops[stops.length - 1]);
+    while (stops.length < v.s.length)
+      ge.appendChild((s.ownerDocument || document).createElementNS('http://www.w3.org/2000/svg', 'stop'));
+    for (var i = 0; i < v.s.length; i++) {
+      var c = pc(v.s[i][1]) || [0, 0, 0, 1];
+      stops[i].setAttribute('offset', String(f(v.s[i][0])));
+      stops[i].setAttribute(
+        'stop-color',
+        'rgb(' + Math.round(c[0]) + ',' + Math.round(c[1]) + ',' + Math.round(c[2]) + ')',
+      );
+      stops[i].setAttribute('stop-opacity', String(f(c[3])));
+    }
+    return 'url(#' + id + ')';
+  }
   function apply(t: number) {
     for (var i = 0; i < D.L.length; i++) {
       var L = D.L[i],
@@ -539,10 +680,15 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
       var c = comp(L, t);
       g.setAttribute('transform', tf(c));
       g.setAttribute('opacity', String(f(c.op)));
-      if (c.fill != null) s.setAttribute('fill', c.fill);
-      if (c.stk != null) s.setAttribute('stroke', c.stk);
+      if (c.fill != null) s.setAttribute('fill', paint(s, D.p + L.id + '-gf', c.fill));
+      if (c.stk != null) s.setAttribute('stroke', paint(s, D.p + L.id + '-gs', c.stk));
       if (c.sw != null) s.setAttribute('stroke-width', String(f(c.sw)));
-      if (c.draw != null && (c.draw < 100 || (L.t && L.t.draw))) {
+      if (c.trim) {
+        var td = trimDash(c.trim);
+        s.setAttribute('pathLength', '100');
+        s.setAttribute('stroke-dasharray', td[0]);
+        s.setAttribute('stroke-dashoffset', td[1]);
+      } else if (c.draw != null && (c.draw < 100 || (L.t && L.t.draw))) {
         s.setAttribute('pathLength', '100');
         s.setAttribute('stroke-dasharray', '100 100');
         s.setAttribute('stroke-dashoffset', String(f(100 - c.draw)));
@@ -807,6 +953,10 @@ export function KLEngine(D: EngineData, root: ParentNode | null): KLPlayer {
     apply: apply,
     comp: comp,
     get: get,
+    gAttrs: gAttrs,
+    trimDash: trimDash,
+    isG: isG,
+    pc: pc,
     dstr: dstr,
     poly: poly,
     corners: corners,

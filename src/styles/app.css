@@ -2450,3 +2450,70 @@ details summary {
   font-style: normal;
   color: var(--muted);
 }
+
+/* gradient editor */
+.g-types {
+  margin-left: auto;
+}
+.g-row .rf .cf {
+  flex: 1;
+}
+.g-ic {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--muted);
+  display: block;
+}
+.g-ic.g-solid {
+  background: var(--muted);
+}
+.g-ic.g-lin {
+  background: linear-gradient(90deg, var(--muted), transparent);
+}
+.g-ic.g-rad {
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--muted), transparent 70%);
+}
+.g-ed {
+  display: grid;
+  gap: 8px;
+  padding: 2px 0 6px 20px;
+}
+.g-bar {
+  position: relative;
+  height: 18px;
+  margin: 6px 7px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  cursor: copy;
+  background-color: var(--check);
+  touch-action: none;
+}
+.g-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 4px;
+  background: conic-gradient(var(--check) 25%, var(--panel) 0 50%, var(--check) 0 75%, var(--panel) 0) 0 0 / 8px 8px;
+}
+.g-stop {
+  position: absolute;
+  top: 100%;
+  width: 12px;
+  height: 12px;
+  margin: -2px 0 0 -6px;
+  padding: 0;
+  border: 2px solid var(--panel);
+  border-radius: 3px;
+  background: var(--c);
+  box-shadow: 0 0 0 1px var(--muted);
+  cursor: ew-resize;
+}
+.g-stop.sel {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.g-num {
+  flex: 0 0 78px;
+}

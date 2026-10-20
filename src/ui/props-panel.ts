@@ -17,6 +17,7 @@ import { localFamilies, localFontsSupported, localLoaded, pickWeight, webFont } 
 import { FILTERS, addFilter, fxKey, removeFilter, syncFa } from '../model/filters';
 import { H9 } from '../tools/edit-tools';
 import { colf, gnum, krow, nrow, num, renderInspector } from './inspector';
+import { gradStale, paintRow } from './gradient-ui';
 import { isLine, liveShape, setShape } from '../tools/shapes';
 import { type ShapeParams, maxCornerRadius } from '../geometry/nodes';
 import { renderStage } from '../render/stage';
@@ -276,9 +277,9 @@ function picker(k: string) {
 export function paintSection(l: Layer) {
   if (!PAINTED.includes(l.type)) return '';
   return `<section class="sec"><h3>Fill & stroke <button class="btn ib h3b" data-act="swap" title="Swap fill and stroke" aria-label="Swap fill and stroke">${I.swap}</button></h3>
-    ${krow('fill', 'Fill', colf('fill') + picker('fill'))}
+    ${paintRow(l, 'fill', 'Fill', colf('fill') + picker('fill'))}
     ${krow('fo', 'Opacity', num('fo::100', 'α', '%'))}
-    ${krow('stk', 'Stroke', colf('stk') + picker('stk'))}
+    ${paintRow(l, 'stk', 'Stroke', colf('stk') + picker('stk'))}
     ${krow('so', 'Opacity', num('so::100', 'α', '%'))}
     ${krow('sw', 'Width', num('sw', 'W', 'px'))}
   </section>`;
@@ -333,6 +334,11 @@ export function appearanceSection(l: Layer) {
     );
     if (l.type !== 'text')
       h +=
+        `<div class="sub">Trim path</div>` +
+        krow('ts', 'Start', num('ts', 'S', '%')) +
+        krow('te', 'End', num('te', 'E', '%')) +
+        krow('to', 'Offset', num('to', 'O', '%')) +
+        `<p>Trim shows only part of the stroke, from Start to End, shifted along the path by Offset. Animate End from 0% to 100% to draw a line on.</p>` +
         krow('draw', 'Draw', num('draw', '◐', '%')) +
         `<p>Draw animates the stroke from 0% to 100% for a self-drawing line. While Draw is below 100% it replaces the dash pattern.</p>`;
   }
@@ -407,6 +413,7 @@ export function refreshProps(l: Layer): void {
     const rn = byId('sh-rad');
     if (rn !== document.activeElement) rn.value = fmt(v);
   }
+  if (gradStale(l)) return void setTimeout(renderInspector, 0);
   const nx = byId('np-x');
   // the playhead moved onto another node: rebuild the panel for it
   if (nx) {

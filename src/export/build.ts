@@ -50,9 +50,42 @@ export function cssFor(anim: Layer[], pre: string, svgId: string) {
           N,
         ) + `#${id}{transform-box:view-box;transform-origin:0 0;animation:${id}-g ${run}}`;
     const shapeAnim = !!(T.p0 || T.p1 || (T.rad && l.shape)),
-      sk = ['fill', 'fo', 'stk', 'so', 'sw', 'draw', 'dof', 'd', 'rad'].filter(k =>
-        k === 'd' ? T.d || shapeAnim : k === 'rad' ? T.rad && !l.shape : T[k],
+      // a gradient animates through its stops (below), not the fill / stroke property
+      gradK = (k: 'fill' | 'stk') => fr.some(c => H.isG(c[k])),
+      gk = { fill: !!T.fill && gradK('fill'), stk: !!T.stk && gradK('stk') },
+      trimAnim = !!(T.ts || T.te || T.to),
+      sk = ['fill', 'fo', 'stk', 'so', 'sw', 'draw', 'dof', 'd', 'rad', 'trim'].filter(k =>
+        k === 'd'
+          ? T.d || shapeAnim
+          : k === 'rad'
+            ? T.rad && !l.shape
+            : k === 'trim'
+              ? trimAnim
+              : k === 'fill' || k === 'stk'
+                ? T[k] && !gk[k]
+                : (k === 'draw' || k === 'dof') && trimAnim
+                  ? false
+                  : T[k],
       );
+    // gradient stops: CSS can animate their colours (not their positions or the angle)
+    (['fill', 'stk'] as const).forEach(k => {
+      if (!gk[k]) return;
+      const n = Math.max(...fr.map(c => (H.isG(c[k]) ? c[k].s.length : 0)));
+      for (let i = 0; i < n; i++) {
+        const name = `${id}${k === 'fill' ? '-gf' : '-gs'}-s${i}`;
+        css +=
+          kfBlock(
+            name,
+            fr.map(c => {
+              const v = c[k],
+                col = H.isG(v) ? (v.s[Math.min(i, v.s.length - 1)] || v.s[0])[1] : v,
+                q = H.pc(col) || [0, 0, 0, 1];
+              return `stop-color:rgb(${Math.round(q[0])},${Math.round(q[1])},${Math.round(q[2])});stop-opacity:${r3(q[3])}`;
+            }),
+            N,
+          ) + `#${id}${k === 'fill' ? '-gf' : '-gs'} stop:nth-child(${i + 1}){animation:${name} ${run}}`;
+      }
+    });
     if (sk.length)
       css +=
         kfBlock(
@@ -76,9 +109,13 @@ export function cssFor(anim: Layer[], pre: string, svgId: string) {
                             ? `stroke-width:${r3(c.sw)}px`
                             : k === 'rad'
                               ? `rx:${r3(c.rad)}px;ry:${r3(c.rad)}px`
-                              : k === 'draw'
-                                ? `stroke-dashoffset:${r3(100 - c.draw)}`
-                                : `d:path("${H.dstr(c.d)}")`,
+                              : k === 'trim'
+                                ? c.trim
+                                  ? `stroke-dasharray:${H.trimDash(c.trim)[0]};stroke-dashoffset:${H.trimDash(c.trim)[1]}`
+                                  : ''
+                                : k === 'draw'
+                                  ? `stroke-dashoffset:${r3(100 - c.draw)}`
+                                  : `d:path("${H.dstr(c.d)}")`,
               )
               .join(';'),
           ),
@@ -238,6 +275,7 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
             draw: null,
           };
           if (l.b.skw && (l.b.skw[0] || l.b.skw[1])) b.skw = l.b.skw;
+          (['ts', 'te', 'to'] as const).forEach(k => l.b[k] != null && (b[k] = l.b[k]));
           const o: any = { id: l.id, o: l.o || [0, 0], b, t: l.t };
           if (l.fa) o.fa = l.fa;
           // animated line ends move the nodes of the path; an animated corner radius rebuilds it

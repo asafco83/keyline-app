@@ -379,3 +379,76 @@ describe('corner radius and line ends', () => {
     expect(d[0].n[1]).toEqual([10, 10, 10, 10, 10, 10]);
   });
 });
+
+describe('gradients and trim path', () => {
+  const G = (o: any) => ({
+    g: 'lin',
+    a: 90,
+    s: [
+      [0, '#000000'],
+      [1, '#ffffff'],
+    ],
+    ...o,
+  });
+  it('blends two gradients stop by stop', () => {
+    const L: EngineLayer = {
+      id: 'g',
+      b: {},
+      t: {
+        fill: [
+          [0, G({}), 'linear'],
+          [
+            1,
+            G({
+              a: 0,
+              s: [
+                [0.5, '#000000'],
+                [1, '#000000'],
+              ],
+            }),
+            'linear',
+          ],
+        ],
+      },
+    };
+    const v = H.get(L, 'fill', 0.5);
+    expect(v.g).toBe('lin');
+    expect(v.a).toBe(45);
+    expect(v.s[0][0]).toBeCloseTo(0.25);
+    expect(v.s[1][1]).toBe('rgb(128,128,128)');
+  });
+  it('blends a solid colour into a gradient', () => {
+    const L: EngineLayer = {
+      id: 'g',
+      b: {},
+      t: {
+        fill: [
+          [0, '#ff0000', 'linear'],
+          [1, G({}), 'linear'],
+        ],
+      },
+    };
+    const v = H.get(L, 'fill', 0.5);
+    expect(H.isG(v)).toBe(true);
+    expect(v.s[0][1]).toBe('rgb(128,0,0)');
+  });
+  it('computes gradient geometry from the angle', () => {
+    expect(H.gAttrs({ g: 'lin', a: 90, s: [] })).toEqual({ x1: '0', y1: '0.5', x2: '1', y2: '0.5' });
+    expect(H.gAttrs({ g: 'rad', cx: 0.3, cy: 0.4, r: 0.6, s: [] }).r).toBe('0.6');
+  });
+  it('trims the stroke', () => {
+    expect(H.trimDash([10, 50, 5])).toEqual(['40 60', '-15']);
+    const L: EngineLayer = {
+      id: 't',
+      b: {},
+      t: {
+        te: [
+          [0, 0, 'linear'],
+          [1, 100, 'linear'],
+        ],
+      },
+    };
+    expect(H.comp(L, 0.5).trim).toEqual([0, 50, 0]);
+    expect(H.comp({ id: 'n', b: {}, t: {} }, 0).trim).toBeNull();
+  });
+});
