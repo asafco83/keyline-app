@@ -19,7 +19,7 @@ async def main():
           const order=[...document.querySelectorAll('.lp-acts button')].map(b=>b.id);
           const gap=document.getElementById('lDup').getBoundingClientRect().left-document.getElementById('lDown').getBoundingClientRect().right;
           return {topBar:a.bottom<=l.top+1, order:order.join(','), split:gap>10, gap:Math.round(gap), animRight:Math.abs(an.right-(f.right-parseFloat(getComputedStyle(document.querySelector('.lp-foot')).paddingRight)))<2, iconOnly:[...document.querySelectorAll('.lp-acts button')].every(b=>!b.textContent.trim()&&b.querySelector('svg'))}})()""")
-        check('actions at the top, in order, split left/right; Animate bottom-right', lay['topBar'] and lay['order']=='lUp,lDown,lDup,lUngroup,lGroup,lMask,lUnmask,lDel' and lay['split'] and lay['animRight'] and lay['iconOnly'], lay)
+        check('actions at the top, in order, split left/right; Animate bottom-right', lay['topBar'] and lay['order']=='lUp,lDown,lDup,lUngroup,lGroup,lUnmask,lMask,lDel' and lay['split'] and lay['animRight'] and lay['iconOnly'], lay)
         await ev("hi.select(null)"); s=await st()
         check('nothing selected: only Group available', s=={'lUp':False,'lDown':False,'lDup':False,'lUngroup':False,'lGroup':True,'lDel':False,'lAnim':False}, s)
         tid=await ev("st.doc.layers.find(l=>l.name==='Title').id"); await ev(f"hi.select('{tid}')"); s=await st()
@@ -39,6 +39,9 @@ async def main():
         check('two layers selected: Move up/down greyed (single layer only)', not s['lUp'] and not s['lDown'] and s['lDel'], s)
         await ev(f"hi.select('{tid}')")
         await pg.screenshot(path=(OUT+'layer-actions')+'-panel.png', clip={'x':70,'y':60,'width':240,'height':680})
+        # tree guides: dotted lines from a group to its children, an elbow on the last child
+        gd=await ev("(()=>{const r=n=>document.querySelector(`#lp .lp-row[data-lid='${st.doc.layers.find(l=>l.name===n).id}']`);const k=n=>[...r(n).querySelectorAll('.lp-guides .lg')].map(e=>e.classList[1]);return {top:k('Title'),first:k('Horizon'),last:k('Ground')}})()")
+        check('tree guides: none at the top level, tee then elbow under a group', gd=={'top':[],'first':['v','h'],'last':['e','h']}, gd)
         # mask actions next to Group
         mk=lambda: ev("[!lMask.disabled, !lUnmask.disabled, lUnmask.getAttribute('aria-label')]")
         await ev("hi.select(null)"); m0=await mk()
@@ -48,6 +51,8 @@ async def main():
         check('two layers selected: Create mask on, Release off', m1[:2]==[True,False], m1)
         await pg.click('#lMask'); g=await ev("(()=>{const l=st.selLayer();return l && [l.mask, l.type]})()"); m2=await mk()
         check('Create mask makes a mask group and selects it; Release turns on', g==['mask','group'] and m2==[False,True,'Release mask'], (g,m2))
+        cl=await ev("(()=>{const r=n=>document.querySelector(`#lp .lp-row[data-lid='${st.doc.layers.find(l=>l.name===n).id}']`);return [!!r('Rays').querySelector('.lp-clip'), !!r('Sun').querySelector('.lp-clip'), r('Rays').querySelector('.lp-clip').getAttribute('title')]})()")
+        check('the masked layer shows the clip hook; the mask itself does not', cl[0] and not cl[1] and cl[2]=='Masked by the Masks folder', cl)
         await pg.click('#lUnmask'); g2=await ev("st.doc.layers.some(l=>l.mask)")
         check('Release mask undoes it', not g2)
         R['errors']=errs; print(json.dumps(R,indent=1)); print('FAILS',F)

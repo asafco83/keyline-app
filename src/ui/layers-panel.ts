@@ -22,24 +22,57 @@ import {
 } from '../model/tree';
 import { renderTimeline } from './timeline';
 
+/** Badge on a mask / clip folder (the same shape as the Create mask button). */
+const MASK_IC =
+  '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><circle cx="12" cy="12" r="5" fill="currentColor" fill-opacity=".4"/></svg>';
+/** The "clipped" hook shown before layers that a mask or clip folder applies to. */
+const CLIP_IC =
+  '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 10.5h4.5V3"/><path d="M4.8 5.2L7 3l2.2 2.2"/></svg>';
 export function renderLayers() {
   const rows = treeRows(null, 0, [], true);
   if (!rows.length)
     LP.innerHTML = `<p class="lp-empty">Layers appear here. Draw with the tools on the left, or drop SVG and image files onto the canvas.</p>`;
-  else
+  else {
+    // tree guides: for each row, which ancestor levels continue below it (a vertical dotted
+    // line passes through), and whether the row itself is its parent's last child (an elbow)
+    const nextAt: boolean[] = [];
     LP.innerHTML = rows
-      .map(([l, d]) => {
+      .map(([l, d], i) => {
         const grp = isBox(l),
           n = grp ? kids(l.id).length : 0,
           open = S.lexp[l.id] !== false;
-        return `<div class="lp-row${S.selSet.has(l.id) ? ' sel' : ''}${l.hid ? ' hid' : ''}" draggable="true" tabindex="0" role="treeitem" aria-selected="${S.selSet.has(l.id)}" data-lid="${l.id}" style="padding-left:${4 + d * 18}px">
-      ${grp && n ? `<button class="tl-ic" data-la="exp" aria-label="${open ? 'Collapse' : 'Expand'} ${esc(l.name)}">${open ? ICON.down : ICON.right}</button>` : '<span class="lp-sp"></span>'}
-      <span class="lp-ty" title="${l.type}">${TICON[l.type] || TICON.raw}</span><span class="lp-name" title="${esc(l.name)}">${esc(l.name)}</span>${l.mask ? `<span class="lp-mask" title="${l.mask === 'clip' ? 'Clip group: the Clip path folder clips the layers below it' : 'Mask group: the Masks folder masks the layers below it'}">${l.mask === 'clip' ? 'CLIP' : 'MASK'}</span>` : l.maskSrc ? '<span class="lp-mask" title="The layers in this folder are the mask">◐</span>' : ''}${l.link ? `<span class="lp-link" title="Links to ${esc(l.link.url)}">🔗</span>` : ''}
+        let hasNext = false;
+        for (let j = i + 1; j < rows.length && rows[j][1] >= d; j++)
+          if (rows[j][1] === d) {
+            hasNext = true;
+            break;
+          }
+        nextAt[d] = hasNext;
+        const par = l.parent ? layerById(l.parent) : null,
+          clipped = !!(par && par.mask && !l.maskSrc),
+          clipTip = par && par.mask === 'clip' ? 'Clipped by the Clip path folder' : 'Masked by the Masks folder';
+        let guides = '';
+        if (d > 0) {
+          for (let m = 1; m < d; m++)
+            if (nextAt[m]) guides += `<i class="lg v" style="left:${13 + (m - 1) * 18}px"></i>`;
+          const x = 13 + (d - 1) * 18,
+            end = 4 + d * 18 + (grp && n ? 3 : clipped ? 5 : 13);
+          guides +=
+            `<i class="lg ${hasNext ? 'v' : 'e'}" style="left:${x}px"></i>` +
+            `<i class="lg h" style="left:${x}px;width:${end - x}px"></i>`;
+        }
+        const clip = clipped
+          ? `<span class="lp-clip" title="${clipTip}" aria-label="${clipTip}">${CLIP_IC}</span>`
+          : '';
+        return `<div class="lp-row${S.selSet.has(l.id) ? ' sel' : ''}${l.hid ? ' hid' : ''}" draggable="true" tabindex="0" role="treeitem" aria-selected="${S.selSet.has(l.id)}" aria-level="${d + 1}" data-lid="${l.id}" style="padding-left:${4 + d * 18}px">${guides ? `<span class="lp-guides" aria-hidden="true">${guides}</span>` : ''}
+      ${grp && n ? `<button class="tl-ic" data-la="exp" aria-label="${open ? 'Collapse' : 'Expand'} ${esc(l.name)}">${open ? ICON.down : ICON.right}</button>${clip}` : `<span class="lp-sp">${clip}</span>`}
+      <span class="lp-ty" title="${l.type}">${TICON[l.type] || TICON.raw}</span><span class="lp-name" title="${esc(l.name)}">${esc(l.name)}</span>${l.mask ? `<span class="lp-mask" title="${l.mask === 'clip' ? 'Clip group: the Clip path folder clips the layers below it' : 'Mask group: the Masks folder masks the layers below it'}">${l.mask === 'clip' ? 'CLIP' : 'MASK'}</span>` : l.maskSrc ? '<span class="lp-mask ic" title="The layers in this folder are the mask">' + MASK_IC + '</span>' : ''}${l.link ? `<span class="lp-link" title="Links to ${esc(l.link.url)}">🔗</span>` : ''}
       <button class="tl-ic${l.hid ? '' : ' vis-hide'}" data-la="hid" aria-label="${l.hid ? 'Show' : 'Hide'} ${esc(l.name)}">${l.hid ? ICON.eyeoff : ICON.eye}</button>
       <button class="tl-ic${l.lock ? '' : ' vis-hide'}" data-la="lock" aria-label="${l.lock ? 'Unlock' : 'Lock'} ${esc(l.name)}">${l.lock ? ICON.lock : ICON.unlock}</button>
       ${hasTracks(l) ? '<i class="lp-anim" title="Has keyframes"></i>' : '<i class="lp-anim none" aria-hidden="true"></i>'}</div>`;
       })
       .join('');
+  }
   const s = selLayer();
   syncLayerActions(s);
   const total = doc.layers.length;
