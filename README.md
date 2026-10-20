@@ -129,7 +129,7 @@ Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to 
   - **Ungroup** (Ctrl+Shift+G).
   - **Group** (Ctrl+G); with nothing selected it adds an empty group.
   - **Delete**.
-- **At the bottom right:** **Animate** opens a menu of the properties the selected layers can animate. Picking one adds a keyframe at the playhead. Shortcuts: Shift+P position, Shift+A origin, Shift+S scale, Shift+R rotate, Shift+X skew, Shift+O opacity, Shift+B stroke color, Shift+W stroke width, Shift+D draw, Shift+F dash offset, Shift+M morph. Fill color, fill opacity and stroke opacity have no shortcut (Shift+C is the Convert Point tool).
+- **At the bottom:** the layer count ("1 of 9 selected") and, on the right, **Animate**, which opens a menu of the properties the selected layers can animate. Picking one adds a keyframe at the playhead. Shortcuts: Shift+P position, Shift+A origin, Shift+S scale, Shift+R rotate, Shift+X skew, Shift+O opacity, Shift+B stroke color, Shift+W stroke width, Shift+D draw, Shift+F dash offset, Shift+M morph. Fill color, fill opacity and stroke opacity have no shortcut (Shift+C is the Convert Point tool).
 
 **Light and dark theme:** the editor follows the system setting until you pick one with the sun / moon button at the bottom of the tool rail; the choice is remembered.
 
@@ -140,7 +140,7 @@ Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to 
 - **Header:** the layer's name (click to rename) and type.
 - **Sections** open and close: click a section's heading (or its chevron). Closed sections stay closed for every layer and after a reload.
 - **Keyframe toggles:** every animatable property has its own row and its own ◆, so colour and opacity, for example, animate separately. The ◆ shows three states, explained in the Transforms heading: a grey outline when the property isn't animated, amber with an amber label when it is, and filled amber when there is a keyframe at the playhead. Click it to add or remove the keyframe at the playhead.
-- **Align bar** at the top: align left / centre / right / top / middle / bottom, distribute horizontally / vertically. One layer aligns to the canvas, several align to each other; distributing needs three or more. Below it, the boolean operations (union, subtract, intersect, exclude) for two or more shapes or paths.
+- **Align bar** at the top: align left / centre / right / top / middle / bottom, distribute horizontally / vertically. One layer aligns to the canvas, several align to each other; distributing needs three or more. Below it, the boolean operations (union, subtract, intersect, exclude) for two or more shapes or paths; with fewer selected they grey out and a note says what they need.
 - **Text:** content, position and measured size.
 - **Shape settings** (at the top for these shapes): polygon _Sides_; star _Points_ and _Ratio_ (inner / outer radius); corner _Radius_ for rectangles, polygons and stars (capped so corners never overlap, and animatable: the runtime rebuilds the rounded path every frame); line _From_ / _To_, each keyable on its own so a line can grow or swing. Polygons and stars keep their settings until their nodes are edited by hand or they get Morph keyframes; then they are plain paths.
 - **Transforms:** position, scale (with a keep-proportions link), skew X/Y, rotate as turns + degrees (with a _rotate along the motion path_ toggle when the layer has one), origin, anchor grid, flip.

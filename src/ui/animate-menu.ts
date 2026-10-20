@@ -3,7 +3,7 @@
 // selected layer that has it gets a keyframe at the playhead, so it joins the timeline.
 // Shortcuts: Shift + the letter shown next to each property.
 import type { Keyframe, Layer, PropKey } from '../model/types';
-import { $, H, ICON, clone, isFrozen, r3, valueAt } from '../core/constants';
+import { $, H, ICON, clone, ic, isFrozen, r3, valueAt } from '../core/constants';
 import { beginEdit } from '../core/history';
 import { propOK } from '../core/keyframes';
 import { S, layerById, sortTrack } from '../core/state';
@@ -126,8 +126,8 @@ export function syncLayerActions(sel: Layer | null | undefined) {
 
 export function init(): void {
   $('#lAnimIc').innerHTML = ICON.animate;
-  $('#lUp').innerHTML = ICON.moveUp;
-  $('#lDown').innerHTML = ICON.moveDown;
+  $('#lUp').innerHTML = ic('<path d="M12 19V5M6.5 10.5L12 5l5.5 5.5"/>', 15);
+  $('#lDown').innerHTML = ic('<path d="M12 5v14M6.5 13.5L12 19l5.5-5.5"/>', 15);
   $('#lDup').innerHTML = ICON.duplicate;
   $('#lGroup').innerHTML = ICON.group;
   $('#lUngroup').innerHTML = ICON.ungroup;

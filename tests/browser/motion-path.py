@@ -28,7 +28,7 @@ async def main():
         await ev(f"hi.select('{tid}')")
         rows=await ev("(()=>{const s=[...document.querySelectorAll('#insp .sec')].find(s=>s.querySelector('h3').textContent.startsWith('Transforms'));return [...s.querySelectorAll('.rl')].map(r=>r.textContent)})()")
         check('transform order', rows==['Position','Scale','Skew','Rotate','Origin','Anchor'], rows)
-        mp=await ev("(()=>{const s=[...document.querySelectorAll('#insp .sec')].find(s=>s.querySelector('h3').textContent.startsWith('Motion path'));return s && s.children[1] && s.children[1].id})()")
+        mp=await ev("(()=>{const s=[...document.querySelectorAll('#insp .sec')].find(s=>s.querySelector('h3').textContent.startsWith('Motion path'));const r=s && s.children[1];return r && (r.id || (r.querySelector('select')||{}).id)})()")
         check('motion path picker first in its section', mp=='motionPath', mp)
         check('no picker in text section', await ev("!document.querySelector('#insp .sec #motionPath').closest('.sec').querySelector('textarea')"))
         sun=await ev("st.doc.layers.find(l=>l.name==='Sun').id")

@@ -73,7 +73,7 @@ export function eyeBtn(attrs: string) {
  *  `types`: which paints the window offers. */
 export function colf(f: string, types = 'solid') {
   const id = f.replace(/\./g, '_');
-  return `<div class="cf"><button class="pswatch" data-paint="${f}" data-ptypes="${types}" id="c-${id}" aria-haspopup="dialog" aria-expanded="false" aria-label="Colour"><i></i></button>${eyeBtn(`data-act="pick" data-k="${f}"`)}<input class="txt mono" data-f="${f}" id="t-${id}" spellcheck="false" aria-label="Colour value"></div>`;
+  return `<div class="cf"><div class="cbox"><button class="pswatch" data-paint="${f}" data-ptypes="${types}" id="c-${id}" aria-haspopup="dialog" aria-expanded="false" aria-label="Colour"><i></i></button><input class="txt mono" data-f="${f}" id="t-${id}" spellcheck="false" aria-label="Colour value"></div>${eyeBtn(`data-act="pick" data-k="${f}"`)}</div>`;
 }
 export function krow(k: string, label: string, body: string) {
   return `<div class="row"><button class="kb" data-kb="${k}" aria-label="Keyframe ${label}" title="Add / remove keyframe at playhead"></button><span class="rl">${label}</span><div class="rf">${body}</div></div>`;
@@ -104,7 +104,7 @@ export function renderInspector() {
   const curve = l.t.pos && l.t.pos.length > 1,
     pick = l.type === 'bone' ? '' : motionPick(l);
   if (curve || pick)
-    h += `<section class="sec"><h3>Motion path</h3>${pick}
+    h += `<section class="sec"><h3>Motion path</h3>${pick ? nrow('Follow', pick) : ''}
     ${curve ? `<label class="check"><input type="checkbox" data-flag="sm" id="fl-sm" ${l.sm ? 'checked' : ''}> Smooth path through keyframes</label><p>Drag the path on the canvas to curve it; drag its handles to fine-tune (Alt moves one handle alone); double-click a segment to straighten it.</p>${nodeSection(l)}` : ''}</section>`;
   if (l.type === 'text') h += textAppearanceSection(l);
   if (painted) h += paintSection(l);
@@ -261,7 +261,7 @@ function openPaint(btn: HTMLElement, l: Layer | null) {
 export function docPanel() {
   return `<section class="sec"><h3>Document</h3>
     ${nrow('Canvas', `<label class="nf"><span>W</span><input id="d-w" data-doc="w" inputmode="numeric"></label><label class="nf"><span>H</span><input id="d-h" data-doc="h" inputmode="numeric"></label>`)}
-    ${nrow('Background', `<div class="cf"><button class="pswatch" id="d-bgc" data-docpaint aria-haspopup="dialog" aria-expanded="false" aria-label="Background colour"><i></i></button>${eyeBtn('data-docpick')}<input class="txt mono" id="d-bg" data-doc="bg" placeholder="none" spellcheck="false" aria-label="Background value"></div>`)}
+    ${nrow('Background', `<div class="cf"><div class="cbox"><button class="pswatch" id="d-bgc" data-docpaint aria-haspopup="dialog" aria-expanded="false" aria-label="Background colour"><i></i></button><input class="txt mono" id="d-bg" data-doc="bg" placeholder="none" spellcheck="false" aria-label="Background value"></div>${eyeBtn('data-docpick')}</div>`)}
     ${nrow('Length', `<label class="nf"><span>t</span><input id="d-dur" data-doc="dur" inputmode="decimal"><em>s</em></label>`)}
     ${nrow('Repeat', `<select class="sel" id="d-it" data-doc="it"><option value="0">Loop forever</option><option value="1">Play once</option><option value="2">2 times</option><option value="3">3 times</option><option value="5">5 times</option></select>`)}
     ${nrow('Direction', `<select class="sel" id="d-dir" data-doc="dir"><option value="normal">Normal</option><option value="alternate">Alternate</option><option value="reverse">Reverse</option><option value="alternate-reverse">Reverse, then alternate</option></select>`)}</section>

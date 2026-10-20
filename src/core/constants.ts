@@ -275,18 +275,29 @@ export interface ToolGroup {
 export const TOOLBAR: Array<string | ToolGroup | null> = [
   'select',
   'node',
-  null,
   { group: 'pen', label: 'Pen tools', items: ['pen', 'addnode', 'delnode', 'convert', 'pencil'] },
   { group: 'shapes', label: 'Shape tools', items: ['ellipse', 'rect', 'polygon', 'star', 'line'] },
   'text',
   null,
   'bone',
-  null,
   'hand',
 ];
 export function groupOf(tool: string): ToolGroup | null {
   for (const e of TOOLBAR) if (e && typeof e !== 'string' && e.items.includes(tool)) return e;
   return null;
+}
+/** Hint text as HTML: segments split by ' · ' (each capitalised) and key names as <kbd>. */
+export function hintHTML(s: string) {
+  return esc(s)
+    .split(' · ')
+    .map(seg =>
+      (seg.charAt(0).toUpperCase() + seg.slice(1)).replace(
+        /\b(Ctrl|Alt|Shift|Space|Esc|Enter|Del)\b(\+)?/g,
+        (_, k, plus) => `<kbd>${k}</kbd>${plus ? ' + ' : ''}`,
+      ),
+    )
+    .map(seg => `<span>${seg}</span>`)
+    .join('<i aria-hidden="true">·</i>');
 }
 export const HINTS: Record<string, string> = {
   select: 'Drag to move · corners scale · top dot rotates · Ctrl+click picks inside groups',

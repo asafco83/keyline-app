@@ -120,7 +120,7 @@ button {
   padding-right: env(safe-area-inset-right, 0px);
   display: grid;
   grid-template-columns: 52px 248px minmax(0, 1fr) 296px;
-  grid-template-rows: 52px minmax(0, 1fr) 268px;
+  grid-template-rows: 52px minmax(0, 1fr) 288px;
   grid-template-areas: 'top top top top' 'tools side stage insp' 'tl tl tl tl';
 }
 @media (max-width: 1240px) {
@@ -468,7 +468,7 @@ button {
   pointer-events: none;
 }
 .ov-h {
-  fill: var(--panel);
+  fill: #fff;
   stroke: var(--accent);
   stroke-width: 1.5;
   vector-effect: non-scaling-stroke;
@@ -761,10 +761,10 @@ button {
   border-left: 1px solid var(--line);
 }
 .sec {
-  padding: 4px 14px 14px;
+  padding: 2px 14px 12px;
   border-bottom: 1px solid var(--line);
   display: grid;
-  gap: 7px;
+  gap: 6px;
 }
 .sec h3 {
   margin: 0;
@@ -1165,9 +1165,14 @@ textarea.ta:focus {
   align-items: center;
   gap: 6px;
 }
-.tl-ctrl input[type='range'] {
-  width: 110px;
-  accent-color: var(--accent);
+.tl-zoom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+.tl-zoom input[type='range'] {
+  width: 120px;
 }
 .tl-scroll {
   flex: 1;
@@ -1177,11 +1182,11 @@ textarea.ta:focus {
 .tl-body {
   position: relative;
   min-width: max-content;
-  --tln: 214px;
+  --tln: 232px;
 }
 .tl-row {
   display: flex;
-  height: 26px;
+  height: 27px;
 }
 .tl-name {
   position: sticky;
@@ -1767,7 +1772,7 @@ textarea.ta:focus {
   box-shadow: inset 0 0 0 2px var(--accent);
 }
 .lp-sp {
-  width: 22px;
+  width: 18px;
   flex: none;
 }
 .lp-ty {
@@ -2465,23 +2470,21 @@ details summary {
 }
 @container (max-width: 300px) {
   .sec {
-    padding: 4px 12px 14px;
+    padding: 2px 14px 12px;
   }
   .row {
-    grid-template-columns: 16px 66px minmax(0, 1fr);
-    gap: 4px;
+    grid-template-columns: 16px 62px minmax(0, 1fr);
+    gap: 6px;
   }
   .row.nk {
-    grid-template-columns: 86px minmax(0, 1fr);
+    grid-template-columns: 62px minmax(0, 1fr);
+    padding-left: 22px;
   }
   .rf {
-    gap: 4px;
-  }
-  .rf .nf em {
-    display: none;
+    gap: 6px;
   }
   .rf .nf {
-    padding: 0 4px;
+    padding: 0 7px;
   }
   .rf .btn.ib {
     width: 24px;
@@ -3064,4 +3067,375 @@ details summary {
 .ov-gh1 {
   fill: #2a2b33;
   stroke: #fff;
+}
+
+/* ---------- UI refresh: details matched to the mockup ---------- */
+
+/* sliders: a thin track filled up to the thumb (--p is kept in step by ui/ranges.ts) */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 14px;
+  background: transparent;
+  cursor: pointer;
+  margin: 0;
+}
+input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent) 0 var(--p, 50%), var(--line-2) var(--p, 50%));
+}
+input[type='range']::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line-2);
+}
+input[type='range']::-moz-range-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--raised);
+  box-shadow:
+    0 0 0 1px var(--line-2),
+    0 1px 3px var(--shade-sm);
+}
+input[type='range']::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--raised);
+  box-shadow:
+    0 0 0 1px var(--line-2),
+    0 1px 3px var(--shade-sm);
+}
+input[type='range']:focus-visible {
+  outline: none;
+}
+input[type='range']:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 0 0 2px var(--accent),
+    0 1px 3px var(--shade-sm);
+}
+
+/* top bar */
+#bMenu svg,
+.top .btn.ib svg {
+  width: 16px;
+  height: 16px;
+}
+.pname {
+  field-sizing: content;
+  width: auto;
+  min-width: 80px;
+  max-width: 300px;
+}
+.top > .fileinfo {
+  margin-left: 2px;
+}
+.fileinfo::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  opacity: 0.6;
+  flex: none;
+}
+.fileinfo:has(.dirty)::before {
+  display: none;
+}
+.top .btn.pri {
+  height: 32px;
+  padding: 0 14px 0 12px;
+  gap: 7px;
+  font-size: 13px;
+}
+
+/* tool rail: icons only (shortcuts are in the tooltips), one separator */
+.tool svg {
+  width: 17px;
+  height: 17px;
+}
+.tool kbd {
+  display: none;
+}
+.tool .tri {
+  right: 4px;
+  bottom: 4px;
+  border-left-width: 3px;
+  border-bottom-width: 3px;
+  opacity: 0.45;
+}
+.tools .sep {
+  width: 22px;
+  margin: 6px 0;
+}
+
+/* layers panel */
+.lp-acts .sep {
+  margin: 0 4px;
+  height: 16px;
+}
+.lp-acts #lDel {
+  margin-left: auto;
+}
+.lp-acts .btn.ib svg {
+  width: 15px;
+  height: 15px;
+}
+.lp-row .vis-hide {
+  display: none;
+}
+.lp-row:hover .vis-hide,
+.lp-row.sel .vis-hide,
+.lp-row:focus-within .vis-hide,
+.lp-row .vis-hide:focus-visible {
+  display: grid;
+  opacity: 1;
+}
+.lp-row .tl-ic {
+  width: 20px;
+  height: 20px;
+}
+.lp-row .tl-ic[data-la='exp'] {
+  width: 18px;
+}
+.lp-row .tl-ic svg {
+  width: 14px;
+  height: 14px;
+}
+.lp-row.sel .tl-ic {
+  color: var(--accent-fg);
+}
+.lp-anim.none {
+  visibility: hidden;
+}
+.lp-ty svg {
+  width: 14px;
+  height: 14px;
+}
+.lp-foot .rl {
+  font-size: 11.5px;
+}
+.lp-foot .lp-anim-btn {
+  padding: 0 10px 0 10px;
+  gap: 6px;
+}
+.lp-foot .lp-anim-btn::after {
+  content: '';
+  width: 5px;
+  height: 5px;
+  margin: -3px 0 0 1px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+}
+
+/* canvas hint: dot-separated, keys as chips */
+.hint {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 10px;
+}
+.hint i {
+  font-style: normal;
+  opacity: 0.5;
+}
+.hint kbd {
+  font: 10.5px var(--f-num);
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--panel-2);
+  color: var(--fg);
+}
+/* view pill: small chevrons on the menu buttons */
+.zoom .tri,
+.zoom .zv .tri {
+  position: static;
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin: -3px 0 0 3px;
+  border: 0;
+  border-right: 1.4px solid currentColor;
+  border-bottom: 1.4px solid currentColor;
+  transform: rotate(45deg);
+  opacity: 0.7;
+}
+.zoom .zv {
+  padding: 0 8px;
+  min-width: 0;
+  gap: 2px;
+}
+.zoom .btn.vb {
+  padding: 0 6px;
+}
+
+/* inspector */
+.align-bar .btn svg {
+  width: 16px;
+  height: 16px;
+}
+.align-bar .ab-note {
+  grid-column: span 4;
+  justify-self: start;
+  align-self: center;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.3;
+  padding-left: 6px;
+}
+.rf .btn.ib {
+  background: var(--panel-2);
+  color: var(--muted);
+}
+.rf .btn.ib.on {
+  background: var(--accent-soft);
+  color: var(--accent-fg);
+}
+.rf .btn.ib svg {
+  width: 14px;
+  height: 14px;
+}
+.nf em {
+  margin-left: auto;
+  font-size: 10.5px;
+}
+.nf span {
+  font-size: 10.5px;
+}
+/* colour field: swatch and value in one box, the eyedropper beside it */
+.cf .cbox {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 4px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: var(--panel-2);
+}
+.cf .cbox:hover {
+  border-color: var(--line);
+}
+.cf .cbox:focus-within {
+  border-color: var(--accent);
+  background: var(--raised);
+}
+.cf .cbox .pswatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 0;
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+.cf .cbox .pswatch:hover,
+.cf .cbox .pswatch[aria-expanded='true'] {
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.cf .cbox .txt {
+  flex: 1;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 11.5px;
+}
+.cf .btn.ib {
+  background: var(--panel-2);
+  color: var(--muted);
+}
+.cf .btn.ib svg {
+  width: 14px;
+  height: 14px;
+}
+/* anchor: a compact 3×3 grid of dots */
+.anchor {
+  grid-template-columns: repeat(3, 8px);
+  gap: 4px;
+  padding: 6px;
+}
+.anchor button {
+  width: 8px;
+  height: 8px;
+  border: 0;
+  border-radius: 2px;
+  background: var(--line-2);
+}
+.anchor button:hover {
+  background: var(--accent-line);
+}
+.anchor button.on {
+  background: var(--accent);
+}
+/* line ends / joins: a segmented group */
+.btns.tight {
+  gap: 2px;
+  padding: 2px;
+  border-radius: 7px;
+  background: var(--panel-2);
+}
+.btns.tight .btn.ib {
+  width: 26px;
+  height: 24px;
+  background: transparent;
+  color: var(--muted);
+}
+.btns.tight .btn.ib.on {
+  background: var(--raised);
+  color: var(--fg);
+  box-shadow: 0 1px 2px var(--shade-sm);
+}
+
+/* timeline keyframes sit in the middle of the 27px rows */
+.kf,
+.sdot {
+  top: 13.5px;
+}
+.seg {
+  top: 8.5px;
+}
+
+/* sub-headings and help text line up with the labels (past the ◆ column) */
+.sec .sub {
+  padding: 6px 0 0 22px;
+  margin-top: 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.sec .sub .muted {
+  text-transform: none;
+  letter-spacing: 0;
+}
+.sec p {
+  margin: 0 0 2px 22px;
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+.sec p.muted {
+  font-style: normal;
+}
+/* dropdowns: a thin chevron instead of the browser's arrow */
+select.sel {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 26px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none' stroke='%238a92a3' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 4.5l3 3 3-3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  text-overflow: ellipsis;
 }

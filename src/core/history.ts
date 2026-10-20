@@ -1,6 +1,6 @@
 // Keyline — core/history
 import type { Layer, PropKey, Tool } from '../model/types';
-import { $, H, HINTS, baseOf, clamp, clone, isFrozen, propLabel, r3, setBase, valueAt } from './constants';
+import { $, H, HINTS, hintHTML, baseOf, clamp, clone, isFrozen, propLabel, r3, setBase, valueAt } from './constants';
 import { toast } from '../io/open';
 import { LP, WRAP } from './dom';
 import { S, doc, layerById, selLayer, setDoc, sortTrack, syncIdc } from './state';
@@ -217,6 +217,6 @@ export function setTool(t: Tool) {
   renderTools();
   WRAP.className = 't-' + t + (S.spaceHeld ? ' space' : '');
   toolCursor();
-  $('#hint').textContent = HINTS[t];
+  $('#hint').innerHTML = hintHTML(HINTS[t] || '');
   frame();
 }
