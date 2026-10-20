@@ -147,7 +147,10 @@
         <div id="rulerC" class="ruler rc" hidden></div>
         <div class="guide-tip" id="guideTip" hidden></div>
         <div class="hud">
-          <div class="hint" id="hint"></div>
+          <div class="hint-wrap">
+            <button class="hint-btn" id="hintBtn" aria-label="Tips for this tool" aria-describedby="hint">?</button>
+            <div class="hint" id="hint" role="tooltip"></div>
+          </div>
           <div class="zoom">
             <button class="btn vb" id="vSnap" aria-haspopup="menu" aria-expanded="false" title="Snapping (Alt+S)">
               <span id="vSnapIc"></span><i class="tri" aria-hidden="true"></i>
