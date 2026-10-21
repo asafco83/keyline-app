@@ -5,6 +5,7 @@ import { CONTENT, OV, svgEl } from '../core/dom';
 import { S, doc, layerById, selLayer } from '../core/state';
 import { isHidden, isLocked, parentMatrix } from '../model/tree';
 import { drawBone } from '../tools/bones';
+import { boneChips, drawBindLines } from '../tools/bone-edit';
 import { cursorFor } from '../tools/edit-tools';
 import { ellNodes, rectNodes } from '../geometry/nodes';
 import { currentNode, segCtrl } from '../tools/motion-path';
@@ -92,10 +93,17 @@ export function drawOverlay() {
   const u = 1 / S.scale;
   if (S.pen || S.pencil || S.penHint) drawPen(u);
   if (S.tool !== 'select') drawLabel(u);
-  if (S.showBones && ['select', 'bone', 'node'].includes(S.tool))
+  boneChips();
+  const boneTool = S.tool === 'boneedit' || S.tool === 'bonebind';
+  if ((S.showBones || boneTool) && ['select', 'bone', 'node', 'boneedit', 'bonebind'].includes(S.tool))
     doc.layers.forEach(b => {
-      if (b.type === 'bone' && !isHidden(b)) drawBone(b, u, S.selSet.has(b.id));
+      if (b.type === 'bone' && !isHidden(b))
+        drawBone(b, u, S.selSet.has(b.id), S.tool === 'bonebind' && S.bindPick.length > 0 && S.bindHover === b.id);
     });
+  drawBindLines(
+    el => OV.append(el),
+    (tag, a) => svgEl(tag, a),
+  );
   if (S.boneDraft) {
     const A = S.boneDraft.a,
       B = S.boneDraft.b;

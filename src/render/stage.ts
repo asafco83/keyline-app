@@ -13,6 +13,7 @@ import { refreshInspector, renderInspector } from '../ui/inspector';
 import { renderLayers } from '../ui/layers-panel';
 import { renderTimeline, updatePlayhead } from '../ui/timeline';
 import { renderTools } from '../ui/tools-rail';
+import { restPoseView } from '../tools/bone-edit';
 
 export function renderStage() {
   STAGE.setAttribute('viewBox', `${doc.vx || 0} ${doc.vy || 0} ${doc.w} ${doc.h}`);
@@ -89,6 +90,7 @@ export function artLabel(name: string = doc.name) {
 }
 export function frame() {
   if (eng) eng.apply(S.time);
+  restPoseView();
   drawOverlay();
   updatePlayhead();
   refreshInspector();

@@ -19,7 +19,7 @@ export function bonePts(l: Layer): { J: DOMPoint; T: DOMPoint } | null {
     tl = boneTipL(l.geo);
   return { J: xfp(M, l.geo.x, l.geo.y), T: xfp(M, tl[0], tl[1]) };
 }
-export function drawBone(l: Layer, u: number, sel: boolean) {
+export function drawBone(l: Layer, u: number, sel: boolean, hover = false) {
   const bp = bonePts(l);
   if (!bp) return;
   const { J, T } = bp,
@@ -31,10 +31,12 @@ export function drawBone(l: Layer, u: number, sel: boolean) {
     w = Math.min(L * 0.14, 8 * u),
     mx = J.x + dx * 0.2,
     my = J.y + dy * 0.2,
-    k = sel ? ' is-sel' : '';
+    k = sel ? ' is-sel' : '',
+    pts = `${r2(J.x)},${r2(J.y)} ${r2(mx + nx * w)},${r2(my + ny * w)} ${r2(T.x)},${r2(T.y)} ${r2(mx - nx * w)},${r2(my - ny * w)}`;
+  if (hover) OV.append(svgEl('polygon', { points: pts, class: 'ov-bhover' }));
   OV.append(
     svgEl('polygon', {
-      points: `${r2(J.x)},${r2(J.y)} ${r2(mx + nx * w)},${r2(my + ny * w)} ${r2(T.x)},${r2(T.y)} ${r2(mx - nx * w)},${r2(my - ny * w)}`,
+      points: pts,
       class: 'ov-bone' + k,
       'data-bone': l.id,
       'data-part': 'body',
@@ -51,9 +53,9 @@ export function drawBone(l: Layer, u: number, sel: boolean) {
             height: 8 * u,
             class: 'ov-bj' + k,
             'data-bone': l.id,
-            'data-part': 'body',
+            'data-part': 'joint',
           }
-        : { cx: J.x, cy: J.y, r: 4 * u, class: 'ov-bj' + k, 'data-bone': l.id, 'data-part': 'body' },
+        : { cx: J.x, cy: J.y, r: 4 * u, class: 'ov-bj' + k, 'data-bone': l.id, 'data-part': 'joint' },
     ),
   );
   OV.append(svgEl('circle', { cx: T.x, cy: T.y, r: 4 * u, class: 'ov-bt' + k, 'data-bone': l.id, 'data-part': 'tip' }));
