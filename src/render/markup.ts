@@ -34,8 +34,13 @@ export function attrs(o: Record<string, unknown>) {
   return s;
 }
 export function tfStr(c: Composite) {
-  const sk = (c.kx ? ` skewX(${r3(c.kx)})` : '') + (c.ky ? ` skewY(${r3(c.ky)})` : '');
-  return `translate(${r3(c.x)},${r3(c.y)}) rotate(${r3(c.r)})${sk} scale(${r3(c.sx)},${r3(c.sy)}) translate(${r3(-c.ox)},${r3(-c.oy)})`;
+  const sk = (c.kx ? ` skewX(${r3(c.kx)})` : '') + (c.ky ? ` skewY(${r3(c.ky)})` : ''),
+    // bones scale in their own frame: W along the bone, H across it
+    bf = !!c.ba && c.sx !== c.sy,
+    sc = bf
+      ? `rotate(${r3(c.ba)}) scale(${r3(c.sx)},${r3(c.sy)}) rotate(${r3(-c.ba)})`
+      : `scale(${r3(c.sx)},${r3(c.sy)})`;
+  return `translate(${r3(c.x)},${r3(c.y)}) rotate(${r3(c.r)})${sk} ${sc} translate(${r3(-c.ox)},${r3(-c.oy)})`;
 }
 export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: string) {
   const id = ctx.pre + l.id,

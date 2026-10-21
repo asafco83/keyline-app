@@ -61,6 +61,11 @@ export function drawBone(l: Layer, u: number, sel: boolean) {
 export function limitRot(b: Layer, r: number) {
   return b.lim ? clamp(r, b.lmin != null ? b.lmin : -90, b.lmax != null ? b.lmax : 90) : r;
 }
+/** A new bone animates rotation from the start: a Rotate key at 0 s holds its rest value, so posing it
+ *  with FK / IK adds keys instead of changing the rest pose (the Edit bone tool owns the rest pose). */
+export function keyRestRot(b: Layer) {
+  b.t.rot = [[0, b.b.rot || 0, 'ease']];
+}
 export function newBoneName() {
   return 'Bone ' + (doc.layers.filter(x => x.type === 'bone').length + 1);
 }
@@ -112,6 +117,7 @@ export function boneCreate(p0: XY) {
       );
       b.o = [b.geo.x, b.geo.y];
       b.parent = pid;
+      keyRestRot(b);
       doc.layers.push(b);
       S.sel = b.id;
       S.selSet = new Set<any>([b.id]);
@@ -132,6 +138,7 @@ export function addChildBone(p: Layer) {
     );
   b.o = [b.geo.x, b.geo.y];
   b.parent = p.id;
+  keyRestRot(b);
   doc.layers.push(b);
   S.lexp[p.id] = true;
   S.sel = b.id;
@@ -181,7 +188,9 @@ export function localMat(l: Layer, t: number, rot?: number) {
     .rotate(rot != null ? rot : c.r)
     .skewX(c.kx || 0)
     .skewY(c.ky || 0)
+    .rotate(c.ba || 0)
     .scale(c.sx, c.sy)
+    .rotate(-(c.ba || 0))
     .translate(-c.ox, -c.oy);
 }
 export function ikDrag(b: Layer, p0: XY) {

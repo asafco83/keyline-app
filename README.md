@@ -137,7 +137,7 @@ The editor opens with a sample scene (also under File → New → **Open sample 
 | Star             |     | As polygon; ↑/↓ changes the points                                                                                                                                                                                                                                                                                                                                                           |
 | Line             | L   | Shift = 45° steps, Alt = from the centre                                                                                                                                                                                                                                                                                                                                                     |
 | Text             | T   |                                                                                                                                                                                                                                                                                                                                                                                              |
-| Bone             | B   |                                                                                                                                                                                                                                                                                                                                                                                              |
+| Bone             | B   | Drag to draw a bone; start on a bone tip to chain a child bone. New bones get a Rotate keyframe at 0 s holding the rest pose, so dragging a bone (or its tip, for IK) animates it. A bone's Scale works in the bone's own direction: W stretches along the bone, H across it                                                                                                                 |
 | Hand             | H   | Drag to pan. Hold Space for the hand in any tool (a tap plays/pauses). Middle-drag pans, the wheel scrolls, Ctrl+wheel zooms at the pointer, double-click the hand to fit                                                                                                                                                                                                                    |
 
 Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to go back to Select.
@@ -289,7 +289,7 @@ SVGcinema targets current Chrome, Edge, Firefox and Safari.
 
 - **Save overwriting the same file** needs the File System Access API (Chrome and Edge). Other browsers download a fresh copy.
 - **AVIF export** appears only where the browser can encode it.
-- **CSS-only morph** uses `d: path()`, which Safari does not support.
+- **Shape animation in CSS-only exports** (morphs, animated line ends, polygon / star corner radius) is written as SMIL `<animate>`, because Safari doesn't support the CSS `d: path()` property. With the hover trigger it stays `d: path()` (CSS pauses it on mouse out, which SMIL ignores), so in Safari those shapes don't move.
 
 ## License
 
