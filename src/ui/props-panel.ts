@@ -112,6 +112,7 @@ export function transformSection(l: Layer) {
   return `<section class="sec"><h3>Transforms <span class="kleg" title="◆ beside a property adds or removes a keyframe at the playhead"><span><i></i>off</span><span><i class="a"></i>animated</span><span><i class="k"></i>key here</span></span></h3>
     ${krow('pos', 'Position', num('pos:0', 'X') + num('pos:1', 'Y'))}
     ${krow('scl', 'Scale', num('scl:0:100', 'W', '%') + num('scl:1:100', 'H', '%') + `<button class="btn ib tg${S.sclLock ? ' on' : ''}" data-act="scllock" aria-pressed="${!!S.sclLock}" title="Keep proportions" aria-label="Keep proportions">${I.link}</button>`)}
+    ${bone ? '<p class="bnote">W along the bone · H across it</p>' : ''}
     ${bone ? '' : krow('skw', 'Skew', num('skw:0', 'X', '°') + num('skw:1', 'Y', '°'))}
     ${krow('rot', 'Rotate', rotField('turn') + rotField('deg') + (onPath ? `<button class="btn ib tg${l.or ? ' on' : ''}" data-act="orient" aria-pressed="${!!l.or}" title="Rotate along the motion path" aria-label="Rotate along the motion path">${I.orient}</button>` : ''))}
     ${bone ? '' : krow('org', 'Origin', num('org:0', 'X') + num('org:1', 'Y') + `<button class="btn ib" data-act="center" title="Center origin on the shape" aria-label="Center origin">${ic('<circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/>', 14)}</button>`)}

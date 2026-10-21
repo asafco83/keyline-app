@@ -1,5 +1,5 @@
 // SVGcinema — core/state
-import { SWATCH } from './constants';
+import { H, SWATCH } from './constants';
 import type { CinPlayer } from '../runtime/engine';
 import type { Asset, Doc, EditorState, Keyframe, Layer, LayerType, Geometry, BaseValues } from '../model/types';
 
@@ -46,6 +46,8 @@ export const S: EditorState = {
   bindHover: null,
   bindPt: null,
   bindScreen: null,
+  boneScaleMode: 'length',
+  boneVolume: 'area',
   pan: { x: 0, y: 0 },
   toolGroup: { pen: 'pen', shapes: 'rect' },
   polySides: 6,
@@ -71,6 +73,8 @@ export function syncAidc() {
 export function layerById(id: string | null | undefined): Layer | undefined {
   return doc && doc.layers.find(l => l.id === id);
 }
+// the editor's composites find parent bones by id (child bones cancel their parent's scale)
+H.lookup(id => layerById(id));
 export function selLayer(): Layer | null | undefined {
   return S.sel ? layerById(S.sel) : null;
 }

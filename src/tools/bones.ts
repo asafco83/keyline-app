@@ -183,9 +183,19 @@ export function ikChain(b: Layer): Layer[] {
   }
   return ch;
 }
+/** prepends a child bone's counter scale (it cancels its parent bone's scale around its joint) */
+export function counterMat(q: number[] | null) {
+  const M = new DOMMatrix();
+  if (!q) return M;
+  return M.translate(q[3], q[4])
+    .rotate(q[0])
+    .scale(1 / q[1], 1 / q[2])
+    .rotate(-q[0])
+    .translate(-q[3], -q[4]);
+}
 export function localMat(l: Layer, t: number, rot?: number) {
   const c = H.comp(l, t);
-  return new DOMMatrix()
+  return counterMat(c.cp)
     .translate(c.x, c.y)
     .rotate(rot != null ? rot : c.r)
     .skewX(c.kx || 0)

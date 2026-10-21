@@ -3692,3 +3692,93 @@ select.sel {
   vector-effect: non-scaling-stroke;
   pointer-events: none;
 }
+
+/* Bone section: a checkbox with a line of explanation under its label */
+.check.sub-check {
+  align-items: flex-start;
+}
+.check.sub-check input {
+  margin-top: 2px;
+}
+.check .bsub {
+  display: block;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 16px;
+  margin-top: 2px;
+}
+/* Transforms of a bone: W / H run along / across the bone */
+.sec .bnote {
+  margin: -2px 0 4px 96px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* Scale bone tool: its options bar, at the top centre of the work area */
+.bone-opts {
+  position: absolute;
+  left: 50%;
+  top: 14px;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 4px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background: var(--raised);
+  box-shadow:
+    0 0 0 1px var(--line),
+    0 4px 12px -4px var(--shade-sm);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.bone-opts[hidden] {
+  display: none;
+}
+.bone-opts .bo-seg {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--panel-2);
+}
+.bone-opts .bo-seg button {
+  height: 26px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+.bone-opts .bo-seg button.on {
+  background: var(--raised);
+  box-shadow: 0 1px 2px var(--shade-sm);
+  color: var(--fg);
+  font-weight: 600;
+}
+.bone-opts .vsep {
+  width: 1px;
+  height: 18px;
+  background: var(--line);
+}
+.bone-opts label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 6px;
+  color: var(--muted);
+}
+.bone-opts select.sel {
+  height: 26px;
+  width: auto;
+  min-width: 76px;
+  flex: none;
+}
+#wrap.t-bonescale {
+  cursor: default;
+}

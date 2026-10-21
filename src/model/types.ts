@@ -140,6 +140,8 @@ export interface Layer {
   /** compositing: CSS mix-blend-mode and isolation */
   blend?: string;
   iso?: boolean;
+  /** bones: inherit the parent bone's scale (default off) */
+  inh?: boolean;
   /** bones: IK pin */
   pin?: boolean;
   /** bones: rotation limit */
@@ -314,6 +316,9 @@ export interface EditorState {
   bindHover: string | null;
   bindPt: XY | null;
   bindScreen: XY | null;
+  /** Scale bone tool: what a drag scales, and the volume squash & stretch keeps */
+  boneScaleMode: 'length' | 'thickness' | 'linked' | 'squash';
+  boneVolume: 'area' | 'tube';
   file?: OpenFile | null;
   dirty?: boolean;
   loading?: boolean;

@@ -33,7 +33,7 @@ async def main():
         await ev("hi.setTime(1.9)"); await pg.wait_for_timeout(100)
         await pg.click('#tools [data-group="bones"]', button='right'); await pg.wait_for_timeout(200)
         items=await ev("[...document.querySelectorAll('#toolfly .tf-item')].map(b=>[b.dataset.tool,b.querySelector('.nm').textContent,b.querySelector('kbd').textContent,!!b.querySelector('svg.bic')])")
-        check('flyout: Bone, Edit bone, Bind with the new icons', items==[['bone','Bone tool','B',True],['boneedit','Edit bone tool','E',True],['bonebind','Bind tool','',True]], items)
+        check('flyout: Bone, Edit bone, Scale bone, Bind with the new icons', items==[['bone','Bone tool','B',True],['boneedit','Edit bone tool','E',True],['bonescale','Scale bone tool','S',True],['bonebind','Bind tool','',True]], items)
         await pg.screenshot(path=OUT+'bone-flyout.png', clip={'x':0,'y':180,'width':320,'height':200})
         await pg.keyboard.press('Escape'); await pg.wait_for_timeout(100)
         await ev("hi.select(null)")
@@ -96,7 +96,9 @@ async def main():
         check('Select shows the animated pose again', abs(r)>0.5, (r, await ev("[st.S.time, st.S.tool]")))
         check('chip hidden outside the bone tools', await ev("document.getElementById('boneChip').hidden"))
 
-        # ---- Bind: Leaf (on Stem 2) to Stem 3
+        # ---- Bind: Leaf (on Stem 2) to Stem 3, at a time Stem 3 isn't squashed (a stretched parent
+        # stretches what hangs on it)
+        await ev("hi.setTime(1.3)"); await pg.wait_for_timeout(100)
         await pg.click('#tools [data-group="bones"]', button='right'); await pg.wait_for_timeout(150)
         await pg.click('#toolfly [data-tool="bonebind"]'); await pg.wait_for_timeout(150)
         check('Bind tool on, nothing picked', await ev("st.S.tool==='bonebind' && st.S.bindPick.length===0"))

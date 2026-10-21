@@ -40,7 +40,12 @@ export function tfStr(c: Composite) {
     sc = bf
       ? `rotate(${r3(c.ba)}) scale(${r3(c.sx)},${r3(c.sy)}) rotate(${r3(-c.ba)})`
       : `scale(${r3(c.sx)},${r3(c.sy)})`;
-  return `translate(${r3(c.x)},${r3(c.y)}) rotate(${r3(c.r)})${sk} ${sc} translate(${r3(-c.ox)},${r3(-c.oy)})`;
+  const q = c.cp,
+    // a child bone that doesn't inherit scale cancels its parent bone's scale around its joint
+    cs = q
+      ? `translate(${r3(q[3])},${r3(q[4])}) rotate(${r3(q[0])}) scale(${r3(1 / q[1])},${r3(1 / q[2])}) rotate(${r3(-q[0])}) translate(${r3(-q[3])},${r3(-q[4])}) `
+      : '';
+  return `${cs}translate(${r3(c.x)},${r3(c.y)}) rotate(${r3(c.r)})${sk} ${sc} translate(${r3(-c.ox)},${r3(-c.oy)})`;
 }
 export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: string) {
   const id = ctx.pre + l.id,
