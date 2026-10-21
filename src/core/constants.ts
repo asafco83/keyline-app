@@ -170,6 +170,12 @@ export const NOFILL: Record<'fill' | 'stk' | 'sw', null> = { fill: null, stk: nu
 export function ic(p: string, s = 16) {
   return `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 }
+/** A filled icon drawn in the 9.8-unit grid of the bone icons (the owner's SVGs), at `s` px tall. */
+export function bic(paths: string, s = 16, w = 9.801) {
+  return `<svg class="bic${w > 10 ? ' bic-w' : ''}" viewBox="0 0 ${w} 9.801" width="${Math.round(((s * w) / 9.801) * 10) / 10}" height="${s}" fill="currentColor" aria-hidden="true">${paths}</svg>`;
+}
+const BONE_P =
+  '<path d="M7.52 0.391 C8.042 -0.13 8.888 -0.13 9.41 0.391 C9.931 0.913 9.931 1.759 9.41 2.281 C9.055 2.635 8.551 2.749 8.101 2.622 L4.26 7.608 L2.655 8.253 C2.721 8.662 2.596 9.095 2.281 9.41 C1.759 9.931 0.913 9.931 0.391 9.41 C-0.13 8.888 -0.13 8.042 0.391 7.52 C0.706 7.205 1.139 7.08 1.548 7.146 L2.193 5.541 L7.179 1.7 C7.052 1.25 7.166 0.746 7.52 0.391 Z M8.015 0.886 C7.423 1.478 8.323 2.378 8.915 1.786 C9.507 1.194 8.607 0.294 8.015 0.886 Z M7.343 2.458 L2.771 5.98 L2.187 7.435 C2.219 7.461 2.25 7.49 2.281 7.52 C2.311 7.551 2.34 7.582 2.366 7.614 L3.821 7.03 Z"/>';
 export const ICON: Record<string, string> = {
   mask: ic(
     '<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><circle cx="12" cy="12" r="5" fill="currentColor" fill-opacity=".35"/>',
@@ -180,7 +186,20 @@ export const ICON: Record<string, string> = {
   eyedropper: ic(
     '<path d="M14.2 6.2l2.9-2.9a2.3 2.3 0 013.3 3.3l-2.9 2.9" fill="currentColor"/><path d="M12 6.8l5.2 5.2"/><path d="M13.6 8.4L5.7 16.3c-.4.4-.6.9-.6 1.4V19h1.3c.5 0 1-.2 1.4-.6l7.9-7.9"/><path d="M3.6 20.4l1.4-1.4"/>',
   ),
-  bone: ic('<circle cx="6" cy="18" r="2.5"/><path d="M8 16L18 6M8 16l2.5-6.5L18 6l-6.5 2.5z"/>'),
+  bone: bic(BONE_P),
+  boneedit: bic(
+    `<path class="ic-dim" d="M10.14 3.372 C10.821 3.09 11.603 3.413 11.885 4.095 C12.167 4.777 11.844 5.558 11.162 5.841 C10.699 6.033 10.19 5.945 9.822 5.655 L4.365 8.792 L2.15 8.768 L2.157 8.125 L1.697 7.675 L3.247 6.092 L9.324 4.451 C9.378 3.986 9.676 3.564 10.14 3.372 Z M10.407 4.019 C9.634 4.339 10.121 5.515 10.894 5.194 C11.668 4.874 11.181 3.698 10.407 4.019 Z M9.185 5.213 L3.614 6.718 L2.29 8.07 L4.182 8.09 Z"/>${BONE_P}`,
+    16,
+    11.987,
+  ),
+  bonescale: bic(
+    `${BONE_P}<path d="M6.221 7.94 L6.221 6.08 L9.801 6.08 L9.801 9.801 L8.011 9.801 L6.221 9.801 Z M6.921 6.78 L6.921 7.94 L8.011 7.94 L8.011 9.101 L9.101 9.101 L9.101 6.78 Z"/>`,
+  ),
+  bonebind: bic(
+    `${BONE_P}<path d="M7.815 5.969 C8.748 5.036 10.315 6.052 9.811 7.304 C9.751 7.453 9.663 7.585 9.548 7.701 L8.715 8.534 L8.256 8.067 L9.088 7.241 C9.604 6.725 8.81 5.893 8.275 6.428 L7.449 7.26 L6.983 6.801 Z M6.824 8.227 L8.233 6.818 L8.698 7.284 L7.289 8.692 Z M5.974 7.81 L6.807 6.983 L7.266 7.443 L6.434 8.275 C5.904 8.805 6.72 9.609 7.247 9.082 L8.073 8.25 L8.539 8.716 L7.706 9.542 C6.771 10.478 5.191 9.447 5.708 8.206 C5.77 8.057 5.859 7.925 5.974 7.81 Z"/>`,
+    16,
+    9.909,
+  ),
   select: ic('<path d="M5 3.5l13 6.2-5.6 1.7-1.9 5.8z"/><path d="M12.4 11.4l5 5"/>'),
   node: ic(
     '<path d="M5 19C8 9 16 15 19 5"/><rect x="3" y="17" width="4" height="4" rx=".5"/><rect x="17" y="3" width="4" height="4" rx=".5"/>',
@@ -253,7 +272,7 @@ export const TICON: Record<string, string> = {
     14,
   ),
   raw: ic('<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/>', 14),
-  bone: ic('<circle cx="6" cy="18" r="2.5"/><path d="M8 16L18 6M8 16l2.5-6.5L18 6l-6.5 2.5z"/>', 14),
+  bone: bic(BONE_P, 14),
 };
 /** Every tool: label and its shortcut (shown in the UI; `keys` are the keys that select it). */
 export const TOOL_INFO: Record<string, { label: string; key?: string; keys?: string[] }> = {
@@ -270,7 +289,9 @@ export const TOOL_INFO: Record<string, { label: string; key?: string; keys?: str
   star: { label: 'Star' },
   line: { label: 'Line', key: 'L', keys: ['l'] },
   text: { label: 'Text', key: 'T', keys: ['t'] },
-  bone: { label: 'Bone', key: 'B', keys: ['b'] },
+  bone: { label: 'Bone tool', key: 'B', keys: ['b'] },
+  boneedit: { label: 'Edit bone tool', key: 'E', keys: ['e'] },
+  bonebind: { label: 'Bind tool' },
   hand: { label: 'Hand (hold Space)', key: 'H', keys: ['h'] },
 };
 export interface ToolGroup {
@@ -286,7 +307,7 @@ export const TOOLBAR: Array<string | ToolGroup | null> = [
   { group: 'shapes', label: 'Shape tools', items: ['ellipse', 'rect', 'polygon', 'star', 'line'] },
   'text',
   null,
-  'bone',
+  { group: 'bones', label: 'Bone tools', items: ['bone', 'boneedit', 'bonebind'] },
   'hand',
 ];
 export function groupOf(tool: string): ToolGroup | null {
@@ -322,5 +343,9 @@ export const HINTS: Record<string, string> = {
   line: 'Drag to draw a line · Shift snaps to 45° · Alt from the center',
   text: 'Click on the canvas to place text',
   bone: 'Drag to draw a bone · start on a bone tip to chain a child bone · Esc to finish',
+  boneedit:
+    "Edits the rest pose · drag a tip to change length and angle · drag a joint to move it (Alt pulls it off the parent's tip) · drag the bone to move it · Ctrl carries the artwork · Shift snaps to 15°",
+  bonebind:
+    'Click a bone or layer, then its new parent bone · Shift+click adds more · click empty canvas to unbind · Alt keeps the offset · Esc cancels',
   hand: 'Drag to pan · wheel scrolls · Ctrl+wheel zooms · double-click the hand to fit · hold Space for the hand in any tool',
 };

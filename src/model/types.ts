@@ -309,6 +309,11 @@ export interface EditorState {
   clip: ClipKey[] | null;
   showBones: boolean;
   boneDraft: any;
+  /** Bind tool: the layers picked as children, the bone under the pointer, the pointer (doc / screen) */
+  bindPick: string[];
+  bindHover: string | null;
+  bindPt: XY | null;
+  bindScreen: XY | null;
   file?: OpenFile | null;
   dirty?: boolean;
   loading?: boolean;

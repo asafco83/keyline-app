@@ -143,7 +143,7 @@ export function renderInspector() {
       <label class="check"><input type="checkbox" data-flag="lim" id="fl-lim" ${l.lim ? 'checked' : ''}> Limit rotation</label>
       ${l.lim ? nrow('Range', `<label class="nf"><span>min</span><input id="bl-min" data-bl="lmin" inputmode="decimal" value="${fmt(l.lmin != null ? l.lmin : -90)}"><em>°</em></label><label class="nf"><span>max</span><input id="bl-max" data-bl="lmax" inputmode="decimal" value="${fmt(l.lmax != null ? l.lmax : 90)}"><em>°</em></label>`) : ''}
       <div class="btns"><button class="btn" data-act="childbone">Add child bone</button></div>
-      <p>Drag a bone to rotate it (forward kinematics). Drag its tip, or Alt+drag the bone, to pull the chain into place (inverse kinematics). Attach artwork by dragging layers onto the bone in the Layers panel, or with “Attach to bone” on the layer.</p></section>`;
+      <p>Drag a bone to rotate it (forward kinematics). Drag its tip, or Alt+drag the bone, to pull the chain into place (inverse kinematics). The Edit bone tool (E) changes the rest pose. Attach artwork by dragging layers onto the bone in the Layers panel, with the Bind tool, or with “Attach to bone” on the layer.</p></section>`;
   } else {
     const bones = doc.layers.filter(b => b.type === 'bone' && !descendants(l).includes(b));
     if (bones.length) {

@@ -14,6 +14,7 @@ import { clearSnap, selfAndKids, snapMove, snapPoint, snapTargets } from './snap
 import { guideDrag } from '../render/guides';
 import { fit, frame } from '../render/stage';
 import { boneCreate, fkDrag, ikDrag } from './bones';
+import { bindDown, bindHover, boneEditDown } from './bone-edit';
 import { createText, handleDrag, nodeDrag, toggleSmooth } from './edit-tools';
 import { addNodeDown, convertDown, delNodeDown, finishPen, penDown, penHover, pencilDown } from './pen';
 import { SHAPE_TOOLS, backToSelect, createDrag } from './shapes';
@@ -139,6 +140,10 @@ export function init(): void {
       return createText(p);
     }
     if (t === 'bone') return boneCreate(p);
+    if (t === 'boneedit' || t === 'bonebind') {
+      e.preventDefault(); // no text selection or native drag (Ctrl / Alt drags) while editing a rig
+      return t === 'boneedit' ? boneEditDown(e, p) : bindDown(e);
+    }
     const bn = (e.target as any).closest('[data-bone]');
     if (bn && t === 'select') {
       const b = layerById(bn.dataset.bone);
@@ -244,6 +249,7 @@ export function init(): void {
       p = snapPoint(p, d._T);
     }
     if (S.drag) S.drag.move && S.drag.move(p, e);
+    else if (S.tool === 'bonebind') bindHover(e, p);
     else penHover(p, e);
   });
   // Alt changes what the pen would do (convert anchor), so refresh its cursor without a move
