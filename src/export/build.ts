@@ -20,9 +20,75 @@ export function roundV(v: any): any {
   if (v && typeof v === 'object' && v.n) return { c: v.c, n: v.n.map((q: number[]) => q.map(r3)) };
   return v;
 }
-export function cssTf(c: Composite) {
-  const sk = (c.kx ? ` skewX(${r3(c.kx)}deg)` : '') + (c.ky ? ` skewY(${r3(c.ky)}deg)` : '');
-  return `translate(${r3(c.x)}px,${r3(c.y)}px) rotate(${r3(c.r)}deg)${sk} scale(${r3(c.sx)},${r3(c.sy)}) translate(${r3(-c.ox)}px,${r3(-c.oy)}px)`;
+/** CSS transform for a composite. `bf`: write a bone's own-frame scale (rotate · scale · rotate back) in
+ *  every frame, so all keyframes of the layer share one function list and interpolate per function. */
+export function cssTf(c: Composite, bf?: boolean) {
+  const sk = (c.kx ? ` skewX(${r3(c.kx)}deg)` : '') + (c.ky ? ` skewY(${r3(c.ky)}deg)` : ''),
+    sc = bf
+      ? `rotate(${r3(c.ba)}deg) scale(${r3(c.sx)},${r3(c.sy)}) rotate(${r3(-c.ba)}deg)`
+      : `scale(${r3(c.sx)},${r3(c.sy)})`;
+  return `translate(${r3(c.x)}px,${r3(c.y)}px) rotate(${r3(c.r)}deg)${sk} ${sc} translate(${r3(-c.ox)}px,${r3(-c.oy)}px)`;
+}
+/** a path as SVG path data with only M / C / Z commands, so every frame has the same commands */
+export function dstrC(sp: any[] | null | undefined) {
+  let o = '';
+  const seg = (a: number[], b: number[]) =>
+    (o += `C${r3(a[4])} ${r3(a[5])} ${r3(b[2])} ${r3(b[3])} ${r3(b[0])} ${r3(b[1])}`);
+  (sp || []).forEach(s => {
+    const n = s.n;
+    if (!n.length) return;
+    o += `M${r3(n[0][0])} ${r3(n[0][1])}`;
+    for (let i = 1; i < n.length; i++) seg(n[i - 1], n[i]);
+    if (s.c) {
+      seg(n[n.length - 1], n[0]);
+      o += 'Z';
+    }
+  });
+  return o || 'M0 0';
+}
+/** CSS mode animates a path's shape with SMIL, not the CSS `d` property: Safari doesn't support
+ *  `d: path()`, but every browser plays SMIL. The hover trigger pauses animations through CSS, which
+ *  SMIL ignores, so it keeps `d: path()` (frozen in Safari). */
+export function smilShapes() {
+  return doc.ex.mode === 'css' && doc.ex.trigger !== 'hover';
+}
+function shapeAnimated(l: Layer) {
+  const T = l.t;
+  return !!(T.d || T.p0 || T.p1 || (T.rad && l.shape));
+}
+/** SMIL <animate> elements for the shapes of `anim` (CSS mode, see smilShapes) */
+export function smilFor(anim: Layer[], pre: string) {
+  const N = Math.max(2, Math.round(doc.dur * 30)),
+    spd = doc.ex.speed > 0 ? doc.ex.speed : 1,
+    dir = ['alternate', 'reverse', 'alternate-reverse'].includes(doc.dir) ? doc.dir : 'normal',
+    alt = dir === 'alternate' || dir === 'alternate-reverse',
+    dur = (doc.dur / spd) * (alt ? 2 : 1),
+    rep = doc.it > 0 ? String(r3(alt ? doc.it / 2 : doc.it)) : 'indefinite',
+    fill = doc.ex.fill === 'backwards' ? 'remove' : 'freeze';
+  let out = '';
+  anim.forEach(l => {
+    if (!shapeAnimated(l)) return;
+    const fr: string[] = [];
+    let ds: any[] = [];
+    for (let i = 0; i <= N; i++) ds.push(H.comp(l, (i / N) * doc.dur).d);
+    // the same commands in every frame, or the browser jumps instead of blending
+    const cmds = ds.map(d => H.dstr(d).replace(/[^A-Za-z]/g, '')),
+      same = cmds.every(c => c === cmds[0]);
+    ds.forEach(d => fr.push(same ? H.dstr(d) : dstrC(d)));
+    if (dir === 'reverse' || dir === 'alternate-reverse') fr.reverse();
+    if (alt) for (let i = N - 1; i >= 0; i--) fr.push(fr[i]);
+    const M = fr.length - 1,
+      keep = fr.map((v, i) => i === 0 || i === M || v !== fr[i - 1] || v !== fr[i + 1]),
+      vals: string[] = [],
+      times: string[] = [];
+    fr.forEach((v, i) => {
+      if (!keep[i]) return;
+      vals.push(v);
+      times.push(String(r3(i / M)));
+    });
+    out += `<animate xlink:href="#${pre}${l.id}-s" attributeName="d" dur="${r3(dur)}s" repeatCount="${rep}" fill="${fill}" calcMode="linear" keyTimes="${times.join(';')}" values="${vals.join(';')}"/>`;
+  });
+  return out;
 }
 export function kfBlock(name: string, stops: string[], N: number) {
   const keep = stops.map((s, i) => i === 0 || i === N || s !== stops[i - 1] || s !== stops[i + 1]);
@@ -41,12 +107,13 @@ export function cssFor(anim: Layer[], pre: string, svgId: string) {
       fr: Composite[] = [];
     for (let i = 0; i <= N; i++) fr.push(H.comp(l, (i / N) * doc.dur));
     const gt = !!(T.pos || T.rot || T.scl || T.org || T.skw),
-      go = !!T.op;
+      go = !!T.op,
+      bf = fr.some(c => !!c.ba && c.sx !== c.sy);
     if (gt || go)
       css +=
         kfBlock(
           id + '-g',
-          fr.map(c => (gt ? `transform:${cssTf(c)};` : '') + (go ? `opacity:${r3(c.op)}` : '')),
+          fr.map(c => (gt ? `transform:${cssTf(c, bf)};` : '') + (go ? `opacity:${r3(c.op)}` : '')),
           N,
         ) + `#${id}{transform-box:view-box;transform-origin:0 0;animation:${id}-g ${run}}`;
     const shapeAnim = !!(T.p0 || T.p1 || (T.rad && l.shape)),
@@ -56,7 +123,7 @@ export function cssFor(anim: Layer[], pre: string, svgId: string) {
       trimAnim = !!(T.ts || T.te || T.to),
       sk = ['fill', 'fo', 'stk', 'so', 'sw', 'dof', 'd', 'rad', 'trim'].filter(k =>
         k === 'd'
-          ? T.d || shapeAnim
+          ? (T.d || shapeAnim) && !smilShapes()
           : k === 'rad'
             ? T.rad && !l.shape
             : k === 'trim'
@@ -249,7 +316,8 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
     out += `<rect x="${doc.vx || 0}" y="${doc.vy || 0}" width="${doc.w}" height="${doc.h}" fill="${esc(bga.fill)}"${bga['fill-opacity'] != null ? ` fill-opacity="${bga['fill-opacity']}"` : ''}/>`;
   out += body;
   if (anim.length) {
-    if (ex.mode === 'css') out += `<style>${cssFor(anim, pre, svgId)}</style>`;
+    if (ex.mode === 'css')
+      out += (smilShapes() ? smilFor(anim, pre) : '') + `<style>${cssFor(anim, pre, svgId)}</style>`;
     else {
       const data = {
         p: pre,
@@ -278,6 +346,11 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
           if (l.t.rad && l.shape) {
             const { kind, cx, cy, r, rot, n, ratio } = l.shape;
             o.shape = { kind, cx, cy, r, rot, n, ...(ratio != null ? { ratio } : {}) };
+          }
+          // bones scale in their own frame; the runtime needs the rest angle only when the scale is non-uniform
+          if (l.type === 'bone' && l.geo.ang) {
+            const sc = [l.b.scl || [1, 1]].concat((l.t.scl || []).map(q => q[1]));
+            if (sc.some(v => v[0] !== v[1])) o.ba = l.geo.ang;
           }
           if (l.sm) o.sm = 1;
           if (l.or) o.or = 1;

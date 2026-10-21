@@ -22,6 +22,11 @@ export interface EngineLayer {
   shape?: { kind: string; cx: number; cy: number; r: number; rot: number; n: number; ratio?: number };
   /** extra animated attributes: track key → [element id suffix, attribute] (filter parameters) */
   fa?: Record<string, [string, string]>;
+  /** bones: rest angle (degrees), so scale runs along / across the bone (exported only when it matters) */
+  ba?: number;
+  /** editor layers: the bone's type and geometry give the rest angle */
+  type?: string;
+  geo?: Record<string, any>;
 }
 type EaseFn = (p: number) => number;
 type Bezier = number[];
@@ -58,6 +63,8 @@ export interface Composite {
   rad: any;
   /** trim path [start %, end %, offset %], or null when the whole stroke shows */
   trim: number[] | null;
+  /** bones: rest angle (degrees); scale W runs along the bone and H across it */
+  ba: number;
 }
 type Handler = (this: CinPlayer, offsetMs: number) => void;
 export interface EngineData {
@@ -505,7 +512,13 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
       dof: get(L, 'dof', t),
       rad: L.t && L.t.rad && L.t.rad.length ? get(L, 'rad', t) : null,
       trim: trimOf(L, t),
+      ba: boneAng(L),
     };
+  }
+  /** a bone's rest angle: scale is applied in the bone's own frame (W along it, H across it) */
+  function boneAng(L: EngineLayer): number {
+    if (L.ba != null) return L.ba;
+    return L.type === 'bone' && L.geo && L.geo.ang ? L.geo.ang : 0;
   }
   /** trim start / end / offset (percent of the stroke), or null when nothing is trimmed */
   function trimOf(L: EngineLayer, t: number): number[] | null {
@@ -668,10 +681,12 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
       f(c.r) +
       (c.kx ? ') skewX(' + f(c.kx) : '') +
       (c.ky ? ') skewY(' + f(c.ky) : '') +
+      (c.ba && c.sx !== c.sy ? ') rotate(' + f(c.ba) : '') +
       ') scale(' +
       f(c.sx) +
       ',' +
       f(c.sy) +
+      (c.ba && c.sx !== c.sy ? ') rotate(' + f(-c.ba) : '') +
       ') translate(' +
       f(-c.ox) +
       ',' +
