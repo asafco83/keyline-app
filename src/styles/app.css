@@ -3782,3 +3782,65 @@ select.sel {
 #wrap.t-bonescale {
   cursor: default;
 }
+
+/* timeline: a rig's Pose row (all of its bones' keyframes at each time) */
+.tl-pose .tl-bar {
+  top: 7.5px;
+  bottom: 7.5px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+}
+.sdot.pose {
+  width: 11px;
+  height: 11px;
+  margin: -5.5px 0 0 -5.5px;
+  border-radius: 2px;
+  border: 1.5px solid var(--panel);
+  opacity: 1;
+}
+.sdot.pose.sel {
+  background: var(--key);
+  box-shadow: 0 0 0 1.6px var(--accent);
+}
+
+/* "Key whole rig" turned on: the popover offering to fill the poses */
+.rig-pop {
+  position: fixed;
+  z-index: 70;
+  width: 262px;
+  box-sizing: border-box;
+  padding: 12px 12px 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  box-shadow: 0 12px 32px var(--shade);
+  font-size: 12.5px;
+  color: var(--fg);
+}
+.rig-pop-arrow {
+  position: absolute;
+  left: 14px;
+  top: -6px;
+  width: 10px;
+  height: 10px;
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+  transform: rotate(45deg);
+}
+.rig-pop .rp-t {
+  margin: 0 0 4px;
+  font-weight: 600;
+}
+.rig-pop .rp-d {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 16px;
+}
+.rig-pop .rp-b {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}

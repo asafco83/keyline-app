@@ -10,6 +10,7 @@ import { frame, tc } from '../render/stage';
 import { easeLabel } from './easing';
 import { renderInspector } from './inspector';
 import { renderLayers } from './layers-panel';
+import { poseKeys, poseLabel, poseRowFor, rigTimes } from '../tools/rig';
 
 export function tln() {
   return parseFloat(getComputedStyle(TLB).getPropertyValue('--tln')) || 232;
@@ -68,6 +69,19 @@ export function renderTimeline() {
           return `<button class="sdot${kat.length && kat.every(q => S.keys.has(q)) ? ' sel' : ''}" data-lid="${l.id}" data-t="${t}" style="left:${t * S.pps}px" aria-label="All ${esc(l.name)} keyframes at ${fmt(t)}s" title="${fmt(t)}s · all keyframes"></button>`;
         })
         .join('')}</div></div>`;
+    // a rig's top bone: the Pose row shows every time any bone of the rig has a key; a Pose diamond
+    // stands for all of them (drag to retime the pose, Delete to remove it)
+    const rig = ex ? poseRowFor(l) : null;
+    if (rig) {
+      const pts = rigTimes(l);
+      h += `<div class="tl-row tl-prop tl-pose${S.selSet.has(l.id) ? ' sel' : ''}" data-lid="${l.id}"><div class="tl-name"><span class="tl-pname">${esc(poseLabel(rig.length))}</span></div>
+      <div class="tl-lane" data-act="lane" style="width:${LW}px">${out}<div class="tl-bar" style="width:${W}px"></div>${pts
+        .map(t => {
+          const ks = poseKeys(l, t);
+          return `<button class="sdot pose${ks.length && ks.every(q => S.keys.has(q)) ? ' sel' : ''}" data-lid="${l.id}" data-t="${t}" data-pose="1" style="left:${t * S.pps}px" aria-label="Pose at ${fmt(t)}s" title="${fmt(t)}s · the whole rig's keyframes"></button>`;
+        })
+        .join('')}</div></div>`;
+    }
     if (ex)
       for (const k of tracks) {
         const fz = isFrozen(l, k),
@@ -106,7 +120,9 @@ export function renderTimeline() {
   TLB.querySelectorAll('.sdot').forEach((el: KfEl) => {
     const l = layerById(el.dataset.lid),
       t = +el.dataset.t;
-    el._ks = Object.values(l.t).flatMap(tr => tr.filter(q => Math.abs(q[0] - t) < 0.004));
+    el._ks = el.dataset.pose
+      ? poseKeys(l, t)
+      : Object.values(l.t).flatMap(tr => tr.filter(q => Math.abs(q[0] - t) < 0.004));
   });
   updatePlayhead();
 }

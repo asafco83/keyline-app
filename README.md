@@ -212,6 +212,8 @@ Shortcuts: Ctrl X / C / V, Ctrl ⇧ V (paste in place), Ctrl ⇧ O (center origi
 
 They're combined as they look at the playhead into one new path, which takes the bottom layer's place and style. Undo restores the originals.
 
+**Posing a rig:** with _Key whole rig_ on (the default; it sits in the Bone section of the rig's top bone), dragging any bone (FK, IK or Scale bone) keys every bone of the rig at the playhead, so each pose is stored whole. The new keys hold the values the bones already had there, and the easing they split is split with them, so nothing else in the animation changes. Turn it off for overlapping action (only the bone you drag is keyed). Turning it on for a rig whose poses have keys on some bones only offers to _Add keys_: every bone gets a key at each of the rig's key times, again without changing the motion; turning it on and adding the keys is one undo step. In the timeline, the top bone has a **Pose** row with a diamond at every time any bone of the rig has a key: click one to select all of them, drag to retime the pose, Delete to remove it.
+
 **Snapping, grid, rulers and guides** (the magnet and grid buttons in the canvas bar):
 
 - **Snapping** (Alt+S turns it on or off) works while moving and drawing. It can snap to objects (the edges and centres of other layers and of the canvas), to points (path nodes), to guides, to the grid, and to whole pixels. Matches show as magenta lines, and holding Ctrl/Cmd skips snapping.

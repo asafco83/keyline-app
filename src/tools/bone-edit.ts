@@ -10,6 +10,7 @@ import { drawOverlay, obbOf } from '../render/overlay';
 import { frame } from '../render/stage';
 import { bonePts, boneTipL, counterMat, localMat } from './bones';
 import { hitChain } from './stage-input';
+import { keyRig } from './rig';
 
 /* ---------- shared math ---------- */
 
@@ -515,6 +516,7 @@ export function boneScaleDown(e: PointerEvent, p: XY) {
   S.drag = {
     move(q: XY, ev: PointerEvent) {
       if (!moved && Math.hypot(q.x - p.x, q.y - p.y) * S.scale < 3) return;
+      if (!moved) keyRig(b, 'scl');
       moved = true;
       last = { q, shift: ev.shiftKey };
       run();

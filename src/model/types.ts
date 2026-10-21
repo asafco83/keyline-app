@@ -142,6 +142,8 @@ export interface Layer {
   iso?: boolean;
   /** bones: inherit the parent bone's scale (default off) */
   inh?: boolean;
+  /** top bones: "Key whole rig" (posing any bone keys the whole rig); undefined = on */
+  kr?: boolean;
   /** bones: IK pin */
   pin?: boolean;
   /** bones: rotation limit */
