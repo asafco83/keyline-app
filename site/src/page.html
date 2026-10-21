@@ -208,7 +208,7 @@
   /* ---------- logo ---------- */
   .logo {
     display: block;
-    height: 20px;
+    height: 26px;
     width: auto;
     overflow: visible;
   }
@@ -326,7 +326,7 @@
     }
   }
   .top .btn {
-    gap: 0.28em;
+    gap: 7px;
   }
   @media (max-width: 420px) {
     .top .btn .lbl-long {
@@ -514,7 +514,7 @@
     font-size: 13px;
   }
   .app-top .logo {
-    height: 15px;
+    height: 20px;
   }
   .app-name {
     font-weight: 600;
@@ -1934,10 +1934,6 @@
   .foot a {
     text-decoration: none;
   }
-  .foot span a {
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
   .foot a:hover {
     color: var(--fg);
   }
@@ -1949,107 +1945,6 @@
     gap: 22px;
     margin-left: auto;
     flex-wrap: wrap;
-  }
-
-  /* ---------- transition into the editor ---------- */
-  .shutter {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    pointer-events: none;
-    display: grid;
-    place-items: center;
-    visibility: hidden;
-  }
-  .shutter .sh-bg {
-    position: absolute;
-    inset: 0;
-    background: var(--panel);
-    clip-path: inset(0 100% 0 0);
-  }
-  .shutter .sh-strip {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 22px;
-    background-image: linear-gradient(90deg, var(--accent) 0 12px, transparent 12px 26px);
-    background-size: 26px 100%;
-    opacity: 0;
-  }
-  .shutter .sh-strip.t {
-    top: calc(env(safe-area-inset-top, 0px) + 22px);
-  }
-  .shutter .sh-strip.b {
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 22px);
-  }
-  .shutter .logo {
-    height: 34px;
-    position: relative;
-    opacity: 0;
-    transform: scale(0.94);
-  }
-  .shutter .sh-msg {
-    position: absolute;
-    top: calc(50% + 34px);
-    font-size: 14px;
-    color: var(--muted);
-    opacity: 0;
-  }
-  .shutter.go {
-    visibility: visible;
-    pointer-events: auto;
-  }
-  .shutter.go .sh-bg {
-    animation: shut 0.55s var(--ease-io) forwards;
-  }
-  .shutter.go .sh-strip {
-    animation: stripIn 0.9s linear 0.15s forwards;
-  }
-  .shutter.go .sh-strip.b {
-    animation-name: stripInR;
-  }
-  .shutter.go .logo {
-    animation: logoIn 0.5s var(--ease-out) 0.35s forwards;
-  }
-  .shutter.go .sh-msg {
-    animation: logoIn 0.5s var(--ease-out) 0.5s forwards;
-  }
-  @keyframes shut {
-    to {
-      clip-path: inset(0 0 0 0);
-    }
-  }
-  @keyframes stripIn {
-    from {
-      opacity: 0;
-      background-position: 0 0;
-    }
-    20% {
-      opacity: 0.9;
-    }
-    to {
-      opacity: 0.9;
-      background-position: 260px 0;
-    }
-  }
-  @keyframes stripInR {
-    from {
-      opacity: 0;
-      background-position: 0 0;
-    }
-    20% {
-      opacity: 0.9;
-    }
-    to {
-      opacity: 0.9;
-      background-position: -260px 0;
-    }
-  }
-  @keyframes logoIn {
-    to {
-      opacity: 1;
-      transform: none;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -2073,18 +1968,10 @@
   }
 </style>
 
-<div class="shutter" id="shutter" aria-hidden="true">
-  <div class="sh-bg"></div>
-  <div class="sh-strip t"></div>
-  <div class="sh-strip b"></div>
-  <svg class="logo" viewBox="0 0 90 13.406" role="img" aria-label="SVGcinema">{{LOGO}}</svg>
-  <div class="sh-msg">Opening the editor</div>
-</div>
-
 <header class="top">
   <div class="wrap top-in">
     <a class="brand" href="#top" aria-label="SVGcinema home">
-      <svg class="logo" viewBox="0 0 90 13.406" role="img" aria-label="SVGcinema">
+      <svg class="logo" viewBox="{{LOGO_VB}}" role="img" aria-label="SVGcinema">
         <title>SVGcinema</title>
         {{LOGO}}
       </svg>
@@ -2094,7 +1981,6 @@
       <a href="#workflow">How it works</a>
       <a href="#images">Images</a>
       <a href="#export">Export</a>
-      <a href="https://github.com/asafco83/svgcinema">GitHub</a>
     </nav>
     <div class="top-r">
       <button class="ib" id="themeBtn" type="button" aria-label="Switch theme" title="Switch theme">
@@ -2111,7 +1997,12 @@
           <path d="M8 2.5a5.5 5.5 0 000 11z" fill="currentColor" />
         </svg>
       </button>
-      <a class="btn btn-pri btn-sm" href="{{EDITOR_URL}}" data-editor><span class="lbl-long">Open the</span>editor</a>
+      <a class="btn btn-pri btn-sm" href="{{EDITOR_URL}}" target="_blank" rel="noopener" data-editor>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M4 2.8v10.4a.6.6 0 00.9.5l8.2-5.2a.6.6 0 000-1L4.9 2.3a.6.6 0 00-.9.5z" />
+        </svg>
+        <span><span class="lbl-long">Open the </span>editor</span>
+      </a>
     </div>
   </div>
   <div class="ruler" aria-hidden="true"></div>
@@ -2138,7 +2029,7 @@
             anywhere.
           </p>
           <div class="cta-row">
-            <a class="btn btn-pri" href="{{EDITOR_URL}}" data-editor>
+            <a class="btn btn-pri" href="{{EDITOR_URL}}" target="_blank" rel="noopener" data-editor>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                 <path d="M4 2.8v10.4a.6.6 0 00.9.5l8.2-5.2a.6.6 0 000-1L4.9 2.3a.6.6 0 00-.9.5z" />
               </svg>
@@ -2153,10 +2044,10 @@
       <div class="stage">
         <div class="app playing" id="app">
           <div class="app-top">
-            <svg class="logo" viewBox="0 0 90 13.406" aria-hidden="true">{{LOGO}}</svg>
+            <svg class="logo" viewBox="{{LOGO_VB}}" aria-hidden="true">{{LOGO}}</svg>
             <span class="app-name">Sunrise badge</span>
             <span class="pill">Saved</span>
-            <a class="btn btn-pri app-export" href="{{EDITOR_URL}}" data-editor>
+            <a class="btn btn-pri app-export" href="{{EDITOR_URL}}" target="_blank" rel="noopener" data-editor>
               <svg
                 width="14"
                 height="14"
@@ -3192,13 +3083,12 @@
         The sample scene opens with the editor, so you can take it apart layer by layer and see how each effect is made.
       </p>
       <div class="cta-row">
-        <a class="btn btn-pri" href="{{EDITOR_URL}}" data-editor>
+        <a class="btn btn-pri" href="{{EDITOR_URL}}" target="_blank" rel="noopener" data-editor>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
             <path d="M4 2.8v10.4a.6.6 0 00.9.5l8.2-5.2a.6.6 0 000-1L4.9 2.3a.6.6 0 00-.9.5z" />
           </svg>
           Open the editor
         </a>
-        <a class="btn btn-ghost" href="https://github.com/asafco83/svgcinema">View the source on GitHub</a>
       </div>
     </div>
   </section>
@@ -3207,17 +3097,12 @@
 <footer>
   <div class="wrap foot">
     <a href="#top" aria-label="Back to top"
-      ><svg class="logo" viewBox="0 0 90 13.406" aria-hidden="true">{{LOGO}}</svg></a
+      ><svg class="logo" viewBox="{{LOGO_VB}}" aria-hidden="true">{{LOGO}}</svg></a
     >
-    <span
-      >A free SVG animation editor for the web. Source available under the
-      <a href="https://github.com/asafco83/svgcinema/blob/master/LICENSE">PolyForm Noncommercial license</a>.</span
-    >
+    <span>A free SVG animation editor for the web.</span>
     <nav aria-label="Footer">
-      <a href="{{EDITOR_URL}}" data-editor>Editor</a>
+      <a href="{{EDITOR_URL}}" target="_blank" rel="noopener" data-editor>Editor</a>
       <a href="#export">Export</a>
-      <a href="https://github.com/asafco83/svgcinema">GitHub</a>
-      <a href="https://github.com/asafco83/svgcinema/issues">Report an issue</a>
     </nav>
   </div>
 </footer>
@@ -3946,23 +3831,6 @@
       if (!k) return;
       if (e.key === ' ') e.preventDefault();
       press(k);
-    });
-
-    /* ---------- the cut into the editor ---------- */
-    var shutter = d.getElementById('shutter');
-    d.querySelectorAll('[data-editor]').forEach(function (a) {
-      a.addEventListener('click', function (e) {
-        if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || reduce) return;
-        e.preventDefault();
-        var href = a.href;
-        shutter.classList.add('go');
-        setTimeout(function () {
-          location.href = href;
-        }, 820);
-      });
-    });
-    addEventListener('pageshow', function () {
-      shutter.classList.remove('go');
     });
   })();
 </script>

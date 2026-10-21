@@ -175,9 +175,9 @@ button {
 /* the SVGcinema logo: "cinema" in --logo-a, "SVG" and the film strip in --logo-b */
 .brand .logo {
   display: block;
-  height: 19px;
+  height: 26px;
   width: auto;
-  aspect-ratio: 90 / 13.406;
+  aspect-ratio: 83.855 / 16.741;
 }
 .logo .lg-a {
   fill: var(--logo-a);
