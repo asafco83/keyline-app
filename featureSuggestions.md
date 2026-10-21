@@ -24,3 +24,15 @@ Gradients and trim path have been taken off this list and are being built.
 
 - **Wiggle / loop modifiers**: random jitter, and repeating part of a track.
 - **Accessibility in exports**: title and description, and respecting reduced-motion settings.
+
+## Export
+- **External player**: create the player as an external JS player to be run on a page to control JS animated SVGs without an internal player.
+- **Export window facelift**: facelift the export window - feels that was skipped in previous facelift.
+
+## animated SVG parsing
+- **Open SVG as project**: Open SVG as a project with all layers, structure & animations reconstructed.
+- **import SVG asset**: import SVG with all layers, structure & animations reconstructed into existing project.
+
+## Tools
+- **Bones improvements**: research and improve bones creation, editing flow, and behaviour.
+- **puppet pin tool**: research and use bones -or- a Puppet pin tool to deform shapes and/or images. Check if applicable in CSS/JS export
