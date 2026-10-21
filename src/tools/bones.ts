@@ -7,6 +7,7 @@ import { S, doc, layerById, mkLayer } from '../core/state';
 import { isHidden, kids, parentMatrix, pmOf } from '../model/tree';
 import { drawOverlay, gMatrix } from '../render/overlay';
 import { frame } from '../render/stage';
+import { keyRig } from './rig';
 
 export function boneTipL(G: Geometry): number[] {
   const a = (G.ang * Math.PI) / 180;
@@ -158,6 +159,7 @@ export function fkDrag(b: Layer, p0: XY) {
   S.drag = {
     move(p, e) {
       if (!moved && Math.hypot(p.x - p0.x, p.y - p0.y) * S.scale < 3) return;
+      if (!moved) keyRig(b, 'rot');
       moved = true;
       let r = r0 + (sg * (Math.atan2(p.y - J.y, p.x - J.x) - a0) * 180) / Math.PI;
       if (e.shiftKey) r = Math.round(r / 15) * 15;
@@ -239,6 +241,7 @@ export function ikDrag(b: Layer, p0: XY) {
   S.drag = {
     move(p) {
       if (!moved && Math.hypot(p.x - p0.x, p.y - p0.y) * S.scale < 3) return;
+      if (!moved) keyRig(b, 'rot');
       moved = true;
       solve(p);
       ch.forEach((x, k) => setProp(x, 'rot', r2(rots[k])));

@@ -55,6 +55,7 @@ import {
 import { applyEase, bezOf, drawEz, easeFam, famName, keyPanel, parseBez, sameEase } from './easing';
 import { deleteSel, groupSel, moveLayers, ungroup } from './layers-panel';
 import { dragWin } from './timeline';
+import { poseRowFor, rigGaps, rigPopover } from '../tools/rig';
 
 export function num(f: string, lab: string, unit?: string) {
   return `<label class="nf"><span data-scrub="${f}">${lab}</span><input id="i-${f.replace(/[:.]/g, '_')}" data-f="${f}" inputmode="decimal" spellcheck="false" aria-label="${lab}">${unit ? `<em>${unit}</em>` : ''}</label>`;
@@ -142,6 +143,7 @@ export function renderInspector() {
     h += `<section class="sec"><h3>Bone <small>${n} attached</small></h3>${nrow('Length', gnum('len', 'L'))}${nrow('Rest angle', gnum('ang', '∠', '°'))}
       <label class="check"><input type="checkbox" data-flag="pin" id="fl-pin" ${l.pin ? 'checked' : ''}> Pin: IK stops at this bone</label>
       <label class="check"><input type="checkbox" data-flag="lim" id="fl-lim" ${l.lim ? 'checked' : ''}> Limit rotation</label>
+      ${poseRowFor(l) ? `<label class="check sub-check"><input type="checkbox" data-flag="kr" id="fl-kr" ${l.kr !== false ? 'checked' : ''}><span>Key whole rig<span class="bsub">Moving any bone of this rig keys every bone, so each pose is stored whole. Turn off for overlapping action.</span></span></label>` : ''}
       ${pb0 && pb0.type === 'bone' ? `<label class="check sub-check"><input type="checkbox" data-flag="inh" id="fl-inh" ${l.inh ? 'checked' : ''}><span>Inherit scale<span class="bsub">Off: this bone follows the parent’s tip without being stretched by its scale.</span></span></label>` : ''}
       ${l.lim ? nrow('Range', `<label class="nf"><span>min</span><input id="bl-min" data-bl="lmin" inputmode="decimal" value="${fmt(l.lmin != null ? l.lmin : -90)}"><em>°</em></label><label class="nf"><span>max</span><input id="bl-max" data-bl="lmax" inputmode="decimal" value="${fmt(l.lmax != null ? l.lmax : 90)}"><em>°</em></label>`) : ''}
       <div class="btns"><button class="btn" data-act="childbone">Add child bone</button></div>
@@ -636,6 +638,8 @@ export function init(): void {
         if (l.lmax == null) l.lmax = 90;
       }
       ed.end({ insp: true });
+      // turning "Key whole rig" on for a rig whose poses aren't whole yet: offer to add the keys
+      if (t.dataset.flag === 'kr' && t.checked && rigGaps(l)) rigPopover(l);
       return;
     }
     if (t.dataset.bl) {
