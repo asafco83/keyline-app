@@ -84,6 +84,6 @@ export function syncExportUI() {
   $('#xPre').value = ex.prefix;
   $('#xNote').innerHTML = !css
     ? 'The SVG carries a small built-in player that supports every animator and easing, including morph, curved paths and custom curves. Images are embedded in the file. Scripts run when the SVG is inline, or placed with <code>&lt;object&gt;</code> or <code>&lt;embed&gt;</code>; an <code>&lt;img&gt;</code> tag shows the first frame. The <b>Embed</b> tab has ready code for each framework.'
-    : 'Pure CSS keyframes with no script, so it animates even inside <code>&lt;img&gt;</code> and as a CSS background. CSS can start on load or on hover only. On mouse out it can pause (and resume on the next hover) or jump to the start (and replay from the beginning on the next hover); reversing back needs the JavaScript export. Morph uses CSS <code>d: path()</code>, which Chrome and Firefox support but Safari does not.';
+    : 'Pure CSS keyframes with no script, so it animates even inside <code>&lt;img&gt;</code> and as a CSS background. CSS can start on load or on hover only. On mouse out it can pause (and resume on the next hover) or jump to the start (and replay from the beginning on the next hover); reversing back needs the JavaScript export. Shape changes (morph) play with SMIL, so they work in every browser; with the hover trigger they use CSS <code>d: path()</code> instead, which Safari does not support.';
   renderSnippet();
 }
