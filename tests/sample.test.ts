@@ -28,6 +28,8 @@ describe('sample scene', () => {
     expect(bones.some(b => bones.some(p => p.id === b.parent))).toBe(true);
     expect(some(l => l.type !== 'bone' && bones.some(b => b.id === l.parent))).toBe(true);
     expect(bones.every(b => b.t.rot && b.t.rot.length > 1)).toBe(true);
+    // squash & stretch: a bone scaled along / across itself
+    expect(bones.some(b => b.t.scl && b.t.scl.some(q => q[1][0] !== q[1][1]))).toBe(true);
   });
   it('shows a mask group and a clipping group, each with its folder', () => {
     for (const kind of ['mask', 'clip'] as const) {

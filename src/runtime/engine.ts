@@ -27,6 +27,13 @@ export interface EngineLayer {
   /** editor layers: the bone's type and geometry give the rest angle */
   type?: string;
   geo?: Record<string, any>;
+  /** parent layer id (bones: a child bone cancels its parent bone's scale) */
+  parent?: string | null;
+  /** bones: inherit the parent bone's scale (default off: the child rides the stretched tip unstretched) */
+  inh?: boolean;
+  /** exported child bones: 1 = cancels the parent bone's scale, at its joint `j` */
+  cs?: number;
+  j?: number[];
 }
 type EaseFn = (p: number) => number;
 type Bezier = number[];
@@ -65,6 +72,9 @@ export interface Composite {
   trim: number[] | null;
   /** bones: rest angle (degrees); scale W runs along the bone and H across it */
   ba: number;
+  /** child bones that don't inherit scale: the parent bone's scale to cancel, at the joint
+   *  [angle, sx, sy, jx, jy], or null */
+  cp: number[] | null;
 }
 type Handler = (this: CinPlayer, offsetMs: number) => void;
 export interface EngineData {
@@ -116,6 +126,8 @@ export interface CinPlayer {
   // editor helpers
   apply(t: number): void;
   comp(L: EngineLayer, t: number): Composite;
+  /** editor / export: how to find a layer by id that is not in this engine's own list */
+  lookup(fn: ((id: string) => EngineLayer | null | undefined) | null): void;
   get(L: EngineLayer, k: string, t: number): any;
   dstr(sp: EngineSubPath[] | null | undefined): string;
   /** is the value a gradient ({ g: 'lin' | 'rad', s: stops, … }) */
@@ -513,7 +525,26 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
       rad: L.t && L.t.rad && L.t.rad.length ? get(L, 'rad', t) : null,
       trim: trimOf(L, t),
       ba: boneAng(L),
+      cp: counterScale(L, t),
     };
+  }
+  /** layers by id: this engine's list, else the editor's lookup */
+  var IDX: Record<string, EngineLayer> = {},
+    EXT: ((id: string) => EngineLayer | null | undefined) | null = null;
+  for (var ii = 0; ii < D.L.length; ii++) IDX[D.L[ii].id] = D.L[ii];
+  function layerOf(id: string | null | undefined): EngineLayer | null {
+    if (!id) return null;
+    return IDX[id] || (EXT && EXT(id)) || null;
+  }
+  /** a child bone that doesn't inherit scale cancels its parent bone's scale around its own joint, so
+   *  it rides the stretched tip without being stretched: [parent angle, sx, sy, joint x, joint y] */
+  function counterScale(L: EngineLayer, t: number): number[] | null {
+    var P = L.cs || (L.type === 'bone' && !L.inh) ? layerOf(L.parent) : null;
+    if (!P || (!L.cs && P.type !== 'bone')) return null;
+    var s = get(P, 'scl', t) || [1, 1];
+    if (s[0] === 1 && s[1] === 1) return null;
+    var j = L.j || (L.geo ? [L.geo.x, L.geo.y] : [0, 0]);
+    return [boneAng(P), s[0] || 1e-6, s[1] || 1e-6, j[0], j[1]];
   }
   /** a bone's rest angle: scale is applied in the bone's own frame (W along it, H across it) */
   function boneAng(L: EngineLayer): number {
@@ -672,7 +703,27 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
     return Math.round(n * 1000) / 1000;
   }
   function tf(c: Composite) {
+    var q = c.cp;
     return (
+      (q
+        ? 'translate(' +
+          f(q[3]) +
+          ',' +
+          f(q[4]) +
+          ') rotate(' +
+          f(q[0]) +
+          ') scale(' +
+          f(1 / q[1]) +
+          ',' +
+          f(1 / q[2]) +
+          ') rotate(' +
+          f(-q[0]) +
+          ') translate(' +
+          f(-q[3]) +
+          ',' +
+          f(-q[4]) +
+          ') '
+        : '') +
       'translate(' +
       f(c.x) +
       ',' +
@@ -1024,6 +1075,9 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
     },
     apply: apply,
     comp: comp,
+    lookup: function (fn: ((id: string) => EngineLayer | null | undefined) | null) {
+      EXT = fn;
+    },
     get: get,
     gAttrs: gAttrs,
     linP: linP,

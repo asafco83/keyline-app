@@ -6,7 +6,7 @@ import type { MarkupCtx } from '../render/markup';
 import type { OptImage } from './images';
 import { $, H, clone, esc, r3 } from '../core/constants';
 import { togglePlay } from '../core/playback';
-import { ASSETS, S, doc } from '../core/state';
+import { ASSETS, S, doc, layerById } from '../core/state';
 import { syncExportUI } from './dialog';
 import { detectEnc, updateExport } from './images';
 import { outDims, syncSizeUI } from './size';
@@ -22,12 +22,19 @@ export function roundV(v: any): any {
 }
 /** CSS transform for a composite. `bf`: write a bone's own-frame scale (rotate · scale · rotate back) in
  *  every frame, so all keyframes of the layer share one function list and interpolate per function. */
-export function cssTf(c: Composite, bf?: boolean) {
+export function cssTf(c: Composite, bf?: boolean, cq?: number[] | null) {
   const sk = (c.kx ? ` skewX(${r3(c.kx)}deg)` : '') + (c.ky ? ` skewY(${r3(c.ky)}deg)` : ''),
     sc = bf
       ? `rotate(${r3(c.ba)}deg) scale(${r3(c.sx)},${r3(c.sy)}) rotate(${r3(-c.ba)}deg)`
       : `scale(${r3(c.sx)},${r3(c.sy)})`;
-  return `translate(${r3(c.x)}px,${r3(c.y)}px) rotate(${r3(c.r)}deg)${sk} ${sc} translate(${r3(-c.ox)}px,${r3(-c.oy)}px)`;
+  // `cq`: a child bone's counter scale [angle, sx, sy, jx, jy] (identity scale in frames without one)
+  const q = c.cp || cq,
+    sx = c.cp ? q[1] : 1,
+    sy = c.cp ? q[2] : 1,
+    cs = q
+      ? `translate(${r3(q[3])}px,${r3(q[4])}px) rotate(${r3(q[0])}deg) scale(${r3(1 / sx)},${r3(1 / sy)}) rotate(${r3(-q[0])}deg) translate(${r3(-q[3])}px,${r3(-q[4])}px) `
+      : '';
+  return `${cs}translate(${r3(c.x)}px,${r3(c.y)}px) rotate(${r3(c.r)}deg)${sk} ${sc} translate(${r3(-c.ox)}px,${r3(-c.oy)}px)`;
 }
 /** a path as SVG path data with only M / C / Z commands, so every frame has the same commands */
 export function dstrC(sp: any[] | null | undefined) {
@@ -106,14 +113,16 @@ export function cssFor(anim: Layer[], pre: string, svgId: string) {
       T = l.t,
       fr: Composite[] = [];
     for (let i = 0; i <= N; i++) fr.push(H.comp(l, (i / N) * doc.dur));
-    const gt = !!(T.pos || T.rot || T.scl || T.org || T.skw),
+    const cpf = fr.find(c => !!c.cp),
+      cq = cpf ? cpf.cp : null,
+      gt = !!(T.pos || T.rot || T.scl || T.org || T.skw || cq),
       go = !!T.op,
       bf = fr.some(c => !!c.ba && c.sx !== c.sy);
     if (gt || go)
       css +=
         kfBlock(
           id + '-g',
-          fr.map(c => (gt ? `transform:${cssTf(c, bf)};` : '') + (go ? `opacity:${r3(c.op)}` : '')),
+          fr.map(c => (gt ? `transform:${cssTf(c, bf, cq)};` : '') + (go ? `opacity:${r3(c.op)}` : '')),
           N,
         ) + `#${id}{transform-box:view-box;transform-origin:0 0;animation:${id}-g ${run}}`;
     const shapeAnim = !!(T.p0 || T.p1 || (T.rad && l.shape)),
@@ -284,6 +293,25 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
     return false;
   };
   const anim = prep.filter(l => !hiddenUp(l) && Object.keys(l.t).length);
+  // child bones that don't inherit scale cancel their parent bone's scale: both are animated layers
+  // when that parent is scaled (the child's transform follows the parent's scale over time)
+  const scaledBone = (b: Layer | undefined) =>
+      !!b &&
+      b.type === 'bone' &&
+      ((b.t.scl && b.t.scl.length > 0) || (!!b.b.scl && (b.b.scl[0] !== 1 || b.b.scl[1] !== 1))),
+    counter = new Set<string>(),
+    csParents = new Set<string>();
+  prep.forEach(l => {
+    if (l.type !== 'bone' || l.inh || hiddenUp(l)) return;
+    const P = l.parent ? byId[l.parent] : undefined;
+    if (!scaledBone(P)) return;
+    counter.add(l.id);
+    csParents.add(P.id);
+    if (!anim.includes(l)) anim.push(l);
+    if (!anim.includes(P)) anim.push(P);
+  });
+  // composites look parent bones up among the exported layers while the export is written
+  H.lookup(id => byId[id]);
   const used: Record<string, 1> = {};
   const ctx: MarkupCtx = {
     pre,
@@ -347,10 +375,16 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
             const { kind, cx, cy, r, rot, n, ratio } = l.shape;
             o.shape = { kind, cx, cy, r, rot, n, ...(ratio != null ? { ratio } : {}) };
           }
-          // bones scale in their own frame; the runtime needs the rest angle only when the scale is non-uniform
+          // bones scale in their own frame; the runtime needs the rest angle when the scale is
+          // non-uniform, or when a child bone cancels this bone's scale
           if (l.type === 'bone' && l.geo.ang) {
             const sc = [l.b.scl || [1, 1]].concat((l.t.scl || []).map(q => q[1]));
-            if (sc.some(v => v[0] !== v[1])) o.ba = l.geo.ang;
+            if (csParents.has(l.id) || sc.some(v => v[0] !== v[1])) o.ba = l.geo.ang;
+          }
+          if (counter.has(l.id)) {
+            o.parent = l.parent;
+            o.cs = 1;
+            o.j = [l.geo.x, l.geo.y];
           }
           if (l.sm) o.sm = 1;
           if (l.or) o.or = 1;
@@ -360,6 +394,7 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
       out += `<script><![CDATA[\n(function(){var CinEngine=${CinEngine.toString()};\nvar s=document.getElementById(${JSON.stringify(svgId)});if(!s)return;var P=CinEngine(${JSON.stringify(data)},s);s.player=s.svgatorPlayer=P;P.stop();${triggerJS(ex.trigger, ex.out, /reverse/.test(doc.dir) ? -1 : 1)}})();\n]]><\/script>`;
     }
   }
+  H.lookup(id => layerById(id));
   return {
     code: out + '</svg>',
     svgId,

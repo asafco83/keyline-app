@@ -137,13 +137,15 @@ export function renderInspector() {
       <div class="btns"><button class="btn" data-act="subdiv">Add nodes (subdivide)</button></div></section>`;
   }
   if (l.type === 'bone') {
-    const n = kids(l.id).length;
+    const n = kids(l.id).length,
+      pb0 = l.parent && layerById(l.parent);
     h += `<section class="sec"><h3>Bone <small>${n} attached</small></h3>${nrow('Length', gnum('len', 'L'))}${nrow('Rest angle', gnum('ang', '∠', '°'))}
       <label class="check"><input type="checkbox" data-flag="pin" id="fl-pin" ${l.pin ? 'checked' : ''}> Pin: IK stops at this bone</label>
       <label class="check"><input type="checkbox" data-flag="lim" id="fl-lim" ${l.lim ? 'checked' : ''}> Limit rotation</label>
+      ${pb0 && pb0.type === 'bone' ? `<label class="check sub-check"><input type="checkbox" data-flag="inh" id="fl-inh" ${l.inh ? 'checked' : ''}><span>Inherit scale<span class="bsub">Off: this bone follows the parent’s tip without being stretched by its scale.</span></span></label>` : ''}
       ${l.lim ? nrow('Range', `<label class="nf"><span>min</span><input id="bl-min" data-bl="lmin" inputmode="decimal" value="${fmt(l.lmin != null ? l.lmin : -90)}"><em>°</em></label><label class="nf"><span>max</span><input id="bl-max" data-bl="lmax" inputmode="decimal" value="${fmt(l.lmax != null ? l.lmax : 90)}"><em>°</em></label>`) : ''}
       <div class="btns"><button class="btn" data-act="childbone">Add child bone</button></div>
-      <p>Drag a bone to rotate it (forward kinematics). Drag its tip, or Alt+drag the bone, to pull the chain into place (inverse kinematics). The Edit bone tool (E) changes the rest pose. Attach artwork by dragging layers onto the bone in the Layers panel, with the Bind tool, or with “Attach to bone” on the layer.</p></section>`;
+      <p>Drag a bone to rotate it (forward kinematics). Drag its tip, or Alt+drag the bone, to pull the chain into place (inverse kinematics). The Edit bone tool (E) changes the rest pose; the Scale bone tool (S) scales along or across the bone. Attach artwork by dragging layers onto the bone in the Layers panel, with the Bind tool, or with “Attach to bone” on the layer.</p></section>`;
   } else {
     const bones = doc.layers.filter(b => b.type === 'bone' && !descendants(l).includes(b));
     if (bones.length) {

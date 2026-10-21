@@ -258,7 +258,7 @@ export function sampleDoc(): any {
   ridgeL.parent = clipF.id;
 
   // Sprout — a bone rig: three bones, each carrying its stem part, leaf or flower; the group grows
-  // in, then the bones sway with follow-through
+  // in, then the bones sway with follow-through and the top bone squashes and stretches
   const sprout = mkLayer('group', 'Sprout', {}, NOFILL);
   sprout.o = [592, 300];
   sprout.t.scl = [
@@ -299,6 +299,13 @@ export function sampleDoc(): any {
   b1.t.rot = sway(5, 0) as any;
   b2.t.rot = sway(9, 0.1) as any;
   b3.t.rot = sway(14, 0.2) as any;
+  // the top bone squashes and stretches along itself as it swings (W × H stays about 1)
+  b3.t.scl = [
+    [1.4, [1, 1], 'inOutSine'],
+    [1.75, [1.18, 0.85], 'inOutSine'],
+    [2.1, [0.9, 1.11], 'inOutSine'],
+    [2.5, [1, 1], 'ease'],
+  ] as any;
 
   // Flag — a line whose end grows (the pole) and a polygon with a gradient, a skew wave and an
   // animated corner radius (the pennant)

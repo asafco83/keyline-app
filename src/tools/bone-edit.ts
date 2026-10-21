@@ -3,20 +3,24 @@
 // Bind tool: click children (bones or layers), then their new parent bone.
 import type { Layer, XY } from '../model/types';
 import { H, byId, clone, esc, fmt, r2, r3, xfp } from '../core/constants';
-import { beginEdit, select } from '../core/history';
+import { beginEdit, select, setProp } from '../core/history';
 import { S, doc, layerById } from '../core/state';
 import { descendants, isHidden, isLocked, kids, pmOf } from '../model/tree';
 import { drawOverlay, obbOf } from '../render/overlay';
 import { frame } from '../render/stage';
-import { bonePts, boneTipL, localMat } from './bones';
+import { bonePts, boneTipL, counterMat, localMat } from './bones';
 import { hitChain } from './stage-input';
 
 /* ---------- shared math ---------- */
 
 /** a layer's own matrix from its base values (the rest pose for bones) */
 export function restMat(l: Layer): DOMMatrix {
-  const c = H.comp(Object.assign({}, l, { t: {} }) as any, 0);
-  return new DOMMatrix()
+  const c = H.comp(Object.assign({}, l, { t: {} }) as any, 0),
+    // the parent bone's rest scale, cancelled by a child bone that doesn't inherit it
+    P = l.type === 'bone' && !l.inh && l.parent ? layerById(l.parent) : null,
+    ps = P && P.type === 'bone' ? P.b.scl || [1, 1] : [1, 1],
+    q = ps[0] !== 1 || ps[1] !== 1 ? [P.geo.ang || 0, ps[0] || 1e-6, ps[1] || 1e-6, l.geo.x, l.geo.y] : null;
+  return counterMat(q)
     .translate(c.x, c.y)
     .rotate(c.r)
     .skewX(c.kx || 0)
@@ -128,18 +132,10 @@ export function boneChips() {
 /* ---------- Edit bone tool ---------- */
 
 export function boneEditDown(e: PointerEvent, p: XY) {
-  const bn = (e.target as any).closest && (e.target as any).closest('[data-bone]');
-  let b = bn && layerById(bn.dataset.bone),
-    part: string = (bn && bn.dataset.part) || 'body';
-  if (!b || b.type !== 'bone') return;
-  // a joint that sits on its parent's tip is the parent's tip too: grabbing it edits the parent
-  // (Alt grabs the joint itself, to pull it off the tip)
-  const up0 = b.parent && layerById(b.parent),
-    upTip = up0 && up0.type === 'bone' ? boneTipL(up0.geo) : null;
-  if (part === 'joint' && !e.altKey && upTip && near(jointIn(b), { x: upTip[0], y: upTip[1] }, 0.6)) {
-    b = up0;
-    part = 'tip';
-  }
+  const g = grabbed(e);
+  if (!g) return;
+  const b = g.b,
+    part = g.part;
   if (S.sel !== b.id || S.selSet.size > 1) select(b.id);
   if (isLocked(b)) return;
   const pid = b.parent,
@@ -400,4 +396,143 @@ export function drawBindLines(OVappend: (el: Element) => void, mk: (tag: string,
     }
     if (a) OVappend(mk('line', { x1: a.x, y1: a.y, x2: S.bindPt.x, y2: S.bindPt.y, class: 'ov-bind' }));
   });
+}
+
+/* ---------- Scale bone tool ---------- */
+
+export type BoneScaleMode = 'length' | 'thickness' | 'linked' | 'squash';
+const MODES: BoneScaleMode[] = ['length', 'thickness', 'linked', 'squash'];
+const MODE_LABEL: Record<BoneScaleMode, string> = {
+  length: 'Length',
+  thickness: 'Thickness',
+  linked: 'Linked',
+  squash: 'Squash & stretch',
+};
+const OPT_KEY = 'svgcinema:boneScale';
+export function loadScaleOpts() {
+  try {
+    const v = JSON.parse(localStorage.getItem(OPT_KEY) || 'null');
+    if (v && MODES.includes(v.mode)) S.boneScaleMode = v.mode;
+    if (v && (v.vol === 'area' || v.vol === 'tube')) S.boneVolume = v.vol;
+  } catch (_) {}
+}
+function saveScaleOpts() {
+  try {
+    localStorage.setItem(OPT_KEY, JSON.stringify({ mode: S.boneScaleMode, vol: S.boneVolume }));
+  } catch (_) {}
+}
+/** the Scale bone tool's options bar (top centre of the work area), shown while the tool is on */
+export function scaleBar() {
+  const bar = document.getElementById('boneOpts');
+  if (!bar) return;
+  if (S.tool !== 'bonescale') {
+    bar.hidden = true;
+    return;
+  }
+  const m = S.boneScaleMode;
+  bar.innerHTML =
+    `<div class="bo-seg" role="group" aria-label="Scale mode">${MODES.map(k => `<button type="button" data-bsm="${k}" aria-pressed="${k === m}"${k === m ? ' class="on"' : ''}>${esc(MODE_LABEL[k])}</button>`).join('')}</div>` +
+    (m === 'squash'
+      ? `<span class="vsep"></span><label>Volume<select class="sel" id="bsVol" aria-label="Volume to keep"><option value="area"${S.boneVolume === 'area' ? ' selected' : ''}>Area</option><option value="tube"${S.boneVolume === 'tube' ? ' selected' : ''}>Tube</option></select></label>`
+      : '');
+  bar.hidden = false;
+}
+export function initScaleBar() {
+  loadScaleOpts();
+  const bar = document.getElementById('boneOpts');
+  if (!bar) return;
+  bar.addEventListener('click', e => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-bsm]');
+    if (!b) return;
+    S.boneScaleMode = b.dataset.bsm as BoneScaleMode;
+    saveScaleOpts();
+    scaleBar();
+  });
+  bar.addEventListener('change', e => {
+    const t = e.target as HTMLSelectElement;
+    if (t.id !== 'bsVol') return;
+    S.boneVolume = t.value === 'tube' ? 'tube' : 'area';
+    saveScaleOpts();
+  });
+}
+/** W and H for a drag factor `s` from the scale at press, in the current mode */
+export function scaleFor(mode: BoneScaleMode, s0: number[], s: number, snap: boolean): [number, number] {
+  const k = S.boneVolume === 'tube' ? 0.5 : 1,
+    q = (v: number) => (snap ? Math.round(v * 10) / 10 || 0.1 : r3(v));
+  if (mode === 'length') return [q(s0[0] * s), s0[1]];
+  if (mode === 'thickness') return [s0[0], q(s0[1] * s)];
+  if (mode === 'linked') return [q(s0[0] * s), q(s0[1] * s)];
+  const w = q(s0[0] * s),
+    f = w / (s0[0] || 1);
+  return [w, r3(s0[1] * Math.pow(f, -k))];
+}
+/** the bone a press on the canvas grabs: a joint that sits on its parent's tip is that tip (so the
+ *  parent's tip can be grabbed where a child bone starts); Alt grabs the joint itself */
+function grabbed(e: PointerEvent): { b: Layer; part: string } | null {
+  const bn = (e.target as any).closest && (e.target as any).closest('[data-bone]');
+  const b = bn && layerById(bn.dataset.bone);
+  if (!b || b.type !== 'bone') return null;
+  const part: string = bn.dataset.part || 'body',
+    up = b.parent && layerById(b.parent),
+    t = up && up.type === 'bone' ? boneTipL(up.geo) : null;
+  if (part === 'joint' && !e.altKey && t && near(jointIn(b), { x: t[0], y: t[1] }, 0.6)) return { b: up, part: 'tip' };
+  return { b, part };
+}
+export function boneScaleDown(e: PointerEvent, p: XY) {
+  const g = grabbed(e),
+    b = g && g.b;
+  if (!b) return;
+  if (S.sel !== b.id || S.selSet.size > 1) select(b.id);
+  if (isLocked(b)) return;
+  const bp = bonePts(b);
+  if (!bp) return;
+  const J = bp.J,
+    Lw = Math.hypot(bp.T.x - J.x, bp.T.y - J.y) || 1,
+    dir = { x: (bp.T.x - J.x) / Lw, y: (bp.T.y - J.y) / Lw },
+    along = (q: XY) => (q.x - J.x) * dir.x + (q.y - J.y) * dir.y,
+    across = (q: XY) => Math.abs(-(q.x - J.x) * dir.y + (q.y - J.y) * dir.x),
+    d0 = along(p),
+    n0 = across(p),
+    ed = beginEdit(),
+    s0 = clone(H.get(b, 'scl', S.time) || [1, 1]) as number[];
+  // Scale is keyed at the playhead: the drag makes the track when the bone has none yet
+  if (!(b.t.scl && b.t.scl.length)) b.t.scl = [[r3(S.time), [s0[0], s0[1]], 'ease']];
+  let moved = false,
+    last: { q: XY; shift: boolean } | null = null;
+  const run = () => {
+    if (!last) return;
+    const { q, shift } = last,
+      m = S.boneScaleMode;
+    let s =
+      m === 'thickness' ? 1 + (across(q) - n0) / (0.5 * Lw) : 1 + (along(q) - d0) / Math.max(Math.abs(d0), 0.25 * Lw);
+    s = m === 'squash' ? Math.min(5, Math.max(0.2, s)) : Math.min(20, Math.max(0.05, s));
+    const v = scaleFor(m, s0, s, shift);
+    setProp(b, 'scl', v);
+    S.drag.lbl = `W ${fmt(v[0] * 100, 0)}% · H ${fmt(v[1] * 100, 0)}%`;
+    S.drag.lp = q;
+    frame();
+  };
+  S.drag = {
+    move(q: XY, ev: PointerEvent) {
+      if (!moved && Math.hypot(q.x - p.x, q.y - p.y) * S.scale < 3) return;
+      moved = true;
+      last = { q, shift: ev.shiftKey };
+      run();
+    },
+    key(k: string, ev: KeyboardEvent) {
+      if (k !== 'Tab') return false;
+      // Tab switches the mode while dragging (Shift+Tab goes back)
+      const i = MODES.indexOf(S.boneScaleMode);
+      S.boneScaleMode = MODES[(i + (ev.shiftKey ? MODES.length - 1 : 1)) % MODES.length];
+      saveScaleOpts();
+      scaleBar();
+      setProp(b, 'scl', [s0[0], s0[1]]);
+      run();
+      return true;
+    },
+    up() {
+      ed.end({ insp: true });
+    },
+  };
+  drawOverlay();
 }

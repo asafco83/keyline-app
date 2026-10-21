@@ -291,6 +291,7 @@ export const TOOL_INFO: Record<string, { label: string; key?: string; keys?: str
   text: { label: 'Text', key: 'T', keys: ['t'] },
   bone: { label: 'Bone tool', key: 'B', keys: ['b'] },
   boneedit: { label: 'Edit bone tool', key: 'E', keys: ['e'] },
+  bonescale: { label: 'Scale bone tool', key: 'S', keys: ['s'] },
   bonebind: { label: 'Bind tool' },
   hand: { label: 'Hand (hold Space)', key: 'H', keys: ['h'] },
 };
@@ -307,7 +308,7 @@ export const TOOLBAR: Array<string | ToolGroup | null> = [
   { group: 'shapes', label: 'Shape tools', items: ['ellipse', 'rect', 'polygon', 'star', 'line'] },
   'text',
   null,
-  { group: 'bones', label: 'Bone tools', items: ['bone', 'boneedit', 'bonebind'] },
+  { group: 'bones', label: 'Bone tools', items: ['bone', 'boneedit', 'bonescale', 'bonebind'] },
   'hand',
 ];
 export function groupOf(tool: string): ToolGroup | null {
@@ -345,6 +346,8 @@ export const HINTS: Record<string, string> = {
   bone: 'Drag to draw a bone · start on a bone tip to chain a child bone · Esc to finish',
   boneedit:
     "Edits the rest pose · drag a tip to change length and angle · drag a joint to move it (Alt pulls it off the parent's tip) · drag the bone to move it · Ctrl carries the artwork · Shift snaps to 15°",
+  bonescale:
+    'Drag along a bone to scale it, keyed at the playhead · Tab while dragging switches Length, Thickness, Linked, Squash & stretch · Shift snaps to 10%',
   bonebind:
     'Click a bone or layer, then its new parent bone · Shift+click adds more · click empty canvas to unbind · Alt keeps the offset · Esc cancels',
   hand: 'Drag to pan · wheel scrolls · Ctrl+wheel zooms · double-click the hand to fit · hold Space for the hand in any tool',
