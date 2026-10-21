@@ -293,4 +293,4 @@ SVGcinema targets current Chrome, Edge, Firefox and Safari.
 
 ## License
 
-SVGcinema is free for noncommercial use under the [PolyForm Noncommercial License 1.0.0](LICENSE): you may use, copy, change and share the code, but not sell it or use it to make money. The animations you export are yours to use for anything, including commercial work. See [LICENSE](LICENSE) for the full terms.
+SVGcinema is proprietary software: © 2026 asafco83, all rights reserved. You may use the app to make animations, and the files you export are yours to use for anything, including commercial work. The source code may not be copied, changed or redistributed without permission. See [LICENSE](LICENSE) for the full terms.
