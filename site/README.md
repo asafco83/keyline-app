@@ -20,7 +20,7 @@ The logo is read from `public/brand/svgcinema-logo-white.svg` at build time, so 
 
 ```bash
 node site/build.mjs                                            # editor links → editor/
-node site/build.mjs --editor=https://asafco83.github.io/svgcinema/   # editor links → anywhere else
+node site/build.mjs --editor=https://example.com/app/          # editor links → anywhere else
 ```
 
 `npx prettier --write site` formats the sources; `index.html` and `hero.svg` are generated, so `.prettierignore`
@@ -32,6 +32,8 @@ Put `site/index.html` at the root of the site and the editor build (`dist/` from
 folder beside it. The editor builds with relative paths (`base: './'`), so it works from a subfolder unchanged.
 Both live on the same origin, so the page and the editor share the light/dark choice
 (`localStorage['svgcinema:theme']`).
+
+Every "Open the editor" link opens the editor in a new tab, so the landing page stays open behind it.
 
 ## What's on the page
 

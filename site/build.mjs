@@ -36,7 +36,7 @@ let body = read('src/page.html')
 
 // page.html holds the head content followed by the body; split them at the first body element
 body = body.replace(/<meta name="claude:viewport-fit-sides"[^>]*>\s*/, '');
-const cut = body.indexOf('<div class="shutter"');
+const cut = body.indexOf('<header class="top">');
 if (cut < 0) throw new Error('page.html: body start not found');
 const html =
   '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8" />\n' +
