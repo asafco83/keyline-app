@@ -1,7 +1,10 @@
 // SVGcinema — export/dialog
 import { facesFor, isLocalFamily, isRTL, webFont } from '../render/fonts';
 import { $, fmt } from '../core/constants';
-import { doc } from '../core/state';
+import { S, doc } from '../core/state';
+import { kb } from '../ui/inspector';
+import { projectPayload } from './build';
+import type { Layer } from '../model/types';
 import { syncSizeUI } from './size';
 import { renderSnippet } from './snippets';
 
@@ -19,6 +22,20 @@ export const XOUT = [
   ['restart', 'Restart'],
   ['none', 'Keep playing'],
 ];
+/** the layers an export writes (all, or the selection with the groups that hold it) */
+export function exportLayers(): Layer[] {
+  if (!S.exportOnly || !S.exportOnly.size) return doc.layers;
+  const keep = new Set(S.exportOnly);
+  doc.layers.forEach(l => {
+    if (!S.exportOnly.has(l.id)) return;
+    let p = l.parent && doc.layers.find(x => x.id === l.parent);
+    while (p && !keep.has(p.id)) {
+      keep.add(p.id);
+      p = p.parent && doc.layers.find(x => x.id === p.parent);
+    }
+  });
+  return doc.layers.filter(l => keep.has(l.id));
+}
 export function setOpts(sel: HTMLSelectElement, list: string[][], val: string) {
   sel.innerHTML = list.map(o => `<option value="${o[0]}">${o[1]}</option>`).join('');
   sel.value = list.some(o => o[0] === val) ? val : list[0][0];
@@ -82,6 +99,10 @@ export function syncExportUI() {
   const sp = $('#xSpeed');
   if (sp !== document.activeElement) sp.value = fmt(ex.speed || 1);
   $('#xPre').value = ex.prefix;
+  // the editable project inside the SVG: what it adds to the file
+  $('#xProj').checked = !!ex.proj;
+  $('#xProjKb').textContent = '+' + kb(new Blob([projectPayload(exportLayers())]).size);
+  $('#xProjNote').hidden = !ex.proj;
   $('#xNote').innerHTML = !css
     ? 'The SVG carries a small built-in player that supports every animator and easing, including morph, curved paths and custom curves. Images are embedded in the file. Scripts run when the SVG is inline, or placed with <code>&lt;object&gt;</code> or <code>&lt;embed&gt;</code>; an <code>&lt;img&gt;</code> tag shows the first frame. The <b>Embed</b> tab has ready code for each framework.'
     : 'Pure CSS keyframes with no script, so it animates even inside <code>&lt;img&gt;</code> and as a CSS background. CSS can start on load or on hover only. On mouse out it can pause (and resume on the next hover) or jump to the start (and replay from the beginning on the next hover); reversing back needs the JavaScript export. Shape changes (morph) play with SMIL, so they work in every browser; with the hover trigger they use CSS <code>d: path()</code> instead, which Safari does not support.';

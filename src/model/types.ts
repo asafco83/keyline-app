@@ -216,6 +216,8 @@ export interface ExportSettings {
   hi: boolean;
   /** web fonts: converted to outlines (default) or embedded */
   fonts?: 'outline' | 'embed';
+  /** carry the editable project inside the SVG (opening the SVG in SVGcinema restores it) */
+  proj?: boolean;
 }
 
 export interface Doc {

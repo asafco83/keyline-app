@@ -80,6 +80,7 @@ src/
     svg-import.ts        Open an SVG as a project / add one to the project
     svg-convert.ts       SVG elements → editable layers (hierarchy, names, paint, text, masks)
     svg-paint.ts         Style cascade, colours, transforms, gradients for the importer
+    embed.ts             The editable project inside an exported SVG (read back)
     svgator.ts           SVGator animations → keyframes (player data, settings)
     css-anim.ts          CSS keyframe animations (SVGator CSS exports and others) → the same
     zip.ts               Minimal zip writer/reader and the .SVGcinema builder
@@ -266,6 +267,8 @@ The guides are saved with the project; the other view settings are remembered in
 - **Images** embedded in the file go to Assets and become image layers (sized as the browser draws them).
 - **Clip paths and masks** become clipping and mask groups (SVG masks mask by brightness).
 - **Filters:** a blur or a drop shadow becomes an editable filter; other filters, patterns, markers and text on a path are kept as they are. Anything that couldn't be made editable is listed in a short report after the import.
+
+**SVGs exported by SVGcinema:** tick _Include the editable project_ in the Export dialog (off by default; it shows how much it adds, about a third more for a typical JS export before compression). The project goes into the SVG's metadata, the pictures stay the SVG's own, and opening the SVG in SVGcinema brings back the exact project (layers, keyframes, settings); exporting it again gives the same file. Added to another project, its layers come in a group. Without it, an exported SVG opens as its artwork (the first frame), not animated.
 
 **Animated SVGs from SVGator** keep their animation as ordinary, editable keyframes (opened as a project, they also bring their length, repeat, direction, fill mode, speed, frame rate and start trigger; added to a project, they lengthen its timeline when they are longer).
 

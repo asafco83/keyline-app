@@ -398,6 +398,13 @@ export function init(): void {
     updateExport();
   });
   $('#xIt').addEventListener('change', () => renderSnippet());
+  $('#xProj').addEventListener('change', (e: Event) => {
+    doc.ex.proj = (e.target as HTMLInputElement).checked || undefined;
+    if (!doc.ex.proj) delete doc.ex.proj;
+    save();
+    syncExportUI();
+    updateExport();
+  });
   $('#xPre').addEventListener('change', (e: Event) => {
     doc.ex.prefix = (e.target as any).value.trim() || randPre();
     save();
