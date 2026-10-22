@@ -2,7 +2,7 @@ import asyncio, sys, json, os
 from playwright.async_api import async_playwright
 OUT=os.environ.get('CIN_OUT','/tmp/svgcinema-shots/'); os.makedirs(OUT, exist_ok=True)
 FIX=os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','fixtures','svg')
-# SVGator JS-player exports open with their animation as keyframes. The exported result moves exactly
+# SVGator exports (JS player or CSS) open with their animation as keyframes. The exported result moves exactly
 # like SVGator's own player: element boxes at several times are compared with boxes recorded from it
 # (tests/fixtures/svg/svgator-reference.json).
 REF=json.load(open(os.path.join(FIX,'svgator-reference.json')))
@@ -17,14 +17,15 @@ async def main():
         def check(n,c,i=None):
             R[n]=('ok' if c else 'FAIL')+('' if i is None else f' {i}')
             if not c: F.append(n)
-        for f in ['svgator-test1-js.svg','svgator-test2-js-named.svg']:
+        # the CSS export is checked against the JS export's positions (the same animation)
+        for f,rk in [('svgator-test1-js.svg','svgator-test1-js.svg'),('svgator-test1-css.svg','svgator-test1-js.svg'),('svgator-test2-js-named.svg','svgator-test2-js-named.svg')]:
             await pg.set_input_files('#fProj', os.path.join(FIX,f)); await pg.wait_for_timeout(1500)
             s=await ev("({dur:st.doc.dur,it:st.doc.it,dir:st.doc.dir,fill:st.doc.ex.fill,trig:st.doc.ex.trigger,rep:document.getElementById('mImpRep').hidden})")
             check(f'{f}: playback settings from the file', s['dur']==3 and s['it']==0 and s['dir']=='normal' and s['fill']=='forwards' and s['trig']=='load', s)
             notes=await ev("[...document.querySelectorAll('#irList li')].map(l=>l.textContent)")
             check(f'{f}: the report only mentions the moving anchor', all('anchor point' in n for n in notes), notes)
             await ev("document.getElementById('mImpRep').hidden=true")
-            ref=REF[f]; names=list(ref['0'].keys())
+            ref=REF[rk]; names=list(ref['0'].keys())
             code=await ev("(()=>{st.doc.ex.prefix='cin';st.doc.ex.mode='js';st.doc.ex.trigger='api';return bx.buildExport(null).code})()")
             ids=await ev(f"{json.dumps(names)}.map(n=>'cin-'+st.doc.layers.find(l=>l.name===n).id+'-s')")
             q=await b.new_page(viewport={'width':600,'height':400})

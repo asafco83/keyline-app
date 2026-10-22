@@ -81,6 +81,7 @@ src/
     svg-convert.ts       SVG elements → editable layers (hierarchy, names, paint, text, masks)
     svg-paint.ts         Style cascade, colours, transforms, gradients for the importer
     svgator.ts           SVGator animations → keyframes (player data, settings)
+    css-anim.ts          CSS keyframe animations (SVGator CSS exports and others) → the same
     zip.ts               Minimal zip writer/reader and the .SVGcinema builder
     save.ts  open.ts  guard.ts  file-state.ts   Save/Save as, open, unsaved-changes prompt
 
@@ -269,6 +270,8 @@ The guides are saved with the project; the other view settings are remembered in
 **Animated SVGs from SVGator** keep their animation as ordinary, editable keyframes (opened as a project, they also bring their length, repeat, direction, fill mode, speed, frame rate and start trigger; added to a project, they lengthen its timeline when they are longer).
 
 - **JS player exports** (embedded or external player): the keyframes and their easing come across exactly — position along the motion path (SVGator moves along curves at an even speed: _Even speed along curves_ is on), rotate, skew, scale, the anchor point (as Origin), opacity, fill and stroke (colours and gradients; where SVGator switches between two gradients or from no paint, so does the import), fill / stroke opacity, stroke width, dash offset, dash pattern, size (growing from the shape's corner, as in SVGator), corner radius, shape morphs, line ends and blur. The result plays like SVGator's own player: the browser tests compare the positions against it to within a pixel. An anchor point that moves while following a curved path is placed within about a pixel.
+- **CSS exports:** the groups SVGator wraps around an animated element (move / rotate / skew / scale) fold back into the one layer, the motion path comes back from `offset-path` with its curves, and the CSS keyframes (with their per-keyframe easing) become the same keyframes the JS export gives. SVGator's CSS writes the anchor point's offset twice, which shifts animated elements in browsers (in its own preview too); the import reads it once, so the result matches the JS export. Its CSS blur amounts are converted back as well. (SVGator can't export shape morphs as CSS.)
+- **Other CSS animations** in an SVG (`@keyframes` on elements) also become keyframes: opacity, fill and stroke, their opacities, stroke width and dashes, sizes, and transforms written as translate · rotate · skew · scale around a `transform-origin`.
 
 ## The `.SVGcinema` project format
 
