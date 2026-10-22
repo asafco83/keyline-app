@@ -115,7 +115,7 @@ export function renderInspector() {
     pick = l.type === 'bone' ? '' : motionPick(l);
   if (curve || pick)
     h += `<section class="sec"><h3>Motion path</h3>${pick ? nrow('Follow', pick) : ''}
-    ${curve ? `<label class="check"><input type="checkbox" data-flag="sm" id="fl-sm" ${l.sm ? 'checked' : ''}> Smooth path through keyframes</label><p>Drag the path on the canvas to curve it; drag its handles to fine-tune (Alt moves one handle alone); double-click a segment to straighten it.</p>${nodeSection(l)}` : ''}</section>`;
+    ${curve ? `<label class="check"><input type="checkbox" data-flag="sm" id="fl-sm" ${l.sm ? 'checked' : ''}> Smooth path through keyframes</label><label class="check"><input type="checkbox" data-flag="ev" id="fl-ev" ${l.ev ? 'checked' : ''}> Even speed along curves</label><p>Drag the path on the canvas to curve it; drag its handles to fine-tune (Alt moves one handle alone); double-click a segment to straighten it.</p>${nodeSection(l)}` : ''}</section>`;
   if (l.type === 'text') h += textAppearanceSection(l);
   if (painted) h += paintSection(l);
   if (l.type !== 'bone') h += appearanceSection(l) + filtersSection(l);

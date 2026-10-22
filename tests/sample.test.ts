@@ -89,6 +89,8 @@ describe('sample scene', () => {
   });
   it('uses a curved motion path with rotate-along-path, and varied easing', () => {
     expect(some(l => l.sm && l.or && !!l.t.pos && l.t.pos.length > 2)).toBe(true);
+    // a curved segment with handles, at an even speed along it
+    expect(some(l => !!l.ev && !!l.t.pos && l.t.pos.some(q => !!q[3]))).toBe(true);
     const eases = new Set(L.flatMap(l => tracks(l).flatMap(tr => tr.map(q => JSON.stringify(q[2])))));
     expect(eases.has('"hold"')).toBe(true);
     expect([...eases].some(e => e.startsWith('['))).toBe(true); // a custom curve

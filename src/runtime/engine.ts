@@ -17,6 +17,7 @@ export interface EngineLayer {
   /** animated tracks, keyed by property */
   t: Record<string, Keyframe[]>;
   /** curved motion path */ sm?: boolean | 1;
+  /** even speed along curved motion-path segments (by length, as SVGator moves) */ ev?: boolean | 1;
   /** orient along motion path */ or?: boolean | 1;
   /** polygon / star settings, so an animated corner radius ("rad") can rebuild the path */
   shape?: { kind: string; cx: number; cy: number; r: number; rot: number; n: number; ratio?: number };
@@ -45,6 +46,9 @@ export interface EngineLayer {
    *  the wrapper `<prefix><id>-w` carries the bones' transforms */
   dw?: string;
   du?: string;
+  /** size anchor: the point an animated size grows around, as a share of the shape's box (0–1 on
+   *  each axis); default: the origin */
+  sa?: number[];
   /** images, text and groups with pins: the triangle mesh they bend through (rest vertices and
    *  vertex-index triples); triangle k is the element `<prefix><id>-m<k>` */
   mesh?: { v: number[][]; t: number[][] };
@@ -529,6 +533,34 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
       w0 * A[1] + w1 * (A[1] + h[1]) + w2 * (B[1] + h[3]) + w3 * B[1],
     ];
   }
+  /** the curve parameter at a share p of the curve's length (lengths sampled once per curve) */
+  var ARC: Record<string, number[]> = {},
+    ARCN = 0;
+  function byLength(A: Vec, h: number[], B: Vec, p: number): number {
+    if (p <= 0 || p >= 1) return p;
+    var key = A.join() + ';' + h.join() + ';' + B.join(),
+      tb = ARC[key],
+      n = 64,
+      i: number;
+    if (!tb) {
+      if (++ARCN > 400) {
+        ARC = {};
+        ARCN = 1;
+      }
+      tb = [0];
+      var prev = A;
+      for (i = 1; i <= n; i++) {
+        var q = cb(A, h, B, i / n);
+        tb.push(tb[i - 1] + Math.hypot(q[0] - prev[0], q[1] - prev[1]));
+        prev = q;
+      }
+      ARC[key] = tb;
+    }
+    var want = p * tb[n];
+    if (!(tb[n] > 0)) return p;
+    for (i = 1; i <= n; i++) if (tb[i] >= want) return (i - 1 + (want - tb[i - 1]) / (tb[i] - tb[i - 1] || 1)) / n;
+    return 1;
+  }
   function at(L: EngineLayer, k: string, t: number): any {
     var tr = L.t[k],
       n = tr.length,
@@ -543,7 +575,7 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
       b = tr[i + 1];
       if (t < b[0]) {
         p = ez(a[2], (t - a[0]) / (b[0] - a[0]));
-        if (k === 'pos' && a[3]) return cb(a[1], a[3], b[1], p);
+        if (k === 'pos' && a[3]) return cb(a[1], a[3], b[1], L.ev ? byLength(a[1], a[3], b[1], p) : p);
         if (k === 'pos' && L.sm && n > 2) return cr((tr[i - 1] || a)[1], a[1], b[1], (tr[i + 2] || b)[1], p);
         return mix(K[k] || (typeof a[1] === 'string' ? 'c' : typeof a[1] === 'object' ? 'v' : 'n'), a[1], b[1], p);
       }
@@ -678,6 +710,10 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
       ky = b[3] ? s[1] / b[3] : 1;
     return [o[0] - (o[0] - b[0]) * kx, o[1] - (o[1] - b[1]) * ky, Math.max(0, s[0]), Math.max(0, s[1])];
   }
+  /** the point a size grows around: the size anchor (a share of the box), else the origin */
+  function anchorOf(L: EngineLayer, b: number[], t: number): number[] {
+    return L.sa ? [b[0] + L.sa[0] * b[2], b[1] + L.sa[1] * b[3]] : get(L, 'org', t) || [0, 0];
+  }
   /** a rectangle's, image's or ellipse's box at t, when its size is animated */
   function geoBox(L: EngineLayer, t: number): number[] | null {
     var G = L.geo;
@@ -687,13 +723,13 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
       L.type === 'ellipse'
         ? [(G.cx || 0) - (G.rx || 0), (G.cy || 0) - (G.ry || 0), 2 * (G.rx || 0), 2 * (G.ry || 0)]
         : [G.x || 0, G.y || 0, G.w || 0, G.h || 0];
-    return fitBox(b, get(L, 'sz', t), get(L, 'org', t) || [0, 0]);
+    return fitBox(b, get(L, 'sz', t), anchorOf(L, b, t));
   }
   /** a path scaled from its resting size (the box of its base shape) to the size at t */
   function sizePath(L: EngineLayer, d: EngineSubPath[], t: number): EngineSubPath[] {
     var b = pathBox((L.b && L.b.d) || d),
       s = get(L, 'sz', t),
-      o = get(L, 'org', t) || [0, 0],
+      o = anchorOf(L, b, t),
       kx = b[2] > 1e-9 ? s[0] / b[2] : 1,
       ky = b[3] > 1e-9 ? s[1] / b[3] : 1;
     return d.map(function (sp: EngineSubPath) {

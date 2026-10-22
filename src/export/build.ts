@@ -562,6 +562,7 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
           // an animated size resizes the shape's box (paths: from the box of their base shape)
           if (l.t.sz) {
             o.type = l.type;
+            if (l.sa) o.sa = l.sa;
             if (l.type === 'path') b.d = l.b.d;
             else {
               const G = l.geo;
@@ -604,6 +605,7 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
             o.j = [l.geo.x, l.geo.y];
           }
           if (l.sm) o.sm = 1;
+          if (l.ev) o.ev = 1;
           if (l.or) o.or = 1;
           return o;
         }),

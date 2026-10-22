@@ -135,6 +135,9 @@ export interface Layer {
   ft?: Tracks;
   /** group: a mask group ('mask' = by opacity, 'clip' = by shape); its `maskSrc` child is the mask */
   mask?: 'mask' | 'clip';
+  /** size anchor: the point an animated size grows around, as a share of the shape's box (0–1 on each
+   *  axis); unset = the origin. Imported SVGator animations grow from the shape's corner, as there. */
+  sa?: [number, number];
   /** mask group: masks by brightness ('lum', luminance) instead of by opacity (the default) */
   mm?: 'lum';
   /** group: the folder holding a mask group's mask layers */
@@ -143,6 +146,8 @@ export interface Layer {
   link?: { url: string; target: '_blank' | '_self' };
   /** curved motion path */
   sm: boolean;
+  /** even speed along curved motion-path segments (by length); off: by the curve's own parameter */
+  ev?: boolean;
   /** orient along motion path */
   or: boolean;
   hid: boolean;

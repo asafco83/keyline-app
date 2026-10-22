@@ -230,7 +230,7 @@ export function sampleDoc(): any {
     [1, '#162A45'],
   ]) as any;
   hillFill.parent = hills.id;
-  // Mist: an ellipse whose size grows as it drifts (Size)
+  // Mist: an ellipse whose size grows as it drifts (Size), along an arc at an even speed
   const mist = mkLayer('ellipse', 'Mist', { cx: 120, cy: 262, rx: 120, ry: 14 }, { fill: '#DCE7FF', op: 0.22 });
   mist.parent = hills.id;
   mist.o = [120, 262];
@@ -240,10 +240,12 @@ export function sampleDoc(): any {
   ];
   const haze = addFilter(mist, 'blur');
   mist.b['fx.' + haze.id + '.sd'] = 6;
+  // it drifts along a gentle arc (a curved motion path) at an even speed
   mist.t.pos = [
-    [0, [-60, 0], 'inOutSine'],
+    [0, [-60, 0], 'inOutSine', [160, -24, -160, -24]],
     [3, [420, 0], 'ease'],
   ];
+  mist.ev = true;
   const clipF = mkLayer('group', 'Clip path', {}, NOFILL);
   clipF.maskSrc = true;
   clipF.parent = hills.id;

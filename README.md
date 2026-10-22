@@ -80,6 +80,7 @@ src/
     svg-import.ts        Open an SVG as a project / add one to the project
     svg-convert.ts       SVG elements → editable layers (hierarchy, names, paint, text, masks)
     svg-paint.ts         Style cascade, colours, transforms, gradients for the importer
+    svgator.ts           SVGator animations → keyframes (player data, settings)
     zip.ts               Minimal zip writer/reader and the .SVGcinema builder
     save.ts  open.ts  guard.ts  file-state.ts   Save/Save as, open, unsaved-changes prompt
 
@@ -117,7 +118,7 @@ The editor opens with a sample scene (also under File → New → **Open sample 
 - **Sky**: an animated linear gradient, night to dawn. **Night sky**: star shapes with an animated corner radius, a blink made of hold keyframes and an elastic pulse; the group fades out.
 - **Sunrise**: a group rising as one. **Glow** has a radial gradient, an animated blur filter and screen blending; **Rays** spin and scale; the **Sun** changes colour.
 - **Blob** morphs between shapes with a custom easing curve. **Comet** follows a curved motion path and turns along it; **Comet trail** shows travelling dashes (an animated dash offset) that stretch and shrink (an animated dash pattern).
-- **Hills** is a clipping group: the drifting **Mist**, which grows as it goes (an animated size), only shows inside the hill silhouette (the **Clip path** folder).
+- **Hills** is a clipping group: the drifting **Mist**, which grows as it goes (an animated size) along an arc at an even speed, only shows inside the hill silhouette (the **Clip path** folder).
 - **Sprout** is a bone rig: three bones carry the stalk, leaves and flower, and sway with follow-through; the top bone squashes and stretches as it swings. The **Leaf** is pinned: one pin holds its base while the other flutters its tip. The **Tendril** beside the stalk is bent by the rig: its pins follow the three bones. The rig has its own draw order: the **Leaf** hangs on the second bone but is drawn behind the **Stalk**.
 - **Flag**: the **Pole** is a line whose end grows; the **Pennant** is a polygon with a gradient, a skew wave and an animated corner radius. The whole flag bends in the wind with pins, through a triangle mesh.
 - **Landscape**: **Horizon** draws on with Trim path; **Signature** is a mask group (masking by brightness) whose gradient wipe reveals a line that links to this editor.
@@ -186,7 +187,7 @@ Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to 
 - **Size** (rectangles, ellipses, images and paths, including polygons, stars and lines): width and height, animatable with its own ◆. The shape grows and shrinks around its origin (put the origin on an edge or corner with the anchor grid to grow it from there). Unlike Scale, Size changes the shape itself, so the stroke width stays the same. Images keep their proportions while _Keep proportions_ is on. Text and groups use Scale.
 - **Shape settings** (at the top for these shapes): polygon _Sides_; star _Points_ and _Ratio_ (inner / outer radius); corner _Radius_ for rectangles, polygons and stars (capped so corners never overlap, and animatable: the runtime rebuilds the rounded path every frame); line _From_ / _To_, each keyable on its own so a line can grow or swing. Polygons and stars keep their settings until their nodes are edited by hand or they get Morph keyframes; then they are plain paths.
 - **Transforms:** position, scale (with a keep-proportions link), skew X/Y, rotate as turns + degrees (with a _rotate along the motion path_ toggle when the layer has one), origin, anchor grid, flip.
-- **Motion path:** _Set motion path_ makes the layer follow a path, rectangle or ellipse over the whole animation (one keyframe per point, timed for an even speed). On the canvas, drag a segment of the path to curve it, drag its handles to fine-tune, double-click a segment to straighten it. **Path node** (below it) edits the keyframe at the playhead, or the one before it: its type (straight, mirrored, asymmetric, disconnected) and position; ‹ › step between nodes. Alt-drag a handle to move it alone.
+- **Motion path:** _Set motion path_ makes the layer follow a path, rectangle or ellipse over the whole animation (one keyframe per point, timed for an even speed). _Even speed along curves_ moves along each curved segment at a constant speed (by its length, as SVGator does) instead of following the curve's own spacing. On the canvas, drag a segment of the path to curve it, drag its handles to fine-tune, double-click a segment to straighten it. **Path node** (below it) edits the keyframe at the playhead, or the one before it: its type (straight, mirrored, asymmetric, disconnected) and position; ‹ › step between nodes. Alt-drag a handle to move it alone.
 - **Text appearance:** font (basic stacks, 31 Google Fonts including Hebrew ones, and fonts on this computer — Chrome/Edge can list them after you allow it; elsewhere type a font name), style (weight × italic), bold / italic / underline / overline / strikethrough, size, letter spacing, alignment, line height, and **Keep width**: when on, the box keeps its width and lines break to fit it.
 - **Fill & stroke:** each colour row has a swatch, an eyedropper and the value as text (a colour, `none`, or _Linear_ / _Radial_ for a gradient). Click the swatch to open the colour window. Its top row picks the type: _None_, _Solid_, _Linear_ or _Radial_.
   - **Colour:** saturation/brightness area, hue and opacity sliders, an eyedropper (in browsers that support it), and Hex / R G B / A fields. Changes show live; clicking outside or pressing Esc closes the window as one undo step.
@@ -264,6 +265,10 @@ The guides are saved with the project; the other view settings are remembered in
 - **Images** embedded in the file go to Assets and become image layers (sized as the browser draws them).
 - **Clip paths and masks** become clipping and mask groups (SVG masks mask by brightness).
 - **Filters:** a blur or a drop shadow becomes an editable filter; other filters, patterns, markers and text on a path are kept as they are. Anything that couldn't be made editable is listed in a short report after the import.
+
+**Animated SVGs from SVGator** keep their animation as ordinary, editable keyframes (opened as a project, they also bring their length, repeat, direction, fill mode, speed, frame rate and start trigger; added to a project, they lengthen its timeline when they are longer).
+
+- **JS player exports** (embedded or external player): the keyframes and their easing come across exactly — position along the motion path (SVGator moves along curves at an even speed: _Even speed along curves_ is on), rotate, skew, scale, the anchor point (as Origin), opacity, fill and stroke (colours and gradients; where SVGator switches between two gradients or from no paint, so does the import), fill / stroke opacity, stroke width, dash offset, dash pattern, size (growing from the shape's corner, as in SVGator), corner radius, shape morphs, line ends and blur. The result plays like SVGator's own player: the browser tests compare the positions against it to within a pixel. An anchor point that moves while following a curved path is placed within about a pixel.
 
 ## The `.SVGcinema` project format
 
