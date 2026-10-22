@@ -56,6 +56,7 @@ import {
   transformSection,
   pinsSection,
   sizeRow,
+  szLocked,
 } from './props-panel';
 import { applyEase, bezOf, drawEz, easeFam, famName, keyPanel, parseBez, sameEase } from './easing';
 import { deleteSel, groupSel, moveLayers, ungroup } from './layers-panel';
@@ -138,17 +139,16 @@ export function renderInspector() {
     const a = ASSETS[G.asset];
     h += `<section class="sec"><h3>Image <span class="chip">${a ? esc((a.mime || '').replace('image/', '').replace('x-icon', 'ico')) : 'missing'}</span></h3>
       ${a ? `<p>${esc(a.name)} · ${a.w}×${a.h}px · ${kb(a.size || 0)}</p>` : '<p>The image file for this layer is missing. Add it again from the Assets tab.</p>'}
-      ${nrow('Position', gnum('x', 'X') + gnum('y', 'Y'))}${sizeRow()}
-      <label class="check"><input type="checkbox" id="lockAR" ${S.lockAR ? 'checked' : ''}> Keep proportions</label>
+      ${nrow('Position', gnum('x', 'X') + gnum('y', 'Y'))}${sizeRow(l)}
       ${a ? '<div class="btns"><button class="btn" data-act="natural">Original size</button></div>' : ''}</section>`;
   }
   if (l.type === 'ellipse')
-    h += `<section class="sec"><h3>Ellipse</h3>${nrow('Center', gnum('cx', 'X') + gnum('cy', 'Y'))}${sizeRow()}<div class="btns"><button class="btn" data-act="topath">Convert to path</button></div></section>`;
+    h += `<section class="sec"><h3>Ellipse</h3>${nrow('Center', gnum('cx', 'X') + gnum('cy', 'Y'))}${sizeRow(l)}<div class="btns"><button class="btn" data-act="topath">Convert to path</button></div></section>`;
   if (l.type === 'path') {
     const others = doc.layers.filter(o => o !== l && ['path', 'rect', 'ellipse'].includes(o.type));
     const cnt = ((H.get(l, 'd', S.time) || []) as PathData).reduce((s, p) => s + p.n.length, 0);
     h += `<section class="sec"><h3>Path & morph <small>${cnt} nodes</small></h3>
-      ${sizeRow()}
+      ${sizeRow(l)}
       ${krow('d', 'Morph', `<button class="btn" data-act="nodes" style="flex:1">${S.tool === 'node' ? 'Done editing' : 'Edit nodes'}</button>`)}
       <p>Add a Morph keyframe, move the playhead, then edit nodes. The shape blends between keyframes.</p>
       ${nrow('Morph into', `<select class="sel" id="morphTo" aria-label="Morph into another shape"><option value="">Choose a shape…</option>${others.map(o => `<option value="${o.id}">${esc(o.name)}</option>`).join('')}</select>`)}
@@ -436,8 +436,7 @@ export function parseField(l: Layer, inp: HTMLInputElement): [PropKey, any] | nu
     const cur = clone(valueAt(l, k, S.time)),
       j = +i,
       o = 1 - j;
-    if (((k === 'scl' && S.sclLock) || (k === 'sz' && l.type === 'image' && S.lockAR)) && cur[j])
-      cur[o] = r3((cur[o] * v) / cur[j]);
+    if (((k === 'scl' && S.sclLock) || (k === 'sz' && szLocked(l))) && cur[j]) cur[o] = r3((cur[o] * v) / cur[j]);
     cur[j] = v;
     v = cur;
   }
@@ -704,10 +703,6 @@ export function init(): void {
     if (t.id === 'attachBone') {
       if (t.value) moveLayers([l.id], layerById(t.value), 'into');
       else moveLayers([l.id], null, 'root');
-      return;
-    }
-    if (t.id === 'lockAR') {
-      S.lockAR = t.checked;
       return;
     }
     if (t.dataset.ezv !== undefined) {

@@ -344,6 +344,8 @@ export interface EditorState {
   fontCustom?: boolean;
   /** keep scale proportions in the inspector */
   sclLock?: boolean;
+  /** keep size proportions in the inspector (shapes; images use lockAR) */
+  szLock?: boolean;
   ezDir: string;
   tab: string;
   snap: boolean;

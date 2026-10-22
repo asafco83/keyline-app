@@ -133,7 +133,7 @@ button {
   padding-right: env(safe-area-inset-right, 0px);
   display: grid;
   grid-template-columns: 52px 248px minmax(0, 1fr) 296px;
-  grid-template-rows: 52px minmax(0, 1fr) 288px;
+  grid-template-rows: 52px minmax(0, 1fr) var(--tl-h, 288px);
   grid-template-areas: 'top top top top' 'tools side stage insp' 'tl tl tl tl';
 }
 @media (max-width: 1240px) {
@@ -1148,6 +1148,45 @@ textarea.ta:focus {
   flex-direction: column;
   overflow: hidden;
   border-top: 1px solid var(--line);
+  position: relative;
+}
+/* the top edge: drag it to make the timeline taller or shorter (ui/tl-resize) */
+.tl-grip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  z-index: 8;
+  cursor: ns-resize;
+  touch-action: none;
+  outline: none;
+}
+.tl-grip::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.tl-grip:hover::after,
+.tl-grip.on::after,
+.tl-grip:focus-visible::after {
+  opacity: 1;
+}
+body.scrubbing,
+body.scrubbing * {
+  cursor: ew-resize !important;
+  user-select: none;
+}
+body.tl-resizing,
+body.tl-resizing * {
+  cursor: ns-resize !important;
+  user-select: none;
 }
 .tl-ctrl {
   display: flex;
@@ -2350,6 +2389,9 @@ details summary {
     grid-template-rows: auto auto 58vh 320px 300px auto;
     grid-template-areas: 'top' 'tools' 'stage' 'side' 'tl' 'insp';
   }
+  .tl-grip {
+    display: none;
+  }
   .top {
     flex-wrap: wrap;
     padding: 6px 8px;
@@ -2434,6 +2476,15 @@ details summary {
 .rf .nf {
   padding: 0 5px;
   gap: 3px;
+}
+/* a pair of number fields: the toggle beside them (Keep proportions, Rotate along the path, Center
+   origin) has its own column, left empty on rows without one, so every pair keeps the same width */
+.insp .rf:has(> .nf + .nf):not(:has(> .nf + .nf + .nf)) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--tg-w, 26px);
+}
+.insp .rf:has(> .nf + .nf):not(:has(> .nf + .nf + .nf)) > .btn.ib {
+  width: auto;
 }
 .btns.tight {
   gap: 2px;
@@ -2539,6 +2590,9 @@ details summary {
   }
   .rf .btn.ib {
     width: 24px;
+  }
+  .insp .rf {
+    --tg-w: 24px;
   }
 }
 
@@ -4006,20 +4060,42 @@ select.sel {
   stroke: var(--raised);
   stroke-width: 2;
 }
-/* a pin bound to a bone: a ring around it */
+/* a pin bound to a bone: a ring around it, in the playhead red (the pin itself too) */
 .ov-pinbound {
   fill: none;
-  stroke: var(--accent);
+  stroke: var(--head);
   stroke-width: 1.4;
   vector-effect: non-scaling-stroke;
   pointer-events: none;
 }
 .ov-pin.is-bound {
   cursor: pointer;
+  stroke: var(--head);
+}
+.ov-pin.is-sel.is-bound {
+  fill: var(--head);
+  stroke: var(--raised);
 }
 .ov-pindot {
   fill: var(--accent);
   pointer-events: none;
+}
+.ov-pindot.is-bound {
+  fill: var(--head);
+}
+/* the link from a bone to what is bound to it: a dotted line, shown with the bones (never exported) */
+.ov-blink {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.2;
+  stroke-dasharray: 1.5 3;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+  opacity: 0.85;
+}
+.ov-blink.is-pin {
+  stroke: var(--head);
 }
 .ov-pinrest {
   fill: none;
@@ -4091,12 +4167,17 @@ select.sel {
   cursor: pointer;
 }
 .pin-chip.bound {
-  box-shadow: inset 0 0 0 1.5px var(--accent-line);
+  box-shadow: inset 0 0 0 1.5px var(--head);
 }
 .pin-chip.on {
   background: var(--accent);
   color: var(--on-accent);
   font-weight: 600;
+}
+.pin-chip.on.bound {
+  background: var(--head);
+  box-shadow: none;
+  color: #fff;
 }
 .sec .pin-ind {
   margin-left: 22px;
