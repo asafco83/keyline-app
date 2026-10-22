@@ -33,6 +33,7 @@ import { loadLocalFonts, onFontLoad, pickWeight, webFont } from '../render/fonts
 import { descendants, kids } from '../model/tree';
 import { fit, frame, renderStage } from '../render/stage';
 import { MESH_DEFAULT, MESH_MAX, MESH_MIN } from '../model/mesh';
+import { drawOrder, rigArtwork } from '../model/draw-order';
 import { addChildBone, boneTipL, shiftChildBones } from '../tools/bones';
 import { setAnchor } from '../tools/edit-tools';
 import { align, alignBar, motionPick, setMotionPath } from './align';
@@ -150,6 +151,7 @@ export function renderInspector() {
       <label class="check"><input type="checkbox" data-flag="pin" id="fl-pin" ${l.pin ? 'checked' : ''}> Pin: IK stops at this bone</label>
       <label class="check"><input type="checkbox" data-flag="lim" id="fl-lim" ${l.lim ? 'checked' : ''}> Limit rotation</label>
       ${poseRowFor(l) ? `<label class="check sub-check"><input type="checkbox" data-flag="kr" id="fl-kr" ${l.kr !== false ? 'checked' : ''}><span>Key whole rig<span class="bsub">Moving any bone of this rig keys every bone, so each pose is stored whole. Turn off for overlapping action.</span></span></label>` : ''}
+      ${poseRowFor(l) ? drawOrderBlock(l) : ''}
       ${pb0 && pb0.type === 'bone' ? `<label class="check sub-check"><input type="checkbox" data-flag="inh" id="fl-inh" ${l.inh ? 'checked' : ''}><span>Inherit scale<span class="bsub">Off: this bone follows the parent’s tip without being stretched by its scale.</span></span></label>` : ''}
       ${l.lim ? nrow('Range', `<label class="nf"><span>min</span><input id="bl-min" data-bl="lmin" inputmode="decimal" value="${fmt(l.lmin != null ? l.lmin : -90)}"><em>°</em></label><label class="nf"><span>max</span><input id="bl-max" data-bl="lmax" inputmode="decimal" value="${fmt(l.lmax != null ? l.lmax : 90)}"><em>°</em></label>`) : ''}
       <div class="btns"><button class="btn" data-act="childbone">Add child bone</button></div>
@@ -655,6 +657,14 @@ export function init(): void {
       ed.end();
       return;
     }
+    if (t.dataset.dord !== undefined) {
+      // a rig's own draw order starts as the order nesting draws it
+      const ed = beginEdit();
+      if (t.checked) l.dord = rigArtwork(l, doc.layers).map(x => x.id);
+      else delete l.dord;
+      ed.end({ insp: true });
+      return;
+    }
     if (t.dataset.flag) {
       const ed = beginEdit();
       (l as any)[t.dataset.flag] = t.checked;
@@ -808,6 +818,7 @@ export function init(): void {
       ed.end();
     } else if (a === 'topath') convertToPath(l);
     else if (a === 'childbone') addChildBone(l);
+    else if (a === 'dmv') moveInOrder(l, b.dataset.id, b.dataset.dir === 'front' ? 1 : -1);
     else if (a === 'pinsel') {
       S.pinSel = +b.dataset.n;
       renderInspector();
@@ -918,6 +929,84 @@ export function init(): void {
         }
       },
       () => ed.end(),
+    );
+  });
+}
+
+/* ---------- a rig's own draw order (Bone section of its top bone) ---------- */
+
+const DCHEV = (d: string) =>
+  `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+const GRIP =
+  '<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><circle cx="4.5" cy="3" r="1"/><circle cx="7.5" cy="3" r="1"/><circle cx="4.5" cy="6" r="1"/><circle cx="7.5" cy="6" r="1"/><circle cx="4.5" cy="9" r="1"/><circle cx="7.5" cy="9" r="1"/></svg>';
+function drawOrderBlock(l: Layer) {
+  const order = drawOrder(l, doc.layers);
+  let h = `<label class="check sub-check"><input type="checkbox" data-dord id="fl-dord" ${order ? 'checked' : ''}><span>Own draw order<span class="bsub">Draws this rig’s artwork in the order below, whatever bone it hangs on, so a part can sit behind its parent’s artwork.</span></span></label>`;
+  if (!order) return h;
+  const rows = order
+    .slice()
+    .reverse()
+    .map((x, i, a) => {
+      const bone = layerById(x.parent);
+      return `<div class="dord-row" role="listitem" draggable="true" data-dord-id="${x.id}"><span class="dord-grip" aria-hidden="true">${GRIP}</span><span class="dord-name">${esc(x.name)}</span><span class="dord-bone">${bone ? esc(bone.name) : ''}</span><button type="button" class="dord-mv" data-act="dmv" data-dir="front" data-id="${x.id}" aria-label="Move ${esc(x.name)} forward"${i === 0 ? ' disabled' : ''}>${DCHEV('M3 7.5l3-3 3 3')}</button><button type="button" class="dord-mv" data-act="dmv" data-dir="back" data-id="${x.id}" aria-label="Move ${esc(x.name)} back"${i === a.length - 1 ? ' disabled' : ''}>${DCHEV('M3 4.5l3 3 3-3')}</button></div>`;
+    })
+    .join('');
+  h += `<div class="dord" role="list" aria-label="Draw order, front first"><div class="dord-cap">Front</div>${rows}<div class="dord-cap">Back</div></div>`;
+  return h;
+}
+/** moves a piece of artwork one step toward the front (+1) or the back (−1), or to just above `before` */
+function moveInOrder(l: Layer, id: string, step: number, onto?: string) {
+  const order = drawOrder(l, doc.layers);
+  if (!order) return;
+  const ids = order.map(x => x.id),
+    i = ids.indexOf(id);
+  if (i < 0) return;
+  ids.splice(i, 1);
+  let j = onto != null ? ids.indexOf(onto) + (step > 0 ? 1 : 0) : i + step;
+  j = Math.max(0, Math.min(ids.length, j));
+  ids.splice(j, 0, id);
+  if (ids.join() === order.map(x => x.id).join()) return;
+  const ed = beginEdit();
+  l.dord = ids;
+  ed.end({ insp: true });
+}
+/** drag a row of the draw order list onto another: it takes that row's place */
+export function initDrawOrderDrag() {
+  let dragId: string | null = null;
+  INSP.addEventListener('dragstart', (e: DragEvent) => {
+    const r = (e.target as HTMLElement).closest<HTMLElement>('.dord-row');
+    if (!r) return;
+    dragId = r.dataset.dordId;
+    r.classList.add('dragging');
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', dragId);
+    }
+  });
+  INSP.addEventListener('dragover', (e: DragEvent) => {
+    const r = (e.target as HTMLElement).closest<HTMLElement>('.dord-row');
+    if (!r || !dragId) return;
+    e.preventDefault();
+    INSP.querySelectorAll('.dord-row.drop-above, .dord-row.drop-below').forEach((x: Element) =>
+      x.classList.remove('drop-above', 'drop-below'),
+    );
+    const b = r.getBoundingClientRect();
+    r.classList.add(e.clientY < b.top + b.height / 2 ? 'drop-above' : 'drop-below');
+  });
+  INSP.addEventListener('drop', (e: DragEvent) => {
+    const r = (e.target as HTMLElement).closest<HTMLElement>('.dord-row'),
+      l = selLayer();
+    if (!r || !dragId || !l) return;
+    e.preventDefault();
+    const above = r.classList.contains('drop-above');
+    // the list shows the front first: above a row = in front of it
+    if (r.dataset.dordId !== dragId) moveInOrder(l, dragId, above ? 1 : -1, r.dataset.dordId);
+    dragId = null;
+  });
+  INSP.addEventListener('dragend', () => {
+    dragId = null;
+    INSP.querySelectorAll('.dord-row').forEach((x: Element) =>
+      x.classList.remove('dragging', 'drop-above', 'drop-below'),
     );
   });
 }

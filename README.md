@@ -47,6 +47,7 @@ src/
     filters.ts           Layer filters (blur, drop shadow) with animatable parameters
     pins.ts              Pin property keys and labels (Pin tool)
     mesh.ts              The triangle mesh pins bend images, text and groups through
+    draw-order.ts        A rig's own draw order (artwork drawn apart from its bones)
     sample.ts            The sample scene
 
   geometry/
@@ -115,7 +116,7 @@ The editor opens with a sample scene (also under File → New → **Open sample 
 - **Sunrise**: a group rising as one. **Glow** has a radial gradient, an animated blur filter and screen blending; **Rays** spin and scale; the **Sun** changes colour.
 - **Blob** morphs between shapes with a custom easing curve. **Comet** follows a curved motion path and turns along it; **Comet trail** shows travelling dashes (an animated dash offset).
 - **Hills** is a clipping group: the drifting **Mist** only shows inside the hill silhouette (the **Clip path** folder).
-- **Sprout** is a bone rig: three bones carry the stalk, leaves and flower, and sway with follow-through; the top bone squashes and stretches as it swings. The **Leaf** is pinned: one pin holds its base while the other flutters its tip. The **Tendril** beside the stalk is bent by the rig: its pins follow the three bones.
+- **Sprout** is a bone rig: three bones carry the stalk, leaves and flower, and sway with follow-through; the top bone squashes and stretches as it swings. The **Leaf** is pinned: one pin holds its base while the other flutters its tip. The **Tendril** beside the stalk is bent by the rig: its pins follow the three bones. The rig has its own draw order: the **Leaf** hangs on the second bone but is drawn behind the **Stalk**.
 - **Flag**: the **Pole** is a line whose end grows; the **Pennant** is a polygon with a gradient, a skew wave and an animated corner radius. The whole flag bends in the wind with pins, through a triangle mesh.
 - **Landscape**: **Horizon** draws on with Trim path; **Signature** is a mask group whose gradient wipe reveals a line that links to this editor.
 - **Title** slides and fades in with an animated drop shadow.
@@ -222,6 +223,8 @@ They're combined as they look at the playhead into one new path, which takes the
 **Posing a rig:** with _Key whole rig_ on (the default; it sits in the Bone section of the rig's top bone), dragging any bone (FK, IK or Scale bone) keys every bone of the rig at the playhead, so each pose is stored whole. The new keys hold the values the bones already had there, and the easing they split is split with them, so nothing else in the animation changes. Turn it off for overlapping action (only the bone you drag is keyed). Turning it on for a rig whose poses have keys on some bones only offers to _Add keys_: every bone gets a key at each of the rig's key times, again without changing the motion; turning it on and adding the keys is one undo step. In the timeline, the top bone has a **Pose** row with a diamond at every time any bone of the rig has a key: click one to select all of them, drag to retime the pose, Delete to remove it.
 
 **Bending with pins:** each pin pulls the path's nodes (and their handles) with it, nearer nodes more than far ones; a pin can also turn, bending the path around it. A pin that doesn't move holds the path in place. The **Pins** section of the inspector has a button per pin; the rows below it edit the selected pin: _Position_ and _Rotation_, each with its own ◆, and _Reach_, how far every pin of the path pulls (100% by default). _Remove pin_ and _Remove all pins_ take them off (the path keeps its rest shape). In the timeline each pin has its own rows (_Pin 2_, _Pin 2 · Rotation_). Both exports bend the path: the JS player computes it, and the CSS export animates the path's shape with SMIL, as for morphs.
+
+**A rig's own draw order:** nesting decides stacking, so a part can't normally sit behind its parent's artwork (a far arm behind the torso while it hangs on the torso's bone). Turn on _Own draw order_ in the Bone section of the rig's top bone: a list of the artwork attached to the rig's bones appears, front at the top, starting in the order nesting draws it. Reorder it with the arrows or by dragging a row; the canvas and both exports draw the artwork in that order, each piece still moving with its bone (the Edit bone tool's rest pose too). Turning it off goes back to nesting. Artwork attached to the rig later goes in front. The order is not animated.
 
 **Pins that follow bones** (Pin tool › _Bind to bones_) sit at a bone's joint and move and turn with the bone, so a rig bends a sleeve, a tail or a vine without keyframing the pins: the Pins section names the bone instead of Position and Rotation. Both exports follow the rig: the JS player works out where the bone is each frame, and the CSS export bakes the result like any other bend.
 

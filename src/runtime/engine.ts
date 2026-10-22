@@ -41,6 +41,10 @@ export interface EngineLayer {
   xf?: string;
   /** how far each pin pulls (percent, default 100) */
   reach?: number;
+  /** artwork drawn by its rig's own draw order: its bone (`dw`) and the layer holding the rig (`du`);
+   *  the wrapper `<prefix><id>-w` carries the bones' transforms */
+  dw?: string;
+  du?: string;
   /** images, text and groups with pins: the triangle mesh they bend through (rest vertices and
    *  vertex-index triples); triangle k is the element `<prefix><id>-m<k>` */
   mesh?: { v: number[][]; t: number[][] };
@@ -142,6 +146,8 @@ export interface CinPlayer {
   restPins(on: boolean): boolean;
   /** a meshed layer's triangle matrices at t (see EngineLayer.mesh) */
   meshMats(L: EngineLayer, t: number): number[][];
+  /** from a layer's inner space up to the inner space of `upTo` (the canvas when null), at t */
+  worldOf(L: EngineLayer, t: number, upTo?: EngineLayer | null): number[];
   /** a pin at t: [rest x, rest y, x, y, angle] (a pin bound to a bone follows it) */
   pinAt(L: EngineLayer, p: { n: number; x: number; y: number; bone?: string }, t: number): number[];
   get(L: EngineLayer, k: string, t: number): any;
@@ -1096,6 +1102,11 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
         s.setAttribute('rx', String(f(c.rad)));
         s.setAttribute('ry', String(f(c.rad)));
       }
+      if (L.dw) {
+        var wb = layerOf(L.dw),
+          we = el(D.p + L.id + '-w');
+        if (wb && we) we.setAttribute('transform', 'matrix(' + worldOf(wb, t, layerOf(L.du)).map(f6).join(',') + ')');
+      }
       if (L.mesh) {
         var ms = meshMats(L, t);
         for (var mk = 0; mk < ms.length; mk++) {
@@ -1360,6 +1371,7 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
     },
     meshMats: meshMats,
     pinAt: pinAt,
+    worldOf: worldOf,
     restPins: function (on: boolean) {
       var was = NOPIN;
       NOPIN = !!on;

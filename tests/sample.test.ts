@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { setDoc, doc } from '../src/core/state';
 import { sampleDoc } from '../src/model/sample';
 import type { Layer } from '../src/model/types';
+import { drawOrder, rigArtwork } from '../src/model/draw-order';
 
 const isGrad = (v: any) => v && typeof v === 'object' && (v.g === 'lin' || v.g === 'rad');
 const tracks = (l: Layer) => Object.values(l.t);
@@ -36,6 +37,14 @@ describe('sample scene', () => {
     expect(l).toBeTruthy();
     expect(l.pins!.some(p => !l.t['pin' + p.n])).toBe(true);
     expect(l.pins!.some(p => (l.t['pin' + p.n] || []).length > 1)).toBe(true);
+  });
+  it('draws a rig in its own order, apart from the nesting', () => {
+    const top = L.find(x => x.type === 'bone' && x.dord) as Layer;
+    expect(top).toBeTruthy();
+    const nest = rigArtwork(top, L).map(x => x.id),
+      own = drawOrder(top, L)!.map(x => x.id);
+    expect(own.slice().sort()).toEqual(nest.slice().sort());
+    expect(own.join()).not.toBe(nest.join());
   });
   it('bends a layer with pins that follow bones', () => {
     const l = L.find(x => x.pins && x.pins.some(p => p.bone)) as Layer;

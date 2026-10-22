@@ -15,6 +15,7 @@ import { fontFaceCSS } from '../render/fonts';
 import { CinEngine } from '../runtime/engine';
 import { isPinKey } from '../model/pins';
 import { meshOf } from '../render/markup';
+import { drawOrder } from '../model/draw-order';
 
 export function roundV(v: any): any {
   if (typeof v === 'number') return r3(v);
@@ -190,7 +191,9 @@ export function kfBlock(name: string, stops: string[], N: number) {
   const keep = stops.map((s, i) => i === 0 || i === N || s !== stops[i - 1] || s !== stops[i + 1]);
   return `@keyframes ${name}{` + stops.map((s, i) => (keep[i] ? `${r3((i / N) * 100)}%{${s}}` : '')).join('') + '}';
 }
-export function cssFor(anim: Layer[], pre: string, svgId: string) {
+/** artwork drawn by a rig's own draw order: [the artwork, its bone, the layer holding the rig] */
+type Wrap = [Layer, Layer, Layer | undefined];
+export function cssFor(anim: Layer[], pre: string, svgId: string, wraps: Wrap[] = []) {
   const N = Math.max(2, Math.round(doc.dur * 30)),
     it = doc.it > 0 ? doc.it : 'infinite',
     dir = ['alternate', 'reverse', 'alternate-reverse'].includes(doc.dir) ? doc.dir : 'normal',
@@ -297,6 +300,19 @@ export function cssFor(anim: Layer[], pre: string, svgId: string) {
           N,
         ) + `#${id}-s{animation:${id}-s ${run}}`;
   });
+  // a rig's own draw order: each wrapper follows the bones down to its artwork's bone
+  wraps.forEach(([l, bone, up]) => {
+    const fr: string[] = [];
+    for (let i = 0; i <= N; i++)
+      fr.push(
+        `transform:matrix(${H.worldOf(bone, (i / N) * doc.dur, up)
+          .map(v => Math.round(v * 1e4) / 1e4)
+          .join(',')})`,
+      );
+    if (fr.every(v => v === fr[0])) return;
+    const id = `${pre}${l.id}-w`;
+    css += kfBlock(id, fr, N) + `#${id}{transform-box:view-box;transform-origin:0 0;animation:${id} ${run}}`;
+  });
   if (doc.ex.trigger === 'hover')
     css +=
       doc.ex.out === 'start'
@@ -383,6 +399,7 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
       l.id = m[l.id];
       if (l.parent) l.parent = m[l.parent];
       (l.pins || []).forEach(p => p.bone && (p.bone = m[p.bone]));
+      if (l.dord) l.dord = l.dord.map(id => m[id] || id);
     });
   }
   const byId: Record<string, Layer> = {};
@@ -436,6 +453,19 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
       addUp(byId[p.bone]);
     });
   });
+  // a rig's own draw order: its artwork is drawn apart from the bones, in wrappers that the runtime
+  // moves with them, so the artwork, its bones and the groups above go into the data too
+  const wraps: Wrap[] = [];
+  prep.forEach(top => {
+    if (top.type !== 'bone' || !top.dord || hiddenUp(top)) return;
+    const up = top.parent ? byId[top.parent] : undefined;
+    (drawOrder(top, prep) || []).forEach(it => {
+      const bone = byId[it.parent];
+      if (!bone || hiddenUp(it)) return;
+      wraps.push([it, bone, up]);
+      addUp(it);
+    });
+  });
   // composites look parent bones up among the exported layers while the export is written, and
   // pinned paths are always exported bent (the editor may be showing them at rest)
   H.lookup(id => byId[id]);
@@ -473,7 +503,7 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
   out += body;
   if (anim.length) {
     if (ex.mode === 'css')
-      out += (smilShapes() ? smilFor(anim, pre) : '') + `<style>${cssFor(anim, pre, svgId)}</style>`;
+      out += (smilShapes() ? smilFor(anim, pre) : '') + `<style>${cssFor(anim, pre, svgId, wraps)}</style>`;
     else {
       const data = {
         p: pre,
@@ -523,6 +553,11 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
             if (l.xf) o.xf = l.xf;
           }
           if (boundB.has(l.id)) o.geo = { x: l.geo.x, y: l.geo.y, ang: l.geo.ang || 0 };
+          const wr = wraps.find(q => q[0] === l);
+          if (wr) {
+            o.dw = wr[1].id;
+            if (wr[2]) o.du = wr[2].id;
+          }
           if (counter.has(l.id)) {
             o.parent = l.parent;
             o.cs = 1;
