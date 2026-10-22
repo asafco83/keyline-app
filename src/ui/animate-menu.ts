@@ -30,8 +30,10 @@ export const ANIM_GROUPS: Array<Array<[PropKey, string, string?]>> = [
     ['sw', 'Stroke width', 'W'],
     ['te', 'Trim end (draw on)', 'D'],
     ['dof', 'Dash offset', 'F'],
+    ['da', 'Dash pattern'],
   ],
   [
+    ['sz', 'Size'],
     ['rad', 'Corner radius'],
     ['p0', 'Line start'],
     ['p1', 'Line end'],

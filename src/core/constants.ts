@@ -33,7 +33,7 @@ export const H = CinEngine({ L: [] }, null);
 export function xfp(M: DOMMatrixInit, x: number, y: number) {
   return new DOMPoint(x, y).matrixTransform(M);
 }
-export const PROPS: Record<PropKey, [label: string, kind: 'v' | 'n' | 'c' | 'm']> = {
+export const PROPS: Record<PropKey, [label: string, kind: 'v' | 'n' | 'c' | 'm' | 'a']> = {
   pos: ['Position', 'v'],
   org: ['Origin', 'v'],
   rot: ['Rotate', 'n'],
@@ -53,6 +53,8 @@ export const PROPS: Record<PropKey, [label: string, kind: 'v' | 'n' | 'c' | 'm']
   p0: ['Line start', 'v'],
   p1: ['Line end', 'v'],
   rad: ['Corner radius', 'n'],
+  sz: ['Size', 'v'],
+  da: ['Dash pattern', 'a'],
 };
 export const PORDER: PropKey[] = [
   'pos',
@@ -70,6 +72,8 @@ export const PORDER: PropKey[] = [
   'te',
   'to',
   'dof',
+  'da',
+  'sz',
   'rad',
   'p0',
   'p1',
@@ -85,8 +89,8 @@ export function propLabel(l: Layer, k: string) {
   const f = fxOf(l, k);
   return f ? `${f.def.label} · ${f.param.label}` : k;
 }
-/** Value kind of a property: v = 2D vector, n = number, c = colour, m = path. */
-export function propKind(l: Layer, k: string): 'v' | 'n' | 'c' | 'm' {
+/** Value kind of a property: v = 2D vector, n = number, c = colour, m = path, a = number list. */
+export function propKind(l: Layer, k: string): 'v' | 'n' | 'c' | 'm' | 'a' {
   if ((PROPS as any)[k]) return (PROPS as any)[k][1];
   if (isPinKey(k)) return isPinRot(k) ? 'n' : 'v';
   const f = fxOf(l, k);
@@ -113,8 +117,79 @@ function geoBase(l: Layer, k: string) {
     return q ? [q[0], q[1]] : null;
   }
   if (k === 'rad') return l.type === 'rect' ? l.geo.rx || 0 : l.shape ? l.shape.rad || 0 : 0;
+  if (k === 'sz') {
+    const b = sizeBox(l);
+    return b ? [r3(b[2]), r3(b[3])] : null;
+  }
+  if (k === 'da') return parseDash(l.extra && l.extra['stroke-dasharray']);
   if (isPinKey(k)) return pinBase(l, k);
   return undefined;
+}
+/** A dash pattern from stroke-dasharray text ([] = solid). */
+export function parseDash(s: unknown): number[] {
+  const v = String(s == null ? '' : s)
+    .split(/[\s,]+/)
+    .filter(Boolean)
+    .map(parseFloat);
+  return v.length && v.every(x => isFinite(x) && x >= 0) && v.some(x => x > 0) ? v : [];
+}
+/** Layers that have a size: rectangles, ellipses, images and paths. */
+export function hasSize(l: Layer) {
+  return ['rect', 'ellipse', 'image', 'path'].includes(l.type);
+}
+/** A layer's resting box [x, y, w, h] in its own space (paths: the box of their base shape). */
+export function sizeBox(l: Layer): number[] | null {
+  const G = l.geo;
+  if (l.type === 'rect' || l.type === 'image') return [G.x || 0, G.y || 0, G.w || 0, G.h || 0];
+  if (l.type === 'ellipse')
+    return [(G.cx || 0) - (G.rx || 0), (G.cy || 0) - (G.ry || 0), 2 * (G.rx || 0), 2 * (G.ry || 0)];
+  if (l.type === 'path' && l.b.d) return H.pathBox(l.b.d);
+  return null;
+}
+/** Resize a layer's resting geometry to [w, h] around its origin (paths: every shape key too). */
+export function resizeBase(l: Layer, s: number[]) {
+  const b = sizeBox(l);
+  if (!b) return;
+  const o = l.o || [b[0] + b[2] / 2, b[1] + b[3] / 2],
+    w = Math.max(0, s[0]),
+    h = Math.max(0, s[1]),
+    kx = b[2] ? w / b[2] : 1,
+    ky = b[3] ? h / b[3] : 1,
+    X = (x: number) => r3(o[0] - (o[0] - x) * kx),
+    Y = (y: number) => r3(o[1] - (o[1] - y) * ky),
+    G = l.geo;
+  if (l.type === 'rect' || l.type === 'image') {
+    G.x = X(G.x || 0);
+    G.y = Y(G.y || 0);
+    G.w = r3(w);
+    G.h = r3(h);
+  } else if (l.type === 'ellipse') {
+    G.cx = X(G.cx || 0);
+    G.cy = Y(G.cy || 0);
+    G.rx = r3(w / 2);
+    G.ry = r3(h / 2);
+  } else if (l.type === 'path') {
+    const sp = (d: any[]) =>
+      d.map(p => ({ c: p.c, n: p.n.map((q: number[]) => q.map((v, i) => (i % 2 ? Y(v) : X(v)))) }));
+    const uni = Math.abs(kx - ky) < 1e-9;
+    l.b.d = sp(l.b.d);
+    if (l.t.d) l.t.d.forEach(q => (q[1] = sp(q[1])));
+    (['p0', 'p1'] as const).forEach(k => l.t[k] && l.t[k].forEach(q => (q[1] = [X(q[1][0]), Y(q[1][1])])));
+    if (l.shape) {
+      // a polygon / star stays one while it keeps its proportions; stretched, it is a plain path
+      if (uni) {
+        l.shape.cx = X(l.shape.cx);
+        l.shape.cy = Y(l.shape.cy);
+        l.shape.r = r3(l.shape.r * kx);
+        if (l.shape.rad) l.shape.rad = r3(l.shape.rad * kx);
+        if (l.t.rad) l.t.rad.forEach(q => (q[1] = r3(q[1] * kx)));
+        l.shape.sig = JSON.stringify(l.b.d);
+      } else {
+        delete l.shape;
+        delete l.t.rad;
+      }
+    }
+  }
 }
 export function valueAt(l: Layer, k: string, t: number) {
   const tr = l.t[k],
@@ -139,6 +214,12 @@ export function setBase(l: Layer, k: PropKey, v: any) {
       q[i] += dx;
       q[i + 1] += dy;
     }
+  } else if (k === 'sz') resizeBase(l, v);
+  else if (k === 'da') {
+    l.extra = Object.assign({}, l.extra || {});
+    const s = (v || []).map((x: number) => r3(x)).join(', ');
+    if (s && (v || []).some((x: number) => x > 0)) l.extra['stroke-dasharray'] = s;
+    else delete l.extra['stroke-dasharray'];
   } else if (k === 'rad') {
     if (l.type === 'rect') l.geo.rx = v;
     else if (l.shape) {

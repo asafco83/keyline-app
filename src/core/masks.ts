@@ -1,7 +1,8 @@
 // SVGcinema — core/masks
 // Masks and clipping paths. "Create mask" puts the selected layers in a mask group: the top layer goes
 // into a "Masks" folder inside it, and everything else in the group shows only where the mask is
-// (by the mask's opacity, so soft and semi-transparent masks work). A clipping path is the same group
+// (by the mask's opacity, so soft and semi-transparent masks work; or by its brightness, Mask mode).
+// A clipping path is the same group
 // but only the mask's shape counts (its colours, strokes and opacity are ignored).
 // Mask layers stay ordinary layers: they can be moved, edited and animated.
 import type { Layer } from '../model/types';
@@ -69,5 +70,7 @@ export function maskedContent(g: Layer, pre: string, folderSVG: string, othersSV
   const css = clip
     ? `<style>#${id} *{fill:#fff!important;fill-opacity:1!important;stroke:none!important;opacity:1!important;filter:none!important}</style>`
     : '';
-  return `${css}<mask id="${id}" mask-type="alpha" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="-100000" y="-100000" width="200000" height="200000">${folderSVG}</mask><g mask="url(#${id})">${othersSVG}</g>`;
+  // by opacity (alpha) unless the group masks by brightness (luminance)
+  const mt = !clip && g.mm === 'lum' ? 'luminance' : 'alpha';
+  return `${css}<mask id="${id}" mask-type="${mt}" style="mask-type:${mt}" maskUnits="userSpaceOnUse" x="-100000" y="-100000" width="200000" height="200000">${folderSVG}</mask><g mask="url(#${id})">${othersSVG}</g>`;
 }

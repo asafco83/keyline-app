@@ -137,8 +137,12 @@ export function imageNeeds() {
       my = Math.max(my, Math.hypot(M.c, M.d));
     });
     const n = need[l.geo.asset] || (need[l.geo.asset] = { w: 0, h: 0 });
-    n.w = Math.max(n.w, l.geo.w * mx * k);
-    n.h = Math.max(n.h, l.geo.h * my * k);
+    // an animated size: the largest it gets
+    const sz = (l.t.sz || []).map(q => q[1] as number[]),
+      w = Math.max(l.geo.w, ...sz.map(v => v[0])),
+      h = Math.max(l.geo.h, ...sz.map(v => v[1]));
+    n.w = Math.max(n.w, w * mx * k);
+    n.h = Math.max(n.h, h * my * k);
   });
   return need;
 }

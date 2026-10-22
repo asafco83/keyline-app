@@ -114,11 +114,11 @@ The editor opens with a sample scene (also under File → New → **Open sample 
 
 - **Sky**: an animated linear gradient, night to dawn. **Night sky**: star shapes with an animated corner radius, a blink made of hold keyframes and an elastic pulse; the group fades out.
 - **Sunrise**: a group rising as one. **Glow** has a radial gradient, an animated blur filter and screen blending; **Rays** spin and scale; the **Sun** changes colour.
-- **Blob** morphs between shapes with a custom easing curve. **Comet** follows a curved motion path and turns along it; **Comet trail** shows travelling dashes (an animated dash offset).
-- **Hills** is a clipping group: the drifting **Mist** only shows inside the hill silhouette (the **Clip path** folder).
+- **Blob** morphs between shapes with a custom easing curve. **Comet** follows a curved motion path and turns along it; **Comet trail** shows travelling dashes (an animated dash offset) that stretch and shrink (an animated dash pattern).
+- **Hills** is a clipping group: the drifting **Mist**, which grows as it goes (an animated size), only shows inside the hill silhouette (the **Clip path** folder).
 - **Sprout** is a bone rig: three bones carry the stalk, leaves and flower, and sway with follow-through; the top bone squashes and stretches as it swings. The **Leaf** is pinned: one pin holds its base while the other flutters its tip. The **Tendril** beside the stalk is bent by the rig: its pins follow the three bones. The rig has its own draw order: the **Leaf** hangs on the second bone but is drawn behind the **Stalk**.
 - **Flag**: the **Pole** is a line whose end grows; the **Pennant** is a polygon with a gradient, a skew wave and an animated corner radius. The whole flag bends in the wind with pins, through a triangle mesh.
-- **Landscape**: **Horizon** draws on with Trim path; **Signature** is a mask group whose gradient wipe reveals a line that links to this editor.
+- **Landscape**: **Horizon** draws on with Trim path; **Signature** is a mask group (masking by brightness) whose gradient wipe reveals a line that links to this editor.
 - **Title** slides and fades in with an animated drop shadow.
 
 `tests/sample.test.ts` checks the scene keeps showing all of these.
@@ -168,7 +168,7 @@ Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to 
   - **Release mask**: on a selected mask or clipping group, puts its layers back.
   - **Create mask**: with two or more layers selected, the top one masks the others (as in the right-click menu).
   - **Delete**.
-- **At the bottom:** the layer count ("1 of 9 selected") and, on the right, **Animate**, which opens a menu of the properties the selected layers can animate. Picking one adds a keyframe at the playhead. Shortcuts: Shift+P position, Shift+A origin, Shift+S scale, Shift+R rotate, Shift+X skew, Shift+O opacity, Shift+B stroke color, Shift+W stroke width, Shift+D trim end (draw on), Shift+F dash offset, Shift+M morph. Fill color, fill opacity and stroke opacity have no shortcut (Shift+C is the Convert Point tool).
+- **At the bottom:** the layer count ("1 of 9 selected") and, on the right, **Animate**, which opens a menu of the properties the selected layers can animate. Picking one adds a keyframe at the playhead. Shortcuts: Shift+P position, Shift+A origin, Shift+S scale, Shift+R rotate, Shift+X skew, Shift+O opacity, Shift+B stroke color, Shift+W stroke width, Shift+D trim end (draw on), Shift+F dash offset, Shift+M morph. Fill color, fill opacity, stroke opacity, dash pattern, size and corner radius have no shortcut (Shift+C is the Convert Point tool).
 
 **Light and dark theme:** the editor follows the system setting until you pick one with the half-circle button in the top bar, right of Keyboard shortcuts; the choice is remembered. Numbers use the UI font with tabular digits, so zeros stay open and columns still line up.
 
@@ -181,6 +181,7 @@ Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to 
 - **Keyframe toggles:** every animatable property has its own row and its own ◆, so colour and opacity, for example, animate separately. The ◆ shows three states, explained in the Transforms heading: a grey outline when the property isn't animated, amber with an amber label when it is, and filled amber when there is a keyframe at the playhead. Click it to add or remove the keyframe at the playhead.
 - **Align bar** at the top: align left / centre / right / top / middle / bottom, distribute horizontally / vertically. One layer aligns to the canvas, several align to each other; distributing needs three or more. Below it, the boolean operations (union, subtract, intersect, exclude) for two or more shapes or paths; with fewer selected they grey out and a note says what they need.
 - **Text:** content, position and measured size.
+- **Size** (rectangles, ellipses, images and paths, including polygons, stars and lines): width and height, animatable with its own ◆. The shape grows and shrinks around its origin (put the origin on an edge or corner with the anchor grid to grow it from there). Unlike Scale, Size changes the shape itself, so the stroke width stays the same. Images keep their proportions while _Keep proportions_ is on. Text and groups use Scale.
 - **Shape settings** (at the top for these shapes): polygon _Sides_; star _Points_ and _Ratio_ (inner / outer radius); corner _Radius_ for rectangles, polygons and stars (capped so corners never overlap, and animatable: the runtime rebuilds the rounded path every frame); line _From_ / _To_, each keyable on its own so a line can grow or swing. Polygons and stars keep their settings until their nodes are edited by hand or they get Morph keyframes; then they are plain paths.
 - **Transforms:** position, scale (with a keep-proportions link), skew X/Y, rotate as turns + degrees (with a _rotate along the motion path_ toggle when the layer has one), origin, anchor grid, flip.
 - **Motion path:** _Set motion path_ makes the layer follow a path, rectangle or ellipse over the whole animation (one keyframe per point, timed for an even speed). On the canvas, drag a segment of the path to curve it, drag its handles to fine-tune, double-click a segment to straighten it. **Path node** (below it) edits the keyframe at the playhead, or the one before it: its type (straight, mirrored, asymmetric, disconnected) and position; ‹ › step between nodes. Alt-drag a handle to move it alone.
@@ -191,7 +192,7 @@ Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to 
   - **On the canvas:** while the window edits a gradient, the shape shows its handles. Linear: drag the start (hollow) or end (filled) point, or the bar to move both; Shift keeps 15° steps. Radial: drag the centre, the round handle for size and direction, and the square handle for the other radius (an ellipse).
   - **Animating:** gradients animate like colours, blending stops, angle, centre and radius, and even fading from a solid colour. In CSS-only exports, gradients animate their stop colours only.
   - **Other controls:** fill and stroke opacity, stroke width, and a swap button. The document background uses the same window (None or Solid).
-- **Appearance:** _Trim path_ (Start / End / Offset %, all animatable) shows part of a stroke, for draw-on and travelling-dash effects. Also: paint order, blending, isolate, opacity slider, line ends, line join, miter limit, dash pattern, dash offset, path length. (To draw a line on, animate Trim End from 0% to 100%: Shift+D.)
+- **Appearance:** _Trim path_ (Start / End / Offset %, all animatable) shows part of a stroke, for draw-on and travelling-dash effects. Also: paint order, blending, isolate, opacity slider, line ends, line join, miter limit, dash pattern (animatable: patterns of different lengths blend by repeating to a common length, and no pattern blends as zeros, as in SVGator), dash offset, path length. (To draw a line on, animate Trim End from 0% to 100%: Shift+D.)
 - **Filters:** blur and drop shadow, reorderable, every parameter animatable (in JS export mode; CSS mode exports filters as static).
 
 **Typing text:** double-click a text on the canvas (or click it with the Text tool) to type in place. The real text stays visible with all its styles while you type; the panel's text box updates the canvas live too. While typing, the box has a handle on each side: drag one to set the width (Keep width turns on and lines wrap). When the text is only selected, its handles scale it like any layer. Space types a space while you edit. Esc, Ctrl+Enter or clicking away finishes. With the Text tool, click for text that grows as you type, or drag to draw a box of fixed width whose lines wrap.
@@ -207,7 +208,7 @@ Shortcuts: Ctrl X / C / V, Ctrl ⇧ V (paste in place), Ctrl ⇧ O (center origi
 
 **Masks:** select two or more layers, then choose _Create mask_. The top layer goes into a _Masks_ folder inside a new _Mask group_, and the other layers show only where the mask is.
 
-- Masks work by opacity, so soft and semi-transparent masks behave as expected.
+- Masks work by opacity, so soft and semi-transparent masks behave as expected. _Mask by_ (in the mask group's Group section) switches to **Brightness**: the mask shows the layers where it is light, white fully and black not at all, as SVG masks and SVGator do.
 - A _clipping path_ uses only the mask's shape.
 - Mask layers stay normal layers: select them in the Layers panel to move, edit or animate them. A drag inside the selection box moves them even though they aren't drawn.
 

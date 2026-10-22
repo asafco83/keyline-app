@@ -180,7 +180,7 @@ export function sampleDoc(): any {
     [3, 180, 'ease'],
   ];
 
-  // Comet trail — travelling dashes (an animated dash offset)
+  // Comet trail — travelling dashes (an animated dash offset) that stretch and shrink (dash pattern)
   const route = [
     [50, 130],
     [230, 52],
@@ -197,6 +197,11 @@ export function sampleDoc(): any {
   trail.t.dof = [
     [0, 0, 'linear'],
     [3, -48, 'linear'],
+  ];
+  trail.t.da = [
+    [0, [1, 11], 'inOutSine'],
+    [1.5, [5, 7], 'inOutSine'],
+    [3, [1, 11], 'ease'],
   ];
   // Comet — a curved motion path, rotating along it
   const comet = mkLayer(
@@ -225,8 +230,14 @@ export function sampleDoc(): any {
     [1, '#162A45'],
   ]) as any;
   hillFill.parent = hills.id;
+  // Mist: an ellipse whose size grows as it drifts (Size)
   const mist = mkLayer('ellipse', 'Mist', { cx: 120, cy: 262, rx: 120, ry: 14 }, { fill: '#DCE7FF', op: 0.22 });
   mist.parent = hills.id;
+  mist.o = [120, 262];
+  mist.t.sz = [
+    [0, [240, 28], 'inOutSine'],
+    [3, [330, 40], 'ease'],
+  ];
   const haze = addFilter(mist, 'blur');
   mist.b['fx.' + haze.id + '.sd'] = 6;
   mist.t.pos = [
@@ -436,8 +447,10 @@ export function sampleDoc(): any {
     [0.2, 0, 'inOutCubic'],
     [1.8, 100, 'ease'],
   ];
+  // Signature: a mask group that masks by brightness (Mask mode)
   const sig = mkLayer('group', 'Signature', {}, NOFILL);
   sig.mask = 'mask';
+  sig.mm = 'lum';
   sig.parent = land.id;
   const credit = mkLayer(
     'text',
