@@ -154,6 +154,10 @@ export interface Layer {
   /** pins that bend this path (Pin tool), and how far each pulls (percent, default 100) */
   pins?: PinDef[];
   reach?: number;
+  /** images, text and groups with pins: the triangle mesh they bend through (see model/mesh).
+   *  `n` = density (about that many triangles over the content's bounds), `h` = a hash of the content
+   *  it was built for (rebuilt when that changes) */
+  mesh?: { n?: number; v: number[][]; t: number[][]; h?: string };
   /** top bones: "Key whole rig" (posing any bone keys the whole rig); undefined = on */
   kr?: boolean;
   /** bones: IK pin */
@@ -337,6 +341,8 @@ export interface EditorState {
   boneVolume: 'area' | 'tube';
   /** Pin tools: the selected pin (its number) */
   pinSel: number | null;
+  /** Pin tool: the pin whose rotation ring is under the pointer */
+  pinRing: number | null;
   file?: OpenFile | null;
   dirty?: boolean;
   loading?: boolean;

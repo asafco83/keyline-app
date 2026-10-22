@@ -1,6 +1,7 @@
 // SVGcinema — tools/bone-edit
 // Edit bone tool: changes a rig's rest pose (joint, length, rest angle) without touching keyframes.
 // Bind tool: click children (bones or layers), then their new parent bone.
+import { pinChip } from './pins';
 import type { Layer, XY } from '../model/types';
 import { H, byId, clone, esc, fmt, r2, r3, xfp } from '../core/constants';
 import { beginEdit, select, setProp } from '../core/history';
@@ -108,6 +109,9 @@ export function boneChips() {
     chip.hidden = false;
   } else if (S.tool === 'pinedit') {
     chip.innerHTML = '<span class="dot"></span><b>Rest pose</b><span class="mu">· pins move with their motion</span>';
+    chip.hidden = false;
+  } else if (S.tool === 'pin' && pinChip()) {
+    chip.innerHTML = pinChip();
     chip.hidden = false;
   } else if (S.tool === 'bonebind' && S.bindPick.length) {
     const n = S.bindPick.length;

@@ -286,9 +286,26 @@ export async function runExport() {
     r.code.length > 400000
       ? r.code.slice(0, 400000) + '\n… (code view truncated, the copy and download contain everything)'
       : r.code;
-  const [w, h] = outDims();
+  const [w, h] = outDims(),
+    size = new Blob([r.code]).size;
+  // CSS stores every frame of a shape change (morphs, pins): offer the much smaller JavaScript export
+  let jsSize = 0;
+  if (doc.ex.mode === 'css' && r.shapes) {
+    doc.ex.mode = 'js';
+    try {
+      jsSize = new Blob([buildExport(imgs).code]).size;
+    } finally {
+      doc.ex.mode = 'css';
+    }
+  }
+  const ratio = jsSize ? size / jsSize : 0,
+    note = $('#xShapeNote');
+  note.hidden = !(ratio >= 2);
+  if (!note.hidden)
+    $('#xShapeNoteT').textContent =
+      `This animation changes shapes. CSS stores every frame of them, so the JavaScript export is about ${Math.round(ratio)} times smaller.`;
   $('#xStats').innerHTML =
-    `<span>Size <b>${kb(new Blob([r.code]).size)}</b></span>${doc.ex.size === 'fixed' ? `<span>Output <b>${w}×${h}</b></span>` : ''}<span>Layers <b>${doc.layers.filter(l => !isHidden(l)).length}</b></span><span>Animated <b>${r.anim}</b></span><span>Animators <b>${r.tracks}</b></span>${r.images ? `<span>Images <b>${r.images}</b></span>` : ''}<span>Length <b>${fmt(doc.dur)}s</b></span>`;
+    `<span>Size <b>${kb(size)}</b>${!note.hidden ? ` · as JavaScript ${kb(jsSize)}` : ''}</span>${doc.ex.size === 'fixed' ? `<span>Output <b>${w}×${h}</b></span>` : ''}<span>Layers <b>${doc.layers.filter(l => !isHidden(l)).length}</b></span><span>Animated <b>${r.anim}</b></span><span>Animators <b>${r.tracks}</b></span>${r.images ? `<span>Images <b>${r.images}</b></span>` : ''}<span>Length <b>${fmt(doc.dur)}s</b></span>`;
   renderImgList(imgs);
 }
 export function slug(s: unknown) {
@@ -339,6 +356,10 @@ export function init(): void {
     if (!b) return;
     prevMode = b.dataset.v;
     sizePreview();
+  });
+  $('#xUseJS').addEventListener('click', () => {
+    const b = $('#xMode').querySelector('[data-v="js"]') as HTMLElement;
+    if (b) b.click();
   });
   $('#xMode').addEventListener('click', (e: MouseEvent) => {
     const b = (e.target as any).closest('button');

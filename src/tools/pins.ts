@@ -1,17 +1,20 @@
 // SVGcinema — tools/pins
-// Pin tool: click a path to add pins, drag a pin to bend the path (keyed at the playhead), drag the
-// ring of the selected pin to turn it, Alt+drag moves a pin at rest. Edit pins tool: moves pins at
-// rest (the path shows its rest shape); a moved pin takes its motion with it.
+// Pin tool: click a path, image, text or group to add pins, drag a pin to bend it (keyed at the
+// playhead), drag the ring of the selected pin to turn it, Alt+drag moves a pin at rest. Edit pins
+// tool: moves pins at rest (the artwork shows its rest shape); a moved pin takes its motion with it.
+// Paths bend through their own nodes; images, text and groups through a triangle mesh (model/mesh).
 import type { Layer, PropKey, XY } from '../model/types';
-import { clone, fmt, r2, r3, valueAt, xfp } from '../core/constants';
+import { H, byId, clone, esc, fmt, r2, r3, valueAt, xfp } from '../core/constants';
 import { OV, svgEl } from '../core/dom';
 import { beginEdit, setProp } from '../core/history';
 import { S, layerById, selLayer } from '../core/state';
 import { ellNodes, rectNodes } from '../geometry/nodes';
-import { toast } from '../io/open';
 import { nextPinNumber } from '../model/pins';
+import { meshable, pinnable } from '../model/mesh';
+import { meshLines } from '../render/mesh';
+import { meshOf } from '../render/markup';
 import { isHidden, isLocked } from '../model/tree';
-import { drawOverlay, localMatrix } from '../render/overlay';
+import { drawOverlay, gMatrix, localMatrix } from '../render/overlay';
 import { frame } from '../render/stage';
 import { hitChain } from './stage-input';
 
@@ -28,10 +31,50 @@ function pinAt(l: Layer, n: number) {
 function pinRot(l: Layer, n: number) {
   return S.tool === 'pinedit' ? 0 : valueAt(l, 'pinr' + n, S.time) || 0;
 }
-/** the layer whose pins are shown: the selected path with pins */
+/** the layer whose pins are shown: the selected path, image, text or group */
 function pinLayer(): Layer | null {
   const l = selLayer();
-  return l && l.type === 'path' && !isHidden(l) ? l : null;
+  return l && (l.type === 'path' || meshable(l)) && !isHidden(l) && byId('e-' + l.id + '-s') ? l : null;
+}
+/** a layer's pin space → document: a path's own coordinates, or the content space of a meshed layer */
+export function pinMatrix(l: Layer): DOMMatrix {
+  return meshable(l) ? gMatrix(l) : localMatrix(l);
+}
+const mtx = (M: DOMMatrix) => `matrix(${[M.a, M.b, M.c, M.d, M.e, M.f].map(v => r3(v)).join(',')})`;
+/** is any pin away from its rest place or turned at the playhead */
+function bent(l: Layer) {
+  return (l.pins || []).some(p => {
+    const c = pinAt(l, p.n);
+    return Math.hypot(c[0] - p.x, c[1] - p.y) > 0.01 || Math.abs(pinRot(l, p.n)) > 0.01;
+  });
+}
+function animated(l: Layer) {
+  return (l.pins || []).some(p => ['pin' + p.n, 'pinr' + p.n].some(k => l.t[k] && l.t[k].length > 1));
+}
+/** the Pin tool's chip above the canvas */
+export function pinChip(): string | null {
+  const l = pinLayer();
+  if (!l || !l.pins || !l.pins.length) return null;
+  if (S.pinRing != null && l.pins.some(p => p.n === S.pinRing))
+    return `<b>Pin ${S.pinRing}</b><span class="mu">· drag the ring to turn it</span>`;
+  const n = l.pins.length,
+    pins = `${n} ${n > 1 ? 'pins' : 'pin'}`,
+    M = meshOf(l),
+    kind = l.type === 'raw' ? 'artwork' : l.type,
+    dot = animated(l) ? '<span class="dot key"></span>' : '';
+  return M
+    ? `${dot}<b>${esc(l.name)}</b><span class="mu">· ${kind} · mesh of ${M.t.length} triangles · ${pins}</span>`
+    : `${dot}<b>${esc(l.name)}</b><span class="mu">· ${pins}</span>`;
+}
+/** the Pin tool: the chip names the pin whose ring is under the pointer */
+export function pinHover(e: PointerEvent) {
+  const t = e.target as any,
+    r = t && t.closest && t.closest('[data-pinring]'),
+    n = r ? +r.dataset.pinring : null;
+  if (n !== S.pinRing) {
+    S.pinRing = n;
+    drawOverlay();
+  }
 }
 
 /* ---------- overlay ---------- */
@@ -41,7 +84,56 @@ export function drawPins(u: number) {
   const l = pinLayer();
   if (!l || !l.pins || !l.pins.length) return;
   if (S.pinSel != null && !l.pins.some(p => p.n === S.pinSel)) S.pinSel = null;
-  const M = localMatrix(l);
+  const M = pinMatrix(l);
+  // the mesh, as it bends
+  const tris = meshLines(l);
+  if (tris.length) {
+    const seen = new Set<string>();
+    let d = '';
+    tris.forEach(T =>
+      T.forEach((a, i) => {
+        const b = T[(i + 1) % 3],
+          k = [a, b]
+            .map(q => q.map(v => v.toFixed(2)).join(','))
+            .sort()
+            .join(' ');
+        if (seen.has(k)) return;
+        seen.add(k);
+        d += `M${r2(a[0])} ${r2(a[1])}L${r2(b[0])} ${r2(b[1])}`;
+      }),
+    );
+    OV.append(svgEl('path', { d, transform: mtx(M), class: 'ov-mesh' }));
+  }
+  // the artwork at rest, while it is bent
+  if (S.tool === 'pin' && bent(l)) {
+    if (meshOf(l)) {
+      const s = byId('e-' + l.id + '-s') as unknown as SVGGraphicsElement;
+      try {
+        const b = s.getBBox(),
+          Q = gMatrix(l).inverse().multiply(localMatrix(l)),
+          q = [
+            [b.x, b.y],
+            [b.x + b.width, b.y],
+            [b.x + b.width, b.y + b.height],
+            [b.x, b.y + b.height],
+          ].map(([x, y]) => xfp(Q, x, y));
+        OV.append(
+          svgEl('path', {
+            d: 'M' + q.map(p => `${r2(p.x)} ${r2(p.y)}`).join('L') + 'Z',
+            transform: mtx(M),
+            class: 'ov-pinout',
+          }),
+        );
+      } catch (_) {
+        /* not measurable */
+      }
+    } else {
+      const was = H.restPins(true),
+        d = H.comp(l, S.time).d;
+      H.restPins(was);
+      if (d) OV.append(svgEl('path', { d: H.dstr(d), transform: mtx(M), class: 'ov-pinout' }));
+    }
+  }
   l.pins.forEach(p => {
     const c = pinAt(l, p.n),
       P = xfp(M, c[0], c[1]),
@@ -116,6 +208,7 @@ export function removePin(l: Layer, n: number) {
   if (!l.pins.length) {
     delete l.pins;
     delete l.reach;
+    delete l.mesh;
   }
   if (S.pinSel === n) S.pinSel = null;
   ed.end({ insp: true });
@@ -131,6 +224,7 @@ export function removeAllPins(l: Layer) {
   );
   delete l.pins;
   delete l.reach;
+  delete l.mesh;
   S.pinSel = null;
   ed.end({ insp: true });
 }
@@ -154,7 +248,7 @@ function addPin(l: Layer, p: XY) {
     S.sel = l.id;
     S.selSet = new Set<any>([l.id]);
   }
-  const M = localMatrix(l).inverse(),
+  const M = pinMatrix(l).inverse(),
     q = xfp(M, p.x, p.y),
     n = nextPinNumber(l);
   l.pins = [...(l.pins || []), { n, x: r2(q.x), y: r2(q.y) }];
@@ -176,23 +270,23 @@ export function pinsDown(e: PointerEvent, p0: XY) {
     drawOverlay();
     return;
   }
-  // the Pin tool: a click on artwork adds a pin there
-  const chain = hitChain(e.target),
-    hit = chain.map(id => layerById(id)).find(x => x && x.type !== 'group' && x.type !== 'bone');
+  // the Pin tool: a click on artwork adds a pin there. As with Select, a click picks the outermost
+  // layer (Ctrl/Cmd picks inside groups), and the selected layer keeps the pins it is getting.
+  const chain = hitChain(e.target)
+      .map(id => layerById(id))
+      .filter(x => x && pinnable(x)),
+    sel = selLayer(),
+    hit = sel && chain.includes(sel) ? sel : e.ctrlKey || e.metaKey ? chain[0] : chain[chain.length - 1];
   if (!hit) {
     S.pinSel = null;
     drawOverlay();
     return;
   }
   if (isLocked(hit)) return;
-  if (hit.type !== 'path' && hit.type !== 'rect' && hit.type !== 'ellipse') {
-    toast('Pins bend paths and shapes for now; images, text and groups come next.');
-    return;
-  }
   addPin(hit, p0);
 }
 function pinDrag(l: Layer, n: number, p0: XY, rest: boolean) {
-  const M = localMatrix(l),
+  const M = pinMatrix(l),
     Mi = M.inverse(),
     k = ('pin' + n) as PropKey,
     q0 = xfp(Mi, p0.x, p0.y),
@@ -231,7 +325,7 @@ function pinDrag(l: Layer, n: number, p0: XY, rest: boolean) {
   drawOverlay();
 }
 function rotateDrag(l: Layer, n: number, p0: XY) {
-  const M = localMatrix(l),
+  const M = pinMatrix(l),
     c = pinAt(l, n),
     C = xfp(M, c[0], c[1]),
     a0 = Math.atan2(p0.y - C.y, p0.x - C.x),

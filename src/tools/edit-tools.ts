@@ -1,4 +1,5 @@
 // SVGcinema — tools/edit-tools
+import { layerBox } from '../render/mesh';
 import { startTextEdit } from './text-edit';
 import { bgPaint } from '../model/background';
 import type { Layer, XY } from '../model/types';
@@ -33,7 +34,7 @@ export function originDrag(l: Layer) {
   const g = byId('e-' + l.id);
   if (!g) return;
   const Mi = gMatrix(l).inverse(),
-    b = g.getBBox(),
+    b = layerBox(l) || g.getBBox(),
     ed = beginEdit();
   const pts = H9.map(([u, v]) => [b.x + b.width * u, b.y + b.height * v]);
   S.drag = {
@@ -58,7 +59,7 @@ export function originDrag(l: Layer) {
 export function setAnchor(l: Layer, u: number, v: number) {
   const g = byId('e-' + l.id);
   if (!g) return;
-  const b = g.getBBox(),
+  const b = layerBox(l) || g.getBBox(),
     ed = beginEdit();
   reOrigin(l, [b.x + b.width * u, b.y + b.height * v]);
   ed.end();
@@ -97,7 +98,7 @@ export function handleDrag(kind: string, p0: XY) {
   /* Photoshop-style scaling: drag a handle; the opposite side stays put.
      Shift keeps proportions · Alt scales from the box center · Ctrl/Cmd scales around the origin · drag past the anchor to mirror */
   const g = byId('e-' + l.id),
-    b = g.getBBox();
+    b = layerBox(l) || g.getBBox();
   const UV = (<Record<string, number[]>>{
     nw: [0, 0],
     n: [0.5, 0],

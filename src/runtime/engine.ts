@@ -39,6 +39,9 @@ export interface EngineLayer {
   pins?: Array<{ n: number; x: number; y: number }>;
   /** how far each pin pulls (percent, default 100) */
   reach?: number;
+  /** images, text and groups with pins: the triangle mesh they bend through (rest vertices and
+   *  vertex-index triples); triangle k is the element `<prefix><id>-m<k>` */
+  mesh?: { v: number[][]; t: number[][] };
 }
 type EaseFn = (p: number) => number;
 type Bezier = number[];
@@ -135,6 +138,8 @@ export interface CinPlayer {
   lookup(fn: ((id: string) => EngineLayer | null | undefined) | null): void;
   /** editor: show pinned paths unbent (their rest shape); returns the previous setting */
   restPins(on: boolean): boolean;
+  /** a meshed layer's triangle matrices at t (see EngineLayer.mesh) */
+  meshMats(L: EngineLayer, t: number): number[][];
   get(L: EngineLayer, k: string, t: number): any;
   dstr(sp: EngineSubPath[] | null | undefined): string;
   /** is the value a gradient ({ g: 'lin' | 'rad', s: stops, … }) */
@@ -594,44 +599,106 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
   var NOPIN = false;
   /** each node follows the pins' moves, blended by inverse distance from the pins at rest; a node's
    *  handles take the node's blend, so smooth nodes stay smooth */
-  function pinWarp(L: EngineLayer, d: EngineSubPath[], t: number): EngineSubPath[] {
+  /** the pins' moves at t: [rest x, rest y, x, y, cos, sin] each, and the falloff power */
+  function pinMoves(L: EngineLayer, t: number): [number[][], number] {
     var ps = L.pins || [],
       rc = Math.max(10, Math.min(1000, L.reach || 100)),
-      pw = Math.max(0.5, Math.min(8, 200 / rc)),
-      mv = ps.map(function (p) {
+      pw = Math.max(0.5, Math.min(8, 200 / rc));
+    return [
+      ps.map(function (p) {
         var P = get(L, 'pin' + p.n, t) || [p.x, p.y],
           a = ((get(L, 'pinr' + p.n, t) || 0) * Math.PI) / 180;
         return [p.x, p.y, P[0], P[1], Math.cos(a), Math.sin(a)];
-      });
+      }),
+      pw,
+    ];
+  }
+  /** blends the pins' moves for the point (x, y), weighed at (wx, wy): nearer pins weigh more.
+   *  `out` gets the warped point at [o, o + 1] */
+  function warpXY(mv: number[][], pw: number, wx: number, wy: number, x: number, y: number, out: number[], o: number) {
+    var W = 0,
+      X = 0,
+      Y = 0,
+      i: number;
+    for (i = 0; i < mv.length; i++) {
+      var m = mv[i],
+        ex = wx - m[0],
+        ey = wy - m[1],
+        w = 1 / (Math.pow(ex * ex + ey * ey, pw / 2) + 1e-6),
+        dx = x - m[0],
+        dy = y - m[1];
+      W += w;
+      X += w * (m[2] + dx * m[4] - dy * m[5]);
+      Y += w * (m[3] + dx * m[5] + dy * m[4]);
+    }
+    out[o] = W ? X / W : x;
+    out[o + 1] = W ? Y / W : y;
+  }
+  function pinWarp(L: EngineLayer, d: EngineSubPath[], t: number): EngineSubPath[] {
+    var q = pinMoves(L, t),
+      mv = q[0],
+      pw = q[1];
     return d.map(function (sp: EngineSubPath) {
       return {
         c: sp.c,
-        n: sp.n.map(function (q: number[]) {
-          var w: number[] = [],
-            W = 0,
-            i: number,
-            out = [0, 0, 0, 0, 0, 0];
-          for (i = 0; i < mv.length; i++) {
-            var dx = q[0] - mv[i][0],
-              dy = q[1] - mv[i][1],
-              v = 1 / (Math.pow(dx * dx + dy * dy, pw / 2) + 1e-6);
-            w.push(v);
-            W += v;
-          }
-          for (i = 0; i < mv.length; i++) {
-            var m = mv[i],
-              k = w[i] / W;
-            for (var j = 0; j < 6; j += 2) {
-              var x = q[j] - m[0],
-                y = q[j + 1] - m[1];
-              out[j] += k * (m[2] + x * m[4] - y * m[5]);
-              out[j + 1] += k * (m[3] + x * m[5] + y * m[4]);
-            }
-          }
+        n: sp.n.map(function (p: number[]) {
+          var out = [0, 0, 0, 0, 0, 0];
+          // handles take their anchor's blend, so smooth nodes stay smooth
+          for (var j = 0; j < 6; j += 2) warpXY(mv, pw, p[0], p[1], p[j], p[j + 1], out, j);
           return out;
         }),
       };
     });
+  }
+  /** the mesh's triangles at t: an affine matrix [a, b, c, d, e, f] each, mapping the triangle at
+   *  rest onto its warped corners (identity with no pins, or while pins show at rest) */
+  function meshMats(L: EngineLayer, t: number): number[][] {
+    var M = L.mesh,
+      out: number[][] = [];
+    if (!M) return out;
+    var on = !NOPIN && L.pins && L.pins.length,
+      q = on ? pinMoves(L, t) : null,
+      W: number[] = [],
+      i: number;
+    for (i = 0; i < M.v.length; i++)
+      if (q) warpXY(q[0], q[1], M.v[i][0], M.v[i][1], M.v[i][0], M.v[i][1], W, i * 2);
+      else {
+        W[i * 2] = M.v[i][0];
+        W[i * 2 + 1] = M.v[i][1];
+      }
+    for (i = 0; i < M.t.length; i++) {
+      var T = M.t[i],
+        a = M.v[T[0]],
+        b = M.v[T[1]],
+        c = M.v[T[2]],
+        // rest edges
+        ux = b[0] - a[0],
+        uy = b[1] - a[1],
+        vx = c[0] - a[0],
+        vy = c[1] - a[1],
+        det = ux * vy - uy * vx;
+      if (!q || !det) {
+        out.push([1, 0, 0, 1, 0, 0]);
+        continue;
+      }
+      var A0 = W[T[0] * 2],
+        A1 = W[T[0] * 2 + 1],
+        px = W[T[1] * 2] - A0,
+        py = W[T[1] * 2 + 1] - A1,
+        rx = W[T[2] * 2] - A0,
+        ry = W[T[2] * 2 + 1] - A1,
+        // warped edges = L · rest edges  →  L = [p r] · [u v]^-1
+        ia = vy / det,
+        ib = -vx / det,
+        ic = -uy / det,
+        id = ux / det,
+        ma = px * ia + rx * ic,
+        mc = px * ib + rx * id,
+        mb = py * ia + ry * ic,
+        md = py * ib + ry * id;
+      out.push([ma, mb, mc, md, A0 - ma * a[0] - mc * a[1], A1 - mb * a[0] - md * a[1]]);
+    }
+    return out;
   }
   function shapeBase(L: EngineLayer, t: number): EngineSubPath[] | undefined {
     var d = get(L, 'd', t),
@@ -756,6 +823,10 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
   function f(n: number) {
     return Math.round(n * 1000) / 1000;
   }
+  /** matrices keep more digits, so neighbouring triangles meet exactly */
+  function f6(n: number) {
+    return Math.round(n * 1e6) / 1e6;
+  }
   function tf(c: Composite) {
     var q = c.cp;
     return (
@@ -876,6 +947,13 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
       if (c.rad != null && !L.shape) {
         s.setAttribute('rx', String(f(c.rad)));
         s.setAttribute('ry', String(f(c.rad)));
+      }
+      if (L.mesh) {
+        var ms = meshMats(L, t);
+        for (var mk = 0; mk < ms.length; mk++) {
+          var me = el(D.p + L.id + '-m' + mk);
+          if (me) me.setAttribute('transform', 'matrix(' + ms[mk].map(f6).join(',') + ')');
+        }
       }
       if (L.fa)
         for (var fk in L.fa) {
@@ -1132,6 +1210,7 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
     lookup: function (fn: ((id: string) => EngineLayer | null | undefined) | null) {
       EXT = fn;
     },
+    meshMats: meshMats,
     restPins: function (on: boolean) {
       var was = NOPIN;
       NOPIN = !!on;

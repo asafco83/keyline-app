@@ -1,4 +1,5 @@
 // SVGcinema — ui/inspector
+import { layerBox } from '../render/mesh';
 import { bgPaint, parseBg, setBg } from '../model/background';
 import type { Ease, Layer, PathData, PropKey, Vec2 } from '../model/types';
 import {
@@ -31,6 +32,7 @@ import { fxOf } from '../model/filters';
 import { loadLocalFonts, onFontLoad, pickWeight, webFont } from '../render/fonts';
 import { descendants, kids } from '../model/tree';
 import { fit, frame, renderStage } from '../render/stage';
+import { MESH_DEFAULT, MESH_MAX, MESH_MIN } from '../model/mesh';
 import { addChildBone, boneTipL, shiftChildBones } from '../tools/bones';
 import { setAnchor } from '../tools/edit-tools';
 import { align, alignBar, motionPick, setMotionPath } from './align';
@@ -338,7 +340,7 @@ export function refreshInspector(full?: boolean) {
     const g = byId('e-' + l.id);
     let bb = null;
     try {
-      bb = g && g.getBBox();
+      bb = g && (layerBox(l) || g.getBBox());
     } catch (e) {}
     ab.forEach((btn: HTMLElement) => {
       const [u, v] = btn.dataset.anchor.split(',').map(Number);
@@ -495,6 +497,16 @@ export function init(): void {
       l.reach = clamp(+t.value || 100, 20, 400);
       const v = byId('pinReachV');
       if (v) v.textContent = fmt(l.reach) + ' %';
+      frame();
+      return;
+    }
+    if (l && t.dataset.pmesh !== undefined && l.mesh) {
+      // Mesh density: rebuilt while dragging the slider, one undo step on release (closed on change)
+      if (!S.colorEd) S.colorEd = beginEdit();
+      l.mesh.n = clamp(Math.round(+t.value || MESH_DEFAULT), MESH_MIN, MESH_MAX);
+      renderStage();
+      const v = byId('pinMeshV');
+      if (v) v.textContent = l.mesh.t.length + ' triangles';
       frame();
       return;
     }
@@ -791,7 +803,7 @@ export function init(): void {
       const g = byId('e-' + l.id);
       if (!g) return;
       const ed = beginEdit();
-      const bb = g.getBBox();
+      const bb = layerBox(l) || g.getBBox();
       reOrigin(l, [bb.x + bb.width / 2, bb.y + bb.height / 2]);
       ed.end();
     } else if (a === 'topath') convertToPath(l);

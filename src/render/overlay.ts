@@ -1,4 +1,5 @@
 // SVGcinema — render/overlay
+import { meshBox } from './mesh';
 import type { Layer, PathData, PathNode } from '../model/types';
 import { H, byId, fmt, r2, xfp } from '../core/constants';
 import { CONTENT, OV, svgEl } from '../core/dom';
@@ -28,6 +29,25 @@ export function localMatrix(l: Layer): DOMMatrix {
 export function boxOf(l: Layer) {
   const s = byId('e-' + l.id + '-s');
   if (!s) return null;
+  // pinned images, text and groups: the box of their warped mesh
+  const mb = meshBox(l);
+  if (mb) {
+    const M = gMatrix(l),
+      pts = [
+        [mb.x, mb.y],
+        [mb.x + mb.width, mb.y],
+        [mb.x, mb.y + mb.height],
+        [mb.x + mb.width, mb.y + mb.height],
+      ].map(([x, y]) => xfp(M, x, y)),
+      xs = pts.map(p => p.x),
+      ys = pts.map(p => p.y);
+    return {
+      x: Math.min(...xs),
+      y: Math.min(...ys),
+      w: Math.max(...xs) - Math.min(...xs),
+      h: Math.max(...ys) - Math.min(...ys),
+    };
+  }
   const rc = s.getBoundingClientRect();
   if (!rc.width && !rc.height) {
     // not drawn (e.g. a mask's layers): measure from its geometry instead
@@ -66,7 +86,7 @@ export function obbOf(l: Layer): DOMPoint[] | null {
   if (!s) return null;
   let b;
   try {
-    b = s.getBBox();
+    b = meshBox(l) || s.getBBox();
   } catch (e) {
     return null;
   }

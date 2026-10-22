@@ -7,6 +7,7 @@ import type { Layer } from '../model/types';
 import { H, esc, r3 } from '../core/constants';
 import { isBox, kids } from '../model/tree';
 import { maskFolder, maskedContent } from '../core/masks';
+import { meshable } from '../model/mesh';
 
 /** How markup is produced: for the editor canvas or for an exported file. */
 export interface MarkupCtx {
@@ -156,6 +157,8 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
     }
   } else if (isBox(l)) inner = `<g${attrs(a)}>${children || ''}</g>`;
   else inner = `<g${attrs(a)}>${G.markup || ''}</g>`;
+  const mesh = meshOf(l);
+  if (mesh) inner = meshSVG(l, id, inner, mesh, H.meshMats(l, ctx.t));
   return `<g id="${id}" transform="${tfStr(c)}" opacity="${r3(c.op)}"${ctx.editor ? ` data-lid="${l.id}"` : ''}>${fx}${grads}${inner}</g>`;
 }
 export function markup(list: Layer[], pid: string | null, ctx: MarkupCtx): string {
@@ -181,4 +184,23 @@ function maskGroupSVG(list: Layer[], g: Layer, ctx: MarkupCtx): string {
     .join('');
   const folderSVG = F && !F.hid ? layerSVG(F, ctx, H.comp(F, ctx.t), markup(list, F.id, ctx)) : '';
   return maskedContent(g, ctx.pre, folderSVG, othersSVG, !F || !!F.hid);
+}
+/** the mesh an image, text or group with pins bends through, if it has one */
+export function meshOf(l: Layer) {
+  return l.pins && l.pins.length && meshable(l) && l.mesh && l.mesh.t.length ? l.mesh : null;
+}
+const m6 = (v: number) => Math.round(v * 1e6) / 1e6;
+/** pinned content drawn through its mesh: the content itself stays in place but hidden (the runtime
+ *  keeps animating it), and each triangle shows it clipped to the triangle at rest, moved by the
+ *  triangle's matrix. Triangles add up (plus-lighter) inside an isolated group, so their antialiased
+ *  edges sum to full coverage instead of leaving hairline seams. */
+function meshSVG(l: Layer, id: string, inner: string, M: NonNullable<Layer['mesh']>, ms: number[][]) {
+  let clips = '',
+    tris = '';
+  M.t.forEach((T, k) => {
+    const [a, b, c] = T.map(i => M.v[i]);
+    clips += `<clipPath id="${id}-c${k}"><path d="M${a[0]} ${a[1]}L${b[0]} ${b[1]}L${c[0]} ${c[1]}Z"/></clipPath>`;
+    tris += `<g id="${id}-m${k}" transform="matrix(${(ms[k] || [1, 0, 0, 1, 0, 0]).map(m6).join(',')})" style="mix-blend-mode:plus-lighter"><use href="#${id}-s" clip-path="url(#${id}-c${k})"/></g>`;
+  });
+  return `<g visibility="hidden">${inner}</g><defs>${clips}</defs><g id="${id}-mesh" style="isolation:isolate">${tris}</g>`;
 }

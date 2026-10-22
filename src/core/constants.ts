@@ -359,9 +359,9 @@ export const HINTS: Record<string, string> = {
     "Edits the rest pose · drag a tip to change length and angle · drag a joint to move it (Alt pulls it off the parent's tip) · drag the bone to move it · Ctrl carries the artwork · Shift snaps to 15°",
   bonescale:
     'Drag along a bone to scale it, keyed at the playhead · Tab while dragging switches Length, Thickness, Linked, Squash & stretch · Shift snaps to 10%',
-  pin: 'Click a path or shape to add a pin · drag a pin to bend it (keyed at the playhead) · Alt+drag moves a pin without bending · drag the ring of the selected pin to turn it · Del removes the pin',
+  pin: 'Click a path, image, text or group to add a pin (Ctrl+click picks inside a group) · drag a pin to bend the artwork (keyed at the playhead) · Alt+drag moves a pin without bending · drag the ring of the selected pin to turn it · Del removes the pin',
   pinedit:
-    'Moves pins at rest: the path shows its rest shape, and a pin you drag takes its motion with it · Shift moves straight · Del removes the pin',
+    'Moves pins at rest: the artwork shows its rest shape, and a pin you drag takes its motion with it · Shift moves straight · Del removes the pin',
   bonebind:
     'Click a bone or layer, then its new parent bone · Shift+click adds more · click empty canvas to unbind · Alt keeps the offset · Esc cancels',
   hand: 'Drag to pan · wheel scrolls · Ctrl+wheel zooms · double-click the hand to fit · hold Space for the hand in any tool',
