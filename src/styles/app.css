@@ -4115,3 +4115,15 @@ select.sel {
   text-align: right;
   font-size: 12px;
 }
+
+/* Import report: what an SVG import couldn't convert */
+.ir-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg);
+}
+.ir-list li + li {
+  margin-top: 4px;
+}

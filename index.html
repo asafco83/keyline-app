@@ -679,7 +679,7 @@
       accept="image/*,.svg,.tif,.tiff,.heic,.heif,.avif,.bmp,.ico,.jxl,.apng"
       hidden
     />
-    <input type="file" id="fProj" accept=".SVGcinema,.zip,.json" hidden />
+    <input type="file" id="fProj" accept=".SVGcinema,.zip,.json,.svg,image/svg+xml" hidden />
     <div class="ctx filemenu" id="fileMenu" role="menu" aria-label="File" hidden>
       <button role="menuitem" id="bNew"><span>New project…</span><kbd></kbd></button>
       <button role="menuitem" id="bOpen"><span>Open…</span><kbd>Ctrl O</kbd></button>
@@ -725,6 +725,19 @@
           <button class="btn" id="dCancel">Cancel</button><button class="btn danger" id="dDiscard">Don’t save</button
           ><button class="btn pri" id="dSave">Save</button>
         </footer>
+      </div>
+    </div>
+    <div class="modal" id="mImpRep" hidden>
+      <div class="dlg dlg-sm" role="dialog" aria-modal="true" aria-labelledby="irTitle">
+        <header>
+          <h2 id="irTitle">Imported</h2>
+          <button class="btn ghost ib" data-close aria-label="Close">✕</button>
+        </header>
+        <div class="body">
+          <p class="note">Everything else came across as editable layers and keyframes. Not converted:</p>
+          <ul class="ir-list" id="irList"></ul>
+        </div>
+        <footer><span class="sp"></span><button class="btn pri" data-close>OK</button></footer>
       </div>
     </div>
     <div class="toast" id="toast" hidden></div>

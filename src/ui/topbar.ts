@@ -82,13 +82,13 @@ export function init(): void {
     }
     importFiles(fs, null, place);
   });
-  $('#iGo').addEventListener('click', () => {
+  $('#iGo').addEventListener('click', async () => {
     const t = $('#iText').value.trim();
     if (!t) {
       toast('Paste SVG markup or choose files first.');
       return;
     }
-    if (importSVG(t, $('#iReplace').checked)) $('#mImport').hidden = true;
+    if (await importSVG(t, $('#iReplace').checked)) $('#mImport').hidden = true;
   });
   ['dragover', 'dragenter'].forEach(ev =>
     drop.addEventListener(ev, (e: DragEvent) => {

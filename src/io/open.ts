@@ -50,6 +50,15 @@ export async function loadProjectFile(f: File, handle: FileSystemFileHandle | nu
   try {
     const buf = await f.arrayBuffer(),
       u8 = new Uint8Array(buf);
+    // an SVG (or animated SVG) opens as a new project made from it
+    if (
+      /\.svg$/i.test(f.name) ||
+      f.type === 'image/svg+xml' ||
+      /^\s*(<\?xml|<svg|<!--)/.test(new TextDecoder().decode(u8.slice(0, 64)))
+    ) {
+      const { importSVG } = await import('./svg-import');
+      return await importSVG(new TextDecoder().decode(u8), true, f.name.replace(/\.svg$/i, ''));
+    }
     if (u8[0] === 0x50 && u8[1] === 0x4b) {
       const z = await readZip(buf),
         man = JSON.parse((await z.text('manifest.json')) || '{}');
@@ -94,11 +103,12 @@ export async function openFlow() {
       const [handle] = await (window as any).showOpenFilePicker({
         types: [
           {
-            description: 'SVGcinema project',
+            description: 'SVGcinema project or SVG',
             accept: {
               'application/x-svgcinema-project': ['.SVGcinema'],
               'application/zip': ['.zip'],
               'application/json': ['.json'],
+              'image/svg+xml': ['.svg'],
             },
           },
         ],

@@ -245,7 +245,7 @@ export async function importFiles(files: File[], at: { x: number; y: number } | 
 }
 export function placeAsset(a: Asset, at: { x: number; y: number } | null) {
   if (a.kind === 'svg') {
-    importSVG(a.text, false, a.name);
+    importSVG(a.text, false, a.name, at);
     return;
   }
   const ed = beginEdit(),
