@@ -15,6 +15,7 @@ import { renderTimeline, updatePlayhead } from '../ui/timeline';
 import { renderTools } from '../ui/tools-rail';
 import { restPoseView } from '../tools/bone-edit';
 import { ensureMeshes } from './mesh';
+import { rigArtwork } from '../model/draw-order';
 
 let meshPass = 0;
 export function renderStage() {
@@ -107,10 +108,34 @@ export function pinRestView() {
   H.restPins(on);
   if (eng) eng.restPins(on);
 }
+/** artwork drawn by its rig's own draw order sits in wrappers outside its bones: they take the bones'
+ *  current transforms (as drawn, so the Edit bone tool's rest pose too) */
+export function syncDrawOrder() {
+  doc.layers.forEach(top => {
+    if (top.type !== 'bone' || !top.dord) return;
+    rigArtwork(top, doc.layers).forEach(l => {
+      const w = byId('e-' + l.id + '-w') as unknown as SVGGraphicsElement,
+        up = w && w.parentNode;
+      let e = byId('e-' + l.parent + '-s') as unknown as SVGGraphicsElement,
+        M = new DOMMatrix(),
+        g = 0;
+      if (!w || !e) return;
+      // the transforms from the bone up to the wrapper's parent (no inverse: a group can be scaled to 0)
+      while (e && e !== up && g++ < 200) {
+        const t = e.transform && e.transform.baseVal.consolidate();
+        if (t) M = DOMMatrix.fromMatrix(t.matrix).multiply(M);
+        e = e.parentNode as unknown as SVGGraphicsElement;
+      }
+      if (e !== up) return;
+      w.setAttribute('transform', `matrix(${[M.a, M.b, M.c, M.d, M.e, M.f].join(',')})`);
+    });
+  });
+}
 export function frame() {
   pinRestView();
   if (eng) eng.apply(S.time);
   restPoseView();
+  syncDrawOrder();
   drawOverlay();
   updatePlayhead();
   refreshInspector();

@@ -8,6 +8,7 @@ import { H, esc, r3 } from '../core/constants';
 import { isBox, kids } from '../model/tree';
 import { maskFolder, maskedContent } from '../core/masks';
 import { meshable } from '../model/mesh';
+import { drawOrder, ownOrderBone } from '../model/draw-order';
 
 /** How markup is produced: for the editor canvas or for an exported file. */
 export interface MarkupCtx {
@@ -162,15 +163,45 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
   return `<g id="${id}" transform="${tfStr(c)}" opacity="${r3(c.op)}"${ctx.editor ? ` data-lid="${l.id}"` : ''}>${fx}${grads}${inner}</g>`;
 }
 export function markup(list: Layer[], pid: string | null, ctx: MarkupCtx): string {
+  const P = pid ? list.find(l => l.id === pid) : null,
+    // a rig with its own draw order draws its bones' artwork apart (after the rig's top bone)
+    own = !!P && ownOrderBone(P, list);
   return kids(pid, list)
-    .filter(l => !l.hid)
+    .filter(l => !l.hid && !(own && l.type !== 'bone'))
+    .map(l => layerMarkup(list, l, ctx) + (l.type === 'bone' && l.dord && !own ? orderedArtwork(list, l, ctx) : ''))
+    .join('');
+}
+function layerMarkup(list: Layer[], l: Layer, ctx: MarkupCtx) {
+  const inner = l.mask ? maskGroupSVG(list, l, ctx) : isBox(l) ? markup(list, l.id, ctx) : '';
+  const svg = layerSVG(l, ctx, H.comp(l, ctx.t), inner);
+  // a hyperlink wraps the layer in <a> in exports (in the editor clicks select)
+  return l.link && !ctx.editor
+    ? `<a href="${esc(l.link.url)}"${l.link.target === '_self' ? '' : ' target="_blank" rel="noopener"'} style="cursor:pointer">${svg}</a>`
+    : svg;
+}
+const m6 = (v: number) => Math.round(v * 1e6) / 1e6;
+/** a rig's artwork in its own draw order, each piece in a wrapper carrying the bones' transforms from
+ *  the rig's top bone down to the piece's bone */
+function orderedArtwork(list: Layer[], top: Layer, ctx: MarkupCtx) {
+  const order = drawOrder(top, list) || [],
+    up = top.parent ? list.find(l => l.id === top.parent) : null;
+  // a hidden bone hides its artwork, as with nesting
+  const shown = (l: Layer) => {
+    let x: Layer | undefined = l,
+      g = 0;
+    while (x && x !== top && g++ < 100) {
+      if (x.hid) return false;
+      x = list.find(b => b.id === x.parent);
+    }
+    return true;
+  };
+  return order
+    .filter(shown)
     .map(l => {
-      const inner = l.mask ? maskGroupSVG(list, l, ctx) : isBox(l) ? markup(list, l.id, ctx) : '';
-      const svg = layerSVG(l, ctx, H.comp(l, ctx.t), inner);
-      // a hyperlink wraps the layer in <a> in exports (in the editor clicks select)
-      return l.link && !ctx.editor
-        ? `<a href="${esc(l.link.url)}"${l.link.target === '_self' ? '' : ' target="_blank" rel="noopener"'} style="cursor:pointer">${svg}</a>`
-        : svg;
+      const bone = list.find(b => b.id === l.parent),
+        M = bone ? H.worldOf(bone, ctx.t, up) : [1, 0, 0, 1, 0, 0];
+      // editor: the wrapper names the bone, so a click on the artwork still finds its bones (stage-input)
+      return `<g id="${ctx.pre}${l.id}-w" transform="matrix(${M.map(m6).join(',')})"${ctx.editor && bone ? ` data-dw="${bone.id}"` : ''}>${layerMarkup(list, l, ctx)}</g>`;
     })
     .join('');
 }
@@ -178,8 +209,14 @@ function maskGroupSVG(list: Layer[], g: Layer, ctx: MarkupCtx): string {
   const F = maskFolder(g, list),
     others = kids(g.id, list).filter(k => k !== F && !k.hid);
   const othersSVG: string = others
-    .map(k =>
-      layerSVG(k, ctx, H.comp(k, ctx.t), k.mask ? maskGroupSVG(list, k, ctx) : isBox(k) ? markup(list, k.id, ctx) : ''),
+    .map(
+      k =>
+        layerSVG(
+          k,
+          ctx,
+          H.comp(k, ctx.t),
+          k.mask ? maskGroupSVG(list, k, ctx) : isBox(k) ? markup(list, k.id, ctx) : '',
+        ) + (k.type === 'bone' && k.dord ? orderedArtwork(list, k, ctx) : ''),
     )
     .join('');
   const folderSVG = F && !F.hid ? layerSVG(F, ctx, H.comp(F, ctx.t), markup(list, F.id, ctx)) : '';
@@ -189,7 +226,6 @@ function maskGroupSVG(list: Layer[], g: Layer, ctx: MarkupCtx): string {
 export function meshOf(l: Layer) {
   return l.pins && l.pins.length && meshable(l) && l.mesh && l.mesh.t.length ? l.mesh : null;
 }
-const m6 = (v: number) => Math.round(v * 1e6) / 1e6;
 /** pinned content drawn through its mesh: the content itself stays in place but hidden (the runtime
  *  keeps animating it), and each triangle shows it clipped to the triangle at rest, moved by the
  *  triangle's matrix. Triangles add up (plus-lighter) inside an isolated group, so their antialiased

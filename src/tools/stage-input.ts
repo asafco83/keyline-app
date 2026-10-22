@@ -42,10 +42,18 @@ export function insideBox(l: Layer, p: XY) {
 }
 export function hitChain(target: any): string[] {
   const chain: string[] = [];
-  let g = target.closest && target.closest('g[data-lid]');
+  let g = target.closest && target.closest('g[data-lid], g[data-dw]');
   while (g) {
-    chain.push(g.dataset.lid);
-    g = g.parentElement && g.parentElement.closest('g[data-lid]');
+    if (g.dataset.dw) {
+      // a rig's own draw order draws its artwork outside the bones: add the bones it hangs on
+      let b = layerById(g.dataset.dw),
+        n = 0;
+      while (b && b.type === 'bone' && n++ < 100) {
+        chain.push(b.id);
+        b = b.parent && layerById(b.parent);
+      }
+    } else chain.push(g.dataset.lid);
+    g = g.parentElement && g.parentElement.closest('g[data-lid], g[data-dw]');
   }
   return chain;
 }

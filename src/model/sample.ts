@@ -260,7 +260,7 @@ export function sampleDoc(): any {
 
   // Sprout — a bone rig: three bones, each carrying its stem part, leaf or flower; the group grows
   // in, then the bones sway with follow-through and the top bone squashes and stretches; the Leaf
-  // bends with pins, and the Tendril's pins follow the bones
+  // bends with pins, and the Tendril's pins follow the bones; the rig draws in its own order
   const sprout = mkLayer('group', 'Sprout', {}, NOFILL);
   sprout.o = [592, 300];
   sprout.t.scl = [
@@ -323,6 +323,8 @@ export function sampleDoc(): any {
   );
   tendril.parent = sprout.id;
   tendril.pins = [b1, b2, b3].map((b, i) => ({ n: i + 1, x: b.geo.x, y: b.geo.y, bone: b.id }));
+  // the rig's own draw order (back to front): the Leaf hangs on Stem 2 but sits behind the Stalk
+  b1.dord = [leafL, seg1, seg2, seg3, leafR, bloom].map(l => l.id);
   const sway = (deg: number, lag: number) => [
     [1.2 + lag, 0, 'inOutSine'],
     [1.9 + lag, -deg, 'inOutSine'],

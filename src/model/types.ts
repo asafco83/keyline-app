@@ -163,6 +163,9 @@ export interface Layer {
   mesh?: { n?: number; v: number[][]; t: number[][]; h?: string };
   /** top bones: "Key whole rig" (posing any bone keys the whole rig); undefined = on */
   kr?: boolean;
+  /** top bones: the rig's own draw order, back to front (ids of the artwork attached to its bones);
+   *  undefined = drawn by nesting (see model/draw-order) */
+  dord?: string[];
   /** bones: IK pin */
   pin?: boolean;
   /** bones: rotation limit */
