@@ -6,7 +6,7 @@
 import type { Layer, PathData } from './types';
 import { FONTS, NOFILL, clone } from '../core/constants';
 import { blankDoc, mkLayer, setIdc } from '../core/state';
-import { N, type ShapeParams, radial, shapeD, smoothNodes, starNodes } from '../geometry/nodes';
+import { N, type ShapeParams, ellNodes, radial, shapeD, smoothNodes, starNodes } from '../geometry/nodes';
 import { addFilter } from './filters';
 
 /** A path layer that keeps polygon / star settings (so sides, points and corner radius stay editable).
@@ -258,7 +258,8 @@ export function sampleDoc(): any {
   ridgeL.parent = clipF.id;
 
   // Sprout — a bone rig: three bones, each carrying its stem part, leaf or flower; the group grows
-  // in, then the bones sway with follow-through and the top bone squashes and stretches
+  // in, then the bones sway with follow-through and the top bone squashes and stretches; the Leaf
+  // bends with pins
   const sprout = mkLayer('group', 'Sprout', {}, NOFILL);
   sprout.o = [592, 300];
   sprout.t.scl = [
@@ -279,8 +280,25 @@ export function sampleDoc(): any {
   const seg1 = stem('Stalk', 300, 268, b1),
     seg2 = stem('Stalk 2', 268, 240, b2),
     seg3 = stem('Stalk 3', 240, 216, b3);
-  const leafL = mkLayer('ellipse', 'Leaf', { cx: 579, cy: 262, rx: 13, ry: 5 }, { fill: '#5FBF9F', rot: -30 });
+  // the Leaf is pinned (Pin tool): pin 1 holds its base on the stalk, pin 2 flutters its tip
+  const leafL = mkLayer(
+    'path',
+    'Leaf',
+    {},
+    { fill: '#5FBF9F', rot: -30, d: ellNodes({ cx: 579, cy: 262, rx: 13, ry: 5 }) },
+  );
   leafL.parent = b2.id;
+  leafL.o = [579, 262];
+  leafL.pins = [
+    { n: 1, x: 590, y: 262 },
+    { n: 2, x: 568, y: 262 },
+  ];
+  leafL.t.pin2 = [
+    [1.3, [568, 262], 'inOutSine'],
+    [1.8, [569, 255], 'inOutSine'],
+    [2.3, [568, 268], 'inOutSine'],
+    [2.8, [568, 262], 'ease'],
+  ] as any;
   const leafR = mkLayer('ellipse', 'Leaf 2', { cx: 605, cy: 236, rx: 12, ry: 5 }, { fill: '#5FBF9F', rot: 30 });
   leafR.parent = b3.id;
   const bloom = mkLayer(

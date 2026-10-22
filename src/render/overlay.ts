@@ -6,6 +6,7 @@ import { S, doc, layerById, selLayer } from '../core/state';
 import { isHidden, isLocked, parentMatrix } from '../model/tree';
 import { drawBone } from '../tools/bones';
 import { boneChips, drawBindLines, scaleBar } from '../tools/bone-edit';
+import { drawPins } from '../tools/pins';
 import { cursorFor } from '../tools/edit-tools';
 import { ellNodes, rectNodes } from '../geometry/nodes';
 import { currentNode, segCtrl } from '../tools/motion-path';
@@ -105,6 +106,7 @@ export function drawOverlay() {
     el => OV.append(el),
     (tag, a) => svgEl(tag, a),
   );
+  drawPins(u);
   if (S.boneDraft) {
     const A = S.boneDraft.a,
       B = S.boneDraft.b;

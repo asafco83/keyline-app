@@ -668,3 +668,20 @@ export function propsInput(t: HTMLInputElement, l: Layer) {
   if (n) n.value = t.value;
   return true;
 }
+
+/* ---------- Pins (Pin tool): the selected pin's position and rotation, reach, removing ---------- */
+
+export function pinsSection(l: Layer) {
+  const ps = l.pins || [];
+  if (!ps.length) return '';
+  if (S.pinSel == null || !ps.some(p => p.n === S.pinSel)) S.pinSel = ps[ps.length - 1].n;
+  const n = S.pinSel,
+    reach = l.reach || 100;
+  return `<section class="sec"><h3>Pins <small>${ps.length} ${ps.length > 1 ? 'pins' : 'pin'}</small></h3>
+    ${nrow('Pin', `<div class="pin-chips" role="group" aria-label="Pins">${ps.map(p => `<button type="button" class="pin-chip${p.n === n ? ' on' : ''}" data-act="pinsel" data-n="${p.n}" aria-pressed="${p.n === n}" aria-label="Pin ${p.n}">${p.n}</button>`).join('')}</div>`)}
+    ${krow('pin' + n, 'Position', num(`pin${n}:0`, 'X') + num(`pin${n}:1`, 'Y'))}
+    ${krow('pinr' + n, 'Rotation', num(`pinr${n}`, '∠', '°'))}
+    ${nrow('Reach', `<input type="range" class="rng" id="pinReach" data-preach data-range min="20" max="400" step="5" value="${reach}" aria-label="Reach"><span class="pin-val" id="pinReachV">${fmt(reach)} %</span>`)}
+    <div class="btns pin-ind"><button class="btn" data-act="pinrm">Remove pin</button><button class="btn" data-act="pinrmall">Remove all pins</button></div>
+    <p class="pin-ind">Pins bend the path through its own nodes. Click with the Pin tool (W) to add pins; drag one to bend the path (keyed at the playhead). Reach sets how far each pin pulls.</p></section>`;
+}

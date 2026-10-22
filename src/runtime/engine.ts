@@ -34,6 +34,11 @@ export interface EngineLayer {
   /** exported child bones: 1 = cancels the parent bone's scale, at its joint `j` */
   cs?: number;
   j?: number[];
+  /** pins that bend the path: rest position in the layer's space; tracks `pin<n>` (position) and
+   *  `pinr<n>` (rotation, degrees) move them */
+  pins?: Array<{ n: number; x: number; y: number }>;
+  /** how far each pin pulls (percent, default 100) */
+  reach?: number;
 }
 type EaseFn = (p: number) => number;
 type Bezier = number[];
@@ -128,6 +133,8 @@ export interface CinPlayer {
   comp(L: EngineLayer, t: number): Composite;
   /** editor / export: how to find a layer by id that is not in this engine's own list */
   lookup(fn: ((id: string) => EngineLayer | null | undefined) | null): void;
+  /** editor: show pinned paths unbent (their rest shape); returns the previous setting */
+  restPins(on: boolean): boolean;
   get(L: EngineLayer, k: string, t: number): any;
   dstr(sp: EngineSubPath[] | null | undefined): string;
   /** is the value a gradient ({ g: 'lin' | 'rad', s: stops, … }) */
@@ -579,7 +586,54 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
     return [f(len) + ' ' + f(100 - len), String(f(-raw))];
   }
   /** the path at time t: morph value, with animated line ends or corner radius applied */
+  /** the path at time t, bent by its pins (unless the editor shows the rest shape) */
   function shapeOf(L: EngineLayer, t: number): EngineSubPath[] | undefined {
+    var d = shapeBase(L, t);
+    return d && L.pins && L.pins.length && !NOPIN ? pinWarp(L, d, t) : d;
+  }
+  var NOPIN = false;
+  /** each node follows the pins' moves, blended by inverse distance from the pins at rest; a node's
+   *  handles take the node's blend, so smooth nodes stay smooth */
+  function pinWarp(L: EngineLayer, d: EngineSubPath[], t: number): EngineSubPath[] {
+    var ps = L.pins || [],
+      rc = Math.max(10, Math.min(1000, L.reach || 100)),
+      pw = Math.max(0.5, Math.min(8, 200 / rc)),
+      mv = ps.map(function (p) {
+        var P = get(L, 'pin' + p.n, t) || [p.x, p.y],
+          a = ((get(L, 'pinr' + p.n, t) || 0) * Math.PI) / 180;
+        return [p.x, p.y, P[0], P[1], Math.cos(a), Math.sin(a)];
+      });
+    return d.map(function (sp: EngineSubPath) {
+      return {
+        c: sp.c,
+        n: sp.n.map(function (q: number[]) {
+          var w: number[] = [],
+            W = 0,
+            i: number,
+            out = [0, 0, 0, 0, 0, 0];
+          for (i = 0; i < mv.length; i++) {
+            var dx = q[0] - mv[i][0],
+              dy = q[1] - mv[i][1],
+              v = 1 / (Math.pow(dx * dx + dy * dy, pw / 2) + 1e-6);
+            w.push(v);
+            W += v;
+          }
+          for (i = 0; i < mv.length; i++) {
+            var m = mv[i],
+              k = w[i] / W;
+            for (var j = 0; j < 6; j += 2) {
+              var x = q[j] - m[0],
+                y = q[j + 1] - m[1];
+              out[j] += k * (m[2] + x * m[4] - y * m[5]);
+              out[j + 1] += k * (m[3] + x * m[5] + y * m[4]);
+            }
+          }
+          return out;
+        }),
+      };
+    });
+  }
+  function shapeBase(L: EngineLayer, t: number): EngineSubPath[] | undefined {
     var d = get(L, 'd', t),
       T = L.t || {};
     if (L.shape && T.rad && T.rad.length) return poly(L.shape, get(L, 'rad', t), true);
@@ -1077,6 +1131,11 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
     comp: comp,
     lookup: function (fn: ((id: string) => EngineLayer | null | undefined) | null) {
       EXT = fn;
+    },
+    restPins: function (on: boolean) {
+      var was = NOPIN;
+      NOPIN = !!on;
+      return was;
     },
     get: get,
     gAttrs: gAttrs,

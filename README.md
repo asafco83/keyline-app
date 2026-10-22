@@ -45,6 +45,7 @@ src/
   model/
     tree.ts              Layer hierarchy (groups, bones), parent matrices
     filters.ts           Layer filters (blur, drop shadow) with animatable parameters
+    pins.ts              Pin property keys and labels (Pin tool)
     sample.ts            The sample scene
 
   geometry/
@@ -60,6 +61,7 @@ src/
   tools/
     stage-input.ts       Canvas pointer handling
     bones.ts             Bone tool, forward kinematics, inverse kinematics (CCD)
+    pins.ts              Pin tool and Edit pins tool
     edit-tools.ts        Move/scale/rotate/origin drags, text creation, node editing
     pen.ts               Pen, add/remove node, pencil; path hit-testing
     shapes.ts            Ellipse, rectangle, polygon, star, line
@@ -111,7 +113,7 @@ The editor opens with a sample scene (also under File → New → **Open sample 
 - **Sunrise**: a group rising as one. **Glow** has a radial gradient, an animated blur filter and screen blending; **Rays** spin and scale; the **Sun** changes colour.
 - **Blob** morphs between shapes with a custom easing curve. **Comet** follows a curved motion path and turns along it; **Comet trail** shows travelling dashes (an animated dash offset).
 - **Hills** is a clipping group: the drifting **Mist** only shows inside the hill silhouette (the **Clip path** folder).
-- **Sprout** is a bone rig: three bones carry the stalk, leaves and flower, and sway with follow-through; the top bone squashes and stretches as it swings.
+- **Sprout** is a bone rig: three bones carry the stalk, leaves and flower, and sway with follow-through; the top bone squashes and stretches as it swings. The **Leaf** is pinned: one pin holds its base while the other flutters its tip.
 - **Flag**: the **Pole** is a line whose end grows; the **Pennant** is a polygon with a gradient, a skew wave and an animated corner radius.
 - **Landscape**: **Horizon** draws on with Trim path; **Signature** is a mask group whose gradient wipe reveals a line that links to this editor.
 - **Title** slides and fades in with an animated drop shadow.
@@ -142,6 +144,9 @@ The editor opens with a sample scene (also under File → New → **Open sample 
 | Edit bone        | E   | Edits the rest pose; keyframes stay as they are, and the bones show their rest pose while the tool is on (a _Rest pose_ chip says so). Drag a tip to change the bone's length and angle: bones chained on that tip follow it while their own tips stay put, and attached artwork doesn't move. Drag a joint to move it (a joint on its parent's tip moves that tip; Alt pulls the joint off it). Drag the bone to move it. Ctrl while dragging a tip turns the attached artwork with the bone. Shift snaps the angle to 15°; a tip snaps onto other bones' joints and tips  |
 | Scale bone       | S   | Drag along a bone to scale it, keyed at the playhead (the drag makes the Scale track). The options bar at the top of the work area picks what a drag changes: _Length_ (W, along the bone), _Thickness_ (H, across it, drag sideways), _Linked_ (both), or _Squash & stretch_ (W up, H down: _Volume_ Area keeps W × H, Tube keeps W × H²). Tab while dragging switches the mode, Shift snaps to 10%. Child bones don't inherit a bone's scale unless their _Inherit scale_ is on: they follow the stretched tip without being stretched, in the editor and in both exports |
 | Bind             |     | Click a bone or layer (Shift+click adds more), then click the bone it should hang on. It keeps its place on the canvas, and its keyframes keep their positions at their times. A bone dropped near the new parent's tip snaps onto it (Alt keeps the offset). Clicking empty canvas unbinds the picks (they move to the group that holds the rig). A bone can't go under itself or its children. Esc clears the picks                                                                                                                                                       |
+| **Pin group**    |     | Hold or right-click the button for the flyout                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Pin tool         | W   | Click a path or shape to add a pin (rectangles and ellipses become paths). Drag a pin to bend the path, keyed at the playhead (the first drag makes the pin's track, starting from its rest place at 0 s). Drag the ring of the selected pin to turn it (Shift snaps to 15°). Alt+drag moves a pin at rest without bending. Delete removes the selected pin. A dashed dot shows where a moved pin sits at rest. Images, text and groups can't take pins yet                                                                                                                 |
+| Edit pins        |     | Moves pins at rest: the path shows its rest shape (a _Rest pose_ chip says so), and a pin you drag takes its motion with it (its keys move by the same amount). Shift moves straight. Delete removes the selected pin                                                                                                                                                                                                                                                                                                                                                       |
 | Hand             | H   | Drag to pan. Hold Space for the hand in any tool (a tap plays/pauses). Middle-drag pans, the wheel scrolls, Ctrl+wheel zooms at the pointer, double-click the hand to fit                                                                                                                                                                                                                                                                                                                                                                                                   |
 
 Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to go back to Select.
@@ -213,6 +218,8 @@ Shortcuts: Ctrl X / C / V, Ctrl ⇧ V (paste in place), Ctrl ⇧ O (center origi
 They're combined as they look at the playhead into one new path, which takes the bottom layer's place and style. Undo restores the originals.
 
 **Posing a rig:** with _Key whole rig_ on (the default; it sits in the Bone section of the rig's top bone), dragging any bone (FK, IK or Scale bone) keys every bone of the rig at the playhead, so each pose is stored whole. The new keys hold the values the bones already had there, and the easing they split is split with them, so nothing else in the animation changes. Turn it off for overlapping action (only the bone you drag is keyed). Turning it on for a rig whose poses have keys on some bones only offers to _Add keys_: every bone gets a key at each of the rig's key times, again without changing the motion; turning it on and adding the keys is one undo step. In the timeline, the top bone has a **Pose** row with a diamond at every time any bone of the rig has a key: click one to select all of them, drag to retime the pose, Delete to remove it.
+
+**Bending with pins:** each pin pulls the path's nodes (and their handles) with it, nearer nodes more than far ones; a pin can also turn, bending the path around it. A pin that doesn't move holds the path in place. The **Pins** section of the inspector has a button per pin; the rows below it edit the selected pin: _Position_ and _Rotation_, each with its own ◆, and _Reach_, how far every pin of the path pulls (100% by default). _Remove pin_ and _Remove all pins_ take them off (the path keeps its rest shape). In the timeline each pin has its own rows (_Pin 2_, _Pin 2 · Rotation_). Both exports bend the path: the JS player computes it, and the CSS export animates the path's shape with SMIL, as for morphs.
 
 **Snapping, grid, rulers and guides** (the magnet and grid buttons in the canvas bar):
 

@@ -27,6 +27,7 @@ import { finishPen, penBackspace } from '../tools/pen';
 import { selectedPosKeys } from '../tools/stage-input';
 import { applyEase } from './easing';
 import { cancelBind } from '../tools/bone-edit';
+import { deleteSelectedPin } from '../tools/pins';
 import { FM, closeFileMenu } from './file-menu';
 import { renderInspector } from './inspector';
 import { arrange, deleteSel, duplicate, groupSel, ungroup } from './layers-panel';
@@ -224,6 +225,7 @@ export function init(): void {
     if (k === 'Delete' || k === 'Backspace') {
       e.preventDefault();
       if (S.keys.size) return deleteKeys();
+      if (deleteSelectedPin()) return;
       if (S.tool === 'node' && S.node && l) {
         const ed = beginEdit();
         if (!removeNodeAll(l, S.node[0], S.node[1])) toast('A path needs at least two nodes.');

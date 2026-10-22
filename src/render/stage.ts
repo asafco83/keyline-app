@@ -1,7 +1,7 @@
 // SVGcinema — render/stage
 import { bgPaint } from '../model/background';
 import type { Layer } from '../model/types';
-import { $, byId, r2 } from '../core/constants';
+import { $, H, byId, r2 } from '../core/constants';
 import { ART, CONTENT, STAGE, WRAP } from '../core/dom';
 import { ASSETS, S, URLS, doc, eng, setEng } from '../core/state';
 import { renderAssets } from '../io/assets';
@@ -33,6 +33,7 @@ export function renderStage() {
   ab.setAttribute('width', doc.w);
   ab.setAttribute('height', doc.h);
   ART.classList.toggle('clear', paint.alpha < 1);
+  pinRestView();
   CONTENT.innerHTML = markup(doc.layers, null, {
     pre: 'e-',
     editor: true,
@@ -88,7 +89,14 @@ export function artLabel(name: string = doc.name) {
   $('#abName').textContent = name || 'Untitled animation';
   $('#abSize').textContent = `${r2(doc.w)} × ${r2(doc.h)}`;
 }
+/** the Edit pins and Edit nodes tools show pinned paths unbent (their rest shape) */
+export function pinRestView() {
+  const on = S.tool === 'pinedit' || S.tool === 'node';
+  H.restPins(on);
+  if (eng) eng.restPins(on);
+}
 export function frame() {
+  pinRestView();
   if (eng) eng.apply(S.time);
   restPoseView();
   drawOverlay();

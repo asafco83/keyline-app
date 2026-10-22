@@ -3844,3 +3844,89 @@ select.sel {
   justify-content: flex-end;
   gap: 6px;
 }
+
+/* Pin tools: pins on the selected path, where they rest, the selected pin's rotation ring */
+.ic-dims {
+  stroke: var(--muted);
+}
+.ov-pin {
+  fill: var(--raised);
+  stroke: var(--accent);
+  stroke-width: 1.8;
+  vector-effect: non-scaling-stroke;
+  cursor: move;
+}
+.ov-pin.is-sel {
+  fill: var(--accent);
+  stroke: var(--raised);
+  stroke-width: 2;
+}
+.ov-pindot {
+  fill: var(--accent);
+  pointer-events: none;
+}
+.ov-pinrest {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 3;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.ov-pinring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 3;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.ov-pinarm {
+  stroke: var(--accent);
+  stroke-width: 1.4;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.ov-pinknob {
+  fill: var(--raised);
+  stroke: var(--accent);
+  stroke-width: 1.6;
+  vector-effect: non-scaling-stroke;
+  cursor: grab;
+}
+#wrap.t-pin,
+#wrap.t-pinedit {
+  cursor: crosshair;
+}
+
+/* Pins section: a button per pin to pick which one the rows below edit */
+.pin-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.pin-chip {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--panel-2);
+  color: var(--fg);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.pin-chip.on {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+.sec .pin-ind {
+  margin-left: 22px;
+}
+.pin-val {
+  flex: none;
+  min-width: 52px;
+  text-align: right;
+  font-size: 12px;
+}

@@ -31,6 +31,13 @@ describe('sample scene', () => {
     // squash & stretch: a bone scaled along / across itself
     expect(bones.some(b => b.t.scl && b.t.scl.some(q => q[1][0] !== q[1][1]))).toBe(true);
   });
+  it('bends a path with pins: a held pin and a keyed one', () => {
+    const l = L.find(x => x.pins && x.pins.length > 1) as Layer;
+    expect(l).toBeTruthy();
+    expect(l.type).toBe('path');
+    expect(l.pins!.some(p => !l.t['pin' + p.n])).toBe(true);
+    expect(l.pins!.some(p => (l.t['pin' + p.n] || []).length > 1)).toBe(true);
+  });
   it('shows a mask group and a clipping group, each with its folder', () => {
     for (const kind of ['mask', 'clip'] as const) {
       const g = L.find(l => l.mask === kind) as Layer;

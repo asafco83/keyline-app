@@ -37,7 +37,16 @@ export type PropKey =
   | 'dof'
   | 'd'
   /** filter parameter: fx.<filter id>.<param> */
-  | `fx.${string}`;
+  | `fx.${string}`
+  /** pin position / rotation: pin<n>, pinr<n> */
+  | `pin${number}`
+  | `pinr${number}`;
+/** a pin that bends its path: number (stable, not reused) and rest position in the layer's space */
+export interface PinDef {
+  n: number;
+  x: number;
+  y: number;
+}
 
 /** Unanimated values. */
 export interface BaseValues {
@@ -142,6 +151,9 @@ export interface Layer {
   iso?: boolean;
   /** bones: inherit the parent bone's scale (default off) */
   inh?: boolean;
+  /** pins that bend this path (Pin tool), and how far each pulls (percent, default 100) */
+  pins?: PinDef[];
+  reach?: number;
   /** top bones: "Key whole rig" (posing any bone keys the whole rig); undefined = on */
   kr?: boolean;
   /** bones: IK pin */
@@ -258,6 +270,8 @@ export interface Drag {
   rot?: any;
   /** snap the pointer to points / grid / guides while dragging (layers to leave out) */
   snapPt?: Set<string> | true;
+  /** a pin drag (its label is drawn by the pin overlay) */
+  pin?: boolean;
   /** keys pressed during the gesture (e.g. ↑/↓ for polygon sides); return true if handled */
   key?(k: string, e: KeyboardEvent): boolean;
 }
@@ -321,6 +335,8 @@ export interface EditorState {
   /** Scale bone tool: what a drag scales, and the volume squash & stretch keeps */
   boneScaleMode: 'length' | 'thickness' | 'linked' | 'squash';
   boneVolume: 'area' | 'tube';
+  /** Pin tools: the selected pin (its number) */
+  pinSel: number | null;
   file?: OpenFile | null;
   dirty?: boolean;
   loading?: boolean;
