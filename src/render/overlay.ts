@@ -7,7 +7,7 @@ import { S, doc, layerById, selLayer } from '../core/state';
 import { isHidden, isLocked, parentMatrix } from '../model/tree';
 import { drawBone } from '../tools/bones';
 import { boneChips, drawBindLines, scaleBar } from '../tools/bone-edit';
-import { drawPins } from '../tools/pins';
+import { boundBones, drawPins, pinBar } from '../tools/pins';
 import { cursorFor } from '../tools/edit-tools';
 import { ellNodes, rectNodes } from '../geometry/nodes';
 import { currentNode, segCtrl } from '../tools/motion-path';
@@ -116,8 +116,18 @@ export function drawOverlay() {
   if (S.tool !== 'select') drawLabel(u);
   boneChips();
   scaleBar();
+  pinBar();
   const boneTool = S.tool === 'boneedit' || S.tool === 'bonebind' || S.tool === 'bonescale';
-  if ((S.showBones || boneTool) && ['select', 'bone', 'node', 'boneedit', 'bonebind', 'bonescale'].includes(S.tool))
+  if (S.tool === 'pin' && (S.pinBind || S.showBones)) {
+    // the Pin tool: bones to bind pins to (the ones the layer's pins follow are highlighted)
+    const bound = boundBones();
+    doc.layers.forEach(b => {
+      if (b.type === 'bone' && !isHidden(b)) drawBone(b, u, bound.has(b.id), S.pinBind && S.pinBoneHover === b.id);
+    });
+  } else if (
+    (S.showBones || boneTool) &&
+    ['select', 'bone', 'node', 'boneedit', 'bonebind', 'bonescale'].includes(S.tool)
+  )
     doc.layers.forEach(b => {
       if (b.type === 'bone' && !isHidden(b))
         drawBone(b, u, S.selSet.has(b.id), S.tool === 'bonebind' && S.bindPick.length > 0 && S.bindHover === b.id);

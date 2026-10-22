@@ -27,6 +27,7 @@ import { init as initPicker } from './ui/color-picker';
 import { initTheme } from './ui/theme';
 import { init as initRanges } from './ui/ranges';
 import { initScaleBar } from './tools/bone-edit';
+import { initPinBar } from './tools/pins';
 
 // Same order as the original single-file build
 initTheme(); // ui/theme (before the rail renders its button)
@@ -34,6 +35,7 @@ initRanges(); // ui/ranges (slider fill)
 init0(); // ui/tools-rail
 init1(); // tools/stage-input
 initScaleBar(); // tools/bone-edit (Scale bone options)
+initPinBar(); // tools/pins (Pin tool options: Bind to bones)
 initHand(); // tools/hand
 initAnim(); // ui/animate-menu
 initZoom(); // ui/zoom-menu

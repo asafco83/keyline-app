@@ -214,6 +214,7 @@ export function setTool(t: Tool) {
   if (S.pen && t !== 'pen') finishPen(false);
   const wasBind = S.tool === 'bonebind';
   S.tool = t;
+  S.pinBind = false;
   S.penHint = null;
   if (t === 'bonebind' || wasBind) {
     // the Bind tool starts with nothing picked (its picks show as the selection)

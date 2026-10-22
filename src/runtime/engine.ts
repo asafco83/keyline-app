@@ -36,7 +36,9 @@ export interface EngineLayer {
   j?: number[];
   /** pins that bend the path: rest position in the layer's space; tracks `pin<n>` (position) and
    *  `pinr<n>` (rotation, degrees) move them */
-  pins?: Array<{ n: number; x: number; y: number }>;
+  pins?: Array<{ n: number; x: number; y: number; bone?: string }>;
+  /** an imported layer's own transform (on its content element) */
+  xf?: string;
   /** how far each pin pulls (percent, default 100) */
   reach?: number;
   /** images, text and groups with pins: the triangle mesh they bend through (rest vertices and
@@ -140,6 +142,8 @@ export interface CinPlayer {
   restPins(on: boolean): boolean;
   /** a meshed layer's triangle matrices at t (see EngineLayer.mesh) */
   meshMats(L: EngineLayer, t: number): number[][];
+  /** a pin at t: [rest x, rest y, x, y, angle] (a pin bound to a bone follows it) */
+  pinAt(L: EngineLayer, p: { n: number; x: number; y: number; bone?: string }, t: number): number[];
   get(L: EngineLayer, k: string, t: number): any;
   dstr(sp: EngineSubPath[] | null | undefined): string;
   /** is the value a gradient ({ g: 'lin' | 'rad', s: stops, … }) */
@@ -495,11 +499,14 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
     }
     return tr[n - 1][1];
   }
+  /** while set, layers are read at their base values (the rest pose), ignoring their keys */
+  var RESTV = false;
   function get(L: EngineLayer, k: string, t: number): any {
-    var tr = L.t && L.t[k];
+    var tr = !RESTV && L.t && L.t[k];
     return tr && tr.length ? at(L, k, t) : k === 'org' ? L.o || [0, 0] : L.b[k];
   }
-  function comp(L: EngineLayer, t: number): Composite {
+  /** `tfOnly`: only the transform parts (no shape, paint or pins) */
+  function comp(L: EngineLayer, t: number, tfOnly?: boolean): Composite {
     var o = get(L, 'org', t) || [0, 0],
       p = get(L, 'pos', t) || [0, 0],
       r = get(L, 'rot', t) || 0,
@@ -507,7 +514,7 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
       k = get(L, 'skw', t) || [0, 0],
       tr = L.t && L.t.pos,
       op = get(L, 'op', t);
-    if (L.or && tr && tr.length > 1) {
+    if (L.or && tr && tr.length > 1 && !RESTV) {
       var t0 = tr[0][0],
         t1 = tr[tr.length - 1][0],
         e = Math.min(0.02, (t1 - t0) / 4),
@@ -516,6 +523,20 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
         B = get(L, 'pos', ta + 2 * e);
       if (B[0] !== A[0] || B[1] !== A[1]) r += (Math.atan2(B[1] - A[1], B[0] - A[0]) * 180) / Math.PI;
     }
+    if (tfOnly)
+      return {
+        x: p[0] + o[0],
+        y: p[1] + o[1],
+        r: r,
+        sx: s[0],
+        sy: s[1],
+        ox: o[0],
+        oy: o[1],
+        kx: k[0],
+        ky: k[1],
+        ba: boneAng(L),
+        cp: counterScale(L, t),
+      } as Composite;
     return {
       x: p[0] + o[0],
       y: p[1] + o[1],
@@ -590,15 +611,142 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
     // crossing the end: one dash per pathLength (100), so it wraps around to the start
     return [f(len) + ' ' + f(100 - len), String(f(-raw))];
   }
-  /** the path at time t: morph value, with animated line ends or corner radius applied */
   /** the path at time t, bent by its pins (unless the editor shows the rest shape) */
   function shapeOf(L: EngineLayer, t: number): EngineSubPath[] | undefined {
     var d = shapeBase(L, t);
     return d && L.pins && L.pins.length && !NOPIN ? pinWarp(L, d, t) : d;
   }
   var NOPIN = false;
-  /** each node follows the pins' moves, blended by inverse distance from the pins at rest; a node's
-   *  handles take the node's blend, so smooth nodes stay smooth */
+  /* ---- matrices [a, b, c, d, e, f]: where layers are on the canvas (pins that follow bones) ---- */
+  function mmul(A: number[], B: number[]): number[] {
+    return [
+      A[0] * B[0] + A[2] * B[1],
+      A[1] * B[0] + A[3] * B[1],
+      A[0] * B[2] + A[2] * B[3],
+      A[1] * B[2] + A[3] * B[3],
+      A[0] * B[4] + A[2] * B[5] + A[4],
+      A[1] * B[4] + A[3] * B[5] + A[5],
+    ];
+  }
+  function minv(M: number[]): number[] {
+    var d = M[0] * M[3] - M[1] * M[2] || 1e-12;
+    return [M[3] / d, -M[1] / d, -M[2] / d, M[0] / d, (M[2] * M[5] - M[3] * M[4]) / d, (M[1] * M[4] - M[0] * M[5]) / d];
+  }
+  function mT(x: number, y: number) {
+    return [1, 0, 0, 1, x, y];
+  }
+  function mR(deg: number) {
+    var a = (deg * Math.PI) / 180;
+    return [Math.cos(a), Math.sin(a), -Math.sin(a), Math.cos(a), 0, 0];
+  }
+  function mS(x: number, y: number) {
+    return [x, 0, 0, y, 0, 0];
+  }
+  /** a layer's transform as a matrix, in the same order as tf() */
+  function matOf(c: Composite): number[] {
+    var M = [1, 0, 0, 1, 0, 0],
+      q = c.cp;
+    if (q) {
+      M = mmul(M, mT(q[3], q[4]));
+      M = mmul(M, mR(q[0]));
+      M = mmul(M, mS(1 / q[1], 1 / q[2]));
+      M = mmul(M, mR(-q[0]));
+      M = mmul(M, mT(-q[3], -q[4]));
+    }
+    M = mmul(M, mT(c.x, c.y));
+    M = mmul(M, mR(c.r));
+    if (c.kx) M = mmul(M, [1, 0, Math.tan((c.kx * Math.PI) / 180), 1, 0, 0]);
+    if (c.ky) M = mmul(M, [1, Math.tan((c.ky * Math.PI) / 180), 0, 1, 0, 0]);
+    var bf = c.ba && c.sx !== c.sy;
+    if (bf) M = mmul(M, mR(c.ba));
+    M = mmul(M, mS(c.sx, c.sy));
+    if (bf) M = mmul(M, mR(-c.ba));
+    return mmul(M, mT(-c.ox, -c.oy));
+  }
+  /** an SVG transform list as a matrix (imported layers keep their own transform) */
+  var XFC: Record<string, number[]> = {};
+  function xfM(s: string): number[] {
+    if (XFC[s]) return XFC[s];
+    var M = [1, 0, 0, 1, 0, 0],
+      re = /(matrix|translate|scale|rotate|skewX|skewY)\s*\(([^)]*)\)/g,
+      m: RegExpExecArray | null;
+    while ((m = re.exec(s))) {
+      var v = m[2]
+          .split(/[\s,]+/)
+          .filter(Boolean)
+          .map(Number),
+        k = m[1];
+      if (k === 'matrix' && v.length === 6) M = mmul(M, v);
+      else if (k === 'translate') M = mmul(M, mT(v[0] || 0, v[1] || 0));
+      else if (k === 'scale') M = mmul(M, mS(v[0], v.length > 1 ? v[1] : v[0]));
+      else if (k === 'rotate')
+        M = v.length > 2 ? mmul(mmul(mmul(M, mT(v[1], v[2])), mR(v[0])), mT(-v[1], -v[2])) : mmul(M, mR(v[0] || 0));
+      else if (k === 'skewX') M = mmul(M, [1, 0, Math.tan(((v[0] || 0) * Math.PI) / 180), 1, 0, 0]);
+      else if (k === 'skewY') M = mmul(M, [1, Math.tan(((v[0] || 0) * Math.PI) / 180), 0, 1, 0, 0]);
+    }
+    return (XFC[s] = M);
+  }
+  /** from a layer's inner space (where its children and geometry are) up to the inner space of the
+   *  ancestor `upTo` (the canvas when null), at t */
+  function worldOf(L: EngineLayer, t: number, upTo?: EngineLayer | null): number[] {
+    var M = matOf(comp(L, t, true)),
+      p = layerOf(L.parent),
+      g = 0;
+    while (p && p !== upTo && g++ < 100) {
+      // children sit inside the parent's content element, which carries its imported transform
+      if (p.xf) M = mmul(xfM(p.xf), M);
+      M = mmul(matOf(comp(p, t, true)), M);
+      p = layerOf(p.parent);
+    }
+    return M;
+  }
+  /** the space a layer's pins live in: a path's own coordinates, or a meshed layer's content space */
+  function pinSpace(L: EngineLayer, t: number, upTo?: EngineLayer | null): number[] {
+    var W = worldOf(L, t, upTo),
+      path = L.type ? L.type === 'path' : !L.mesh;
+    return path && L.xf ? mmul(W, xfM(L.xf)) : W;
+  }
+  /** where a pin bound to a bone is, in the layer's pin space: at the bone's joint, turned as the bone
+   *  is turned; [x, y, angle] at t, or in the rest pose */
+  function boundAt(L: EngineLayer, B: EngineLayer, t: number, rest: boolean): number[] {
+    // measured up to the nearest group holding both, so a group scaled to nothing doesn't matter
+    var up: EngineLayer[] = [],
+      q = layerOf(B.parent),
+      C: EngineLayer | null = null,
+      g = 0;
+    while (q && g++ < 100) {
+      up.push(q);
+      q = layerOf(q.parent);
+    }
+    for (q = layerOf(L.parent), g = 0; q && g++ < 100; q = layerOf(q.parent))
+      if (up.indexOf(q) >= 0) {
+        C = q;
+        break;
+      }
+    var was = RESTV;
+    RESTV = rest;
+    var S = pinSpace(L, t, C),
+      M = Math.abs(S[0] * S[3] - S[1] * S[2]) < 1e-12 ? [1, 0, 0, 1, 0, 0] : mmul(minv(S), worldOf(B, t, C));
+    RESTV = was;
+    var G = B.geo || {},
+      a = ((G.ang || 0) * Math.PI) / 180,
+      x = G.x || 0,
+      y = G.y || 0,
+      dx = M[0] * Math.cos(a) + M[2] * Math.sin(a),
+      dy = M[1] * Math.cos(a) + M[3] * Math.sin(a);
+    return [M[0] * x + M[2] * y + M[4], M[1] * x + M[3] * y + M[5], (Math.atan2(dy, dx) * 180) / Math.PI];
+  }
+  /** a pin at t: [rest x, rest y, x, y, angle in degrees] (a bound pin follows its bone) */
+  function pinAt(L: EngineLayer, p: { n: number; x: number; y: number; bone?: string }, t: number): number[] {
+    var B = p.bone ? layerOf(p.bone) : null;
+    if (B) {
+      var r = boundAt(L, B, t, true),
+        c = boundAt(L, B, t, false);
+      return [r[0], r[1], c[0], c[1], c[2] - r[2]];
+    }
+    var P = get(L, 'pin' + p.n, t) || [p.x, p.y];
+    return [p.x, p.y, P[0], P[1], get(L, 'pinr' + p.n, t) || 0];
+  }
   /** the pins' moves at t: [rest x, rest y, x, y, cos, sin] each, and the falloff power */
   function pinMoves(L: EngineLayer, t: number): [number[][], number] {
     var ps = L.pins || [],
@@ -606,9 +754,9 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
       pw = Math.max(0.5, Math.min(8, 200 / rc));
     return [
       ps.map(function (p) {
-        var P = get(L, 'pin' + p.n, t) || [p.x, p.y],
-          a = ((get(L, 'pinr' + p.n, t) || 0) * Math.PI) / 180;
-        return [p.x, p.y, P[0], P[1], Math.cos(a), Math.sin(a)];
+        var q = pinAt(L, p, t),
+          a = (q[4] * Math.PI) / 180;
+        return [q[0], q[1], q[2], q[3], Math.cos(a), Math.sin(a)];
       }),
       pw,
     ];
@@ -1211,6 +1359,7 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
       EXT = fn;
     },
     meshMats: meshMats,
+    pinAt: pinAt,
     restPins: function (on: boolean) {
       var was = NOPIN;
       NOPIN = !!on;

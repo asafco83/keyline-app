@@ -44,8 +44,11 @@ export type PropKey =
 /** a pin that bends its path: number (stable, not reused) and rest position in the layer's space */
 export interface PinDef {
   n: number;
+  /** rest position (layer space); a pin bound to a bone keeps its rest place here too */
   x: number;
   y: number;
+  /** bound to a bone (Pin tool › Bind to bones): it follows the bone's joint and turns with it */
+  bone?: string;
 }
 
 /** Unanimated values. */
@@ -343,6 +346,9 @@ export interface EditorState {
   pinSel: number | null;
   /** Pin tool: the pin whose rotation ring is under the pointer */
   pinRing: number | null;
+  /** Pin tool: Bind to bones is on (clicking a bone adds a pin bound to it), and the bone under the pointer */
+  pinBind: boolean;
+  pinBoneHover: string | null;
   file?: OpenFile | null;
   dirty?: boolean;
   loading?: boolean;

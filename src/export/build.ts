@@ -63,7 +63,11 @@ export function smilShapes() {
 }
 /** pin tracks bend the layer: a path through its shape, other layers through their mesh */
 function pinAnimated(l: Layer) {
-  return !!(l.pins && l.pins.length && Object.keys(l.t).some(k => isPinKey(k) && l.t[k].length));
+  return !!(
+    l.pins &&
+    l.pins.length &&
+    (l.pins.some(p => p.bone) || Object.keys(l.t).some(k => isPinKey(k) && l.t[k].length))
+  );
 }
 function pathPinAnimated(l: Layer) {
   return l.type === 'path' && pinAnimated(l);
@@ -378,6 +382,7 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
     prep.forEach(l => {
       l.id = m[l.id];
       if (l.parent) l.parent = m[l.parent];
+      (l.pins || []).forEach(p => p.bone && (p.bone = m[p.bone]));
     });
   }
   const byId: Record<string, Layer> = {};
@@ -408,6 +413,28 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
     csParents.add(P.id);
     if (!anim.includes(l)) anim.push(l);
     if (!anim.includes(P)) anim.push(P);
+  });
+  // pins bound to bones follow them: the runtime works out where the bone and the pinned layer are,
+  // so both (and every group above them) go into its data
+  const chain = new Set<string>(),
+    boundB = new Set<string>(),
+    addUp = (x: Layer | undefined) => {
+      let g = 0;
+      while (x && !chain.has(x.id) && g++ < 100) {
+        chain.add(x.id);
+        if (!anim.includes(x)) anim.push(x);
+        x = x.parent ? byId[x.parent] : undefined;
+      }
+    };
+  prep.forEach(l => {
+    if (!l.pins || hiddenUp(l)) return;
+    const bs = l.pins.filter(p => p.bone && byId[p.bone] && !hiddenUp(byId[p.bone]));
+    if (!bs.length) return;
+    addUp(l);
+    bs.forEach(p => {
+      boundB.add(p.bone);
+      addUp(byId[p.bone]);
+    });
   });
   // composites look parent bones up among the exported layers while the export is written, and
   // pinned paths are always exported bent (the editor may be showing them at rest)
@@ -491,6 +518,11 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
             else b.d = l.b.d;
             for (const k in l.b) if (isPinKey(k)) b[k] = (l.b as Record<string, any>)[k];
           }
+          if (chain.has(l.id)) {
+            if (l.parent) o.parent = l.parent;
+            if (l.xf) o.xf = l.xf;
+          }
+          if (boundB.has(l.id)) o.geo = { x: l.geo.x, y: l.geo.y, ang: l.geo.ang || 0 };
           if (counter.has(l.id)) {
             o.parent = l.parent;
             o.cs = 1;
