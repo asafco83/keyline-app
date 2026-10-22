@@ -27,7 +27,7 @@ import { finishPen, penBackspace } from '../tools/pen';
 import { selectedPosKeys } from '../tools/stage-input';
 import { applyEase } from './easing';
 import { cancelBind } from '../tools/bone-edit';
-import { deleteSelectedPin } from '../tools/pins';
+import { deleteSelectedPin, endPinBind } from '../tools/pins';
 import { FM, closeFileMenu } from './file-menu';
 import { renderInspector } from './inspector';
 import { arrange, deleteSel, duplicate, groupSel, ungroup } from './layers-panel';
@@ -200,6 +200,7 @@ export function init(): void {
         return;
       }
       if (cancelBind()) return;
+      if (endPinBind()) return;
       if (S.tool !== 'select') {
         setTool('select');
         return;

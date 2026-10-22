@@ -3817,6 +3817,34 @@ select.sel {
 #wrap.t-bonescale {
   cursor: default;
 }
+/* the Pin tool's options bar: Bind to bones */
+.bone-opts .bo-tg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+.bone-opts .bo-tg:hover {
+  background: var(--panel-2);
+}
+.bone-opts .bo-tg.on {
+  background: var(--accent-soft);
+  color: var(--accent-fg);
+  box-shadow: inset 0 0 0 1px var(--accent-line);
+}
+.bone-opts .bo-tg svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
 
 /* timeline: a rig's Pose row (all of its bones' keyframes at each time) */
 .tl-pose .tl-bar {
@@ -3896,6 +3924,17 @@ select.sel {
   stroke: var(--raised);
   stroke-width: 2;
 }
+/* a pin bound to a bone: a ring around it */
+.ov-pinbound {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.4;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.ov-pin.is-bound {
+  cursor: pointer;
+}
 .ov-pindot {
   fill: var(--accent);
   pointer-events: none;
@@ -3969,6 +4008,9 @@ select.sel {
   font-size: 12px;
   cursor: pointer;
 }
+.pin-chip.bound {
+  box-shadow: inset 0 0 0 1.5px var(--accent-line);
+}
 .pin-chip.on {
   background: var(--accent);
   color: var(--on-accent);
@@ -3976,6 +4018,14 @@ select.sel {
 }
 .sec .pin-ind {
   margin-left: 22px;
+}
+.pin-bone {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
 }
 .pin-val {
   flex: none;

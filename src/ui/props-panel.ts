@@ -14,7 +14,7 @@ import { FONTS, ICON, byId, clone, esc, fmt, ic, r2, valueAt } from '../core/con
 import { INSP } from '../core/dom';
 import { beginEdit, setProp, setTime } from '../core/history';
 import { type NodeType, currentNode, nodeType, setNodePos, setNodeType } from '../tools/motion-path';
-import { S } from '../core/state';
+import { S, layerById } from '../core/state';
 import { WEB_FONTS } from '../model/font-catalog';
 import { localFamilies, localFontsSupported, localLoaded, pickWeight, webFont } from '../render/fonts';
 import { FILTERS, addFilter, fxKey, removeFilter, syncFa } from '../model/filters';
@@ -680,13 +680,19 @@ export function pinsSection(l: Layer) {
   if (S.pinSel == null || !ps.some(p => p.n === S.pinSel)) S.pinSel = ps[ps.length - 1].n;
   const n = S.pinSel,
     reach = l.reach || 100,
-    mesh = meshOf(l);
+    mesh = meshOf(l),
+    cur = ps.find(p => p.n === n),
+    bone = cur && cur.bone ? layerById(cur.bone) : null;
   return `<section class="sec"><h3>Pins <small>${ps.length} ${ps.length > 1 ? 'pins' : 'pin'}</small></h3>
-    ${nrow('Pin', `<div class="pin-chips" role="group" aria-label="Pins">${ps.map(p => `<button type="button" class="pin-chip${p.n === n ? ' on' : ''}" data-act="pinsel" data-n="${p.n}" aria-pressed="${p.n === n}" aria-label="Pin ${p.n}">${p.n}</button>`).join('')}</div>`)}
-    ${krow('pin' + n, 'Position', num(`pin${n}:0`, 'X') + num(`pin${n}:1`, 'Y'))}
-    ${krow('pinr' + n, 'Rotation', num(`pinr${n}`, '∠', '°'))}
+    ${nrow('Pin', `<div class="pin-chips" role="group" aria-label="Pins">${ps.map(p => `<button type="button" class="pin-chip${p.n === n ? ' on' : ''}${p.bone ? ' bound' : ''}" data-act="pinsel" data-n="${p.n}" aria-pressed="${p.n === n}" aria-label="Pin ${p.n}${p.bone ? ' (on a bone)' : ''}">${p.n}</button>`).join('')}</div>`)}
+    ${
+      bone
+        ? nrow('Bone', `<span class="pin-bone">${esc(bone.name)}</span><span class="pin-val">follows its joint</span>`)
+        : krow('pin' + n, 'Position', num(`pin${n}:0`, 'X') + num(`pin${n}:1`, 'Y')) +
+          krow('pinr' + n, 'Rotation', num(`pinr${n}`, '∠', '°'))
+    }
     ${nrow('Reach', `<input type="range" class="rng" id="pinReach" data-preach data-range min="20" max="400" step="5" value="${reach}" aria-label="Reach"><span class="pin-val" id="pinReachV">${fmt(reach)} %</span>`)}
     ${mesh ? nrow('Mesh', `<input type="range" class="rng" id="pinMesh" data-pmesh data-range min="12" max="240" step="4" value="${Math.min(240, (l.mesh && l.mesh.n) || MESH_DEFAULT)}" aria-label="Mesh density"><span class="pin-val" id="pinMeshV">${mesh.t.length} triangles</span>`) : ''}
     <div class="btns pin-ind"><button class="btn" data-act="pinrm">Remove pin</button><button class="btn" data-act="pinrmall">Remove all pins</button></div>
-    <p class="pin-ind">${mesh ? 'Pins bend the artwork through a mesh of triangles; a denser mesh bends more smoothly and makes CSS exports larger.' : 'Pins bend the path through its own nodes.'} Click with the Pin tool (W) to add pins; drag one to bend the ${mesh ? 'artwork' : 'path'} (keyed at the playhead). Reach sets how far each pin pulls.</p></section>`;
+    <p class="pin-ind">${mesh ? 'Pins bend the artwork through a mesh of triangles; a denser mesh bends more smoothly and makes CSS exports larger.' : 'Pins bend the path through its own nodes.'} Click with the Pin tool (W) to add pins; drag one to bend the ${mesh ? 'artwork' : 'path'} (keyed at the playhead). Bind to bones (in the Pin tool) adds pins that follow bones. Reach sets how far each pin pulls.</p></section>`;
 }

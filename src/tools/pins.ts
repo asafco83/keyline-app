@@ -3,33 +3,50 @@
 // playhead), drag the ring of the selected pin to turn it, Alt+drag moves a pin at rest. Edit pins
 // tool: moves pins at rest (the artwork shows its rest shape); a moved pin takes its motion with it.
 // Paths bend through their own nodes; images, text and groups through a triangle mesh (model/mesh).
+// Bind to bones (the Pin tool's options bar): clicking a bone adds a pin at its joint that follows the
+// bone (its position and rotation), so the rig bends the artwork; bound pins mix with ordinary ones.
 import type { Layer, PropKey, XY } from '../model/types';
-import { H, byId, clone, esc, fmt, r2, r3, valueAt, xfp } from '../core/constants';
+import { H, ICON, byId, clone, esc, fmt, r2, r3, valueAt, xfp } from '../core/constants';
 import { OV, svgEl } from '../core/dom';
 import { beginEdit, setProp } from '../core/history';
-import { S, layerById, selLayer } from '../core/state';
+import { S, doc, layerById, selLayer } from '../core/state';
 import { ellNodes, rectNodes } from '../geometry/nodes';
 import { nextPinNumber } from '../model/pins';
 import { meshable, pinnable } from '../model/mesh';
 import { meshLines } from '../render/mesh';
 import { meshOf } from '../render/markup';
-import { isHidden, isLocked } from '../model/tree';
+import { descendants, isHidden, isLocked } from '../model/tree';
+import { toast } from '../io/open';
 import { drawOverlay, gMatrix, localMatrix } from '../render/overlay';
 import { frame } from '../render/stage';
 import { hitChain } from './stage-input';
+import { renderInspector } from '../ui/inspector';
 
 const RING = 22; // screen px: the rotation ring around the selected pin
 export const isPinTool = (t: string) => t === 'pin' || t === 'pinedit';
 
+/** a pin at the playhead: [rest x, rest y, x, y, angle] (a bound pin follows its bone) */
+function pinState(l: Layer, n: number) {
+  const p = l.pins.find(q => q.n === n);
+  return p ? H.pinAt(l, p, S.time) : null;
+}
 /** a pin's current position (layer space): at rest with the Edit pins tool, else at the playhead */
 function pinAt(l: Layer, n: number) {
-  const p = l.pins.find(q => q.n === n);
-  if (!p) return null;
-  if (S.tool === 'pinedit') return [p.x, p.y];
-  return valueAt(l, 'pin' + n, S.time) || [p.x, p.y];
+  const q = pinState(l, n);
+  if (!q) return null;
+  return S.tool === 'pinedit' ? [q[0], q[1]] : [q[2], q[3]];
 }
 function pinRot(l: Layer, n: number) {
-  return S.tool === 'pinedit' ? 0 : valueAt(l, 'pinr' + n, S.time) || 0;
+  return S.tool === 'pinedit' ? 0 : (pinState(l, n) || [0, 0, 0, 0, 0])[4];
+}
+const isBound = (l: Layer, n: number) => {
+  const p = l.pins && l.pins.find(q => q.n === n);
+  return !!(p && p.bone && layerById(p.bone));
+};
+/** the bones the selected layer's pins follow */
+export function boundBones() {
+  const l = selLayer();
+  return new Set<string>(((l && l.pins) || []).filter(p => p.bone).map(p => p.bone));
 }
 /** the layer whose pins are shown: the selected path, image, text or group */
 function pinLayer(): Layer | null {
@@ -44,21 +61,29 @@ const mtx = (M: DOMMatrix) => `matrix(${[M.a, M.b, M.c, M.d, M.e, M.f].map(v => 
 /** is any pin away from its rest place or turned at the playhead */
 function bent(l: Layer) {
   return (l.pins || []).some(p => {
-    const c = pinAt(l, p.n);
-    return Math.hypot(c[0] - p.x, c[1] - p.y) > 0.01 || Math.abs(pinRot(l, p.n)) > 0.01;
+    const q = pinState(l, p.n);
+    return Math.hypot(q[2] - q[0], q[3] - q[1]) > 0.01 || Math.abs(q[4]) > 0.01;
   });
 }
 function animated(l: Layer) {
-  return (l.pins || []).some(p => ['pin' + p.n, 'pinr' + p.n].some(k => l.t[k] && l.t[k].length > 1));
+  return (l.pins || []).some(
+    p => (p.bone && layerById(p.bone)) || ['pin' + p.n, 'pinr' + p.n].some(k => l.t[k] && l.t[k].length > 1),
+  );
 }
 /** the Pin tool's chip above the canvas */
 export function pinChip(): string | null {
+  if (S.pinBind) {
+    const s = selLayer();
+    if (s && pinnable(s))
+      return `<b>Bind to bones</b><span class="mu">· click bones to pin ${esc(s.name)} to them · click a bound bone again to unbind · Esc when done</span>`;
+  }
   const l = pinLayer();
   if (!l || !l.pins || !l.pins.length) return null;
   if (S.pinRing != null && l.pins.some(p => p.n === S.pinRing))
     return `<b>Pin ${S.pinRing}</b><span class="mu">· drag the ring to turn it</span>`;
   const n = l.pins.length,
-    pins = `${n} ${n > 1 ? 'pins' : 'pin'}`,
+    nb = l.pins.filter(p => p.bone).length,
+    pins = `${n} ${n > 1 ? 'pins' : 'pin'}${nb ? ` · ${nb} on bones` : ''}`,
     M = meshOf(l),
     kind = l.type === 'raw' ? 'artwork' : l.type,
     dot = animated(l) ? '<span class="dot key"></span>' : '';
@@ -70,11 +95,68 @@ export function pinChip(): string | null {
 export function pinHover(e: PointerEvent) {
   const t = e.target as any,
     r = t && t.closest && t.closest('[data-pinring]'),
-    n = r ? +r.dataset.pinring : null;
-  if (n !== S.pinRing) {
+    n = r ? +r.dataset.pinring : null,
+    bn = S.pinBind && t && t.closest && t.closest('[data-bone]'),
+    b = bn ? bn.dataset.bone : null;
+  if (n !== S.pinRing || b !== S.pinBoneHover) {
     S.pinRing = n;
+    S.pinBoneHover = b;
     drawOverlay();
   }
+}
+
+/* ---------- Bind to bones (the Pin tool's options bar) ---------- */
+
+/** the options bar shows Bind to bones while a layer that takes pins is selected and there are bones */
+export function pinBar() {
+  const bar = document.getElementById('boneOpts');
+  if (!bar || S.tool !== 'pin') return;
+  const l = selLayer(),
+    ok = !!l && pinnable(l) && !isLocked(l) && doc.layers.some(b => b.type === 'bone' && !isHidden(b));
+  if (!ok) {
+    if (S.pinBind) S.pinBind = false;
+    bar.hidden = true;
+    return;
+  }
+  bar.setAttribute('aria-label', 'Pin tool options');
+  bar.innerHTML = `<button type="button" class="bo-tg${S.pinBind ? ' on' : ''}" data-pbind aria-pressed="${S.pinBind}">${ICON.bonebind}<span>Bind to bones</span></button>`;
+  bar.hidden = false;
+}
+export function initPinBar() {
+  const bar = document.getElementById('boneOpts');
+  if (!bar) return;
+  bar.addEventListener('click', e => {
+    if (!(e.target as HTMLElement).closest('[data-pbind]')) return;
+    S.pinBind = !S.pinBind;
+    S.pinBoneHover = null;
+    drawOverlay();
+  });
+}
+/** Esc / Enter: leave Bind to bones */
+export function endPinBind() {
+  if (S.tool !== 'pin' || !S.pinBind) return false;
+  S.pinBind = false;
+  S.pinBoneHover = null;
+  drawOverlay();
+  return true;
+}
+/** clicking a bone while binding: a pin at its joint that follows it, or (bound already) unbinds it */
+function bindBone(l: Layer, boneId: string) {
+  const B = layerById(boneId);
+  if (!B || B.type !== 'bone') return;
+  if (l.type === 'group' && descendants(l).includes(B)) {
+    toast('That bone is inside this group, so it already moves the artwork. Pin the group to bones outside it.');
+    return;
+  }
+  const have = (l.pins || []).find(p => p.bone === boneId);
+  if (have) return removePin(l, have.n);
+  const ed = beginEdit();
+  toPath(l);
+  const n = nextPinNumber(l),
+    q = H.pinAt(l, { n, x: 0, y: 0, bone: boneId }, S.time);
+  l.pins = [...(l.pins || []), { n, x: r2(q[0]), y: r2(q[1]), bone: boneId }];
+  S.pinSel = n;
+  ed.end({ insp: true });
 }
 
 /* ---------- overlay ---------- */
@@ -135,16 +217,20 @@ export function drawPins(u: number) {
     }
   }
   l.pins.forEach(p => {
-    const c = pinAt(l, p.n),
+    const q = pinState(l, p.n),
+      c = pinAt(l, p.n),
       P = xfp(M, c[0], c[1]),
-      R = xfp(M, p.x, p.y),
-      sel = S.pinSel === p.n;
-    if (S.tool === 'pin' && Math.hypot(P.x - R.x, P.y - R.y) > 0.5 / S.scale) {
+      R = xfp(M, q[0], q[1]),
+      sel = S.pinSel === p.n,
+      bound = isBound(l, p.n);
+    // a pin bound to a bone: a ring around it, and no rest mark or rotation ring (the bone moves it)
+    if (bound) OV.append(svgEl('circle', { cx: P.x, cy: P.y, r: 9.5 * u, class: 'ov-pinbound' }));
+    if (!bound && S.tool === 'pin' && Math.hypot(P.x - R.x, P.y - R.y) > 0.5 / S.scale) {
       // where the pin sits at rest
       OV.append(svgEl('line', { x1: R.x, y1: R.y, x2: P.x, y2: P.y, class: 'ov-pinrest' }));
       OV.append(svgEl('circle', { cx: R.x, cy: R.y, r: 4 * u, class: 'ov-pinrest' }));
     }
-    if (sel && S.tool === 'pin') {
+    if (sel && S.tool === 'pin' && !bound) {
       const a = (pinRot(l, p.n) * Math.PI) / 180,
         kx = P.x + RING * u * Math.cos(a),
         ky = P.y + RING * u * Math.sin(a);
@@ -152,9 +238,10 @@ export function drawPins(u: number) {
       OV.append(svgEl('line', { x1: P.x, y1: P.y, x2: kx, y2: ky, class: 'ov-pinarm' }));
       OV.append(svgEl('circle', { cx: kx, cy: ky, r: 4.5 * u, class: 'ov-pinknob', 'data-pinring': p.n }));
     }
-    if (sel) OV.append(svgEl('circle', { cx: P.x, cy: P.y, r: 6 * u, class: 'ov-pin is-sel', 'data-pin': p.n }));
+    const bc = bound ? ' is-bound' : '';
+    if (sel) OV.append(svgEl('circle', { cx: P.x, cy: P.y, r: 6 * u, class: 'ov-pin is-sel' + bc, 'data-pin': p.n }));
     else {
-      OV.append(svgEl('circle', { cx: P.x, cy: P.y, r: 5.5 * u, class: 'ov-pin', 'data-pin': p.n }));
+      OV.append(svgEl('circle', { cx: P.x, cy: P.y, r: 5.5 * u, class: 'ov-pin' + bc, 'data-pin': p.n }));
       OV.append(svgEl('circle', { cx: P.x, cy: P.y, r: 1.8 * u, class: 'ov-pindot' }));
     }
   });
@@ -236,14 +323,17 @@ export function deleteSelectedPin() {
   removePin(l, S.pinSel);
   return true;
 }
-function addPin(l: Layer, p: XY) {
-  const ed = beginEdit();
-  // rectangles and ellipses become paths first (pins bend a path through its nodes)
+/** rectangles and ellipses become paths first (pins bend a path through its nodes) */
+function toPath(l: Layer) {
   if (l.type === 'rect' || l.type === 'ellipse') {
     l.b.d = l.type === 'rect' ? rectNodes(l.geo) : ellNodes(l.geo);
     l.type = 'path';
     l.geo = {};
   }
+}
+function addPin(l: Layer, p: XY) {
+  const ed = beginEdit();
+  toPath(l);
   if (S.sel !== l.id || S.selSet.size > 1) {
     S.sel = l.id;
     S.selSet = new Set<any>([l.id]);
@@ -259,12 +349,25 @@ export function pinsDown(e: PointerEvent, p0: XY) {
   const t = e.target as any,
     ring = t.closest && t.closest('[data-pinring]'),
     pe = t.closest && t.closest('[data-pin]'),
+    bone = S.tool === 'pin' && S.pinBind && t.closest && t.closest('[data-bone]'),
     l = pinLayer();
+  if (bone) {
+    const s = selLayer();
+    if (s && pinnable(s) && !isLocked(s)) bindBone(s, bone.dataset.bone);
+    return;
+  }
   if ((ring || pe) && l && !isLocked(l)) {
     const n = +(ring || pe).dataset[ring ? 'pinring' : 'pin'];
     S.pinSel = n;
+    // a pin bound to a bone follows the bone: it can be picked (and deleted), not dragged
+    if (isBound(l, n)) {
+      drawOverlay();
+      renderInspector();
+      return;
+    }
     return ring ? rotateDrag(l, n, p0) : pinDrag(l, n, p0, S.tool === 'pinedit' || e.altKey);
   }
+  if (S.pinBind) return;
   if (S.tool === 'pinedit') {
     S.pinSel = null;
     drawOverlay();

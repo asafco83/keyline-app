@@ -32,11 +32,15 @@ describe('sample scene', () => {
     expect(bones.some(b => b.t.scl && b.t.scl.some(q => q[1][0] !== q[1][1]))).toBe(true);
   });
   it('bends a path with pins: a held pin and a keyed one', () => {
-    const l = L.find(x => x.pins && x.pins.length > 1) as Layer;
+    const l = L.find(x => x.type === 'path' && x.pins && x.pins.length > 1 && !x.pins.some(p => p.bone)) as Layer;
     expect(l).toBeTruthy();
-    expect(l.type).toBe('path');
     expect(l.pins!.some(p => !l.t['pin' + p.n])).toBe(true);
     expect(l.pins!.some(p => (l.t['pin' + p.n] || []).length > 1)).toBe(true);
+  });
+  it('bends a layer with pins that follow bones', () => {
+    const l = L.find(x => x.pins && x.pins.some(p => p.bone)) as Layer;
+    expect(l).toBeTruthy();
+    expect(l.pins!.filter(p => p.bone).every(p => L.some(b => b.id === p.bone && b.type === 'bone'))).toBe(true);
   });
   it('bends a group through a triangle mesh with pins', () => {
     const g = L.find(x => x.type === 'group' && x.pins && x.pins.length > 1) as Layer;

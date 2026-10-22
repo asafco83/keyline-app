@@ -260,7 +260,7 @@ export function sampleDoc(): any {
 
   // Sprout — a bone rig: three bones, each carrying its stem part, leaf or flower; the group grows
   // in, then the bones sway with follow-through and the top bone squashes and stretches; the Leaf
-  // bends with pins
+  // bends with pins, and the Tendril's pins follow the bones
   const sprout = mkLayer('group', 'Sprout', {}, NOFILL);
   sprout.o = [592, 300];
   sprout.t.scl = [
@@ -309,6 +309,20 @@ export function sampleDoc(): any {
     { fill: '#FF8FB1', d: radial(592, 210, [11, 11, 11, 11, 11], [9, 9, 9, 9, 9]) },
   );
   bloom.parent = b3.id;
+  // a tendril beside the stalk, bent by the rig: its pins are bound to the three bones (Pin tool ›
+  // Bind to bones), so it follows their joints and turns with them
+  const side = (x: number) => Array.from({ length: 11 }, (_, i) => [x, 298 - i * 7.6]);
+  const tendril = mkLayer(
+    'path',
+    'Tendril',
+    {},
+    {
+      fill: '#5FBF9F',
+      d: [{ c: true, n: [...side(596.5), ...side(599).reverse()].map(([x, y]) => N(x, y)) }],
+    },
+  );
+  tendril.parent = sprout.id;
+  tendril.pins = [b1, b2, b3].map((b, i) => ({ n: i + 1, x: b.geo.x, y: b.geo.y, bone: b.id }));
   const sway = (deg: number, lag: number) => [
     [1.2 + lag, 0, 'inOutSine'],
     [1.9 + lag, -deg, 'inOutSine'],
@@ -498,6 +512,7 @@ export function sampleDoc(): any {
     clipF,
     ridgeL,
     sprout,
+    tendril,
     b1,
     seg1,
     b2,
