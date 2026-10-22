@@ -82,6 +82,10 @@ export interface Composite {
   dof: any;
   /** corner radius (null = not animated) */
   rad: any;
+  /** rectangle / image / ellipse box [x, y, w, h] for an animated size (null = not animated) */
+  gb: number[] | null;
+  /** dash pattern (null = not animated; [] = solid) */
+  da: number[] | null;
   /** trim path [start %, end %, offset %], or null when the whole stroke shows */
   trim: number[] | null;
   /** bones: rest angle (degrees); scale W runs along the bone and H across it */
@@ -152,6 +156,12 @@ export interface CinPlayer {
   pinAt(L: EngineLayer, p: { n: number; x: number; y: number; bone?: string }, t: number): number[];
   get(L: EngineLayer, k: string, t: number): any;
   dstr(sp: EngineSubPath[] | null | undefined): string;
+  /** a dash pattern as stroke-dasharray ('none' for a solid line) */
+  dashStr(a: number[]): string;
+  /** the exact box [x, y, w, h] of a path */
+  pathBox(sp: EngineSubPath[] | null | undefined): number[];
+  /** an SVG transform list as a matrix [a, b, c, d, e, f] */
+  xfM(s: string): number[];
   /** is the value a gradient ({ g: 'lin' | 'rad', s: stops, … }) */
   isG(v: any): boolean;
   /** gradient geometry attributes */
@@ -191,6 +201,8 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
     fo: 'n',
     so: 'n',
     dof: 'n',
+    sz: 'v',
+    da: 'a',
   };
   var EZ: Record<string, Bezier> = {
     ease: [0.25, 0.1, 0.25, 1],
@@ -454,8 +466,41 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
       };
     });
   }
+  /** number lists (dash patterns), as SVGator and CSS blend them: an empty list counts as zeros, and
+   *  lists of different lengths repeat to their least common multiple */
+  function mixA(a: number[], b: number[], p: number): number[] {
+    a = a || [];
+    b = b || [];
+    var i = a.length,
+      j = b.length,
+      o: number[] = [],
+      k: number;
+    if (i !== j) {
+      if (!i) a = rep(b.map(zero), 1);
+      else if (!j) b = rep(a.map(zero), 1);
+      else {
+        var m = (i * j) / gcd(i, j);
+        a = rep(a, m / i);
+        b = rep(b, m / j);
+      }
+    }
+    for (k = 0; k < a.length; k++) o.push(a[k] + (b[k] - a[k]) * p);
+    return o;
+  }
+  function zero() {
+    return 0;
+  }
+  function gcd(x: number, y: number): number {
+    return y ? gcd(y, x % y) : x || 1;
+  }
+  function rep(a: number[], n: number): number[] {
+    var o: number[] = [];
+    for (var r = 0; r < n; r++) o = o.concat(a);
+    return o;
+  }
   function mix(k: string, a: any, b: any, p: number): any {
     if (k === 'c') return mixC(a, b, p);
+    if (k === 'a') return mixA(a, b, p);
     if (k === 'm') return mixM(a, b, p);
     if (k === 'v') return [a[0] + (b[0] - a[0]) * p, a[1] + (b[1] - a[1]) * p];
     return a + (b - a) * p;
@@ -562,6 +607,8 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
       so: get(L, 'so', t),
       dof: get(L, 'dof', t),
       rad: L.t && L.t.rad && L.t.rad.length ? get(L, 'rad', t) : null,
+      gb: geoBox(L, t),
+      da: L.t && L.t.da && L.t.da.length ? get(L, 'da', t) : null,
       trim: trimOf(L, t),
       ba: boneAng(L),
       cp: counterScale(L, t),
@@ -617,10 +664,103 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
     // crossing the end: one dash per pathLength (100), so it wraps around to the start
     return [f(len) + ' ' + f(100 - len), String(f(-raw))];
   }
-  /** the path at time t, bent by its pins (unless the editor shows the rest shape) */
+  /** the path at time t, resized (an animated size) and bent by its pins (unless the editor shows the
+   *  rest shape) */
   function shapeOf(L: EngineLayer, t: number): EngineSubPath[] | undefined {
     var d = shapeBase(L, t);
+    if (d && L.t && L.t.sz && L.t.sz.length) d = sizePath(L, d, t);
     return d && L.pins && L.pins.length && !NOPIN ? pinWarp(L, d, t) : d;
+  }
+  /* ---- size: a shape's box grows or shrinks around the layer's origin ---- */
+  /** box [x, y, w, h] resized to s = [w, h] around the point o */
+  function fitBox(b: number[], s: number[], o: number[]): number[] {
+    var kx = b[2] ? s[0] / b[2] : 1,
+      ky = b[3] ? s[1] / b[3] : 1;
+    return [o[0] - (o[0] - b[0]) * kx, o[1] - (o[1] - b[1]) * ky, Math.max(0, s[0]), Math.max(0, s[1])];
+  }
+  /** a rectangle's, image's or ellipse's box at t, when its size is animated */
+  function geoBox(L: EngineLayer, t: number): number[] | null {
+    var G = L.geo;
+    if (!G || !L.t || !L.t.sz || !L.t.sz.length || (L.type !== 'rect' && L.type !== 'image' && L.type !== 'ellipse'))
+      return null;
+    var b =
+      L.type === 'ellipse'
+        ? [(G.cx || 0) - (G.rx || 0), (G.cy || 0) - (G.ry || 0), 2 * (G.rx || 0), 2 * (G.ry || 0)]
+        : [G.x || 0, G.y || 0, G.w || 0, G.h || 0];
+    return fitBox(b, get(L, 'sz', t), get(L, 'org', t) || [0, 0]);
+  }
+  /** a path scaled from its resting size (the box of its base shape) to the size at t */
+  function sizePath(L: EngineLayer, d: EngineSubPath[], t: number): EngineSubPath[] {
+    var b = pathBox((L.b && L.b.d) || d),
+      s = get(L, 'sz', t),
+      o = get(L, 'org', t) || [0, 0],
+      kx = b[2] > 1e-9 ? s[0] / b[2] : 1,
+      ky = b[3] > 1e-9 ? s[1] / b[3] : 1;
+    return d.map(function (sp: EngineSubPath) {
+      return {
+        c: sp.c,
+        n: sp.n.map(function (q: number[]) {
+          return q.map(function (v: number, i: number) {
+            return i % 2 ? o[1] + (v - o[1]) * ky : o[0] + (v - o[0]) * kx;
+          });
+        }),
+      };
+    });
+  }
+  /** the exact box [x, y, w, h] of a path (its curves, not just its control points) */
+  function pathBox(sp: EngineSubPath[] | null | undefined): number[] {
+    var x0 = Infinity,
+      y0 = Infinity,
+      x1 = -Infinity,
+      y1 = -Infinity;
+    function pt(x: number, y: number) {
+      if (x < x0) x0 = x;
+      if (x > x1) x1 = x;
+      if (y < y0) y0 = y;
+      if (y > y1) y1 = y;
+    }
+    function ext(p0: number, p1: number, p2: number, p3: number): number[] {
+      // where the derivative of one coordinate of the cubic is zero (0 < t < 1)
+      var a = -p0 + 3 * p1 - 3 * p2 + p3,
+        b = 2 * (p0 - 2 * p1 + p2),
+        c = p1 - p0,
+        out: number[] = [];
+      if (Math.abs(a) < 1e-12) {
+        if (Math.abs(b) > 1e-12) out.push(-c / b);
+      } else {
+        var D = b * b - 4 * a * c;
+        if (D >= 0) {
+          var r = Math.sqrt(D);
+          out.push((-b + r) / (2 * a), (-b - r) / (2 * a));
+        }
+      }
+      return out.filter(function (v: number) {
+        return v > 0 && v < 1;
+      });
+    }
+    function seg(A: number[], B: number[]) {
+      var X = [A[0], A[4], B[2], B[0]],
+        Y = [A[1], A[5], B[3], B[1]];
+      pt(B[0], B[1]);
+      ext(X[0], X[1], X[2], X[3])
+        .concat(ext(Y[0], Y[1], Y[2], Y[3]))
+        .forEach(function (t: number) {
+          var u = 1 - t,
+            w0 = u * u * u,
+            w1 = 3 * u * u * t,
+            w2 = 3 * u * t * t,
+            w3 = t * t * t;
+          pt(w0 * X[0] + w1 * X[1] + w2 * X[2] + w3 * X[3], w0 * Y[0] + w1 * Y[1] + w2 * Y[2] + w3 * Y[3]);
+        });
+    }
+    (sp || []).forEach(function (s: EngineSubPath) {
+      var n = s.n;
+      if (!n.length) return;
+      pt(n[0][0], n[0][1]);
+      for (var i = 1; i < n.length; i++) seg(n[i - 1], n[i]);
+      if (s.c && n.length > 1) seg(n[n.length - 1], n[0]);
+    });
+    return isFinite(x0) ? [x0, y0, x1 - x0, y1 - y0] : [0, 0, 0, 0];
   }
   var NOPIN = false;
   /* ---- matrices [a, b, c, d, e, f]: where layers are on the canvas (pins that follow bones) ---- */
@@ -1024,6 +1164,16 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
       ')'
     );
   }
+  /** a dash pattern as stroke-dasharray ('none' for a solid line) */
+  function dashStr(a: number[]): string {
+    return a && a.length
+      ? a
+          .map(function (v: number) {
+            return String(f(Math.max(0, v)));
+          })
+          .join(' ')
+      : 'none';
+  }
   function dstr(sp: EngineSubPath[] | null | undefined) {
     var o = '';
     function seg(a: number[], b: number[]) {
@@ -1094,10 +1244,21 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
         s.setAttribute('pathLength', '100');
         s.setAttribute('stroke-dasharray', td[0]);
         s.setAttribute('stroke-dashoffset', td[1]);
-      } else if (c.dof != null) s.setAttribute('stroke-dashoffset', String(f(c.dof)));
+      } else {
+        if (c.dof != null) s.setAttribute('stroke-dashoffset', String(f(c.dof)));
+        if (c.da) s.setAttribute('stroke-dasharray', dashStr(c.da));
+      }
       if (c.fo != null) s.setAttribute('fill-opacity', String(f(c.fo)));
       if (c.so != null) s.setAttribute('stroke-opacity', String(f(c.so)));
       if (c.d) s.setAttribute('d', dstr(c.d));
+      if (c.gb) {
+        var gb = c.gb,
+          ga =
+            L.type === 'ellipse'
+              ? { cx: gb[0] + gb[2] / 2, cy: gb[1] + gb[3] / 2, rx: gb[2] / 2, ry: gb[3] / 2 }
+              : { x: gb[0], y: gb[1], width: gb[2], height: gb[3] };
+        for (var gk in ga) s.setAttribute(gk, String(f((ga as Record<string, number>)[gk])));
+      }
       if (c.rad != null && !L.shape) {
         s.setAttribute('rx', String(f(c.rad)));
         s.setAttribute('ry', String(f(c.rad)));
@@ -1384,6 +1545,9 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
     isG: isG,
     pc: pc,
     dstr: dstr,
+    dashStr: dashStr,
+    pathBox: pathBox,
+    xfM: xfM,
     poly: poly,
     corners: corners,
     maxRad: maxRad,

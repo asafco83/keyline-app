@@ -10,7 +10,7 @@ import { layerBox } from '../render/mesh';
 import { meshOf } from '../render/markup';
 import { MESH_DEFAULT } from '../model/mesh';
 import type { Layer, PathData, PropKey } from '../model/types';
-import { FONTS, ICON, byId, clone, esc, fmt, ic, r2, valueAt } from '../core/constants';
+import { FONTS, ICON, byId, clone, esc, fmt, ic, parseDash, r2, valueAt } from '../core/constants';
 import { INSP } from '../core/dom';
 import { beginEdit, setProp, setTime } from '../core/history';
 import { type NodeType, currentNode, nodeType, setNodePos, setNodeType } from '../tools/motion-path';
@@ -128,6 +128,10 @@ export function transformSection(l: Layer) {
 
 /* ---------- Shape settings: polygon sides, star points & ratio, corner radius, line ends ---------- */
 
+/** Size: the shape's width and height, animatable (it grows around the origin) */
+export function sizeRow() {
+  return krow('sz', 'Size', num('sz:0', 'W') + num('sz:1', 'H'));
+}
 /** slider + number for one shape setting */
 function slide(
   key: string,
@@ -148,7 +152,7 @@ export function shapeSection(l: Layer) {
   if (l.type === 'rect') {
     const G = l.geo,
       mx = Math.max(0, Math.min(G.w, G.h) / 2);
-    return `<section class="sec"><h3>Rectangle</h3>${nrow('Position', gnum('x', 'X') + gnum('y', 'Y'))}${nrow('Size', gnum('w', 'W') + gnum('h', 'H'))}${slide('rad', 'Radius', 0, r2(mx), 0.5, Math.min(valueAt(l, 'rad', S.time) || 0, mx), 'px', 1, 'rad')}<div class="btns"><button class="btn" data-act="topath">Convert to path</button></div></section>`;
+    return `<section class="sec"><h3>Rectangle</h3>${nrow('Position', gnum('x', 'X') + gnum('y', 'Y'))}${sizeRow()}${slide('rad', 'Radius', 0, r2(mx), 0.5, Math.min(valueAt(l, 'rad', S.time) || 0, mx), 'px', 1, 'rad')}<div class="btns"><button class="btn" data-act="topath">Convert to path</button></div></section>`;
   }
   const sh = liveShape(l);
   if (sh) {
@@ -339,9 +343,10 @@ export function appearanceSection(l: Layer) {
       'Line join',
       `<div class="btns tight lj">${tbtn('x:stroke-linejoin', 'miter', join === 'miter', I.joinMiter, 'Miter join')}${tbtn('x:stroke-linejoin', 'round', join === 'round', I.joinRound, 'Round join')}${tbtn('x:stroke-linejoin', 'bevel', join === 'bevel', I.joinBevel, 'Bevel join')}</div><label class="nf${join === 'miter' ? '' : ' ro'}" title="${join === 'miter' ? 'Miter limit: how far a sharp corner may stick out before it is cut flat, as a multiple of the stroke width' : 'Miter limit only applies to miter joins'}"><span>Miter</span><input data-x="stroke-miterlimit" id="x-miter" inputmode="decimal" value="${esc(X['stroke-miterlimit'] || '4')}" aria-label="Miter limit"${join === 'miter' ? '' : ' disabled'}></label>`,
     );
-    h += nrow(
+    h += krow(
+      'da',
       'Dashes',
-      `<input class="txt mono" data-x="stroke-dasharray" id="x-dash" spellcheck="false" placeholder="dash, gap, dash, gap, …" value="${esc(X['stroke-dasharray'] || '')}" aria-label="Dash pattern">`,
+      `<input class="txt mono" data-da id="x-dash" spellcheck="false" placeholder="dash, gap, dash, gap, …" aria-label="Dash pattern">`,
     );
     h += krow('dof', 'Dash offset', num('dof', '⇥', 'px'));
     h += nrow(
@@ -444,6 +449,9 @@ export function refreshProps(l: Layer): void {
       if (ny !== document.activeElement) ny.value = fmt(q[1][1] + o[1]);
     }
   }
+  const dash = byId('x-dash');
+  if (dash && dash !== document.activeElement)
+    dash.value = ((valueAt(l, 'da', S.time) as number[]) || []).map(fmt).join(', ');
   const ww = byId('g-ww');
   if (ww && !l.geo.wrap) ww.value = byId('bb-w') ? byId('bb-w').value : '';
 }
@@ -595,17 +603,24 @@ export function propsChange(t: HTMLInputElement | HTMLSelectElement, l: Layer) {
       const n = parseFloat(v);
       v = isFinite(n) && n > 0 ? String(n) : '';
     }
-    if (t.dataset.x === 'stroke-dasharray')
-      v = v
-        .replace(/[^\d.,\s]/g, '')
-        .replace(/\s*,\s*/g, ', ')
-        .trim();
     setExtra(l, t.dataset.x, v);
+    ed.end({ insp: true });
+    return true;
+  }
+  if (t.dataset.da !== undefined) {
+    const ed = beginEdit();
+    setProp(l, 'da', parseDash(t.value.replace(/[^\d.,\s]/g, ' ')));
     ed.end({ insp: true });
     return true;
   }
   if (t.dataset.ly !== undefined) {
     const ed = beginEdit();
+    if (t.dataset.ly === 'mm') {
+      if (t.value === 'lum') l.mm = 'lum';
+      else delete l.mm;
+      ed.end({ insp: true });
+      return true;
+    }
     if (t.dataset.ly === 'iso') l.iso = (t as HTMLInputElement).checked || undefined;
     else l.blend = t.value === 'normal' ? undefined : t.value;
     if (!l.iso) delete l.iso;

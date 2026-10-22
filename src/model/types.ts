@@ -35,6 +35,10 @@ export type PropKey =
   | 'so'
   | 'sw'
   | 'dof'
+  /** size [w, h]: the shape's box, grown around the origin */
+  | 'sz'
+  /** dash pattern: a list of dash / gap lengths ([] = solid) */
+  | 'da'
   | 'd'
   /** filter parameter: fx.<filter id>.<param> */
   | `fx.${string}`
@@ -131,6 +135,8 @@ export interface Layer {
   ft?: Tracks;
   /** group: a mask group ('mask' = by opacity, 'clip' = by shape); its `maskSrc` child is the mask */
   mask?: 'mask' | 'clip';
+  /** mask group: masks by brightness ('lum', luminance) instead of by opacity (the default) */
+  mm?: 'lum';
   /** group: the folder holding a mask group's mask layers */
   maskSrc?: boolean;
   /** hyperlink: clicking the layer in the exported SVG opens it */

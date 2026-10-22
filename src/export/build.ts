@@ -75,7 +75,7 @@ function pathPinAnimated(l: Layer) {
 }
 function shapeAnimated(l: Layer) {
   const T = l.t;
-  return !!(T.d || T.p0 || T.p1 || (T.rad && l.shape) || pathPinAnimated(l));
+  return !!(T.d || T.p0 || T.p1 || (T.rad && l.shape) || (T.sz && l.type === 'path') || pathPinAnimated(l));
 }
 /** a mesh matrix for CSS: enough digits that neighbouring triangles still meet */
 const cssMat = (m: number[]) => `matrix(${m.map((v, i) => (i < 4 ? Math.round(v * 1e5) / 1e5 : r3(v))).join(',')})`;
@@ -187,6 +187,29 @@ export function smilFor(anim: Layer[], pre: string) {
   });
   return out;
 }
+/** an animated size as CSS geometry properties. An image (a <use>, which CSS can't size) scales from
+ *  its box in the file (`b0`) instead, after its own imported transform. */
+function cssBox(l: Layer, b: number[] | null, b0: number[] | null) {
+  if (!b) return '';
+  if (l.type === 'image') {
+    const kx = b0 && b0[2] ? b[2] / b0[2] : 1,
+      ky = b0 && b0[3] ? b[3] / b0[3] : 1,
+      M = [kx, 0, 0, ky, b[0] - (b0 ? b0[0] : 0) * kx, b[1] - (b0 ? b0[1] : 0) * ky],
+      X = l.xf ? H.xfM(l.xf) : [1, 0, 0, 1, 0, 0],
+      m = [
+        X[0] * M[0] + X[2] * M[1],
+        X[1] * M[0] + X[3] * M[1],
+        X[0] * M[2] + X[2] * M[3],
+        X[1] * M[2] + X[3] * M[3],
+        X[0] * M[4] + X[2] * M[5] + X[4],
+        X[1] * M[4] + X[3] * M[5] + X[5],
+      ];
+    return `transform:${cssMat(m)}`;
+  }
+  return l.type === 'ellipse'
+    ? `cx:${r3(b[0] + b[2] / 2)}px;cy:${r3(b[1] + b[3] / 2)}px;rx:${r3(b[2] / 2)}px;ry:${r3(b[3] / 2)}px`
+    : `x:${r3(b[0])}px;y:${r3(b[1])}px;width:${r3(b[2])}px;height:${r3(b[3])}px`;
+}
 export function kfBlock(name: string, stops: string[], N: number) {
   const keep = stops.map((s, i) => i === 0 || i === N || s !== stops[i - 1] || s !== stops[i + 1]);
   return `@keyframes ${name}{` + stops.map((s, i) => (keep[i] ? `${r3((i / N) * 100)}%{${s}}` : '')).join('') + '}';
@@ -231,23 +254,25 @@ export function cssFor(anim: Layer[], pre: string, svgId: string, wraps: Wrap[] 
           ) + `#${id}-m${k}{transform-box:view-box;transform-origin:0 0;animation:${id}-m${k} ${run}}`;
       });
     }
-    const shapeAnim = !!(T.p0 || T.p1 || (T.rad && l.shape) || pathPinAnimated(l)),
+    const shapeAnim = !!(T.p0 || T.p1 || (T.rad && l.shape) || (T.sz && l.type === 'path') || pathPinAnimated(l)),
       // a gradient animates through its stops (below), not the fill / stroke property
       gradK = (k: 'fill' | 'stk') => fr.some(c => H.isG(c[k])),
       gk = { fill: !!T.fill && gradK('fill'), stk: !!T.stk && gradK('stk') },
       trimAnim = !!(T.ts || T.te || T.to),
-      sk = ['fill', 'fo', 'stk', 'so', 'sw', 'dof', 'd', 'rad', 'trim'].filter(k =>
+      sk = ['fill', 'fo', 'stk', 'so', 'sw', 'dof', 'da', 'd', 'rad', 'sz', 'trim'].filter(k =>
         k === 'd'
           ? (T.d || shapeAnim) && !smilShapes()
-          : k === 'rad'
-            ? T.rad && !l.shape
-            : k === 'trim'
-              ? trimAnim
-              : k === 'fill' || k === 'stk'
-                ? T[k] && !gk[k]
-                : k === 'dof' && trimAnim
-                  ? false
-                  : T[k],
+          : k === 'sz'
+            ? T.sz && l.type !== 'path'
+            : k === 'rad'
+              ? T.rad && !l.shape
+              : k === 'trim'
+                ? trimAnim
+                : k === 'fill' || k === 'stk'
+                  ? T[k] && !gk[k]
+                  : (k === 'dof' || k === 'da') && trimAnim
+                    ? false
+                    : T[k],
       );
     // gradient stops: CSS can animate their colours (not their positions or the angle)
     (['fill', 'stk'] as const).forEach(k => {
@@ -285,20 +310,25 @@ export function cssFor(anim: Layer[], pre: string, svgId: string, wraps: Wrap[] 
                         ? `stroke-opacity:${r3(c.so)}`
                         : k === 'dof'
                           ? `stroke-dashoffset:${r3(c.dof)}`
-                          : k === 'sw'
-                            ? `stroke-width:${r3(c.sw)}px`
-                            : k === 'rad'
-                              ? `rx:${r3(c.rad)}px;ry:${r3(c.rad)}px`
-                              : k === 'trim'
-                                ? c.trim
-                                  ? `stroke-dasharray:${H.trimDash(c.trim)[0]};stroke-dashoffset:${H.trimDash(c.trim)[1]}`
-                                  : ''
-                                : `d:path("${H.dstr(c.d)}")`,
+                          : k === 'da'
+                            ? `stroke-dasharray:${H.dashStr(c.da)}`
+                            : k === 'sz'
+                              ? cssBox(l, c.gb, fr[0].gb)
+                              : k === 'sw'
+                                ? `stroke-width:${r3(c.sw)}px`
+                                : k === 'rad'
+                                  ? `rx:${r3(c.rad)}px;ry:${r3(c.rad)}px`
+                                  : k === 'trim'
+                                    ? c.trim
+                                      ? `stroke-dasharray:${H.trimDash(c.trim)[0]};stroke-dashoffset:${H.trimDash(c.trim)[1]}`
+                                      : ''
+                                    : `d:path("${H.dstr(c.d)}")`,
               )
               .join(';'),
           ),
           N,
-        ) + `#${id}-s{animation:${id}-s ${run}}`;
+        ) +
+        `#${id}-s{${sk.includes('sz') && l.type === 'image' ? 'transform-box:view-box;transform-origin:0 0;' : ''}animation:${id}-s ${run}}`;
   });
   // a rig's own draw order: each wrapper follows the bones down to its artwork's bone
   wraps.forEach(([l, bone, up]) => {
@@ -529,6 +559,16 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
           if (l.fa) o.fa = l.fa;
           // animated line ends move the nodes of the path; an animated corner radius rebuilds it
           if (l.t.p0 || l.t.p1) b.d = l.b.d;
+          // an animated size resizes the shape's box (paths: from the box of their base shape)
+          if (l.t.sz) {
+            o.type = l.type;
+            if (l.type === 'path') b.d = l.b.d;
+            else {
+              const G = l.geo;
+              o.geo =
+                l.type === 'ellipse' ? { cx: G.cx, cy: G.cy, rx: G.rx, ry: G.ry } : { x: G.x, y: G.y, w: G.w, h: G.h };
+            }
+          }
           if (l.t.rad && l.shape) {
             const { kind, cx, cy, r, rot, n, ratio } = l.shape;
             o.shape = { kind, cx, cy, r, rot, n, ...(ratio != null ? { ratio } : {}) };
@@ -552,7 +592,7 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
             if (l.parent) o.parent = l.parent;
             if (l.xf) o.xf = l.xf;
           }
-          if (boundB.has(l.id)) o.geo = { x: l.geo.x, y: l.geo.y, ang: l.geo.ang || 0 };
+          if (boundB.has(l.id)) o.geo = Object.assign(o.geo || {}, { x: l.geo.x, y: l.geo.y, ang: l.geo.ang || 0 });
           const wr = wraps.find(q => q[0] === l);
           if (wr) {
             o.dw = wr[1].id;

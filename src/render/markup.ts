@@ -80,7 +80,10 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
     a.pathLength = 100;
     a['stroke-dasharray'] = td[0];
     a['stroke-dashoffset'] = td[1];
-  } else if (c.dof != null && (c.dof !== 0 || (l.t.dof && l.t.dof.length))) a['stroke-dashoffset'] = r3(c.dof);
+  } else {
+    if (c.dof != null && (c.dof !== 0 || (l.t.dof && l.t.dof.length))) a['stroke-dashoffset'] = r3(c.dof);
+    if (c.da) a['stroke-dasharray'] = H.dashStr(c.da);
+  }
   if (c.fo != null && (c.fo < 1 || (l.t.fo && l.t.fo.length))) a['fill-opacity'] = r3(c.fo);
   if (c.so != null && (c.so < 1 || (l.t.so && l.t.so.length))) a['stroke-opacity'] = r3(c.so);
   const css = [l.blend && l.blend !== 'normal' ? `mix-blend-mode:${l.blend}` : '', l.iso ? 'isolation:isolate' : '']
@@ -90,13 +93,23 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
   const fx = filterSVG(l, ctx.pre, k => H.get(l, k, ctx.t));
   if (fx) a.filter = `url(#${id}-fx)`;
   let inner: string;
+  // an animated size: the box at this moment
+  const gb = c.gb ? c.gb.map(r3) : null;
   if (l.type === 'rect') {
-    Object.assign(a, { x: G.x, y: G.y, width: G.w, height: G.h });
+    Object.assign(
+      a,
+      gb ? { x: gb[0], y: gb[1], width: gb[2], height: gb[3] } : { x: G.x, y: G.y, width: G.w, height: G.h },
+    );
     const rx = c.rad != null ? r3(Math.max(0, c.rad)) : G.rx;
     if (rx) a.rx = rx;
     inner = `<rect${attrs(a)}/>`;
   } else if (l.type === 'ellipse') {
-    Object.assign(a, { cx: G.cx, cy: G.cy, rx: G.rx, ry: G.ry });
+    Object.assign(
+      a,
+      gb
+        ? { cx: r3(gb[0] + gb[2] / 2), cy: r3(gb[1] + gb[3] / 2), rx: r3(gb[2] / 2), ry: r3(gb[3] / 2) }
+        : { cx: G.cx, cy: G.cy, rx: G.rx, ry: G.ry },
+    );
     inner = `<ellipse${attrs(a)}/>`;
   } else if (l.type === 'path') {
     a.d = H.dstr(c.d);
@@ -147,7 +160,10 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
         inner;
     }
   } else if (l.type === 'image') {
-    Object.assign(a, { x: G.x, y: G.y, width: G.w, height: G.h });
+    Object.assign(
+      a,
+      gb ? { x: gb[0], y: gb[1], width: gb[2], height: gb[3] } : { x: G.x, y: G.y, width: G.w, height: G.h },
+    );
     if (ctx.editor) {
       a.href = ctx.href(G.asset);
       a.preserveAspectRatio = 'none';

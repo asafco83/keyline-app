@@ -55,6 +55,7 @@ import {
   textSection,
   transformSection,
   pinsSection,
+  sizeRow,
 } from './props-panel';
 import { applyEase, bezOf, drawEz, easeFam, famName, keyPanel, parseBez, sameEase } from './easing';
 import { deleteSel, groupSel, moveLayers, ungroup } from './layers-panel';
@@ -121,7 +122,15 @@ export function renderInspector() {
   const G = l.geo;
   if (l.type === 'group') {
     const n = kids(l.id).length;
-    h += `<section class="sec"><h3>Group <small>${n} layer${n === 1 ? '' : 's'} inside</small></h3><p>Keyframes on a group move, turn, scale or fade everything inside it together. Layers inside keep their own keyframes.</p><div class="btns"><button class="btn" data-act="ungroup">Ungroup</button></div></section>`;
+    h += `<section class="sec"><h3>Group <small>${n} layer${n === 1 ? '' : 's'} inside</small></h3>${
+      l.mask === 'mask'
+        ? nrow(
+            'Mask by',
+            `<select class="sel" data-ly="mm" id="ly-mm" aria-label="Mask mode"><option value="">Opacity</option><option value="lum"${l.mm === 'lum' ? ' selected' : ''}>Brightness</option></select>`,
+          ) +
+          `<p>Opacity: the mask shows the layers where it is opaque. Brightness: where it is light (white shows, black hides).</p>`
+        : ''
+    }<p>Keyframes on a group move, turn, scale or fade everything inside it together. Layers inside keep their own keyframes.</p><div class="btns"><button class="btn" data-act="ungroup">Ungroup</button></div></section>`;
   }
   if (l.type === 'raw')
     h += `<section class="sec"><h3>Imported element</h3><p>This element animates with position, rotation, scale and opacity. Its own styling is kept as imported.</p></section>`;
@@ -129,16 +138,17 @@ export function renderInspector() {
     const a = ASSETS[G.asset];
     h += `<section class="sec"><h3>Image <span class="chip">${a ? esc((a.mime || '').replace('image/', '').replace('x-icon', 'ico')) : 'missing'}</span></h3>
       ${a ? `<p>${esc(a.name)} · ${a.w}×${a.h}px · ${kb(a.size || 0)}</p>` : '<p>The image file for this layer is missing. Add it again from the Assets tab.</p>'}
-      ${nrow('Position', gnum('x', 'X') + gnum('y', 'Y'))}${nrow('Size', gnum('w', 'W') + gnum('h', 'H'))}
+      ${nrow('Position', gnum('x', 'X') + gnum('y', 'Y'))}${sizeRow()}
       <label class="check"><input type="checkbox" id="lockAR" ${S.lockAR ? 'checked' : ''}> Keep proportions</label>
       ${a ? '<div class="btns"><button class="btn" data-act="natural">Original size</button></div>' : ''}</section>`;
   }
   if (l.type === 'ellipse')
-    h += `<section class="sec"><h3>Ellipse</h3>${nrow('Center', gnum('cx', 'X') + gnum('cy', 'Y'))}${nrow('Radius', gnum('rx', 'X') + gnum('ry', 'Y'))}<div class="btns"><button class="btn" data-act="topath">Convert to path</button></div></section>`;
+    h += `<section class="sec"><h3>Ellipse</h3>${nrow('Center', gnum('cx', 'X') + gnum('cy', 'Y'))}${sizeRow()}<div class="btns"><button class="btn" data-act="topath">Convert to path</button></div></section>`;
   if (l.type === 'path') {
     const others = doc.layers.filter(o => o !== l && ['path', 'rect', 'ellipse'].includes(o.type));
     const cnt = ((H.get(l, 'd', S.time) || []) as PathData).reduce((s, p) => s + p.n.length, 0);
     h += `<section class="sec"><h3>Path & morph <small>${cnt} nodes</small></h3>
+      ${sizeRow()}
       ${krow('d', 'Morph', `<button class="btn" data-act="nodes" style="flex:1">${S.tool === 'node' ? 'Done editing' : 'Edit nodes'}</button>`)}
       <p>Add a Morph keyframe, move the playhead, then edit nodes. The shape blends between keyframes.</p>
       ${nrow('Morph into', `<select class="sel" id="morphTo" aria-label="Morph into another shape"><option value="">Choose a shape…</option>${others.map(o => `<option value="${o.id}">${esc(o.name)}</option>`).join('')}</select>`)}
@@ -419,14 +429,15 @@ export function parseField(l: Layer, inp: HTMLInputElement): [PropKey, any] | nu
       if (p && p.param.min != null) v = Math.max(p.param.min, v);
       if (p && p.param.scale === 100) v = Math.min(1, v);
     }
-    if (k === 'sw') v = Math.max(0, v);
+    if (k === 'sw' || k === 'sz') v = Math.max(0, v);
     v = r3(v);
   }
   if (i !== undefined && i !== '') {
     const cur = clone(valueAt(l, k, S.time)),
       j = +i,
       o = 1 - j;
-    if (k === 'scl' && S.sclLock && cur[j]) cur[o] = r3((cur[o] * v) / cur[j]);
+    if (((k === 'scl' && S.sclLock) || (k === 'sz' && l.type === 'image' && S.lockAR)) && cur[j])
+      cur[o] = r3((cur[o] * v) / cur[j]);
     cur[j] = v;
     v = cur;
   }
@@ -840,9 +851,7 @@ export function init(): void {
       const as = ASSETS[l.geo.asset];
       if (!as) return;
       const ed = beginEdit();
-      l.geo.w = as.w;
-      l.geo.h = as.h;
-      l.o = null;
+      setProp(l, 'sz', [as.w, as.h]);
       ed.end();
       refreshInspector(true);
     } else if (a === 'kdel') deleteKeys();

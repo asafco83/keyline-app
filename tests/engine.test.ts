@@ -526,3 +526,82 @@ describe('gradients and trim path', () => {
     expect(H.comp({ id: 'n', b: {}, t: {} }, 0).trim).toBeNull();
   });
 });
+
+describe('size and dash pattern', () => {
+  it('resizes a rectangle around its origin', () => {
+    const L: EngineLayer = {
+      ...layer({
+        sz: [
+          [0, [100, 50], 'linear'],
+          [1, [200, 50], 'linear'],
+        ],
+      }),
+      o: [0, 25],
+      type: 'rect',
+      geo: { x: 0, y: 0, w: 100, h: 50 },
+    };
+    // origin on the left edge: it grows to the right
+    expect(H.comp(L, 1).gb).toEqual([0, 0, 200, 50]);
+    // origin in the middle: it grows both ways
+    L.o = [50, 25];
+    expect(H.comp(L, 1).gb).toEqual([-50, 0, 200, 50]);
+    expect(H.comp(L, 0.5).gb).toEqual([-25, 0, 150, 50]);
+  });
+  it('resizes an ellipse and leaves layers without a size track alone', () => {
+    const L: EngineLayer = {
+      ...layer({ sz: [[0, [40, 20], 'linear']] }),
+      o: [10, 10],
+      type: 'ellipse',
+      geo: { cx: 10, cy: 10, rx: 10, ry: 5 },
+    };
+    expect(H.comp(L, 0).gb).toEqual([-10, 0, 40, 20]);
+    expect(H.comp({ ...L, t: {} }, 0).gb).toBeNull();
+  });
+  it('resizes a path from the box of its base shape', () => {
+    const d = [
+      {
+        c: true,
+        n: [
+          [0, 0, 0, 0, 0, 0],
+          [10, 0, 10, 0, 10, 0],
+          [10, 10, 10, 10, 10, 10],
+        ],
+      },
+    ];
+    const L: EngineLayer = { ...layer({ sz: [[0, [20, 5], 'linear']] }, { d }), o: [0, 0], type: 'path' };
+    expect(H.comp(L, 0).d![0].n[2].slice(0, 2)).toEqual([20, 5]);
+  });
+  it('measures the exact box of curves', () => {
+    // a half circle bulging to y = -50 (control points reach further)
+    const k = 0.5523 * 50;
+    const b = H.pathBox([
+      {
+        c: false,
+        n: [
+          [-50, 0, -50, 0, -50, -k],
+          [0, -50, -k, -50, k, -50],
+          [50, 0, 50, -k, 50, 0],
+        ],
+      },
+    ]);
+    expect(b.map(v => Math.round(v))).toEqual([-50, -50, 100, 50]);
+  });
+  it('blends dash patterns like SVGator: empty = zeros, different lengths repeat', () => {
+    const L = layer({
+      da: [
+        [0, [], 'linear'],
+        [1, [4], 'linear'],
+      ],
+    });
+    expect(H.comp(L, 0.5).da).toEqual([2]);
+    const M = layer({
+      da: [
+        [0, [2, 4], 'linear'],
+        [1, [4, 2, 6], 'linear'],
+      ],
+    });
+    expect(H.comp(M, 0.5).da).toEqual([3, 3, 4, 4, 2, 5]);
+    expect(H.dashStr([])).toBe('none');
+    expect(H.comp(layer({}), 0).da).toBeNull();
+  });
+});

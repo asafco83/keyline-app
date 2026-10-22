@@ -64,6 +64,7 @@ describe('sample scene', () => {
       expect(some(l => l.parent === g.id && !!l.maskSrc)).toBe(true);
       expect(some(l => l.parent === g.id && !l.maskSrc)).toBe(true);
     }
+    expect(some(l => l.mask === 'mask' && l.mm === 'lum')).toBe(true);
   });
   it('animates gradients, filters, blending and a hyperlink', () => {
     expect(some(l => !!l.t.fill && l.t.fill.some(q => isGrad(q[1])))).toBe(true);
@@ -82,6 +83,8 @@ describe('sample scene', () => {
     expect(some(l => !!(l.t.p0 || l.t.p1))).toBe(true);
     expect(some(l => !!l.t.te)).toBe(true);
     expect(some(l => !!l.t.dof && !!l.extra['stroke-dasharray'])).toBe(true);
+    expect(some(l => !!l.t.da && l.t.da.length > 1)).toBe(true);
+    expect(some(l => !!l.t.sz && l.t.sz.length > 1)).toBe(true);
     expect(some(l => !!l.t.skw)).toBe(true);
   });
   it('uses a curved motion path with rotate-along-path, and varied easing', () => {
