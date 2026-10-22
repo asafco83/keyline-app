@@ -24,7 +24,7 @@ async def main():
             # text is checked on its own (web fonts may not load here): compare the rest
             src=re.sub(r'<script[\s\S]*?</script>','',src)
             src=re.sub(r'<text[\s\S]*?</text>','',src)
-            code=await ev("(()=>{const t=st.doc.layers.filter(l=>l.type==='text'&&!l.hid);t.forEach(l=>l.hid=true);st.doc.ex.prefix='cin';st.doc.ex.mode='js';const c=bx.buildExport(null).code;t.forEach(l=>l.hid=false);return c})()")
+            code=await ev("(()=>{const t=st.doc.layers.filter(l=>l.type==='text'&&!l.hid);t.forEach(l=>l.hid=true);st.doc.ex.prefix='cin';st.doc.ex.mode='js';const tg=st.doc.ex.trigger;st.doc.ex.trigger='api';const c=bx.buildExport(null).code;st.doc.ex.trigger=tg;t.forEach(l=>l.hid=false);return c})()")
             shots=[]
             for svg in [src, code]:
                 q=await b.new_page(viewport={'width':640,'height':480})

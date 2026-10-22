@@ -150,7 +150,7 @@ export function sizeBox(l: Layer): number[] | null {
 export function resizeBase(l: Layer, s: number[]) {
   const b = sizeBox(l);
   if (!b) return;
-  const o = l.o || [b[0] + b[2] / 2, b[1] + b[3] / 2],
+  const o = l.sa ? [b[0] + l.sa[0] * b[2], b[1] + l.sa[1] * b[3]] : l.o || [b[0] + b[2] / 2, b[1] + b[3] / 2],
     w = Math.max(0, s[0]),
     h = Math.max(0, s[1]),
     kx = b[2] ? w / b[2] : 1,

@@ -605,3 +605,29 @@ describe('size and dash pattern', () => {
     expect(H.comp(layer({}), 0).da).toBeNull();
   });
 });
+
+describe('even speed along curves', () => {
+  // a quarter-circle-like curve whose handles bunch the parameter at the start
+  const tr = [
+    [0, [0, 0], 'linear', [0, 0, -90, 0]],
+    [1, [100, 100], 'linear'],
+  ] as any;
+  it('by default follows the curve parameter, with ev at even speed by length', () => {
+    const plain = H.comp(layer({ pos: tr }), 0.5),
+      L = { ...layer({ pos: tr }), ev: 1 as const },
+      even = H.comp(L, 0.5);
+    expect(plain.x).not.toBeCloseTo(even.x, 1);
+    // halfway in time is halfway along the curve's length
+    const len = (to: number) => {
+      let s = 0,
+        p = H.comp(L, 0);
+      for (let i = 1; i <= 200; i++) {
+        const q = H.comp(L, (to * i) / 200);
+        s += Math.hypot(q.x - p.x, q.y - p.y);
+        p = q;
+      }
+      return s;
+    };
+    expect(len(0.5) / len(1)).toBeCloseTo(0.5, 2);
+  });
+});
