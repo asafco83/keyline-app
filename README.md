@@ -77,7 +77,9 @@ src/
 
   io/                    Files
     assets.ts            Image import (incl. TIFF/HEIC conversion), IndexedDB, asset panel
-    svg-import.ts        SVG → editable layers (keeps group hierarchy)
+    svg-import.ts        Open an SVG as a project / add one to the project
+    svg-convert.ts       SVG elements → editable layers (hierarchy, names, paint, text, masks)
+    svg-paint.ts         Style cascade, colours, transforms, gradients for the importer
     zip.ts               Minimal zip writer/reader and the .SVGcinema builder
     save.ts  open.ts  guard.ts  file-state.ts   Save/Save as, open, unsaved-changes prompt
 
@@ -250,6 +252,18 @@ The guides are saved with the project; the other view settings are remembered in
 **Moving keyframes:** with position keyframes selected in the timeline, dragging the layer or using the arrow keys on the canvas moves all of them together (select them all to move the whole motion path). Arrow keys pressed while working in the timeline still move the selected keyframes in time.
 
 **Web fonts in exports:** Google Fonts are converted to outlines by default (no font download, identical everywhere, also inside `<img>`). _Embed font_ instead keeps live, selectable text and embeds only the alphabets the text uses, which is smaller for long text. Right-to-left text is always embedded so its letters keep their order. Fonts from this computer are converted or embedded the same way once the browser has shared them (embedding includes the whole font file); otherwise the SVG only names the font.
+
+## Opening and importing SVG
+
+**Open…** (Ctrl O) also opens `.svg` files: the SVG becomes a new project with its canvas (viewBox), its title as the project name, and its artwork as editable layers. It isn't saved yet (Save makes a `.SVGcinema` file). **Import files…**, dropping an SVG on the canvas, pasting SVG markup and placing an SVG from **Assets** read the file the same way into the current project, inside a group named after the file (the project's canvas and settings stay).
+
+- **Layers:** groups keep their hierarchy, order and names (SVGator names, Inkscape labels, `data-name`, meaningful ids; other layers are named by kind, e.g. _Rectangle 1_).
+- **Transforms** become position, rotate, skew and scale; each layer's origin goes to the middle of what it draws.
+- **Shapes** stay shapes (rectangles keep their corner radius, circles become ellipses, polygons, polylines and lines become paths) with their fill, stroke, opacities, dashes, line ends and joins, all editable. Colours from stylesheets (`<style>` classes) and inherited from groups are resolved. Linear and radial gradients (user-space or box units, transformed or not) become editable gradients.
+- **Text** stays text: lines (tspans one under another) become one text with its line height; lines placed apart become a group of texts. SVGator's embedded fonts map to the same Google Font (e.g. Roboto).
+- **Images** embedded in the file go to Assets and become image layers (sized as the browser draws them).
+- **Clip paths and masks** become clipping and mask groups (SVG masks mask by brightness).
+- **Filters:** a blur or a drop shadow becomes an editable filter; other filters, patterns, markers and text on a path are kept as they are. Anything that couldn't be made editable is listed in a short report after the import.
 
 ## The `.SVGcinema` project format
 
