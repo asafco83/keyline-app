@@ -14,6 +14,7 @@ import { markup } from '../render/markup';
 import { fontFaceCSS } from '../render/fonts';
 import { CinEngine } from '../runtime/engine';
 import { isPinKey } from '../model/pins';
+import { meshOf } from '../render/markup';
 
 export function roundV(v: any): any {
   if (typeof v === 'number') return r3(v);
@@ -60,45 +61,124 @@ export function dstrC(sp: any[] | null | undefined) {
 export function smilShapes() {
   return doc.ex.mode === 'css' && doc.ex.trigger !== 'hover';
 }
-/** pin tracks bend the path, so they animate its shape */
+/** pin tracks bend the layer: a path through its shape, other layers through their mesh */
 function pinAnimated(l: Layer) {
   return !!(l.pins && l.pins.length && Object.keys(l.t).some(k => isPinKey(k) && l.t[k].length));
 }
+function pathPinAnimated(l: Layer) {
+  return l.type === 'path' && pinAnimated(l);
+}
 function shapeAnimated(l: Layer) {
   const T = l.t;
-  return !!(T.d || T.p0 || T.p1 || (T.rad && l.shape) || pinAnimated(l));
+  return !!(T.d || T.p0 || T.p1 || (T.rad && l.shape) || pathPinAnimated(l));
+}
+/** a mesh matrix for CSS: enough digits that neighbouring triangles still meet */
+const cssMat = (m: number[]) => `matrix(${m.map((v, i) => (i < 4 ? Math.round(v * 1e5) / 1e5 : r3(v))).join(',')})`;
+/** SMIL timing for the document's playback settings, and the frames (sampled at 0 … dur) arranged
+ *  for its direction: reversed, or played forth and back for alternate */
+function smilTiming() {
+  const spd = doc.ex.speed > 0 ? doc.ex.speed : 1,
+    dir = ['alternate', 'reverse', 'alternate-reverse'].includes(doc.dir) ? doc.dir : 'normal',
+    alt = dir === 'alternate' || dir === 'alternate-reverse';
+  return {
+    N: Math.max(2, Math.round(doc.dur * 30)),
+    attrs: `dur="${r3((doc.dur / spd) * (alt ? 2 : 1))}s" repeatCount="${doc.it > 0 ? String(r3(alt ? doc.it / 2 : doc.it)) : 'indefinite'}" fill="${doc.ex.fill === 'backwards' ? 'remove' : 'freeze'}" calcMode="linear"`,
+    arrange(fr: string[]) {
+      if (dir === 'reverse' || dir === 'alternate-reverse') fr.reverse();
+      if (alt) for (let i = fr.length - 2; i >= 0; i--) fr.push(fr[i]);
+      return fr;
+    },
+  };
+}
+/** keyTimes and values for SMIL, dropping frames that repeat their neighbours (`even`: no keyTimes
+ *  when every frame is kept, as they are then evenly spaced) */
+function smilValues(fr: string[], even?: boolean) {
+  const M = fr.length - 1,
+    vals: string[] = [],
+    times: string[] = [];
+  fr.forEach((v, i) => {
+    if (i === 0 || i === M || v !== fr[i - 1] || v !== fr[i + 1]) {
+      vals.push(v);
+      times.push(String(r3(i / M)));
+    }
+  });
+  return even && vals.length === fr.length
+    ? `values="${vals.join(';')}"`
+    : `keyTimes="${times.join(';')}" values="${vals.join(';')}"`;
+}
+/** an affine matrix as translate · rotate · skewX · scale (what SMIL can animate) */
+function decompose(m: number[]) {
+  const [a, b, c, d, e, f] = m,
+    sx = Math.hypot(a, b) || 1e-9,
+    sy = (a * d - b * c) / sx,
+    k = (a * c + b * d) / (sx * (sy || 1e-9));
+  return [e, f, (Math.atan2(b, a) * 180) / Math.PI, (Math.atan(k) * 180) / Math.PI, sx, sy];
+}
+/** SMIL for the triangles of a pinned image, text or group (CSS mode): CSS-animated transforms are
+ *  drawn apart from each other in Chrome, which opens hairline seams between triangles */
+function smilMesh(l: Layer, pre: string) {
+  const M = meshOf(l);
+  if (!M || !pinAnimated(l)) return '';
+  const T = smilTiming(),
+    frames: number[][][] = [];
+  for (let i = 0; i <= T.N; i++) frames.push(H.meshMats(l, (i / T.N) * doc.dur));
+  // digits: enough that neighbouring triangles still meet to a few hundredths of a pixel
+  const n2 = (v: number) => Math.round(v * 100) / 100,
+    n3 = (v: number) => Math.round(v * 1000) / 1000,
+    n4 = (v: number) => Math.round(v * 1e4) / 1e4;
+  let out = '';
+  M.t.forEach((_, k) => {
+    const parts = frames.map(ms => decompose(ms[k] || [1, 0, 0, 1, 0, 0]));
+    // keep the angle continuous from frame to frame
+    for (let i = 1; i < parts.length; i++) {
+      while (parts[i][2] - parts[i - 1][2] > 180) parts[i][2] -= 360;
+      while (parts[i][2] - parts[i - 1][2] < -180) parts[i][2] += 360;
+    }
+    const href = `xlink:href="#${pre}${l.id}-m${k}" attributeName="transform" ${T.attrs}`,
+      // a part that stays at identity in every frame is left out
+      anim = (type: string, fr: string[], add: boolean) =>
+        add && fr.every(v => v === (type === 'scale' ? '1 1' : '0'))
+          ? ''
+          : `<animateTransform ${href} type="${type}"${add ? ' additive="sum"' : ''} ${smilValues(T.arrange(fr), true)}/>`;
+    out +=
+      anim(
+        'translate',
+        parts.map(q => `${n2(q[0])} ${n2(q[1])}`),
+        false,
+      ) +
+      anim(
+        'rotate',
+        parts.map(q => String(n3(q[2]))),
+        true,
+      ) +
+      anim(
+        'skewX',
+        parts.map(q => String(n3(q[3]))),
+        true,
+      ) +
+      anim(
+        'scale',
+        parts.map(q => `${n4(q[4])} ${n4(q[5])}`),
+        true,
+      );
+  });
+  return out;
 }
 /** SMIL <animate> elements for the shapes of `anim` (CSS mode, see smilShapes) */
 export function smilFor(anim: Layer[], pre: string) {
-  const N = Math.max(2, Math.round(doc.dur * 30)),
-    spd = doc.ex.speed > 0 ? doc.ex.speed : 1,
-    dir = ['alternate', 'reverse', 'alternate-reverse'].includes(doc.dir) ? doc.dir : 'normal',
-    alt = dir === 'alternate' || dir === 'alternate-reverse',
-    dur = (doc.dur / spd) * (alt ? 2 : 1),
-    rep = doc.it > 0 ? String(r3(alt ? doc.it / 2 : doc.it)) : 'indefinite',
-    fill = doc.ex.fill === 'backwards' ? 'remove' : 'freeze';
+  const T = smilTiming(),
+    N = T.N;
   let out = '';
   anim.forEach(l => {
+    out += smilMesh(l, pre);
     if (!shapeAnimated(l)) return;
-    const fr: string[] = [];
-    let ds: any[] = [];
+    const ds: any[] = [];
     for (let i = 0; i <= N; i++) ds.push(H.comp(l, (i / N) * doc.dur).d);
     // the same commands in every frame, or the browser jumps instead of blending
     const cmds = ds.map(d => H.dstr(d).replace(/[^A-Za-z]/g, '')),
-      same = cmds.every(c => c === cmds[0]);
-    ds.forEach(d => fr.push(same ? H.dstr(d) : dstrC(d)));
-    if (dir === 'reverse' || dir === 'alternate-reverse') fr.reverse();
-    if (alt) for (let i = N - 1; i >= 0; i--) fr.push(fr[i]);
-    const M = fr.length - 1,
-      keep = fr.map((v, i) => i === 0 || i === M || v !== fr[i - 1] || v !== fr[i + 1]),
-      vals: string[] = [],
-      times: string[] = [];
-    fr.forEach((v, i) => {
-      if (!keep[i]) return;
-      vals.push(v);
-      times.push(String(r3(i / M)));
-    });
-    out += `<animate xlink:href="#${pre}${l.id}-s" attributeName="d" dur="${r3(dur)}s" repeatCount="${rep}" fill="${fill}" calcMode="linear" keyTimes="${times.join(';')}" values="${vals.join(';')}"/>`;
+      same = cmds.every(c => c === cmds[0]),
+      fr = T.arrange(ds.map(d => (same ? H.dstr(d) : dstrC(d))));
+    out += `<animate xlink:href="#${pre}${l.id}-s" attributeName="d" ${T.attrs} ${smilValues(fr)}/>`;
   });
   return out;
 }
@@ -130,7 +210,21 @@ export function cssFor(anim: Layer[], pre: string, svgId: string) {
           fr.map(c => (gt ? `transform:${cssTf(c, bf, cq)};` : '') + (go ? `opacity:${r3(c.op)}` : '')),
           N,
         ) + `#${id}{transform-box:view-box;transform-origin:0 0;animation:${id}-g ${run}}`;
-    const shapeAnim = !!(T.p0 || T.p1 || (T.rad && l.shape) || pinAnimated(l)),
+    // pinned images, text and groups: each triangle of the mesh moves on its own
+    const mesh = meshOf(l);
+    if (mesh && pinAnimated(l) && !smilShapes()) {
+      const ms: number[][][] = [];
+      for (let i = 0; i <= N; i++) ms.push(H.meshMats(l, (i / N) * doc.dur));
+      mesh.t.forEach((_, k) => {
+        css +=
+          kfBlock(
+            `${id}-m${k}`,
+            ms.map(m => `transform:${cssMat(m[k])}`),
+            N,
+          ) + `#${id}-m${k}{transform-box:view-box;transform-origin:0 0;animation:${id}-m${k} ${run}}`;
+      });
+    }
+    const shapeAnim = !!(T.p0 || T.p1 || (T.rad && l.shape) || pathPinAnimated(l)),
       // a gradient animates through its stops (below), not the fill / stroke property
       gradK = (k: 'fill' | 'stk') => fr.some(c => H.isG(c[k])),
       gk = { fill: !!T.fill && gradK('fill'), stk: !!T.stk && gradK('stk') },
@@ -392,7 +486,9 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
             // pins bend the path every frame: the runtime needs the path, the pins and their resting values
             o.pins = l.pins;
             if (l.reach) o.reach = l.reach;
-            b.d = l.b.d;
+            const mesh = meshOf(l);
+            if (mesh) o.mesh = { v: mesh.v, t: mesh.t };
+            else b.d = l.b.d;
             for (const k in l.b) if (isPinKey(k)) b[k] = (l.b as Record<string, any>)[k];
           }
           if (counter.has(l.id)) {
@@ -416,6 +512,8 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
     anim: anim.length,
     tracks: anim.reduce((s, l) => s + Object.keys(l.t).length, 0),
     images: Object.keys(used).length,
+    /** some layer changes shape over time (morph, line ends, corner radius, pins) */
+    shapes: anim.some(l => shapeAnimated(l) || (!!meshOf(l) && pinAnimated(l))),
   };
 }
 export function openExport() {

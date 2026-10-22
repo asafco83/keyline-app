@@ -1,6 +1,7 @@
 // SVGcinema — ui/layer-menu
 // Right-click menu for layers, on the canvas and in the Layers panel (modelled on SVGator's), the
 // layer clipboard (cut / copy / paste / paste in place), and the Hyperlink dialog.
+import { layerBox } from '../render/mesh';
 import type { Layer, PropKey } from '../model/types';
 import { $, H, clone, esc, r2, valueAt } from '../core/constants';
 import { WRAP, LP } from '../core/dom';
@@ -92,7 +93,7 @@ export function centerOrigin(l: Layer) {
   const g = document.getElementById('e-' + l.id) as unknown as SVGGraphicsElement;
   if (!g) return;
   const ed = beginEdit(),
-    bb = g.getBBox();
+    bb = layerBox(l) || g.getBBox();
   reOrigin(l, [bb.x + bb.width / 2, bb.y + bb.height / 2]);
   ed.end({ insp: true });
 }

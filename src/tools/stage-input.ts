@@ -15,7 +15,7 @@ import { guideDrag } from '../render/guides';
 import { fit, frame } from '../render/stage';
 import { boneCreate, fkDrag, ikDrag } from './bones';
 import { bindDown, bindHover, boneEditDown, boneScaleDown } from './bone-edit';
-import { isPinTool, pinsDown } from './pins';
+import { isPinTool, pinHover, pinsDown } from './pins';
 import { createText, handleDrag, nodeDrag, toggleSmooth } from './edit-tools';
 import { addNodeDown, convertDown, delNodeDown, finishPen, penDown, penHover, pencilDown } from './pen';
 import { SHAPE_TOOLS, backToSelect, createDrag } from './shapes';
@@ -255,6 +255,7 @@ export function init(): void {
     }
     if (S.drag) S.drag.move && S.drag.move(p, e);
     else if (S.tool === 'bonebind') bindHover(e, p);
+    else if (S.tool === 'pin') pinHover(e);
     else penHover(p, e);
   });
   // Alt changes what the pen would do (convert anchor), so refresh its cursor without a move

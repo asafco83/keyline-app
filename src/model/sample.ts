@@ -8,6 +8,7 @@ import { FONTS, NOFILL, clone } from '../core/constants';
 import { blankDoc, mkLayer, setIdc } from '../core/state';
 import { N, type ShapeParams, ellNodes, radial, shapeD, smoothNodes, starNodes } from '../geometry/nodes';
 import { addFilter } from './filters';
+import { buildMesh } from './mesh';
 
 /** A path layer that keeps polygon / star settings (so sides, points and corner radius stay editable).
  *  The path keeps two nodes per corner, so the corner radius can be animated. */
@@ -326,7 +327,7 @@ export function sampleDoc(): any {
   ] as any;
 
   // Flag — a line whose end grows (the pole) and a polygon with a gradient, a skew wave and an
-  // animated corner radius (the pennant)
+  // animated corner radius (the pennant); the group bends in the wind with pins
   const flag = mkLayer('group', 'Flag', {}, NOFILL);
   const pole = lineLayer('Pole', [54, 300], [54, 214], '#F3EEE4', 3);
   pole.parent = flag.id;
@@ -362,6 +363,29 @@ export function sampleDoc(): any {
     [1.2, 0, 'inOutSine'],
     [2, 3, 'ease'],
   ];
+  // the whole flag bends in the wind through a triangle mesh (Pin tool): pin 1 holds the foot of the
+  // pole, pin 2 sways its top
+  flag.pins = [
+    { n: 1, x: 54, y: 298 },
+    { n: 2, x: 54, y: 216 },
+  ];
+  flag.t.pin2 = [
+    [1.2, [54, 216], 'inOutSine'],
+    [1.8, [58.5, 215], 'inOutSine'],
+    [2.4, [50.5, 216.5], 'inOutSine'],
+    [3, [54, 216], 'ease'],
+  ] as any;
+  // the pole and the pennant (with its skew wave), plus margins; the editor rebuilds it from the canvas
+  flag.mesh = {
+    n: 24,
+    ...buildMesh(
+      [
+        { x: 49, y: 209, w: 10, h: 96 },
+        { x: 50, y: 204, w: 34, h: 42 },
+      ],
+      24,
+    ),
+  };
 
   // Landscape — Horizon draws on with Trim path (animate End); Signature is a mask group: a soft
   // gradient wipe reveals the line, which links to the editor

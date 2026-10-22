@@ -49,6 +49,7 @@ export const S: EditorState = {
   boneScaleMode: 'length',
   boneVolume: 'area',
   pinSel: null,
+  pinRing: null,
   pan: { x: 0, y: 0 },
   toolGroup: { pen: 'pen', shapes: 'rect' },
   polySides: 6,

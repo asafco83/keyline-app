@@ -14,7 +14,9 @@ import { renderLayers } from '../ui/layers-panel';
 import { renderTimeline, updatePlayhead } from '../ui/timeline';
 import { renderTools } from '../ui/tools-rail';
 import { restPoseView } from '../tools/bone-edit';
+import { ensureMeshes } from './mesh';
 
+let meshPass = 0;
 export function renderStage() {
   STAGE.setAttribute('viewBox', `${doc.vx || 0} ${doc.vy || 0} ${doc.w} ${doc.h}`);
   $('#docdefs').innerHTML = doc.defs || '';
@@ -62,6 +64,16 @@ export function renderStage() {
       measure(g);
       eng.apply(S.time);
     });
+  }
+  // pinned images, text and groups: (re)build their meshes from what was just drawn, then draw again
+  if (meshPass < 2 && ensureMeshes()) {
+    meshPass++;
+    try {
+      renderStage();
+    } finally {
+      meshPass--;
+    }
+    return;
   }
   fit();
 }

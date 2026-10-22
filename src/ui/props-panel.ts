@@ -6,6 +6,9 @@
 //   data-x="attr"                       static SVG attribute stored in Layer.extra
 //   data-ly="field"                     layer setting (blend, iso)
 //   data-tx="…" / data-act="…"          buttons
+import { layerBox } from '../render/mesh';
+import { meshOf } from '../render/markup';
+import { MESH_DEFAULT } from '../model/mesh';
 import type { Layer, PathData, PropKey } from '../model/types';
 import { FONTS, ICON, byId, clone, esc, fmt, ic, r2, valueAt } from '../core/constants';
 import { INSP } from '../core/dom';
@@ -404,7 +407,7 @@ export function refreshProps(l: Layer): void {
   if (bw) {
     let bb = null;
     try {
-      bb = byId('e-' + l.id).getBBox();
+      bb = layerBox(l);
     } catch (_) {}
     bw.value = bb ? fmt(bb.width) : '';
     byId('bb-h').value = bb ? fmt(bb.height) : '';
@@ -676,12 +679,14 @@ export function pinsSection(l: Layer) {
   if (!ps.length) return '';
   if (S.pinSel == null || !ps.some(p => p.n === S.pinSel)) S.pinSel = ps[ps.length - 1].n;
   const n = S.pinSel,
-    reach = l.reach || 100;
+    reach = l.reach || 100,
+    mesh = meshOf(l);
   return `<section class="sec"><h3>Pins <small>${ps.length} ${ps.length > 1 ? 'pins' : 'pin'}</small></h3>
     ${nrow('Pin', `<div class="pin-chips" role="group" aria-label="Pins">${ps.map(p => `<button type="button" class="pin-chip${p.n === n ? ' on' : ''}" data-act="pinsel" data-n="${p.n}" aria-pressed="${p.n === n}" aria-label="Pin ${p.n}">${p.n}</button>`).join('')}</div>`)}
     ${krow('pin' + n, 'Position', num(`pin${n}:0`, 'X') + num(`pin${n}:1`, 'Y'))}
     ${krow('pinr' + n, 'Rotation', num(`pinr${n}`, '∠', '°'))}
     ${nrow('Reach', `<input type="range" class="rng" id="pinReach" data-preach data-range min="20" max="400" step="5" value="${reach}" aria-label="Reach"><span class="pin-val" id="pinReachV">${fmt(reach)} %</span>`)}
+    ${mesh ? nrow('Mesh', `<input type="range" class="rng" id="pinMesh" data-pmesh data-range min="12" max="240" step="4" value="${Math.min(240, (l.mesh && l.mesh.n) || MESH_DEFAULT)}" aria-label="Mesh density"><span class="pin-val" id="pinMeshV">${mesh.t.length} triangles</span>`) : ''}
     <div class="btns pin-ind"><button class="btn" data-act="pinrm">Remove pin</button><button class="btn" data-act="pinrmall">Remove all pins</button></div>
-    <p class="pin-ind">Pins bend the path through its own nodes. Click with the Pin tool (W) to add pins; drag one to bend the path (keyed at the playhead). Reach sets how far each pin pulls.</p></section>`;
+    <p class="pin-ind">${mesh ? 'Pins bend the artwork through a mesh of triangles; a denser mesh bends more smoothly and makes CSS exports larger.' : 'Pins bend the path through its own nodes.'} Click with the Pin tool (W) to add pins; drag one to bend the ${mesh ? 'artwork' : 'path'} (keyed at the playhead). Reach sets how far each pin pulls.</p></section>`;
 }

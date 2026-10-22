@@ -38,6 +38,12 @@ describe('sample scene', () => {
     expect(l.pins!.some(p => !l.t['pin' + p.n])).toBe(true);
     expect(l.pins!.some(p => (l.t['pin' + p.n] || []).length > 1)).toBe(true);
   });
+  it('bends a group through a triangle mesh with pins', () => {
+    const g = L.find(x => x.type === 'group' && x.pins && x.pins.length > 1) as Layer;
+    expect(g).toBeTruthy();
+    expect(g.mesh && g.mesh.t.length).toBeGreaterThan(8);
+    expect(g.pins!.some(p => (g.t['pin' + p.n] || []).length > 1)).toBe(true);
+  });
   it('shows a mask group and a clipping group, each with its folder', () => {
     for (const kind of ['mask', 'clip'] as const) {
       const g = L.find(l => l.mask === kind) as Layer;
