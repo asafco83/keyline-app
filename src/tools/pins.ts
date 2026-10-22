@@ -48,6 +48,26 @@ export function boundBones() {
   const l = selLayer();
   return new Set<string>(((l && l.pins) || []).filter(p => p.bone).map(p => p.bone));
 }
+/** every pin bound to a bone, where it is now (document space), for the bone links */
+export function boundPinPoints(): { bone: string; P: DOMPoint }[] {
+  const out: { bone: string; P: DOMPoint }[] = [];
+  doc.layers.forEach(l => {
+    if (!l.pins || !l.pins.length || isHidden(l) || !byId('e-' + l.id)) return;
+    let M: DOMMatrix | null = null;
+    l.pins.forEach(p => {
+      if (!p.bone || !layerById(p.bone)) return;
+      const c = pinAt(l, p.n);
+      if (!c) return;
+      try {
+        M = M || pinMatrix(l);
+      } catch (_) {
+        return;
+      }
+      out.push({ bone: p.bone, P: xfp(M, c[0], c[1]) });
+    });
+  });
+  return out;
+}
 /** the layer whose pins are shown: the selected path, image, text or group */
 function pinLayer(): Layer | null {
   const l = selLayer();
@@ -242,7 +262,7 @@ export function drawPins(u: number) {
     if (sel) OV.append(svgEl('circle', { cx: P.x, cy: P.y, r: 6 * u, class: 'ov-pin is-sel' + bc, 'data-pin': p.n }));
     else {
       OV.append(svgEl('circle', { cx: P.x, cy: P.y, r: 5.5 * u, class: 'ov-pin' + bc, 'data-pin': p.n }));
-      OV.append(svgEl('circle', { cx: P.x, cy: P.y, r: 1.8 * u, class: 'ov-pindot' }));
+      OV.append(svgEl('circle', { cx: P.x, cy: P.y, r: 1.8 * u, class: 'ov-pindot' + bc }));
     }
   });
   if (S.drag && S.drag.lbl && S.drag.lp && S.drag.pin) {

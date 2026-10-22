@@ -29,6 +29,8 @@ import { init as initRanges } from './ui/ranges';
 import { initScaleBar } from './tools/bone-edit';
 import { initPinBar } from './tools/pins';
 import { initDrawOrderDrag } from './ui/inspector';
+import { initTlResize } from './ui/tl-resize';
+import { initScrub } from './ui/scrub';
 
 // Same order as the original single-file build
 initTheme(); // ui/theme (before the rail renders its button)
@@ -47,6 +49,8 @@ initGuides(); // render/guides
 initPicker(); // ui/color-picker
 init2(); // ui/layers-panel
 init3(); // ui/timeline
+initTlResize(); // ui/tl-resize (drag the timeline's top edge)
+initScrub(); // ui/scrub (drag a number field's label to change it)
 init4(); // core/keyframes
 init5(); // ui/inspector
 init6(); // io/assets

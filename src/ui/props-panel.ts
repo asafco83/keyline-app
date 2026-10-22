@@ -128,9 +128,19 @@ export function transformSection(l: Layer) {
 
 /* ---------- Shape settings: polygon sides, star points & ratio, corner radius, line ends ---------- */
 
-/** Size: the shape's width and height, animatable (it grows around the origin) */
-export function sizeRow() {
-  return krow('sz', 'Size', num('sz:0', 'W') + num('sz:1', 'H'));
+/** Size keeps its proportions: images by default (lockAR), other shapes when turned on (szLock) */
+export const szLocked = (l: Layer) => (l && l.type === 'image' ? S.lockAR : !!S.szLock);
+/** Size: the shape's width and height, animatable (it grows around the origin), with the same
+ *  keep-proportions toggle as Scale */
+export function sizeRow(l: Layer) {
+  const on = szLocked(l);
+  return krow(
+    'sz',
+    'Size',
+    num('sz:0', 'W') +
+      num('sz:1', 'H') +
+      `<button class="btn ib tg${on ? ' on' : ''}" data-act="szlock" aria-pressed="${on}" title="Keep proportions" aria-label="Keep proportions">${I.link}</button>`,
+  );
 }
 /** slider + number for one shape setting */
 function slide(
@@ -152,7 +162,7 @@ export function shapeSection(l: Layer) {
   if (l.type === 'rect') {
     const G = l.geo,
       mx = Math.max(0, Math.min(G.w, G.h) / 2);
-    return `<section class="sec"><h3>Rectangle</h3>${nrow('Position', gnum('x', 'X') + gnum('y', 'Y'))}${sizeRow()}${slide('rad', 'Radius', 0, r2(mx), 0.5, Math.min(valueAt(l, 'rad', S.time) || 0, mx), 'px', 1, 'rad')}<div class="btns"><button class="btn" data-act="topath">Convert to path</button></div></section>`;
+    return `<section class="sec"><h3>Rectangle</h3>${nrow('Position', gnum('x', 'X') + gnum('y', 'Y'))}${sizeRow(l)}${slide('rad', 'Radius', 0, r2(mx), 0.5, Math.min(valueAt(l, 'rad', S.time) || 0, mx), 'px', 1, 'rad')}<div class="btns"><button class="btn" data-act="topath">Convert to path</button></div></section>`;
   }
   const sh = liveShape(l);
   if (sh) {
@@ -503,6 +513,14 @@ export function propsClick(a: string, b: HTMLElement, l: Layer) {
     l.or = !l.or;
     if (!l.or) delete l.or;
     ed.end({ insp: true });
+    return true;
+  }
+  if (a === 'szlock') {
+    const on = !szLocked(l);
+    if (l.type === 'image') S.lockAR = on;
+    else S.szLock = on;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', String(on));
     return true;
   }
   if (a === 'scllock') {

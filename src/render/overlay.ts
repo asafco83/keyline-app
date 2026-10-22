@@ -4,10 +4,10 @@ import type { Layer, PathData, PathNode } from '../model/types';
 import { H, byId, fmt, r2, xfp } from '../core/constants';
 import { CONTENT, OV, svgEl } from '../core/dom';
 import { S, doc, layerById, selLayer } from '../core/state';
-import { isHidden, isLocked, parentMatrix } from '../model/tree';
-import { drawBone } from '../tools/bones';
+import { isHidden, isLocked, kids, parentMatrix } from '../model/tree';
+import { bonePts, drawBone } from '../tools/bones';
 import { boneChips, drawBindLines, scaleBar } from '../tools/bone-edit';
-import { boundBones, drawPins, pinBar } from '../tools/pins';
+import { boundBones, boundPinPoints, drawPins, pinBar } from '../tools/pins';
 import { cursorFor } from '../tools/edit-tools';
 import { ellNodes, rectNodes } from '../geometry/nodes';
 import { currentNode, segCtrl } from '../tools/motion-path';
@@ -102,6 +102,42 @@ export function quadPts(q: DOMPointReadOnly[]) {
   return q.map(p => r2(p.x) + ',' + r2(p.y)).join(' ');
 }
 onPicker(() => drawOverlay());
+/** Dotted links from each shown bone to what is bound to it, drawn with the bones (and hidden with
+ *  them; the overlay is never exported): from the bone's joint to the middle of each layer bound to it
+ *  and to each pin that follows it, and from its tip to the joint of a child bone that doesn't start
+ *  there. Links shorter than a few screen pixels (a pin on the joint, a connected bone) are left out. */
+export function drawBoneLinks(u: number) {
+  const seg = new Map<string, { J: DOMPoint; T: DOMPoint } | null>();
+  const bone = (id: string) => {
+    if (!seg.has(id)) {
+      const b = layerById(id);
+      seg.set(id, b && b.type === 'bone' && !isHidden(b) ? bonePts(b) : null);
+    }
+    return seg.get(id);
+  };
+  const link = (a: { x: number; y: number }, p: { x: number; y: number } | null, cls: string, id: string) => {
+    if (!p || Math.hypot(p.x - a.x, p.y - a.y) < 4 * u) return;
+    OV.append(svgEl('line', { x1: r2(a.x), y1: r2(a.y), x2: r2(p.x), y2: r2(p.y), class: cls, 'data-blink': id }));
+  };
+  doc.layers.forEach(b => {
+    const s = b.type === 'bone' && bone(b.id);
+    if (!s) return;
+    kids(b.id).forEach(k => {
+      if (isHidden(k)) return;
+      if (k.type === 'bone') {
+        const c = bone(k.id);
+        link(s.T, c && c.J, 'ov-blink', b.id);
+      } else {
+        const q = obbOf(k);
+        link(s.J, q && { x: (q[0].x + q[2].x) / 2, y: (q[0].y + q[2].y) / 2 }, 'ov-blink', b.id);
+      }
+    });
+  });
+  boundPinPoints().forEach(p => {
+    const s = bone(p.bone);
+    if (s) link(s.J, p.P, 'ov-blink is-pin', p.bone);
+  });
+}
 export function drawOverlay() {
   OV.replaceChildren();
   followTextEdit();
@@ -121,17 +157,20 @@ export function drawOverlay() {
   if (S.tool === 'pin' && (S.pinBind || S.showBones)) {
     // the Pin tool: bones to bind pins to (the ones the layer's pins follow are highlighted)
     const bound = boundBones();
+    drawBoneLinks(u);
     doc.layers.forEach(b => {
       if (b.type === 'bone' && !isHidden(b)) drawBone(b, u, bound.has(b.id), S.pinBind && S.pinBoneHover === b.id);
     });
   } else if (
     (S.showBones || boneTool) &&
     ['select', 'bone', 'node', 'boneedit', 'bonebind', 'bonescale'].includes(S.tool)
-  )
+  ) {
+    drawBoneLinks(u);
     doc.layers.forEach(b => {
       if (b.type === 'bone' && !isHidden(b))
         drawBone(b, u, S.selSet.has(b.id), S.tool === 'bonebind' && S.bindPick.length > 0 && S.bindHover === b.id);
     });
+  }
   drawBindLines(
     el => OV.append(el),
     (tag, a) => svgEl(tag, a),

@@ -80,6 +80,34 @@ export function renderLayers() {
     ? `${S.selSet.size} of ${total} selected`
     : `${total} layer${total === 1 ? '' : 's'}`;
 }
+/** Double-click a name to rename it. The first click selects the layer, which re-renders the list, so
+ *  the second click lands on a new element and the browser's dblclick never fires: a second click on the
+ *  same name within the double-click time counts instead. `sel` is the name's selector. */
+export function nameDblClick(root: HTMLElement, sel: string, onDbl: (el: HTMLElement, l: Layer) => void) {
+  let last = { id: '', t: 0 };
+  root.addEventListener(
+    'click',
+    (e: MouseEvent) => {
+      const nm = (e.target as any).closest && ((e.target as Element).closest(sel) as HTMLElement);
+      if (!nm || (e.target as Element).closest('input')) {
+        last = { id: '', t: 0 };
+        return;
+      }
+      const id = (nm.closest('[data-lid]') as HTMLElement).dataset.lid,
+        now = e.timeStamp,
+        dbl = e.detail === 2 || (last.id === id && now - last.t < 500);
+      last = dbl ? { id: '', t: 0 } : { id, t: now };
+      if (!dbl || e.shiftKey || e.ctrlKey || e.metaKey) return;
+      // after the row's own click handler has selected (and re-rendered) it
+      setTimeout(() => {
+        const l = layerById(id),
+          el = root.querySelector(`[data-lid="${id}"] ${sel}`) as HTMLElement;
+        if (l && el && !el.querySelector('input')) onDbl(el, l);
+      }, 0);
+    },
+    true,
+  );
+}
 export function renameInline(el: HTMLElement, l: Layer) {
   el.innerHTML = `<input id="rn-${l.id}" value="${esc(l.name)}" aria-label="Layer name">`;
   const inp = el.querySelector('input');
@@ -293,10 +321,7 @@ export function init(): void {
       }
     }
   });
-  LP.addEventListener('dblclick', (e: MouseEvent) => {
-    const nm = (e.target as any).closest('.lp-name');
-    if (nm) renameInline(nm, layerById(nm.closest('[data-lid]').dataset.lid));
-  });
+  nameDblClick(LP, '.lp-name', renameInline);
   LP.addEventListener('dragstart', (e: DragEvent) => {
     const r = (e.target as any).closest('.lp-row');
     if (!r) return;

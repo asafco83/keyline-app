@@ -12,7 +12,7 @@ import { isAnim } from '../model/tree';
 import { frame } from '../render/stage';
 import { applyEase } from '../ui/easing';
 import { renderInspector } from '../ui/inspector';
-import { renameInline, renderLayers } from '../ui/layers-panel';
+import { nameDblClick, renameInline, renderLayers } from '../ui/layers-panel';
 import { MENU, keyOwners, laneTime, renderTimeline, resolveCollisions, selectKeyLayer } from '../ui/timeline';
 
 function isLineLayer(l: Layer) {
@@ -335,12 +335,9 @@ export function init(): void {
       toggleFreeze(l, row.dataset.prop);
     }
   });
+  nameDblClick(TLB, '.tl-lname', renameInline);
   TLB.addEventListener('dblclick', (e: MouseEvent) => {
-    const nm = (e.target as any).closest('.tl-lname');
-    if (nm) {
-      renameInline(nm, layerById(nm.closest('[data-lid]').dataset.lid));
-      return;
-    }
+    if ((e.target as any).closest('.tl-lname')) return;
     const lane = (e.target as any).closest('.tl-prop [data-act="lane"]');
     if (lane && !(e.target as any).closest('.kf')) {
       const row = lane.closest('[data-lid]'),
