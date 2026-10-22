@@ -136,7 +136,7 @@ export interface Rule {
 }
 export function parseSheet(css: string): Rule[] {
   const out: Rule[] = [];
-  let s = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  let s = css.replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!\[CDATA\[|\]\]>/g, '');
   // drop at-rules with blocks (@font-face, @keyframes, @media …)
   for (;;) {
     const i = s.search(/@[\w-]+[^{;]*\{/);

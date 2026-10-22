@@ -12,8 +12,9 @@ import { parsePath } from '../geometry/parse-path';
 import { addFilter, fxKey } from '../model/filters';
 import type { AnimReader, Converter } from './svg-convert';
 import { type Mat, apply, decompose, inv, linOf, rgbaStr, toGrad } from './svg-paint';
+import { readCSS } from './css-anim';
 
-type Key<T = any> = { t: number; v: T; e?: number[] };
+type Key<T = any> = { t: number; v: T; e?: number[] | string };
 type XY = { x: number; y: number };
 
 /* ---------- the scrambled settings (as SVGator's player reads them) ---------- */
@@ -83,7 +84,7 @@ export function playerData(text: string): { key: string; data: any } | null {
 /* ---------- reading ---------- */
 
 export function readAnimation(root: Element, text: string): AnimReader | null {
-  return readPlayer(root, text);
+  return readPlayer(root, text) || readCSS(root);
 }
 const TRIGGERS: Record<string, string> = {
   load: 'load',
@@ -142,10 +143,11 @@ function readPlayer(root: Element, text: string): AnimReader | null {
 
 const sec = (ms: number) => r3(ms / 1000);
 /** keyframes from SVGator keys: easing on a key applies until the next key */
+/** an easing: a cubic-bezier, or 'hold' (CSS steps) */
+const easeOfKey = (k: Key): any =>
+  Array.isArray(k.e) && k.e.length === 4 ? k.e.map(r3) : typeof k.e === 'string' ? k.e : 'linear';
 function track<T>(keys: Key<T>[], f: (v: T, k: Key<T>) => any): Keyframe[] {
-  return keys.map(
-    k => [sec(k.t), f(k.v, k), Array.isArray(k.e) && k.e.length === 4 ? k.e.map(r3) : 'linear'] as Keyframe,
-  );
+  return keys.map(k => [sec(k.t), f(k.v, k), easeOfKey(k)] as Keyframe);
 }
 /** value of SVGator keys at time t (ms), for numbers / points */
 function at(keys: Key[], t: number, mix: (a: any, b: any, p: number) => any) {
@@ -160,7 +162,8 @@ function at(keys: Key[], t: number, mix: (a: any, b: any, p: number) => any) {
   }
   return keys[keys.length - 1].v;
 }
-function easeAt(e: number[], x: number) {
+function easeAt(e: number[] | string, x: number) {
+  if (typeof e === 'string') return e === 'hold' ? (x < 1 ? 0 : 1) : x;
   // cubic-bezier, solved for x by bisection
   const B = (a: number, b: number, t: number) => 3 * a * t * (1 - t) * (1 - t) + 3 * b * t * t * (1 - t) + t * t * t;
   let lo = 0,
@@ -178,7 +181,7 @@ const sameTiming = (a: Key[], b: Key[]) =>
   a.length === b.length &&
   a.every((k, i) => k.t === b[i].t && JSON.stringify(k.e || null) === JSON.stringify(b[i].e || null));
 
-function animateLayer(l: Layer, el: Element, E: any, cv: Converter, note: (s: string) => void) {
+export function animateLayer(l: Layer, el: Element, E: any, cv: Converter, note: (s: string) => void) {
   for (const prop in E) {
     const v = E[prop];
     switch (prop) {
@@ -282,7 +285,7 @@ function paintTrack(keys: Key[], cv: Converter, l: Layer): Keyframe[] {
   const blends = (a: any, b: any) =>
     (!a && !b) || (!!a && !!b && (a.t === 'c' || b.t === 'c' || (a.t === 'g' && b.t === 'g' && a.r === b.r)));
   keys.forEach((k, i) => {
-    const kf: Keyframe = [sec(k.t), paint(k.v, cv, l), Array.isArray(k.e) && k.e.length === 4 ? k.e.map(r3) : 'linear'];
+    const kf: Keyframe = [sec(k.t), paint(k.v, cv, l), easeOfKey(k)];
     out.push(kf);
     const n = keys[i + 1];
     if (n && !blends(k.v, n.v) && n.t > k.t) {
@@ -397,7 +400,7 @@ function transform(l: Layer, T: any, cv: Converter, note: (s: string) => void) {
   if (ok && ok.length > 1) l.ev = true;
   // position = o + t
   l.b.pos = [r3(o0.x + t0.x), r3(o0.y + t0.y)];
-  const ease = (k: Key) => (Array.isArray(k.e) && k.e.length === 4 ? k.e.map(r3) : 'linear');
+  const ease = easeOfKey;
   if (ok && (!tk || sameTiming(ok, tk))) {
     // exact: an anchor moving on the same keys adds a straight line to each segment, which moves the
     // segment's handles by a third of that line
