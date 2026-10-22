@@ -13,6 +13,7 @@ import { outDims, syncSizeUI } from './size';
 import { markup } from '../render/markup';
 import { fontFaceCSS } from '../render/fonts';
 import { CinEngine } from '../runtime/engine';
+import { isPinKey } from '../model/pins';
 
 export function roundV(v: any): any {
   if (typeof v === 'number') return r3(v);
@@ -59,9 +60,13 @@ export function dstrC(sp: any[] | null | undefined) {
 export function smilShapes() {
   return doc.ex.mode === 'css' && doc.ex.trigger !== 'hover';
 }
+/** pin tracks bend the path, so they animate its shape */
+function pinAnimated(l: Layer) {
+  return !!(l.pins && l.pins.length && Object.keys(l.t).some(k => isPinKey(k) && l.t[k].length));
+}
 function shapeAnimated(l: Layer) {
   const T = l.t;
-  return !!(T.d || T.p0 || T.p1 || (T.rad && l.shape));
+  return !!(T.d || T.p0 || T.p1 || (T.rad && l.shape) || pinAnimated(l));
 }
 /** SMIL <animate> elements for the shapes of `anim` (CSS mode, see smilShapes) */
 export function smilFor(anim: Layer[], pre: string) {
@@ -125,7 +130,7 @@ export function cssFor(anim: Layer[], pre: string, svgId: string) {
           fr.map(c => (gt ? `transform:${cssTf(c, bf, cq)};` : '') + (go ? `opacity:${r3(c.op)}` : '')),
           N,
         ) + `#${id}{transform-box:view-box;transform-origin:0 0;animation:${id}-g ${run}}`;
-    const shapeAnim = !!(T.p0 || T.p1 || (T.rad && l.shape)),
+    const shapeAnim = !!(T.p0 || T.p1 || (T.rad && l.shape) || pinAnimated(l)),
       // a gradient animates through its stops (below), not the fill / stroke property
       gradK = (k: 'fill' | 'stk') => fr.some(c => H.isG(c[k])),
       gk = { fill: !!T.fill && gradK('fill'), stk: !!T.stk && gradK('stk') },
@@ -310,8 +315,10 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
     if (!anim.includes(l)) anim.push(l);
     if (!anim.includes(P)) anim.push(P);
   });
-  // composites look parent bones up among the exported layers while the export is written
+  // composites look parent bones up among the exported layers while the export is written, and
+  // pinned paths are always exported bent (the editor may be showing them at rest)
   H.lookup(id => byId[id]);
+  const restWas = H.restPins(false);
   const used: Record<string, 1> = {};
   const ctx: MarkupCtx = {
     pre,
@@ -381,6 +388,13 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
             const sc = [l.b.scl || [1, 1]].concat((l.t.scl || []).map(q => q[1]));
             if (csParents.has(l.id) || sc.some(v => v[0] !== v[1])) o.ba = l.geo.ang;
           }
+          if (l.pins && l.pins.length) {
+            // pins bend the path every frame: the runtime needs the path, the pins and their resting values
+            o.pins = l.pins;
+            if (l.reach) o.reach = l.reach;
+            b.d = l.b.d;
+            for (const k in l.b) if (isPinKey(k)) b[k] = (l.b as Record<string, any>)[k];
+          }
           if (counter.has(l.id)) {
             o.parent = l.parent;
             o.cs = 1;
@@ -395,6 +409,7 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
     }
   }
   H.lookup(id => layerById(id));
+  H.restPins(restWas);
   return {
     code: out + '</svg>',
     svgId,

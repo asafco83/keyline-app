@@ -51,11 +51,14 @@ import {
   textAppearanceSection,
   textSection,
   transformSection,
+  pinsSection,
 } from './props-panel';
 import { applyEase, bezOf, drawEz, easeFam, famName, keyPanel, parseBez, sameEase } from './easing';
 import { deleteSel, groupSel, moveLayers, ungroup } from './layers-panel';
 import { dragWin } from './timeline';
 import { poseRowFor, rigGaps, rigPopover } from '../tools/rig';
+import { removeAllPins, removePin } from '../tools/pins';
+import { drawOverlay } from '../render/overlay';
 
 export function num(f: string, lab: string, unit?: string) {
   return `<label class="nf"><span data-scrub="${f}">${lab}</span><input id="i-${f.replace(/[:.]/g, '_')}" data-f="${f}" inputmode="decimal" spellcheck="false" aria-label="${lab}">${unit ? `<em>${unit}</em>` : ''}</label>`;
@@ -103,6 +106,7 @@ export function renderInspector() {
   if (l.type === 'text') h += textSection(l);
   h += shapeSection(l);
   h += transformSection(l);
+  h += pinsSection(l);
   const curve = l.t.pos && l.t.pos.length > 1,
     pick = l.type === 'bone' ? '' : motionPick(l);
   if (curve || pick)
@@ -485,6 +489,15 @@ export function init(): void {
     const t = e.target as HTMLInputElement,
       l = selLayer();
     if (l && propsInput(t, l)) return frame();
+    if (l && t.dataset.preach !== undefined) {
+      // Reach: live while dragging the slider, one undo step on release (closed on change)
+      if (!S.colorEd) S.colorEd = beginEdit();
+      l.reach = clamp(+t.value || 100, 20, 400);
+      const v = byId('pinReachV');
+      if (v) v.textContent = fmt(l.reach) + ' %';
+      frame();
+      return;
+    }
     if (l && t.dataset.g === 'text') {
       // type in the panel and the canvas follows; one undo step per edit (closed on change)
       if (!S.colorEd) S.colorEd = beginEdit();
@@ -783,6 +796,13 @@ export function init(): void {
       ed.end();
     } else if (a === 'topath') convertToPath(l);
     else if (a === 'childbone') addChildBone(l);
+    else if (a === 'pinsel') {
+      S.pinSel = +b.dataset.n;
+      renderInspector();
+      drawOverlay();
+    } else if (a === 'pinrm') {
+      if (S.pinSel != null) removePin(l, S.pinSel);
+    } else if (a === 'pinrmall') removeAllPins(l);
     else if (a === 'nodes') {
       setTool(S.tool === 'node' ? 'select' : 'node');
       renderInspector();

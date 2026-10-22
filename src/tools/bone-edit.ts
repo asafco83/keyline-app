@@ -106,6 +106,9 @@ export function boneChips() {
   if (S.tool === 'boneedit') {
     chip.innerHTML = '<span class="dot"></span><b>Rest pose</b><span class="mu">· keys unchanged</span>';
     chip.hidden = false;
+  } else if (S.tool === 'pinedit') {
+    chip.innerHTML = '<span class="dot"></span><b>Rest pose</b><span class="mu">· pins move with their motion</span>';
+    chip.hidden = false;
   } else if (S.tool === 'bonebind' && S.bindPick.length) {
     const n = S.bindPick.length;
     chip.innerHTML = `<b>${n} ${n > 1 ? 'children' : 'child'} picked</b><span class="mu">· click ${n > 1 ? 'their' : 'its'} parent bone · Esc cancels</span>`;

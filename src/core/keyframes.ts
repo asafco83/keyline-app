@@ -1,5 +1,6 @@
 // SVGcinema — core/keyframes
 import { fxOf } from '../model/filters';
+import { isPinKey, pinOfKey } from '../model/pins';
 import type { ClipKey, Ease, Keyframe, Layer, PropKey } from '../model/types';
 import { $, H, clamp, clone, r3 } from './constants';
 import { TLB } from './dom';
@@ -28,7 +29,8 @@ export function propOK(l: Layer, k: PropKey) {
     (k === 'd' && l.type === 'path') ||
     ((k === 'p0' || k === 'p1') && isLineLayer(l)) ||
     (k === 'rad' && (l.type === 'rect' || !!l.shape)) ||
-    (k.startsWith('fx.') && !!fxOf(l, k))
+    (k.startsWith('fx.') && !!fxOf(l, k)) ||
+    (isPinKey(k) && !!pinOfKey(l, k))
   );
 }
 export function keySpan() {

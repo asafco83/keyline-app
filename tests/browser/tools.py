@@ -41,7 +41,7 @@ async def main():
 
         # ---- toolbar ----
         grp=await ev("[...document.querySelectorAll('#tools .grp')].map(b=>b.dataset.group+':'+b.dataset.tool)")
-        check('toolbar has pen, shapes and bone groups', grp==['pen:pen','shapes:rect','bones:bone'], grp)
+        check('toolbar has pen, shapes, bone and pin groups', grp==['pen:pen','shapes:rect','bones:bone','pins:pin'], grp)
         btn=await pg.query_selector('#tools .grp[data-group="pen"]'); bb=await btn.bounding_box()
         await pg.mouse.move(bb['x']+17,bb['y']+17); await pg.mouse.down(); await pg.wait_for_timeout(450)
         items=await ev("[...document.querySelectorAll('#toolfly .tf-item')].map(x=>x.querySelector('.nm').textContent+'|'+x.querySelector('kbd').textContent+'|'+x.getAttribute('aria-checked'))")

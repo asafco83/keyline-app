@@ -15,6 +15,7 @@ import { guideDrag } from '../render/guides';
 import { fit, frame } from '../render/stage';
 import { boneCreate, fkDrag, ikDrag } from './bones';
 import { bindDown, bindHover, boneEditDown, boneScaleDown } from './bone-edit';
+import { isPinTool, pinsDown } from './pins';
 import { createText, handleDrag, nodeDrag, toggleSmooth } from './edit-tools';
 import { addNodeDown, convertDown, delNodeDown, finishPen, penDown, penHover, pencilDown } from './pen';
 import { SHAPE_TOOLS, backToSelect, createDrag } from './shapes';
@@ -140,6 +141,10 @@ export function init(): void {
       return createText(p);
     }
     if (t === 'bone') return boneCreate(p);
+    if (isPinTool(t)) {
+      e.preventDefault();
+      return pinsDown(e, p);
+    }
     if (t === 'boneedit' || t === 'bonebind' || t === 'bonescale') {
       e.preventDefault(); // no text selection or native drag (Ctrl / Alt drags) while editing a rig
       return t === 'boneedit' ? boneEditDown(e, p) : t === 'bonescale' ? boneScaleDown(e, p) : bindDown(e);

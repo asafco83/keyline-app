@@ -1,6 +1,7 @@
 // SVGcinema — core/constants
 import type { Layer, PropKey } from '../model/types';
 import { fxKeys, fxOf } from '../model/filters';
+import { isPinKey, isPinRot, pinBase, pinKeys, pinLabel } from '../model/pins';
 import { CinEngine } from '../runtime/engine';
 
 export function $(s: string): any {
@@ -80,19 +81,21 @@ export function propLabel(l: Layer, k: string) {
   const d0 = k === 'd' && l.type === 'path' && l.b.d;
   if (d0 && d0.length === 1 && !d0[0].c && d0[0].n.length === 2) return 'Line';
   if ((PROPS as any)[k]) return (PROPS as any)[k][0] as string;
+  if (isPinKey(k)) return pinLabel(k);
   const f = fxOf(l, k);
   return f ? `${f.def.label} · ${f.param.label}` : k;
 }
 /** Value kind of a property: v = 2D vector, n = number, c = colour, m = path. */
 export function propKind(l: Layer, k: string): 'v' | 'n' | 'c' | 'm' {
   if ((PROPS as any)[k]) return (PROPS as any)[k][1];
+  if (isPinKey(k)) return isPinRot(k) ? 'n' : 'v';
   const f = fxOf(l, k);
   return f && typeof f.param.def === 'string' ? 'c' : 'n';
 }
 /** A layer's animated tracks in display order: standard properties, then filter parameters. */
 /** Tracks shown in the timeline: active ones and frozen ones, in property order. */
 export function layerTracks(l: Layer): PropKey[] {
-  return [...PORDER, ...(fxKeys(l) as PropKey[])].filter(
+  return [...PORDER, ...(fxKeys(l) as PropKey[]), ...(pinKeys(l) as PropKey[])].filter(
     k => (l.t[k] && l.t[k].length) || (l.ft && l.ft[k] && l.ft[k].length),
   );
 }
@@ -110,6 +113,7 @@ function geoBase(l: Layer, k: string) {
     return q ? [q[0], q[1]] : null;
   }
   if (k === 'rad') return l.type === 'rect' ? l.geo.rx || 0 : l.shape ? l.shape.rad || 0 : 0;
+  if (isPinKey(k)) return pinBase(l, k);
   return undefined;
 }
 export function valueAt(l: Layer, k: string, t: number) {
@@ -199,6 +203,10 @@ export const ICON: Record<string, string> = {
     `${BONE_P}<path d="M7.815 5.969 C8.748 5.036 10.315 6.052 9.811 7.304 C9.751 7.453 9.663 7.585 9.548 7.701 L8.715 8.534 L8.256 8.067 L9.088 7.241 C9.604 6.725 8.81 5.893 8.275 6.428 L7.449 7.26 L6.983 6.801 Z M6.824 8.227 L8.233 6.818 L8.698 7.284 L7.289 8.692 Z M5.974 7.81 L6.807 6.983 L7.266 7.443 L6.434 8.275 C5.904 8.805 6.72 9.609 7.247 9.082 L8.073 8.25 L8.539 8.716 L7.706 9.542 C6.771 10.478 5.191 9.447 5.708 8.206 C5.77 8.057 5.859 7.925 5.974 7.81 Z"/>`,
     16,
     9.909,
+  ),
+  pin: ic('<path d="M8.5 3.5h7"/><path d="M10 3.5l-.7 6L6.5 13.5h11l-2.8-4-.7-6"/><path d="M12 13.5v7"/>'),
+  pinedit: ic(
+    '<path class="ic-dims" d="M6.5 3h5.5l-1 4.6 2.7 2.9H4.8l2.7-2.9z"/><path class="ic-dims" d="M8.6 10.5V16"/><path d="M12.5 8.5h6l-1.1 4.8 2.9 3.1h-9.6l2.9-3.1z"/><path d="M15.5 16.4V22"/>',
   ),
   select: ic('<path d="M5 3.5l13 6.2-5.6 1.7-1.9 5.8z"/><path d="M12.4 11.4l5 5"/>'),
   node: ic(
@@ -293,6 +301,8 @@ export const TOOL_INFO: Record<string, { label: string; key?: string; keys?: str
   boneedit: { label: 'Edit bone tool', key: 'E', keys: ['e'] },
   bonescale: { label: 'Scale bone tool', key: 'S', keys: ['s'] },
   bonebind: { label: 'Bind tool' },
+  pin: { label: 'Pin tool', key: 'W', keys: ['w'] },
+  pinedit: { label: 'Edit pins tool' },
   hand: { label: 'Hand (hold Space)', key: 'H', keys: ['h'] },
 };
 export interface ToolGroup {
@@ -309,6 +319,7 @@ export const TOOLBAR: Array<string | ToolGroup | null> = [
   'text',
   null,
   { group: 'bones', label: 'Bone tools', items: ['bone', 'boneedit', 'bonescale', 'bonebind'] },
+  { group: 'pins', label: 'Pin tools', items: ['pin', 'pinedit'] },
   'hand',
 ];
 export function groupOf(tool: string): ToolGroup | null {
@@ -348,6 +359,9 @@ export const HINTS: Record<string, string> = {
     "Edits the rest pose · drag a tip to change length and angle · drag a joint to move it (Alt pulls it off the parent's tip) · drag the bone to move it · Ctrl carries the artwork · Shift snaps to 15°",
   bonescale:
     'Drag along a bone to scale it, keyed at the playhead · Tab while dragging switches Length, Thickness, Linked, Squash & stretch · Shift snaps to 10%',
+  pin: 'Click a path or shape to add a pin · drag a pin to bend it (keyed at the playhead) · Alt+drag moves a pin without bending · drag the ring of the selected pin to turn it · Del removes the pin',
+  pinedit:
+    'Moves pins at rest: the path shows its rest shape, and a pin you drag takes its motion with it · Shift moves straight · Del removes the pin',
   bonebind:
     'Click a bone or layer, then its new parent bone · Shift+click adds more · click empty canvas to unbind · Alt keeps the offset · Esc cancels',
   hand: 'Drag to pan · wheel scrolls · Ctrl+wheel zooms · double-click the hand to fit · hold Space for the hand in any tool',
