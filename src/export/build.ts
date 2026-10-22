@@ -388,6 +388,28 @@ export function idMapFor(prep: Layer[]) {
   });
   return map;
 }
+/** the images the layers use (their assets) */
+function used0(list: Layer[]) {
+  return [...new Set(list.filter(l => l.type === 'image' && ASSETS[l.geo.asset]).map(l => l.geo.asset as string))];
+}
+/** The editable project, carried in the SVG's metadata: the document (the exported layers) and the
+ *  list of images, whose pictures are the SVG's own image symbols. */
+export function projectPayload(list: Layer[] = doc.layers, assets: string[] = used0(list)) {
+  return JSON.stringify({
+    format: 'svgcinema-project',
+    version: 1,
+    doc: Object.assign({}, doc, { layers: list }),
+    assets: assets.map(id => {
+      const a = ASSETS[id];
+      return { id, name: a.name, kind: a.kind, mime: a.mime, w: a.w, h: a.h };
+    }),
+  });
+}
+function projectMetadata(list: Layer[], assets: string[], pre: string) {
+  const json = projectPayload(list, assets).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return `<metadata><svgcinema-project xmlns="${PROJECT_NS}" version="1" prefix="${pre}">${json}</svgcinema-project></metadata>`;
+}
+export const PROJECT_NS = 'https://asafco83.github.io/svgcinema/project';
 export function buildExport(imgs: Record<string, OptImage> | null) {
   const ex = doc.ex,
     pre =
@@ -525,6 +547,7 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
     size = ex.size === 'fixed' ? `width="${OW}" height="${OH}"` : 'width="100%"';
   let out = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="${svgId}" viewBox="${doc.vx || 0} ${doc.vy || 0} ${doc.w} ${doc.h}" ${size} shape-rendering="geometricPrecision" text-rendering="geometricPrecision">`;
   out += `<title>${esc(doc.name)}</title>`;
+  if (ex.proj) out += projectMetadata(src, used0(src), pre);
   if (doc.defs || syms || faceCSS)
     out += `<defs>${faceCSS ? `<style>${faceCSS}</style>` : ''}${doc.defs || ''}${syms}</defs>`;
   const bga = bgAttrs(doc);

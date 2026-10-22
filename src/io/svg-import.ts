@@ -6,14 +6,14 @@
 import type { Asset, Doc, Layer, XY } from '../model/types';
 import { $, NOFILL, NS, byId, esc, r3 } from '../core/constants';
 import { beginEdit } from '../core/history';
-import { ASSETS, S, blankDoc, doc, mkLayer, nextAid, setIdc, syncIdc } from '../core/state';
+import { ASSETS, S, blankDoc, doc, mkLayer, nextAid, setIdc, syncIdc, uid } from '../core/state';
 import { addAsset, dataToBlob, imgDims, renderAssets } from './assets';
 import { updateFileInfo } from './file-state';
 import { applyProject, toast } from './open';
 import { Converter, type AnimReader } from './svg-convert';
 import { moveOrigin } from './svg-paint';
 import { readAnimation } from './svgator';
-import { readEmbedded } from './embed';
+import { readEmbedded, renumber } from './embed';
 import { renderAll, renderStage } from '../render/stage';
 import { layerBox } from '../render/mesh';
 
@@ -100,6 +100,7 @@ export async function importSVGWith(text: string, o: ImportOptions): Promise<boo
     toast(`Opened ${o.name || 'the SVG'} as its SVGcinema project.`);
     return true;
   }
+  if (emb) return addEmbedded(emb, o);
   const sizes = await pictureSizes(root);
   let anim: AnimReader | null = null;
   try {
@@ -243,6 +244,36 @@ function addToProject(
     `Imported ${cv.layers.length} layer${cv.layers.length === 1 ? '' : 's'}${wrap ? ` into “${wrap.name}”` : ''}${grew ? `; the timeline is now ${r3(doc.dur)} s` : ''}`,
     cv,
     anim,
+  );
+  return true;
+}
+/** An SVGcinema export with its project inside, added to this project: its layers, exactly. */
+function addEmbedded(emb: { doc: Doc; assets: Record<string, Asset> }, o: ImportOptions) {
+  const ed = beginEdit(),
+    ids: Record<string, string> = {};
+  Object.values(emb.assets).forEach(a => {
+    const have = Object.values(ASSETS).find(x => x.data === a.data);
+    ids[a.id] = have ? have.id : addAsset({ ...a, id: undefined } as any).id;
+  });
+  const layers = renumber(emb.doc.layers, uid, ids),
+    wrap = mkLayer('group', o.name || emb.doc.name || 'Imported SVG', {}, NOFILL),
+    c = [(emb.doc.vx || 0) + emb.doc.w / 2, (emb.doc.vy || 0) + emb.doc.h / 2],
+    to = o.at ? [o.at.x, o.at.y] : [(doc.vx || 0) + doc.w / 2, (doc.vy || 0) + doc.h / 2];
+  wrap.o = [r3(c[0]), r3(c[1])];
+  wrap.b.pos = [r3(to[0] - c[0]), r3(to[1] - c[1])];
+  layers.forEach(l => !l.parent && (l.parent = wrap.id));
+  doc.layers.push(wrap, ...layers);
+  if (emb.doc.defs) doc.defs = (doc.defs || '') + emb.doc.defs;
+  const grew = emb.doc.dur > doc.dur + 1e-6;
+  if (grew) doc.dur = r3(emb.doc.dur);
+  S.lexp[wrap.id] = true;
+  S.sel = wrap.id;
+  S.selSet = new Set([wrap.id]);
+  S.keys.clear();
+  ed.end({ insp: true });
+  renderAssets();
+  toast(
+    `Added “${wrap.name}” from its SVGcinema project (${layers.length} layers${grew ? `; the timeline is now ${r3(doc.dur)} s` : ''}).`,
   );
   return true;
 }
