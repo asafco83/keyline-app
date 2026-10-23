@@ -34,8 +34,13 @@ const logo = [...brand.matchAll(/<path d="([^"]+)" class="(cls-\d)"\/>/g)]
   })
   .join('');
 
-const hero = read('src/hero.svg').trim();
-const snippets = JSON.stringify(JSON.parse(read('src/snippets.json'))).replace(/<\//g, '<\\/');
+// The page names no other product: the player's compatibility alias and the snippet comment about it go
+const hero = read('src/hero.svg')
+  .trim()
+  .replace(/\.player=s\.svgatorPlayer=/g, '.player=');
+const snips = JSON.parse(read('src/snippets.json'));
+for (const k in snips) snips[k] = snips[k].replace(/[ \t]*\/\/ also \.svgatorPlayer/g, '');
+const snippets = JSON.stringify(snips).replace(/<\//g, '<\\/');
 
 let body = read('src/page.html')
   .replaceAll('{{LOGO}}', logo)

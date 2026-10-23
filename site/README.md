@@ -49,7 +49,7 @@ Every "Open the editor" link opens the editor in a new tab, so the landing page 
 - **Images:** importing and the export dialog's image optimization, with a working copy of its image panel. It
   draws a test photo and compresses it with the visitor's own browser encoders, the same ones the editor uses.
 - **Export:** JS player vs. pure CSS, the embed code for each framework (Next.js included), and the hero file's size.
-- **Import:** opening SVGs from other tools, SVGator's JS and CSS exports and other CSS animations as editable
+- **Import:** opening SVGs from other tools, animated SVGs (supported JS-player exports and CSS animations) as editable
   keyframes, and SVGcinema exports that carry the editable project.
 - **Tools, Free, final call to action.** Pressing a tool key while the Tools section is in view lights up that key
   (`+` / `=` and `-` too); under the keys, snapping and guides, align and booleans, and number dragging.
