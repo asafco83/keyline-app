@@ -30,6 +30,7 @@ import { initScaleBar } from './tools/bone-edit';
 import { initPinBar } from './tools/pins';
 import { initDrawOrderDrag } from './ui/inspector';
 import { initTlResize } from './ui/tl-resize';
+import { initShortcuts } from './ui/shortcuts';
 import { initScrub } from './ui/scrub';
 
 // Same order as the original single-file build
@@ -50,6 +51,7 @@ initPicker(); // ui/color-picker
 init2(); // ui/layers-panel
 init3(); // ui/timeline
 initTlResize(); // ui/tl-resize (drag the timeline's top edge)
+initShortcuts(); // ui/shortcuts (the Keyboard shortcuts window, F1)
 initScrub(); // ui/scrub (drag a number field's label to change it)
 init4(); // core/keyframes
 init5(); // ui/inspector

@@ -5,7 +5,8 @@ import { layerBox } from '../render/mesh';
 import type { Layer, PropKey } from '../model/types';
 import { $, H, clone, esc, r2, valueAt } from '../core/constants';
 import { WRAP, LP } from '../core/dom';
-import { beginEdit, select, setProp } from '../core/history';
+import { beginEdit, select, selectMany, setProp } from '../core/history';
+import { keyLower } from '../core/keys';
 import { S, doc, layerById, selLayer, uid } from '../core/state';
 import { convertToPath } from '../core/layer-ops';
 import { descendants, isLocked, kids, pidOf, selectedRoots } from '../model/tree';
@@ -74,7 +75,7 @@ export function pasteLayers(inPlace?: boolean) {
 
 /* ---------- actions ---------- */
 
-function arrangeEnd(l: Layer, front: boolean) {
+export function arrangeEnd(l: Layer, front: boolean) {
   const sib = kids(pidOf(l));
   if (sib.length < 2) return;
   const ed = beginEdit(),
@@ -103,6 +104,23 @@ function eachSel(fn: (l: Layer) => void) {
   const ed = beginEdit();
   ls.forEach(fn);
   ed.end({ insp: true });
+}
+/** Ctrl+H: hides the selected layers, or shows them when they are all hidden already. */
+export function toggleHide() {
+  const ls = selectedRoots();
+  if (!ls.length) return false;
+  const ed = beginEdit(),
+    on = !ls.every(l => l.hid);
+  ls.forEach(l => (l.hid = on));
+  ed.end({ insp: true });
+  return true;
+}
+/** Ctrl+A on the canvas: every top-level layer that is shown and unlocked (as a click picks the outermost
+ *  layer, so do these). */
+export function selectAllLayers() {
+  const ids = doc.layers.filter(l => !l.parent && !l.hid && !l.lock).map(l => l.id);
+  selectMany(ids);
+  return ids.length > 0;
 }
 export function toggleLock() {
   const ls = selectedRoots();
@@ -326,7 +344,7 @@ function run(id: string) {
 /** Keyboard shortcuts for the menu's commands. Returns true when handled. */
 export function layerShortcut(e: KeyboardEvent) {
   const mod = e.ctrlKey || e.metaKey,
-    k = (e.key || '').toLowerCase(),
+    k = keyLower(e),
     l = selLayer();
   if (!mod) return false;
   if (k === 'x' && !e.shiftKey) return copyLayers(true);

@@ -323,6 +323,8 @@ export interface EditorState {
   keys: Set<Keyframe>;
   /** snap guide lines to draw while dragging (doc units) */
   snapLines?: { x: number[]; y: number[] } | null;
+  /** the canvas marquee being dragged (document coordinates) and the layers it touches */
+  marquee?: { a: { x: number; y: number }; b: { x: number; y: number }; hits: string[] } | null;
   /** export just these layers (Export selection) */
   exportOnly?: Set<string> | null;
   /** where arrow keys act (last area clicked) */

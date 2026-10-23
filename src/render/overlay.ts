@@ -142,6 +142,23 @@ export function drawOverlay() {
     S.snapLines.y.forEach(y => OV.append(svgEl('line', { x1: -big, y1: y, x2: big, y2: y, class: 'ov-snap' })));
   }
   const u = 1 / S.scale;
+  if (S.marquee) {
+    const { a, b, hits } = S.marquee;
+    hits.forEach(id => {
+      const l = layerById(id),
+        q = l && obbOf(l);
+      if (q) OV.append(svgEl('polygon', { points: quadPts(q), class: 'ov-box', 'stroke-dasharray': '3 3' }));
+    });
+    OV.append(
+      svgEl('rect', {
+        x: Math.min(a.x, b.x),
+        y: Math.min(a.y, b.y),
+        width: Math.abs(b.x - a.x),
+        height: Math.abs(b.y - a.y),
+        class: 'ov-marq',
+      }),
+    );
+  }
   if (S.pen || S.pencil || S.penHint) drawPen(u);
   if (S.tool !== 'select') drawLabel(u);
   boneChips();

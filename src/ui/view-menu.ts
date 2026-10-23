@@ -1,6 +1,6 @@
 // SVGcinema — ui/view-menu
 // The snapping (magnet) and grid menus in the canvas bar, and their shortcuts:
-// Alt+S snapping on/off, Alt+R rulers, Alt+L guides, Alt+B bones.
+// Alt+S snapping on/off, Alt+R rulers, Alt+L guides, Alt+B bones, Alt+G the front grid.
 import { $, ic } from '../core/constants';
 import { VIEW, type ViewPrefs, onView, setView } from '../core/view';
 import { drawBackGrid } from '../render/guides';
@@ -26,7 +26,7 @@ function rows(kind: 'snap' | 'grid'): Row[] {
       ['snap', 'Enable snapping', VIEW.snap, 'Alt S'],
     ];
   return [
-    ['gridFront', 'Front grid', VIEW.gridFront],
+    ['gridFront', 'Front grid', VIEW.gridFront, 'Alt G'],
     ['gridBack', 'Back grid', VIEW.gridBack],
     '-',
     ['rulers', 'Show rulers', VIEW.rulers, 'Alt R'],
@@ -104,7 +104,9 @@ export function viewShortcut(e: KeyboardEvent) {
           ? 'guides'
           : e.code === 'KeyB'
             ? 'bones'
-            : '';
+            : e.code === 'KeyG'
+              ? 'gridFront'
+              : '';
   if (!k) return false;
   toggle(k);
   return true;

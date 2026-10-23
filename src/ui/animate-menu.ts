@@ -2,6 +2,7 @@
 // The Animate button at the bottom of the Layers panel (as in SVGator): pick a property and every
 // selected layer that has it gets a keyframe at the playhead, so it joins the timeline.
 // Shortcuts: Shift + the letter shown next to each property.
+import { keyLower } from '../core/keys';
 import type { Keyframe, Layer, PropKey } from '../model/types';
 import { $, H, ICON, clone, ic, isFrozen, r3, valueAt } from '../core/constants';
 import { beginEdit } from '../core/history';
@@ -75,7 +76,7 @@ export function animateProp(k: PropKey) {
 /** Shift+letter shortcuts. Returns true when handled. */
 export function animateShortcut(e: KeyboardEvent) {
   if (!e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return false;
-  const k = BY_KEY[(e.key || '').toLowerCase()];
+  const k = BY_KEY[keyLower(e)];
   if (!k || !canAnimate()) return false;
   return animateProp(k);
 }

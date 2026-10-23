@@ -113,6 +113,23 @@ body {
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
+/* The UI's own text (labels, headings, menus, the layer list) can't be highlighted, so a stray drag or a
+   Select all never paints the interface blue. Fields, text being typed and code views stay selectable. */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+input,
+textarea,
+select,
+[contenteditable],
+[contenteditable] *,
+pre,
+code,
+.selectable {
+  -webkit-user-select: text;
+  user-select: text;
+}
 button,
 input,
 select,
@@ -490,6 +507,16 @@ button {
   fill: none;
   stroke: var(--accent);
   stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+/* the canvas marquee (tools/marquee) */
+.ov-marq {
+  fill: var(--accent-soft);
+  fill-opacity: 0.35;
+  stroke: var(--accent);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
   vector-effect: non-scaling-stroke;
   pointer-events: none;
 }
@@ -1709,6 +1736,53 @@ body.tl-resizing * {
   padding: 0 8px 8px;
   border-bottom: 1px solid var(--line);
 }
+/* Layers panel search */
+.lp-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 8px 8px 4px;
+  color: var(--muted);
+}
+.lp-search svg {
+  position: absolute;
+  left: 9px;
+  pointer-events: none;
+}
+.lp-search input {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: var(--panel-2);
+  color: var(--fg);
+  font: inherit;
+  font-size: 12.5px;
+  padding: 0 30px 0 28px;
+}
+.lp-search input:hover {
+  border-color: var(--line);
+}
+.lp-search input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--raised);
+}
+.lp-find-n {
+  position: absolute;
+  right: 9px;
+  font: 500 11px var(--f-num);
+  pointer-events: none;
+}
+.lp-search input::-webkit-search-cancel-button {
+  margin-right: 14px;
+}
+.lp-name mark {
+  background: var(--key-soft);
+  color: inherit;
+  border-radius: 2px;
+}
 .lp-acts .sp {
   flex: 1;
 }
@@ -2344,24 +2418,126 @@ details summary {
   border-color: var(--accent);
   background: var(--accent-soft);
 }
-.keys {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 6px 14px;
-  font-size: 12px;
-  margin: 0;
+/* Keyboard shortcuts window (ui/shortcuts) */
+.dlg.sk {
+  display: flex;
+  flex-direction: column;
+  height: min(640px, calc(100% - 24px));
+  overflow: hidden;
 }
-.keys dt {
-  font: 500 11px var(--f-num);
-  background: var(--panel-2);
+.dlg.sk header h2 {
+  margin-right: auto;
+}
+.sk-find input {
+  width: 220px;
+  height: 30px;
   border: 1px solid var(--line);
-  border-radius: 4px;
-  padding: 1px 6px;
-  justify-self: start;
+  border-radius: 7px;
+  background: var(--panel-2);
+  color: var(--fg);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 12.5px;
 }
-.keys dd {
-  margin: 0;
+.sk-find input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--raised);
+}
+.sk-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 8px 12px 0;
+  border-bottom: 1px solid var(--line);
+  flex: none;
+  overflow-x: auto;
+}
+.sk-tabs [role='tab'] {
+  border: 0;
+  background: transparent;
   color: var(--muted);
+  font: 500 13px var(--f-ui);
+  padding: 8px 12px 9px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sk-tabs [role='tab']:hover {
+  color: var(--fg);
+}
+.sk-tabs [role='tab'][aria-selected='true'] {
+  color: var(--accent-fg);
+  border-bottom-color: var(--accent);
+}
+.sk-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 8px 16px 16px;
+}
+.sk-grid {
+  columns: 2;
+  column-gap: 32px;
+}
+.sk-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 34px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line-soft);
+  break-inside: avoid;
+}
+.sk-l {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--fg);
+}
+.sk-keys {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: 60%;
+}
+.sk-combo {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+.sk-combo kbd {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--line-2);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--panel-2);
+  color: var(--fg);
+  font: 500 11px var(--f-num);
+}
+.sk-w,
+.sk-or {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.sk-none {
+  color: var(--muted);
+  font-size: 13px;
+}
+@media (max-width: 760px) {
+  .sk-grid {
+    columns: 1;
+  }
+  .sk-find input {
+    width: 140px;
+  }
 }
 .toast {
   position: fixed;

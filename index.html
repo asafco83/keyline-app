@@ -174,6 +174,29 @@
             ></button>
             <button class="btn ib" id="lDel" aria-label="Delete" title="Delete selected layers (Del)"></button>
           </div>
+          <div class="lp-search">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="6" cy="6" r="4" />
+              <path d="M9 9l3 3" />
+            </svg>
+            <input
+              id="lpFind"
+              type="search"
+              placeholder="Search layers"
+              aria-label="Search layers"
+              spellcheck="false"
+            />
+            <span class="lp-find-n" id="lpFindN" aria-live="polite"></span>
+          </div>
           <div class="lp" id="lp" role="tree" aria-label="Layers"></div>
           <div class="lp-foot">
             <span class="rl" id="lCount"></span>
@@ -604,77 +627,21 @@
     </div>
 
     <div class="modal" id="mKeys" hidden>
-      <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="kTitle">
+      <div class="dlg wide sk" role="dialog" aria-modal="true" aria-labelledby="kTitle">
         <header>
-          <h2 id="kTitle">Shortcuts</h2>
+          <h2 id="kTitle">Keyboard shortcuts</h2>
+          <label class="sk-find"
+            ><input
+              id="skFind"
+              type="search"
+              placeholder="Search shortcuts"
+              aria-label="Search shortcuts"
+              spellcheck="false"
+          /></label>
           <button class="btn ghost ib" data-close aria-label="Close">✕</button>
         </header>
-        <div class="body">
-          <dl class="keys">
-            <dt>V A R E S P T B</dt>
-            <dd>Select, Nodes, Rectangle, Ellipse, Star, Pen, Text, Bone</dd>
-            <dt>Drag bone · drag tip</dt>
-            <dd>Rotate one bone (FK) · pose the chain (IK; Alt+drag a bone does the same)</dd>
-            <dt>Space</dt>
-            <dd>Play / pause</dd>
-            <dt>Home · , .</dt>
-            <dd>Go to start · step back / forward one frame</dd>
-            <dt>Del</dt>
-            <dd>Delete selected keyframes, node, or layer</dd>
-            <dt>Ctrl S · Ctrl ⇧ S</dt>
-            <dd>Save · save as (.SVGcinema project file)</dd>
-            <dt>Ctrl O · Ctrl I · Ctrl E</dt>
-            <dd>Open project · import files · export SVG</dd>
-            <dt>Ctrl Z · Ctrl ⇧ Z</dt>
-            <dd>Undo · redo</dd>
-            <dt>Ctrl D</dt>
-            <dd>Duplicate layer</dd>
-            <dt>Ctrl G · Ctrl ⇧ G</dt>
-            <dd>Group · ungroup</dd>
-            <dt>Ctrl + click</dt>
-            <dd>Select a layer inside a group on the canvas</dd>
-            <dt>Ctrl [ · Ctrl ]</dt>
-            <dd>Send backward · bring forward</dd>
-            <dt>Arrows</dt>
-            <dd>Nudge 1px (Shift: 10px)</dd>
-            <dt>Shift + drag</dt>
-            <dd>Constrain move, keep proportions, 15° rotation</dd>
-            <dt>Alt / Ctrl + scale</dt>
-            <dd>Scale from the center · around the origin (drag past the edge to mirror)</dd>
-            <dt>Drag the origin</dt>
-            <dd>Move the pivot point (Shift snaps to corners, edges, center)</dd>
-            <dt>Drag empty lane</dt>
-            <dd>Box-select keyframes (Shift or Ctrl adds)</dd>
-            <dt>Shift / Ctrl + click</dt>
-            <dd>Toggle / add keyframes to the selection</dd>
-            <dt>Drag keys</dt>
-            <dd>Move selected keyframes (Shift turns snapping off or on)</dd>
-            <dt>Alt + drag key</dt>
-            <dd>Stretch or squeeze the selection from its other end</dd>
-            <dt>Ctrl + drag key</dt>
-            <dd>Copy the selected keyframes while dragging</dd>
-            <dt>Ctrl C · Ctrl V</dt>
-            <dd>Copy keyframes · paste at the playhead</dd>
-            <dt>Ctrl D</dt>
-            <dd>Duplicate selected keyframes (or the layer)</dd>
-            <dt>Ctrl A</dt>
-            <dd>Select every keyframe</dd>
-            <dt>← → with keys</dt>
-            <dd>Nudge keyframes one frame (Shift: 10 frames)</dd>
-            <dt>J · K</dt>
-            <dd>Jump to previous · next keyframe</dd>
-            <dt>F9 · ⇧F9 · Ctrl⇧F9</dt>
-            <dd>Ease in-out · ease in · ease out</dd>
-            <dt>Export → Embed</dt>
-            <dd>Ready code for HTML, React, Next.js, Vue, Angular, Svelte and the player API</dd>
-            <dt>Right-click key</dt>
-            <dd>Copy, paste, easing, reverse, distribute, move to playhead</dd>
-            <dt>Double-click lane</dt>
-            <dd>Add a keyframe at that time</dd>
-            <dt>Enter / Esc</dt>
-            <dd>Finish the pen path</dd>
-          </dl>
-        </div>
+        <div class="sk-tabs" id="skTabs" role="tablist" aria-label="Shortcut groups"></div>
+        <div class="sk-body" id="skBody" role="tabpanel" aria-live="polite"></div>
       </div>
     </div>
 
