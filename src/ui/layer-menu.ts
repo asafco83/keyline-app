@@ -327,6 +327,36 @@ export function openLayerMenu(x: number, y: number) {
   const f = m.querySelector('button:not(:disabled)') as HTMLElement;
   if (f) f.focus();
 }
+/** Places an open submenu inside the window: moved up when it would run off the bottom, to the left
+ *  when it would run off the right, and scrolling only when it is taller than the window. */
+export function placeSub(it: HTMLElement) {
+  const s = it.querySelector(':scope > .lm-sub') as HTMLElement | null;
+  if (!s) return;
+  s.style.top = '';
+  s.style.maxHeight = '';
+  s.style.overflowY = '';
+  s.classList.remove('left');
+  let r = s.getBoundingClientRect();
+  if (!r.height) return;
+  const room = innerHeight - 16;
+  if (r.height > room) {
+    s.style.maxHeight = room + 'px';
+    s.style.overflowY = 'auto';
+    r = s.getBoundingClientRect();
+  }
+  if (r.bottom > innerHeight - 8) s.style.top = s.offsetTop - (r.bottom - (innerHeight - 8)) + 'px';
+  if (r.right > innerWidth - 8 || it.closest('.lm.flip')) s.classList.add('left');
+  if (s.getBoundingClientRect().left < 4) s.classList.remove('left');
+}
+/** Positions a menu's submenus as they open (hover or keyboard focus). */
+export function trackSubs(m: HTMLElement) {
+  const go = (e: Event) => {
+    const it = (e.target as Element).closest && ((e.target as Element).closest('.lm-it.has-sub') as HTMLElement);
+    if (it && m.contains(it)) placeSub(it);
+  };
+  m.addEventListener('pointerover', go);
+  m.addEventListener('focusin', go);
+}
 /** Arrow keys, Enter and Esc in a menu built with menuHTML (submenus open to the right). */
 export function menuKeydown(m: HTMLElement, e: KeyboardEvent, close: () => void) {
   const cur = document.activeElement as HTMLElement,
@@ -340,6 +370,7 @@ export function menuKeydown(m: HTMLElement, e: KeyboardEvent, close: () => void)
     e.preventDefault();
     const s = cur.parentElement.querySelector('.lm-sub button:not(:disabled)') as HTMLElement;
     cur.parentElement.classList.add('open');
+    placeSub(cur.parentElement);
     if (s) s.focus();
   } else if (e.key === 'ArrowLeft' && list !== m) {
     e.preventDefault();
@@ -435,6 +466,7 @@ export function init(): void {
     run(b.dataset.lm);
   });
   m.addEventListener('keydown', (e: KeyboardEvent) => menuKeydown(m, e, closeLayerMenu));
+  trackSubs(m);
   document.addEventListener('pointerdown', (e: PointerEvent) => {
     if (!m.hidden && !m.contains(e.target as Node)) closeLayerMenu();
   });

@@ -104,6 +104,8 @@ async def main():
         check('F1 opens the shortcuts window with its tabs (as the main menu: General, Layers, Tools, Animation, View)', not await ev("mKeys.hidden") and tabs==['General','Layers','Tools','Animation','View'], tabs)
         secs=await ev("[...document.querySelectorAll('#skBody .sk-sec h3')].map(h=>h.textContent)")
         check('General: File, Edit and Help sections, with key caps', secs==['File','Edit','Help'] and await ev("document.querySelector('#skBody .sk-row kbd')!=null") and 'Undo' in await ev("document.getElementById('skBody').textContent"), secs)
+        ind=await ev("(()=>{const h=document.querySelector('#skBody .sk-sec h3').getBoundingClientRect(),r=document.querySelector('#skBody .sk-sec .sk-row').getBoundingClientRect();return r.left-h.left})()")
+        check('rows sit indented under their section title', ind>=10, ind)
         check('the tabs have no scrollbar', await ev("(()=>{const t=document.getElementById('skTabs');return t.scrollHeight<=t.clientHeight && getComputedStyle(t).overflowY==='hidden'})()"))
         await pg.click('#sk-tools'); tl=await ev("document.getElementById('skBody').textContent")
         check('Tools come from the real bindings (E edit bone, S scale bone, W pin, M rectangle)', all(x in tl for x in ['Edit bone tool','Scale bone tool','Pin tool','Rectangle']) and 'Star' not in tl.split('Polygon')[0], tl[:120])

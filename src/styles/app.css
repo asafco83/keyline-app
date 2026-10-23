@@ -2489,7 +2489,7 @@ details summary {
   padding-top: 10px;
 }
 .sk-sec h3 {
-  margin: 0 0 2px;
+  margin: 0 0 4px;
   font: 600 11px var(--f-ui);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -2508,6 +2508,13 @@ details summary {
   padding: 4px 0;
   border-bottom: 1px solid var(--line-soft);
   break-inside: avoid;
+}
+/* rows sit indented under their section's title, so each section reads as a group */
+.sk-sec .sk-row {
+  margin-left: 14px;
+}
+.sk-sec {
+  padding-bottom: 14px;
 }
 .sk-l {
   flex: 1;
@@ -2887,8 +2894,12 @@ details summary {
   left: calc(100% + 2px);
   top: -5px;
   display: none;
-  max-height: 70vh;
-  overflow: auto;
+}
+/* placed by placeSub (ui/layer-menu): to the left near the right edge; scrolls only when taller than
+   the window */
+.lm-sub.left {
+  left: auto;
+  right: calc(100% + 2px);
 }
 /* the tick column of checkable items (main menu › View) */
 .lm-chk {
@@ -2913,6 +2924,11 @@ details summary {
 .lm-it.has-sub:focus-within > .lm-sub,
 .lm-it.has-sub.open > .lm-sub {
   display: grid;
+}
+/* a submenu with nothing to do (main menu › Element with no selection) opens no empty box */
+.lm-it.has-sub > .lm-sub:empty,
+.lm-it.has-sub:has(> button:disabled) > .lm-sub {
+  display: none;
 }
 .dlg.dlg-sm {
   width: min(440px, calc(100vw - 32px));
