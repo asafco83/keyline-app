@@ -9,6 +9,7 @@ import { beginEdit, select, setProp } from '../core/history';
 import { S, doc, layerById } from '../core/state';
 import { descendants, isHidden, isLocked, kids, pmOf } from '../model/tree';
 import { drawOverlay, obbOf } from '../render/overlay';
+import { WRAP } from '../core/dom';
 import { frame } from '../render/stage';
 import { bonePts, boneTipL, counterMat, localMat } from './bones';
 import { hitChain } from './stage-input';
@@ -124,18 +125,22 @@ export function boneChips() {
     chip.innerHTML = `<b>${what} picked</b><span class="mu">· click ${many ? 'their' : 'its'} bone · empty canvas unbinds · Esc cancels</span>`;
     chip.hidden = false;
   } else chip.hidden = true;
-  const hv = S.tool === 'bonebind' && (S.bindPick.length || S.bindPins.length) && S.bindHover && layerById(S.bindHover);
-  if (hv && S.bindScreen) {
-    const first = S.bindPick.length ? layerById(S.bindPick[0]) : null,
-      fp = !first && S.bindPins[0],
-      fpl = fp && layerById(fp.lid),
-      name = first ? first.name : fpl ? `${fpl.name} · Pin ${fp.n}` : '',
-      total = S.bindPick.length + S.bindPins.length,
-      more = total > 1 ? ` +${total - 1}` : '',
-      bad = !bindable(S.bindPick, hv);
-    tip.innerHTML = bad
-      ? '<span class="mu">Can’t bind to itself or a child</span>'
-      : `<span class="mu">Bind</span><b>${esc(name)}${more}</b><span class="mu">to</span><b>${esc(hv.name)}</b>`;
+  const any = S.tool === 'bonebind' && (S.bindPick.length || S.bindPins.length),
+    hv = any && S.bindHover && layerById(S.bindHover),
+    // over empty canvas a click unbinds whatever picked is bound: say so beside the pointer
+    off = any && !hv && S.bindEmpty ? boundPicks() : null;
+  if ((hv || (off && off.length)) && S.bindScreen) {
+    const list = hv ? [...S.bindPick.map(id => layerById(id)?.name || ''), ...S.bindPins.map(pinName)] : off,
+      name = list[0] || '',
+      more = list.length > 1 ? ` +${list.length - 1}` : '';
+    if (hv) {
+      const bad = !bindable(S.bindPick, hv);
+      tip.innerHTML = bad
+        ? '<span class="mu">Can’t bind to itself or a child</span>'
+        : `<span class="mu">Bind</span><b>${esc(name)}${more}</b><span class="mu">to</span><b>${esc(hv.name)}</b>`;
+    } else
+      tip.innerHTML = `<span class="bt-x" aria-hidden="true">✕</span><span class="mu">Unbind</span><b>${esc(name)}${more}</b>`;
+    tip.classList.toggle('unbind', !hv);
     tip.hidden = false;
     // beside the pointer, flipped to its left near the right edge of the work area
     const host = (tip.offsetParent as HTMLElement) || document.body,
@@ -418,10 +423,31 @@ export function bindHover(e: PointerEvent, p: XY) {
   if (S.tool !== 'bonebind') return;
   const bn = (e.target as any).closest && (e.target as any).closest('[data-bone]');
   S.bindHover = bn ? bn.dataset.bone : null;
+  S.bindEmpty = !bn && !((e.target as any).closest && (e.target as any).closest('[data-spin]')) && !pickAt(e);
+  WRAP.classList.toggle(
+    'unbind',
+    S.bindEmpty && (S.bindPick.length > 0 || S.bindPins.length > 0) && boundPicks().length > 0,
+  );
   S.bindPt = p;
   S.bindScreen = { x: e.clientX, y: e.clientY };
   if (S.bindPick.length || S.bindPins.length) drawOverlay();
   else boneChips();
+}
+const pinName = (q: { lid: string; n: number }) => `${layerById(q.lid)?.name || ''} · Pin ${q.n}`;
+/** the picks a click on empty canvas would unbind: layers hanging on a bone, and pins bound to one */
+function boundPicks(): string[] {
+  return [
+    ...S.bindPick
+      .map(id => layerById(id))
+      .filter(k => k && k.parent && layerById(k.parent)?.type === 'bone')
+      .map(k => k.name),
+    ...S.bindPins
+      .filter(q => {
+        const l = layerById(q.lid);
+        return !!(l && (l.pins || []).some(p => p.n === q.n && p.bone));
+      })
+      .map(pinName),
+  ];
 }
 export function cancelBind() {
   if (S.tool !== 'bonebind' || (!S.bindPick.length && !S.bindPins.length)) return false;

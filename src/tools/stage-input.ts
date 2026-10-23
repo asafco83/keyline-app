@@ -17,7 +17,7 @@ import { guideDrag } from '../render/guides';
 import { fit, frame } from '../render/stage';
 import { boneCreate, fkDrag, ikDrag } from './bones';
 import { bindDown, bindHover, boneEditDown, boneScaleDown } from './bone-edit';
-import { isPinTool, pinHover, pinsDown, shownPinDown } from './pins';
+import { isPinTool, pinHandleDown, pinHover, pinsDown, shownPinDown } from './pins';
 import { createText, handleDrag, nodeDrag, toggleSmooth } from './edit-tools';
 import { addNodeDown, convertDown, delNodeDown, finishPen, penDown, penHover, pencilDown } from './pen';
 import { SHAPE_TOOLS, backToSelect, createDrag } from './shapes';
@@ -173,7 +173,13 @@ export function init(): void {
       e.preventDefault(); // no text selection or native drag (Ctrl / Alt drags) while editing a rig
       return t === 'boneedit' ? boneEditDown(e, p) : t === 'bonescale' ? boneScaleDown(e, p) : bindDown(e);
     }
-    // a pin shown with Show pins: drag it to bend its layer (or click it to pick it)
+    S.pinFocus = false;
+    // the selected layer's pins and the selected pin's ring: as with the Pin tool (no new pins here)
+    if (t === 'select' && pinHandleDown(e, p)) {
+      e.preventDefault();
+      return;
+    }
+    // another layer's pin shown with Show pins: drag it to bend its layer (or click it to pick it)
     const sp = (e.target as any).closest('[data-spin]');
     if (sp && t === 'select') {
       e.preventDefault();
@@ -287,7 +293,7 @@ export function init(): void {
     }
     if (S.drag) S.drag.move && S.drag.move(p, e);
     else if (S.tool === 'bonebind') bindHover(e, p);
-    else if (S.tool === 'pin') pinHover(e);
+    else if (S.tool === 'pin' || S.tool === 'select') pinHover(e);
     else penHover(p, e);
   });
   // Alt changes what the pen would do (convert anchor), so refresh its cursor without a move

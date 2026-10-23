@@ -2934,7 +2934,6 @@ details summary {
   left: auto;
   right: calc(100% + 2px);
 }
-.lm-it.has-sub:hover > .lm-sub,
 .lm-it.has-sub:focus-within > .lm-sub,
 .lm-it.has-sub.open > .lm-sub {
   display: grid;
@@ -4530,4 +4529,11 @@ select.sel {
 .ab-oss b {
   color: var(--fg);
   font-weight: 500;
+}
+
+/* Bind tool over empty canvas: a click unbinds the bound picks (the tip says so, with an ✕) */
+#bindTip.unbind .bt-x {
+  color: var(--head);
+  font-weight: 700;
+  margin-right: 2px;
 }

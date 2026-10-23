@@ -227,8 +227,8 @@ export function init(): void {
       FM.querySelectorAll('.lm-it.open').forEach(
         (x: Element) => x !== it && !x.contains(it) && x.classList.remove('open'),
       );
-      it.classList.toggle('open');
-      if (it.classList.contains('open')) placeSub(it);
+      it.classList.add('open');
+      placeSub(it);
       return;
     }
     closeFileMenu();

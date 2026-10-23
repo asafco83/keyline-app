@@ -359,15 +359,50 @@ export function placeSub(it: HTMLElement) {
     s.classList.add('left');
   }
 }
-/** Positions a menu's submenus as they open (hover or keyboard focus), and again when a scrolling
- *  submenu moves the items they open from. */
+/** Opens submenus as the pointer reaches their items (and keyboard focus), and places them. A submenu
+ *  stays open until the pointer settles on another item of the same list: moving to a sibling closes
+ *  it after a short delay, cancelled if the pointer comes back or reaches the submenu, so the pointer
+ *  can cross the gap (or a scrollbar, or a corner of a sibling) at any speed. Submenus are re-placed
+ *  when a scrolling submenu moves the items they open from. */
 export function trackSubs(m: HTMLElement) {
-  const go = (e: Event) => {
+  const timers = new Map<Element, number>();
+  const keep = (it: Element) => {
+    clearTimeout(timers.get(it));
+    timers.delete(it);
+  };
+  const open = (it: HTMLElement) => {
+    keep(it);
+    if (!it.classList.contains('open')) {
+      it.classList.add('open');
+      placeSub(it);
+    }
+  };
+  m.addEventListener('pointerover', (e: Event) => {
+    const it = (e.target as Element).closest && ((e.target as Element).closest('.lm-it') as HTMLElement);
+    if (!it || !m.contains(it)) return;
+    // this item and the submenus it sits in stay open
+    for (let a: HTMLElement | null = it; a && m.contains(a); a = a.parentElement)
+      if (a.classList.contains('lm-it')) keep(a);
+    const list = it.parentElement;
+    // open siblings close after a moment, unless the pointer comes back or reaches their submenu
+    list.querySelectorAll<HTMLElement>(':scope > .lm-it.open').forEach(o => {
+      if (o === it || timers.has(o)) return;
+      timers.set(
+        o,
+        window.setTimeout(() => {
+          timers.delete(o);
+          o.classList.remove('open');
+          o.querySelectorAll('.lm-it.open').forEach(x => x.classList.remove('open'));
+        }, 260),
+      );
+    });
+    if (it.classList.contains('has-sub') && !(it.querySelector(':scope > button') as HTMLButtonElement).disabled)
+      open(it);
+  });
+  m.addEventListener('focusin', (e: Event) => {
     const it = (e.target as Element).closest && ((e.target as Element).closest('.lm-it.has-sub') as HTMLElement);
     if (it && m.contains(it)) placeSub(it);
-  };
-  m.addEventListener('pointerover', go);
-  m.addEventListener('focusin', go);
+  });
   m.addEventListener(
     'scroll',
     () =>
