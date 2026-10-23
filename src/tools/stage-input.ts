@@ -20,9 +20,13 @@ import { createText, handleDrag, nodeDrag, toggleSmooth } from './edit-tools';
 import { addNodeDown, convertDown, delNodeDown, finishPen, penDown, penHover, pencilDown } from './pen';
 import { SHAPE_TOOLS, backToSelect, createDrag } from './shapes';
 
-/** Position keyframes of `l` that are selected in the timeline. */
+/** Position keyframes of `l` that a canvas move (drag or arrow keys) should move together: the ones
+ *  selected in the timeline, when that is two or more (part or all of the motion path) or the one
+ *  selected key is at the playhead. A single key selected elsewhere (as Animate leaves the key it
+ *  makes) doesn't count: the move keys the position at the playhead, as it would with none selected. */
 export function selectedPosKeys(l: Layer): Keyframe[] {
-  return S.keys.size && l.t.pos ? l.t.pos.filter(q => S.keys.has(q)) : [];
+  const ks = S.keys.size && l.t.pos ? l.t.pos.filter(q => S.keys.has(q)) : [];
+  return ks.length === 1 && Math.abs(ks[0][0] - S.time) > 0.005 ? [] : ks;
 }
 export function insideBox(l: Layer, p: XY) {
   const q = obbOf(l);

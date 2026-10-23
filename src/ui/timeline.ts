@@ -124,7 +124,35 @@ export function renderTimeline() {
       ? poseKeys(l, t)
       : Object.values(l.t).flatMap(tr => tr.filter(q => Math.abs(q[0] - t) < 0.004));
   });
+  revealSelected();
   updatePlayhead();
+}
+/** what revealSelected() last saw: the selected layer, and whether it had a row */
+let shown: { id: string | null; row: boolean } = { id: null, row: false };
+/** When the selection changes (or the selected layer gets its first track), scroll the timeline so the
+ *  layer's row and its property rows are in view, under the time ruler. Rows already in view stay put;
+ *  the horizontal scroll is left alone. */
+export function revealSelected() {
+  const id = S.sel || null,
+    row = id ? (TLB.querySelector(`.tl-layer[data-lid="${id}"]`) as HTMLElement | null) : null,
+    changed = id !== shown.id || (!!row && !shown.row);
+  shown = { id, row: !!row };
+  if (!changed || !row) return;
+  let last = row;
+  for (
+    let n = row.nextElementSibling as HTMLElement | null;
+    n && n.dataset && n.dataset.lid === id && !n.classList.contains('tl-layer');
+    n = n.nextElementSibling as HTMLElement | null
+  )
+    last = n;
+  const ruler = TLB.querySelector('.tl-ruler') as HTMLElement | null,
+    rh = ruler ? ruler.offsetHeight : 0,
+    top = row.offsetTop,
+    bot = last.offsetTop + last.offsetHeight,
+    visTop = TLS.scrollTop + rh,
+    visBot = TLS.scrollTop + TLS.clientHeight;
+  if (top < visTop) TLS.scrollTop = top - rh;
+  else if (bot > visBot) TLS.scrollTop = Math.min(top - rh, bot - TLS.clientHeight);
 }
 export function updatePlayhead() {
   const ph = $('#playhead');
