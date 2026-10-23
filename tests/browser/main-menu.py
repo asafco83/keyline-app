@@ -75,6 +75,14 @@ async def main():
         await pg.click('#bMenu'); await pg.hover('#fileMenu [data-sub=element] > button'); await pg.wait_for_timeout(120)
         g=await geo('#fileMenu [data-sub=element] > .lm-sub')
         check('in a short window it moves up to fit (or scrolls when taller than the window)', g['shown'] and g['bottom']<=560 and g['top']>=0 and (g['scroll']==(g['bottom']-g['top']>=544)), g)
+        # a window too short for it: it scrolls, and the next level still flies out beside it, in full
+        await pg.keyboard.press('Escape'); await pg.set_viewport_size({'width':860,'height':420}); await pg.wait_for_timeout(150)
+        await pg.click('#bMenu'); await pg.hover('#fileMenu [data-sub=element] > button'); await pg.wait_for_timeout(120)
+        g=await geo('#fileMenu [data-sub=element] > .lm-sub')
+        await pg.hover('#fileMenu [data-lm=mp]'); await pg.wait_for_timeout(150)
+        g3=await geo('#fileMenu [data-lm=mp] + .lm-sub')
+        hit=await ev(f"(()=>{{const e=document.elementFromPoint({(g3['left']+g3['right'])/2},{g3['top']+12});return !!(e&&e.closest('[data-lm=mp] + .lm-sub'))}})()")
+        check('in a very short window the submenu scrolls, and Set motion path still opens beside it, in full', g['scroll'] and g3['shown'] and hit and (g3['left']>=g['right']-4 or g3['right']<=g['left']+4) and g3['bottom']<=420, (g,g3))
         await pg.keyboard.press('Escape'); await pg.set_viewport_size({'width':1440,'height':900}); await pg.wait_for_timeout(100)
         # keyboard
         await pg.click('#bMenu'); await pg.wait_for_timeout(80)

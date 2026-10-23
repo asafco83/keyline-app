@@ -94,6 +94,7 @@ function viewItems(): Item[] {
     { id: 'vw:gridBack', label: 'Back grid', on: true, check: VIEW.gridBack },
     { id: 'vw:snap', label: 'Snapping', on: true, check: VIEW.snap, key: 'Alt S' },
     { id: 'vw:bones', label: 'Bones', on: true, check: S.showBones, key: 'Alt B' },
+    { id: 'vw:pins', label: 'Pins', on: true, check: S.showPins, key: 'Alt P' },
     '-',
     { id: 'vw:sections', label: 'Collapse or expand sections', on: true, key: '/' },
     { id: 'vw:theme', label: 'Dark theme', on: true, check: currentTheme() === 'dark' },

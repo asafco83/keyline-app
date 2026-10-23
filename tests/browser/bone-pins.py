@@ -44,7 +44,7 @@ async def main():
         check('Esc ends binding, the Pin tool stays', not await ev("st.S.pinBind") and await ev("st.S.tool")=='pin')
         chip=await ev("document.getElementById('boneChip').textContent")
         check('chip counts pins on bones', '3 pins · 3 on bones' in chip, chip)
-        check('bound pins drawn with a ring', await ev("document.querySelectorAll('#overlay .ov-pinbound').length")==3)
+        check('bound pins drawn with a ring', await ev("document.querySelectorAll('#overlay .ov-pinbound:not(.is-other)').length")==3)
         # ---- the rig bends the vine
         await ev("hi.setTime(1.1)"); await pg.wait_for_timeout(80); d15=await dattr()
         rest=await ev(f"(()=>{{const was=K.H.restPins(true);const d=K.H.dstr(K.H.comp({L},1.1).d);K.H.restPins(was);return d}})()")

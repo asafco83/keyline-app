@@ -37,7 +37,7 @@ export interface EngineLayer {
   j?: number[];
   /** pins that bend the path: rest position in the layer's space; tracks `pin<n>` (position) and
    *  `pinr<n>` (rotation, degrees) move them */
-  pins?: Array<{ n: number; x: number; y: number; bone?: string }>;
+  pins?: Array<{ n: number; x: number; y: number; bone?: string; bo?: number[] }>;
   /** an imported layer's own transform (on its content element) */
   xf?: string;
   /** how far each pin pulls (percent, default 100) */
@@ -157,7 +157,7 @@ export interface CinPlayer {
   /** from a layer's inner space up to the inner space of `upTo` (the canvas when null), at t */
   worldOf(L: EngineLayer, t: number, upTo?: EngineLayer | null): number[];
   /** a pin at t: [rest x, rest y, x, y, angle] (a pin bound to a bone follows it) */
-  pinAt(L: EngineLayer, p: { n: number; x: number; y: number; bone?: string }, t: number): number[];
+  pinAt(L: EngineLayer, p: { n: number; x: number; y: number; bone?: string; bo?: number[] }, t: number): number[];
   get(L: EngineLayer, k: string, t: number): any;
   dstr(sp: EngineSubPath[] | null | undefined): string;
   /** a dash pattern as stroke-dasharray ('none' for a solid line) */
@@ -888,9 +888,10 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
       path = L.type ? L.type === 'path' : !L.mesh;
     return path && L.xf ? mmul(W, xfM(L.xf)) : W;
   }
-  /** where a pin bound to a bone is, in the layer's pin space: at the bone's joint, turned as the bone
-   *  is turned; [x, y, angle] at t, or in the rest pose */
-  function boundAt(L: EngineLayer, B: EngineLayer, t: number, rest: boolean): number[] {
+  /** where a pin bound to a bone is, in the layer's pin space: at the bone's joint (moved by `o`, an
+   *  offset in the bone's own space, for a pin bound where it was), turned as the bone is turned;
+   *  [x, y, angle] at t, or in the rest pose */
+  function boundAt(L: EngineLayer, B: EngineLayer, t: number, rest: boolean, o?: number[]): number[] {
     // measured up to the nearest group holding both, so a group scaled to nothing doesn't matter
     var up: EngineLayer[] = [],
       q = layerOf(B.parent),
@@ -912,18 +913,22 @@ export function CinEngine(D: EngineData, root: ParentNode | null): CinPlayer {
     RESTV = was;
     var G = B.geo || {},
       a = ((G.ang || 0) * Math.PI) / 180,
-      x = G.x || 0,
-      y = G.y || 0,
+      x = (G.x || 0) + (o ? o[0] || 0 : 0),
+      y = (G.y || 0) + (o ? o[1] || 0 : 0),
       dx = M[0] * Math.cos(a) + M[2] * Math.sin(a),
       dy = M[1] * Math.cos(a) + M[3] * Math.sin(a);
     return [M[0] * x + M[2] * y + M[4], M[1] * x + M[3] * y + M[5], (Math.atan2(dy, dx) * 180) / Math.PI];
   }
   /** a pin at t: [rest x, rest y, x, y, angle in degrees] (a bound pin follows its bone) */
-  function pinAt(L: EngineLayer, p: { n: number; x: number; y: number; bone?: string }, t: number): number[] {
+  function pinAt(
+    L: EngineLayer,
+    p: { n: number; x: number; y: number; bone?: string; bo?: number[] },
+    t: number,
+  ): number[] {
     var B = p.bone ? layerOf(p.bone) : null;
     if (B) {
-      var r = boundAt(L, B, t, true),
-        c = boundAt(L, B, t, false);
+      var r = boundAt(L, B, t, true, p.bo),
+        c = boundAt(L, B, t, false, p.bo);
       return [r[0], r[1], c[0], c[1], c[2] - r[2]];
     }
     var P = get(L, 'pin' + p.n, t) || [p.x, p.y];

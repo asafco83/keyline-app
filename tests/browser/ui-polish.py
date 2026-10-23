@@ -89,7 +89,7 @@ async def main():
         check('their ring and centre dot too', await ev(f"[...document.querySelectorAll('.ov-pinbound, .ov-pindot.is-bound')].every(e=>getComputedStyle(e).stroke==='{red}'||getComputedStyle(e).fill==='{red}')") and await ev("document.querySelectorAll('.ov-pinbound').length")==3)
         check('their chips in the Pins section are red-edged', await ev("document.querySelectorAll('.pin-chip.bound').length")==3 and red.replace('rgb(','').split(',')[0] in await ev("getComputedStyle(document.querySelector('.pin-chip.bound:not(.on)')).boxShadow"))
         await ev(f"hi.select('{await lid('Leaf')}')"); await pg.wait_for_timeout(150)
-        free=await ev("[...document.querySelectorAll('.ov-pin')].map(e=>getComputedStyle(e)[e.classList.contains('is-sel')?'fill':'stroke'])")
+        free=await ev("[...document.querySelectorAll('.ov-pin:not(.is-bound)')].map(e=>getComputedStyle(e)[e.classList.contains('is-sel')?'fill':'stroke'])")
         check('ordinary pins keep the accent colour', free and all(s!=red for s in free), free)
         await pg.screenshot(path=OUT+'ui-polish-pins.png')
         await ev("hi.setTool('select')"); await pg.wait_for_timeout(150)

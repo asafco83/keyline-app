@@ -234,6 +234,7 @@ export function setTool(t: Tool) {
   if (t === 'bonebind' || wasBind) {
     // the Bind tool starts with nothing picked (its picks show as the selection)
     S.bindPick = [];
+    S.bindPins = [];
     S.bindHover = null;
     if (t === 'bonebind' && !wasBind) select(null);
   }
