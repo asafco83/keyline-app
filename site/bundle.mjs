@@ -1,0 +1,38 @@
+// SVGcinema — deploy bundle
+// Puts the landing page and the editor build together, ready to upload to any static host:
+//   deploy/index.html   the landing page (site/index.html)
+//   deploy/editor/      the editor (dist/ from `vite build`)
+// Run `npm run build:deploy`, which builds both first. Usage on its own:
+//   node site/bundle.mjs              # → deploy/
+//   node site/bundle.mjs --out=/path  # → somewhere else
+import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const arg = process.argv.find(a => a.startsWith('--out='));
+const out = resolve(root, arg ? arg.slice('--out='.length) : 'deploy');
+const page = join(root, 'site/index.html'),
+  dist = join(root, 'dist');
+if (!existsSync(page)) throw new Error('site/index.html is missing: run node site/build.mjs');
+if (!existsSync(join(dist, 'index.html'))) throw new Error('dist/ is missing: run npm run build');
+
+rmSync(out, { recursive: true, force: true });
+mkdirSync(out, { recursive: true });
+cpSync(page, join(out, 'index.html'));
+cpSync(dist, join(out, 'editor'), { recursive: true });
+
+let n = 0,
+  bytes = 0;
+(function walk(d) {
+  for (const f of readdirSync(d)) {
+    const p = join(d, f),
+      s = statSync(p);
+    if (s.isDirectory()) walk(p);
+    else {
+      n++;
+      bytes += s.size;
+    }
+  }
+})(out);
+console.log(`${out}: ${n} files, ${(bytes / 1048576).toFixed(1)} MB (index.html + editor/)`);
