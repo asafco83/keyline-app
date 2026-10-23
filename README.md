@@ -249,13 +249,15 @@ The guides are saved with the project; the other view settings are remembered in
 
 **Hyperlink:** gives a layer a link (web address, mailto:, tel: or #anchor) that opens in a new tab or the same one. Clicking the layer in the exported SVG follows it.
 
+**Timeline follows the selection:** selecting a layer (on the canvas, in the Layers panel or anywhere else) scrolls the timeline so its row and its property rows are in view; a layer already in view leaves the timeline where it is.
+
 **Timeline height:** drag the timeline's top edge up or down. At its smallest it shows just the controls and the time ruler; at its largest it leaves a strip of the work area. The height is remembered in this browser; double-click the edge for the default height. With the edge focused, ↑/↓ resize it by 16px (Shift: 64px), Page Up / Page Down go to the largest / smallest, Home to the default. Resizing keeps the canvas zoom percentage and leaves the artwork where it is on screen; only in the fit view (_Fit_, 1) is the artboard fitted to the new size.
 
 **Timeline length:** the timeline always fills its panel, past the end of the animation (that part is shaded). The white line marks the end: drag it to change the length (it snaps to 0.05s; Shift for 0.01s) and a tag shows the length while you drag. The Length box follows along, and typing in it still works. With the end line focused, ←/→ change the length by 0.1s (Shift: 1s).
 
 **Freezing a track:** hover a property row in the timeline and click the snowflake, left of the property name. The track keeps its keyframes but stops using them: the property holds the value it had at the playhead, the row and its keyframes turn grey, no keyframes can be added, and exports leave it out. Editing the property meanwhile changes the held value. Click the snowflake again to unfreeze and go back to the keyframes.
 
-**Moving keyframes:** with position keyframes selected in the timeline, dragging the layer or using the arrow keys on the canvas moves all of them together (select them all to move the whole motion path). Arrow keys pressed while working in the timeline still move the selected keyframes in time.
+**Moving keyframes:** with two or more position keyframes selected in the timeline (or one at the playhead), dragging the layer or using the arrow keys on the canvas moves all of them together (select them all to move the whole motion path). A single key selected at another time, such as the one _Animate_ makes and selects, doesn't count: moving the layer keys its position at the playhead. Arrow keys pressed while working in the timeline still move the selected keyframes in time.
 
 **Web fonts in exports:** Google Fonts are converted to outlines by default (no font download, identical everywhere, also inside `<img>`). _Embed font_ instead keeps live, selectable text and embeds only the alphabets the text uses, which is smaller for long text. Right-to-left text is always embedded so its letters keep their order. Fonts from this computer are converted or embedded the same way once the browser has shared them (embedding includes the whole font file); otherwise the SVG only names the font.
 
