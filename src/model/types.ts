@@ -51,8 +51,11 @@ export interface PinDef {
   /** rest position (layer space); a pin bound to a bone keeps its rest place here too */
   x: number;
   y: number;
-  /** bound to a bone (Pin tool › Bind to bones): it follows the bone's joint and turns with it */
+  /** bound to a bone (Pin tool › Bind to bones, or the Bind tool): it follows the bone and turns with it */
   bone?: string;
+  /** a bound pin's offset from the bone's joint, in the bone's own space (the Bind tool binds a pin
+   *  where it is); none: at the joint */
+  bo?: Vec2;
 }
 
 /** Unanimated values. */
@@ -353,6 +356,10 @@ export interface EditorState {
   snap: boolean;
   clip: ClipKey[] | null;
   showBones: boolean;
+  /** Show pins (Alt+P): every pinned layer's pins outside the Pin tools */
+  showPins: boolean;
+  /** pins picked with the Bind tool (to bind to a bone) */
+  bindPins: { lid: string; n: number }[];
   boneDraft: any;
   /** Bind tool: the layers picked as children, the bone under the pointer, the pointer (doc / screen) */
   bindPick: string[];

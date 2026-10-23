@@ -1,0 +1,103 @@
+import asyncio, sys, json, os
+from playwright.async_api import async_playwright
+OUT=os.environ.get('CIN_OUT','/tmp/svgcinema-shots/'); os.makedirs(OUT, exist_ok=True)
+# Show pins (Alt+P, View): every pinned layer's pins outside the Pin tools (the selected layer's full
+# size, others smaller); with the Select tool a pin drags (bending, keyed at the playhead) or is picked
+# (also on another layer); Edit nodes shows none; in the Pin tools other layers' pins are reference
+# only. The Bind tool picks pins and binds them to a bone where they are (offset `bo`), or unbinds them.
+async def main():
+    async with async_playwright() as p:
+        b=await p.chromium.launch(); pg=await b.new_page(viewport={'width':1440,'height':900}); pg.set_default_timeout(5000)
+        errs=[]; pg.on('pageerror',lambda e: errs.append(str(e)))
+        await pg.goto((sys.argv[1] if len(sys.argv)>1 else 'http://localhost:5199/')); await pg.wait_for_timeout(2500)
+        await pg.evaluate("async()=>{ window.st=await import('/src/core/state.ts'); window.hi=await import('/src/core/history.ts'); window.K=await import('/src/core/constants.ts'); window.ov=await import('/src/render/overlay.ts'); window.B=await import('/src/export/build.ts'); }")
+        ev=pg.evaluate; R={}; F=[]
+        def check(n,c,i=None):
+            R[n]=('ok' if c else 'FAIL')+('' if i is None else f' {i}')
+            if not c: F.append(n)
+        lid=lambda n: ev(f"st.doc.layers.find(l=>l.name==='{n}').id")
+        L={n:await lid(n) for n in ['Leaf','Flag','Tendril','Stem 3']}
+        await ev("hi.setTime(2.2); hi.select(null)"); await pg.wait_for_timeout(150)
+        total=await ev("st.doc.layers.filter(l=>l.pins&&l.pins.length).reduce((s,l)=>s+l.pins.length,0)")
+        spins=lambda: ev("[...document.querySelectorAll('[data-spin]')].map(e=>e.dataset.spin)")
+        s0=await spins()
+        check('Show pins is on: every pinned layer\'s pins show with the Select tool', await ev("st.S.showPins") and len(s0)==total and total>=6, (len(s0),total))
+        check('unselected layers\' pins are the smaller kind', await ev("[...document.querySelectorAll('[data-spin]')].every(e=>e.classList.contains('is-other'))"))
+        check('bound pins are red-ringed there too', await ev("document.querySelectorAll('.ov-pinbound').length")==3)
+        await pg.mouse.click(700,70); await pg.keyboard.press('Alt+p'); await pg.wait_for_timeout(80)
+        check('Alt+P hides them', not await ev("st.S.showPins") and len(await spins())==0)
+        await pg.keyboard.press('Alt+p'); await pg.wait_for_timeout(80)
+        await pg.click('#bMenu'); await pg.hover('#fileMenu [data-sub=view] > button')
+        check('View › Pins, ticked', await ev("document.querySelector('#fileMenu [data-lm=\"vw:pins\"]').getAttribute('aria-checked')")=='true')
+        await pg.keyboard.press('Escape')
+        await pg.click('#vGrid'); vrow=await ev("[...document.querySelectorAll('#viewMenu [data-v]')].map(b=>b.textContent)"); await pg.keyboard.press('Escape')
+        check('and Show pins in the grid menu', any('Show pins' in x for x in vrow), vrow)
+
+        # ---- Select tool: drag a pin of the selected layer
+        leaf=L['Leaf']
+        await ev(f"hi.select('{leaf}')"); await pg.wait_for_timeout(100)
+        check('the selected layer\'s pins are full size', await ev(f"[...document.querySelectorAll('[data-spin^=\"{leaf}:\"]')].every(e=>!e.classList.contains('is-other'))"))
+        await ev("hi.setTime(2.0)"); await pg.wait_for_timeout(80)
+        n0=await ev(f"st.layerById('{leaf}').t.pin1 ? st.layerById('{leaf}').t.pin1.length : 0")
+        c=await ev(f"(()=>{{const r=document.querySelector('[data-spin=\"{leaf}:1\"]').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]}})()")
+        await pg.mouse.move(c[0],c[1]); await pg.mouse.down(); await pg.mouse.move(c[0]+10,c[1]+8,steps=3); await pg.mouse.move(c[0]+20,c[1]+16,steps=3)
+        lbl=await ev("(document.querySelector('#overlay .ov-ang')||{}).textContent")
+        await pg.mouse.up(); await pg.wait_for_timeout(150)
+        tr=await ev(f"st.layerById('{leaf}').t.pin1")
+        check('dragging a pin with the Select tool bends the layer, keyed at the playhead', tr and any(abs(q[0]-2.0)<0.002 for q in tr) and await ev("st.S.tool")=='select' and await ev("st.S.pinSel")==1, tr)
+        check('with the drag label', lbl and 'Pin 1' in lbl, lbl)
+        check('the layer stays selected, its Pins section on pin 1', await ev("st.S.sel")==leaf and await ev("document.querySelector('.pin-chip.on').textContent")=='1')
+        await ev("hi.undo()")
+        # another layer's pin selects it
+        flag=L['Flag']; fp=await ev(f"st.layerById('{flag}').pins[0].n")
+        c=await ev(f"(()=>{{const r=document.querySelector('[data-spin=\"{flag}:{fp}\"]').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]}})()")
+        await pg.mouse.click(c[0],c[1]); await pg.wait_for_timeout(120)
+        check('clicking another layer\'s pin selects that layer and pin', await ev("st.S.sel")==flag and await ev("st.S.pinSel")==fp)
+        # a bound pin is only picked
+        ten=L['Tendril']; await ev(f"hi.select('{ten}')"); await pg.wait_for_timeout(80)
+        snap=await ev(f"JSON.stringify(st.layerById('{ten}'))")
+        c=await ev(f"(()=>{{const r=document.querySelector('[data-spin=\"{ten}:2\"]').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]}})()")
+        await pg.mouse.move(c[0],c[1]); await pg.mouse.down(); await pg.mouse.move(c[0]+20,c[1]+20,steps=4); await pg.mouse.up(); await pg.wait_for_timeout(120)
+        check('a pin bound to a bone is picked, not dragged', await ev(f"JSON.stringify(st.layerById('{ten}'))")==snap and await ev("st.S.pinSel")==2)
+        await pg.screenshot(path=OUT+'pins-select.png')
+        # Edit nodes: none; Pin tool: other layers' pins are reference only
+        await ev(f"hi.select('{leaf}'); hi.setTool('node')"); await pg.wait_for_timeout(80)
+        check('Edit nodes shows no pins', await ev("document.querySelectorAll('.ov-pin').length")==0)
+        await ev("hi.setTool('pin')"); await pg.wait_for_timeout(80)
+        lp=await ev(f"st.layerById('{leaf}').pins.length")
+        check('the Pin tool edits the selected layer\'s pins; the others show for reference only', await ev("document.querySelectorAll('[data-pin]').length")==lp and await ev("document.querySelectorAll('.ov-pin.is-other.is-static').length")==total-lp and await ev("document.querySelectorAll('[data-spin]').length")==0)
+        await ev("hi.setTool('select')")
+
+        # ---- Bind tool: bind a pin where it is, then unbind it
+        await ev("hi.setTime(2.2); hi.setTool('bonebind')"); await pg.wait_for_timeout(120)
+        rest0=await ev(f"(()=>{{const l=st.layerById('{leaf}');const p=l.pins.find(q=>q.n===1);return [p.x,p.y]}})()")
+        c=await ev(f"(()=>{{const r=document.querySelector('[data-spin=\"{leaf}:1\"]').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]}})()")
+        await pg.mouse.click(c[0],c[1]); await pg.wait_for_timeout(100)
+        check('the Bind tool picks a pin', await ev("st.S.bindPins.length")==1 and 'pin picked' in await ev("document.getElementById('boneChip').textContent"))
+        bc=await ev(f"(()=>{{const b=[...document.querySelectorAll('[data-bone=\"{L['Stem 3']}\"]')].find(e=>e.classList.contains('ov-bone'));const r=b.getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]}})()")
+        await pg.mouse.move(bc[0],bc[1]); await pg.wait_for_timeout(80)
+        tip=await ev("document.getElementById('bindTip').textContent")
+        await pg.mouse.click(bc[0],bc[1]); await pg.wait_for_timeout(150)
+        pin=await ev(f"st.layerById('{leaf}').pins.find(q=>q.n===1)")
+        check('the hover tip names the pin and the bone', 'Leaf · Pin 1' in tip and 'Stem 3' in tip, tip)
+        check('clicking a bone binds the pin to it', pin['bone']==L['Stem 3'] and isinstance(pin.get('bo'),list), pin)
+        q=await ev(f"(()=>{{const l=st.layerById('{leaf}');return K.H.pinAt(l,l.pins.find(q=>q.n===1),st.S.time)}})()")
+        check('where it was (its rest place is kept)', abs(q[0]-rest0[0])<0.05 and abs(q[1]-rest0[1])<0.05, (q[:2],rest0))
+        a1=await ev(f"(()=>{{const l=st.layerById('{leaf}');return K.H.pinAt(l,l.pins.find(q=>q.n===1),1.6)}})()"); a2=await ev(f"(()=>{{const l=st.layerById('{leaf}');return K.H.pinAt(l,l.pins.find(q=>q.n===1),2.6)}})()")
+        check('and from then on it follows the bone', abs(a1[2]-a2[2])+abs(a1[3]-a2[3])>0.5, (a1,a2))
+        check('its red ring shows it is bound', await ev(f"document.querySelector('[data-spin=\"{leaf}:1\"]').classList.contains('is-bound')"))
+        out=await ev("B.buildExport(null).code")
+        check('the export carries the offset', '"bo":[' in out)
+        u0=await ev("st.S.undo.length")
+        c=await ev(f"(()=>{{const r=document.querySelector('[data-spin=\"{leaf}:1\"]').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]}})()")
+        await pg.mouse.click(c[0],c[1]); await pg.wait_for_timeout(80)
+        art=await pg.locator('#artboard').bounding_box()
+        await pg.mouse.click(art['x']-14, art['y']+art['height']-20); await pg.wait_for_timeout(150)
+        pin=await ev(f"st.layerById('{leaf}').pins.find(q=>q.n===1)")
+        check('picking it again and clicking empty canvas unbinds it, keeping its place', 'bone' not in pin and 'bo' not in pin and abs(pin['x']-rest0[0])<0.05 and abs(pin['y']-rest0[1])<0.05, pin)
+        await ev("hi.undo()")
+        check('(undo puts the binding back)', await ev(f"st.layerById('{leaf}').pins.find(q=>q.n===1).bone")==L['Stem 3'])
+        await pg.keyboard.press('Escape')
+        R['errors']=errs; print(json.dumps(R,indent=1,ensure_ascii=False)); print('FAILS',F+(['errors'] if errs else []))
+        await b.close()
+asyncio.run(main())

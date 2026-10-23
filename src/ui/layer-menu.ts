@@ -327,28 +327,40 @@ export function openLayerMenu(x: number, y: number) {
   const f = m.querySelector('button:not(:disabled)') as HTMLElement;
   if (f) f.focus();
 }
-/** Places an open submenu inside the window: moved up when it would run off the bottom, to the left
- *  when it would run off the right, and scrolling only when it is taller than the window. */
+/** Places an open submenu beside its item, inside the window: moved up when it would run off the
+ *  bottom, to the left when it would run off the right, scrolling only when it is taller than the
+ *  window. It is positioned against the window (fixed), so a parent submenu that scrolls never clips
+ *  the next level. */
 export function placeSub(it: HTMLElement) {
   const s = it.querySelector(':scope > .lm-sub') as HTMLElement | null;
   if (!s) return;
-  s.style.top = '';
+  s.style.position = 'fixed';
+  s.style.right = 'auto';
   s.style.maxHeight = '';
   s.style.overflowY = '';
   s.classList.remove('left');
+  const ir = it.getBoundingClientRect();
+  s.style.left = ir.right + 2 + 'px';
+  s.style.top = ir.top - 5 + 'px';
   let r = s.getBoundingClientRect();
   if (!r.height) return;
   const room = innerHeight - 16;
-  if (r.height > room) {
+  let h = r.height;
+  if (h > room) {
     s.style.maxHeight = room + 'px';
     s.style.overflowY = 'auto';
-    r = s.getBoundingClientRect();
+    h = room;
   }
-  if (r.bottom > innerHeight - 8) s.style.top = s.offsetTop - (r.bottom - (innerHeight - 8)) + 'px';
-  if (r.right > innerWidth - 8 || it.closest('.lm.flip')) s.classList.add('left');
-  if (s.getBoundingClientRect().left < 4) s.classList.remove('left');
+  const top = Math.max(8, Math.min(ir.top - 5, innerHeight - 8 - h));
+  s.style.top = top + 'px';
+  r = s.getBoundingClientRect();
+  if (ir.right + 2 + r.width > innerWidth - 8 && ir.left - 2 - r.width >= 4) {
+    s.style.left = ir.left - 2 - r.width + 'px';
+    s.classList.add('left');
+  }
 }
-/** Positions a menu's submenus as they open (hover or keyboard focus). */
+/** Positions a menu's submenus as they open (hover or keyboard focus), and again when a scrolling
+ *  submenu moves the items they open from. */
 export function trackSubs(m: HTMLElement) {
   const go = (e: Event) => {
     const it = (e.target as Element).closest && ((e.target as Element).closest('.lm-it.has-sub') as HTMLElement);
@@ -356,6 +368,15 @@ export function trackSubs(m: HTMLElement) {
   };
   m.addEventListener('pointerover', go);
   m.addEventListener('focusin', go);
+  m.addEventListener(
+    'scroll',
+    () =>
+      m.querySelectorAll<HTMLElement>('.lm-it.has-sub').forEach(it => {
+        const s = it.querySelector(':scope > .lm-sub') as HTMLElement;
+        if (s && getComputedStyle(s).display !== 'none') placeSub(it);
+      }),
+    true,
+  );
 }
 /** Arrow keys, Enter and Esc in a menu built with menuHTML (submenus open to the right). */
 export function menuKeydown(m: HTMLElement, e: KeyboardEvent, close: () => void) {

@@ -1,7 +1,8 @@
 // SVGcinema — tools/bone-edit
 // Edit bone tool: changes a rig's rest pose (joint, length, rest angle) without touching keyframes.
 // Bind tool: click children (bones or layers), then their new parent bone.
-import { pinChip } from './pins';
+import { bindPinTo, pinChip, pinDocPoint, unbindPin } from './pins';
+import { toast } from '../io/open';
 import type { Layer, XY } from '../model/types';
 import { H, byId, clone, esc, fmt, r2, r3, xfp } from '../core/constants';
 import { beginEdit, select, setProp } from '../core/history';
@@ -113,19 +114,28 @@ export function boneChips() {
   } else if (S.tool === 'pin' && pinChip()) {
     chip.innerHTML = pinChip();
     chip.hidden = false;
-  } else if (S.tool === 'bonebind' && S.bindPick.length) {
-    const n = S.bindPick.length;
-    chip.innerHTML = `<b>${n} ${n > 1 ? 'children' : 'child'} picked</b><span class="mu">· click ${n > 1 ? 'their' : 'its'} parent bone · Esc cancels</span>`;
+  } else if (S.tool === 'bonebind' && (S.bindPick.length || S.bindPins.length)) {
+    const n = S.bindPick.length,
+      np = S.bindPins.length,
+      what = [n ? `${n} ${n > 1 ? 'children' : 'child'}` : '', np ? `${np} ${np > 1 ? 'pins' : 'pin'}` : '']
+        .filter(Boolean)
+        .join(' and '),
+      many = n + np > 1;
+    chip.innerHTML = `<b>${what} picked</b><span class="mu">· click ${many ? 'their' : 'its'} bone · empty canvas unbinds · Esc cancels</span>`;
     chip.hidden = false;
   } else chip.hidden = true;
-  const hv = S.tool === 'bonebind' && S.bindPick.length && S.bindHover && layerById(S.bindHover);
+  const hv = S.tool === 'bonebind' && (S.bindPick.length || S.bindPins.length) && S.bindHover && layerById(S.bindHover);
   if (hv && S.bindScreen) {
-    const first = layerById(S.bindPick[0]),
-      more = S.bindPick.length > 1 ? ` +${S.bindPick.length - 1}` : '',
+    const first = S.bindPick.length ? layerById(S.bindPick[0]) : null,
+      fp = !first && S.bindPins[0],
+      fpl = fp && layerById(fp.lid),
+      name = first ? first.name : fpl ? `${fpl.name} · Pin ${fp.n}` : '',
+      total = S.bindPick.length + S.bindPins.length,
+      more = total > 1 ? ` +${total - 1}` : '',
       bad = !bindable(S.bindPick, hv);
     tip.innerHTML = bad
       ? '<span class="mu">Can’t bind to itself or a child</span>'
-      : `<span class="mu">Bind</span><b>${esc(first ? first.name : '')}${more}</b><span class="mu">to</span><b>${esc(hv.name)}</b>`;
+      : `<span class="mu">Bind</span><b>${esc(name)}${more}</b><span class="mu">to</span><b>${esc(hv.name)}</b>`;
     tip.hidden = false;
     // beside the pointer, flipped to its left near the right edge of the work area
     const host = (tip.offsetParent as HTMLElement) || document.body,
@@ -317,31 +327,57 @@ function setPicks(ids: string[]) {
   }
 }
 export function bindDown(e: PointerEvent) {
+  // a pin (shown with Show pins): pick it, Shift adds or removes it
+  const sp = (e.target as any).closest && (e.target as any).closest('[data-spin]');
+  if (sp) {
+    const [lid, ns] = sp.dataset.spin.split(':'),
+      n = +ns,
+      pl = layerById(lid);
+    if (!pl || isLocked(pl)) return;
+    const has = S.bindPins.some(q => q.lid === lid && q.n === n);
+    if (e.shiftKey)
+      S.bindPins = has ? S.bindPins.filter(q => !(q.lid === lid && q.n === n)) : [...S.bindPins, { lid, n }];
+    else {
+      if (S.bindPick.length) setPicks([]);
+      S.bindPins = [{ lid, n }];
+    }
+    drawOverlay();
+    return;
+  }
   const hit = pickAt(e);
   if (hit && isLocked(hit)) return;
-  const picks = S.bindPick.filter(id => layerById(id));
+  const picks = S.bindPick.filter(id => layerById(id)),
+    pins = S.bindPins.filter(q => layerById(q.lid));
   if (e.shiftKey) {
     if (hit) setPicks(picks.includes(hit.id) ? picks.filter(id => id !== hit.id) : [...picks, hit.id]);
     return;
   }
-  if (!picks.length) {
+  if (!picks.length && !pins.length) {
     if (hit) setPicks([hit.id]);
     return;
   }
   if (hit && hit.type === 'bone') {
     if (!bindable(picks, hit)) return;
-    bindTo(picks, hit, e.altKey);
+    bindTo(picks, hit, e.altKey, pins);
     return;
   }
   if (hit) {
+    S.bindPins = [];
     setPicks([hit.id]);
     return;
   }
-  unbind(picks);
+  unbind(picks, pins);
 }
-function bindTo(picks: string[], bone: Layer, keepOffset: boolean) {
+function bindTo(picks: string[], bone: Layer, keepOffset: boolean, pins: { lid: string; n: number }[] = []) {
   const ed = beginEdit(),
     u = 1 / S.scale;
+  let skipped = 0;
+  pins.forEach(q => {
+    const pl = layerById(q.lid);
+    if (!pl || !bindPinTo(pl, q.n, bone.id)) skipped++;
+  });
+  if (skipped) toast('A pin can’t follow a bone inside its own group: that bone already moves the artwork.');
+  S.bindPins = [];
   picks.forEach(id => {
     const k = layerById(id);
     if (!k) return;
@@ -361,8 +397,13 @@ function bindTo(picks: string[], bone: Layer, keepOffset: boolean) {
   ed.end({ insp: true });
   select(null);
 }
-function unbind(picks: string[]) {
+function unbind(picks: string[], pins: { lid: string; n: number }[] = []) {
   const ed = beginEdit();
+  pins.forEach(q => {
+    const pl = layerById(q.lid);
+    if (pl) unbindPin(pl, q.n);
+  });
+  S.bindPins = [];
   picks.forEach(id => {
     const k = layerById(id);
     if (!k || !k.parent || layerById(k.parent)?.type !== 'bone') return;
@@ -379,18 +420,23 @@ export function bindHover(e: PointerEvent, p: XY) {
   S.bindHover = bn ? bn.dataset.bone : null;
   S.bindPt = p;
   S.bindScreen = { x: e.clientX, y: e.clientY };
-  if (S.bindPick.length) drawOverlay();
+  if (S.bindPick.length || S.bindPins.length) drawOverlay();
   else boneChips();
 }
 export function cancelBind() {
-  if (S.tool !== 'bonebind' || !S.bindPick.length) return false;
+  if (S.tool !== 'bonebind' || (!S.bindPick.length && !S.bindPins.length)) return false;
+  S.bindPins = [];
   setPicks([]);
   drawOverlay();
   return true;
 }
 /** overlay for the Bind tool: a dashed line from each picked layer to the pointer */
 export function drawBindLines(OVappend: (el: Element) => void, mk: (tag: string, a: any) => Element) {
-  if (S.tool !== 'bonebind' || !S.bindPick.length || !S.bindPt) return;
+  if (S.tool !== 'bonebind' || (!S.bindPick.length && !S.bindPins.length) || !S.bindPt) return;
+  S.bindPins.forEach(q => {
+    const a = pinDocPoint(layerById(q.lid), q.n);
+    if (a) OVappend(mk('line', { x1: a.x, y1: a.y, x2: S.bindPt.x, y2: S.bindPt.y, class: 'ov-bind' }));
+  });
   S.bindPick.forEach(id => {
     const k = layerById(id);
     if (!k) return;

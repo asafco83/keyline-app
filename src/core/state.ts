@@ -41,6 +41,8 @@ export const S: EditorState = {
   snap: true,
   clip: null,
   showBones: true,
+  showPins: true,
+  bindPins: [],
   boneDraft: null,
   bindPick: [],
   bindHover: null,

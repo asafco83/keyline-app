@@ -1,6 +1,6 @@
 // SVGcinema — ui/view-menu
 // The snapping (magnet) and grid menus in the canvas bar, and their shortcuts:
-// Alt+S snapping on/off, Alt+R rulers, Alt+L guides, Alt+B bones, Alt+G the front grid.
+// Alt+S snapping on/off, Alt+R rulers, Alt+L guides, Alt+B bones, Alt+P pins, Alt+G the front grid.
 import { $, ic } from '../core/constants';
 import { VIEW, type ViewPrefs, onView, setView } from '../core/view';
 import { drawBackGrid } from '../render/guides';
@@ -32,6 +32,7 @@ function rows(kind: 'snap' | 'grid'): Row[] {
     ['rulers', 'Show rulers', VIEW.rulers, 'Alt R'],
     ['guides', 'Show guides', VIEW.guides, 'Alt L'],
     ['bones', 'Show bones', S.showBones, 'Alt B'],
+    ['pins', 'Show pins', S.showPins, 'Alt P'],
     '-',
     ['clearGuides', 'Clear guides', false],
   ];
@@ -88,6 +89,11 @@ function toggle(k: string) {
     drawOverlay();
     return;
   }
+  if (k === 'pins') {
+    S.showPins = !S.showPins;
+    drawOverlay();
+    return;
+  }
   if (k === 'clearGuides') {
     const ed = beginEdit();
     doc.guides = { x: [], y: [] };
@@ -108,9 +114,11 @@ export function viewShortcut(e: KeyboardEvent) {
           ? 'guides'
           : e.code === 'KeyB'
             ? 'bones'
-            : e.code === 'KeyG'
-              ? 'gridFront'
-              : '';
+            : e.code === 'KeyP'
+              ? 'pins'
+              : e.code === 'KeyG'
+                ? 'gridFront'
+                : '';
   if (!k) return false;
   toggle(k);
   return true;

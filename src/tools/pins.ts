@@ -8,7 +8,7 @@
 import type { Layer, PropKey, XY } from '../model/types';
 import { H, ICON, byId, clone, esc, fmt, r2, r3, valueAt, xfp } from '../core/constants';
 import { OV, svgEl } from '../core/dom';
-import { beginEdit, setProp } from '../core/history';
+import { beginEdit, select, setProp } from '../core/history';
 import { S, doc, layerById, selLayer } from '../core/state';
 import { ellNodes, rectNodes } from '../geometry/nodes';
 import { nextPinNumber } from '../model/pins';
@@ -159,12 +159,153 @@ function bindBone(l: Layer, boneId: string) {
   ed.end({ insp: true });
 }
 
+/** Binds an existing pin to a bone where it is: it keeps its place and from then on follows the bone
+ *  (its own keys no longer apply, so they go). The offset from the bone's joint, in the bone's own
+ *  space, is solved from three probes of the engine (the map is affine). No undo step of its own. */
+export function bindPinTo(l: Layer, n: number, boneId: string) {
+  const p = (l.pins || []).find(q => q.n === n),
+    B = layerById(boneId);
+  if (!p || !B || B.type !== 'bone') return false;
+  if (l.type === 'group' && descendants(l).includes(B)) return false;
+  const at = (o: number[]) => H.pinAt(l, { n, x: 0, y: 0, bone: boneId, bo: o }, S.time),
+    r0 = at([0, 0]),
+    rx = at([1, 0]),
+    ry = at([0, 1]),
+    a = rx[0] - r0[0],
+    b = ry[0] - r0[0],
+    c = rx[1] - r0[1],
+    d = ry[1] - r0[1],
+    det = a * d - b * c;
+  if (Math.abs(det) < 1e-9) return false;
+  // the pin's rest place (unbound pins rest at x, y)
+  const tx = p.x - r0[0],
+    ty = p.y - r0[1],
+    o: [number, number] = [r3((d * tx - b * ty) / det), r3((-c * tx + a * ty) / det)];
+  p.bone = boneId;
+  if (Math.abs(o[0]) > 1e-3 || Math.abs(o[1]) > 1e-3) p.bo = o;
+  else delete p.bo;
+  ['pin' + n, 'pinr' + n].forEach(k => {
+    delete l.t[k];
+    if (l.ft) delete l.ft[k];
+    delete (l.b as Record<string, any>)[k];
+  });
+  return true;
+}
+/** where pin n of layer l is now, in document coordinates */
+export function pinDocPoint(l: Layer, n: number): { x: number; y: number } | null {
+  const c = l && (l.pins || []).some(p => p.n === n) ? pinAt(l, n) : null;
+  if (!c) return null;
+  try {
+    return xfp(pinMatrix(l), c[0], c[1]);
+  } catch (_) {
+    return null;
+  }
+}
+/** Unbinds a pin from its bone: it stays where it rests now, as an ordinary pin. No undo step. */
+export function unbindPin(l: Layer, n: number) {
+  const p = (l.pins || []).find(q => q.n === n);
+  if (!p || !p.bone) return false;
+  const q = H.pinAt(l, p, S.time);
+  p.x = r2(q[0]);
+  p.y = r2(q[1]);
+  delete p.bone;
+  delete p.bo;
+  return true;
+}
+
 /* ---------- overlay ---------- */
 
+/** tools that show pins when Show pins is on (Alt+P); Edit nodes doesn't (it shows the rest shape) */
+const SHOW_TOOLS = ['select', 'pin', 'pinedit', 'bone', 'boneedit', 'bonescale', 'bonebind'];
+/** Pins on the canvas. The Pin tools show the selected layer's pins with everything for editing them
+ *  (as before). With Show pins on, every pinned layer's pins show too: the selected layer's at full
+ *  size, the others smaller and fainter. With the Select tool they can be dragged (bending the layer,
+ *  keyed at the playhead) and clicked (selecting the pin, and its layer); with the Bind tool clicked
+ *  to bind them to a bone. Pins bound to a bone are red everywhere. */
 export function drawPins(u: number) {
-  if (!isPinTool(S.tool)) return;
-  const l = pinLayer();
-  if (!l || !l.pins || !l.pins.length) return;
+  const pinTool = isPinTool(S.tool),
+    cur = pinLayer();
+  if (pinTool && cur && cur.pins && cur.pins.length) drawEditPins(cur, u);
+  pinLabel(u);
+  if (!S.showPins || !SHOW_TOOLS.includes(S.tool)) return;
+  const live = S.tool === 'select' || S.tool === 'bonebind';
+  doc.layers.forEach(l => {
+    if (!l.pins || !l.pins.length || (pinTool && l === cur) || isHidden(l) || !byId('e-' + l.id)) return;
+    const mine = !pinTool && (l.id === S.sel || S.selSet.has(l.id));
+    drawShownPins(l, u, mine, live && !isLocked(l));
+  });
+}
+/** while a pin is dragged: what the drag does, beside the pointer */
+function pinLabel(u: number) {
+  if (S.drag && S.drag.lbl && S.drag.lp && S.drag.pin) {
+    const t = svgEl('text', {
+      x: S.drag.lp.x + 14 * u,
+      y: S.drag.lp.y - 12 * u,
+      class: 'ov-ang',
+      'font-size': 11 * u,
+      'stroke-width': 2.5 * u,
+    });
+    t.textContent = S.drag.lbl;
+    OV.append(t);
+  }
+}
+/** a pinned layer's pins, shown (and, with `live`, picked) outside the Pin tools */
+function drawShownPins(l: Layer, u: number, mine: boolean, live: boolean) {
+  let M: DOMMatrix;
+  try {
+    M = pinMatrix(l);
+  } catch (_) {
+    return;
+  }
+  const picked = (n: number) => S.tool === 'bonebind' && (S.bindPins || []).some(q => q.lid === l.id && q.n === n);
+  l.pins.forEach(p => {
+    const c = pinAt(l, p.n);
+    if (!c) return;
+    const P = xfp(M, c[0], c[1]),
+      bound = isBound(l, p.n),
+      sel = mine && S.pinSel === p.n,
+      r = (mine ? 5.5 : 4) * u,
+      cls =
+        'ov-pin' +
+        (bound ? ' is-bound' : '') +
+        (sel || picked(p.n) ? ' is-sel' : '') +
+        (mine ? '' : ' is-other') +
+        (live ? '' : ' is-static'),
+      a: Record<string, any> = { cx: P.x, cy: P.y, r: sel ? 6 * u : r, class: cls };
+    if (live) a['data-spin'] = l.id + ':' + p.n;
+    if (bound)
+      OV.append(svgEl('circle', { cx: P.x, cy: P.y, r: r + 4 * u, class: 'ov-pinbound' + (mine ? '' : ' is-other') }));
+    OV.append(svgEl('circle', a));
+    if (!sel && !picked(p.n))
+      OV.append(
+        svgEl('circle', {
+          cx: P.x,
+          cy: P.y,
+          r: (mine ? 1.8 : 1.4) * u,
+          class: 'ov-pindot' + (bound ? ' is-bound' : ''),
+        }),
+      );
+  });
+}
+/** Select tool: a press on a shown pin selects it (and its layer) and drags it, bending the layer and
+ *  keying the pin at the playhead; a pin bound to a bone is only picked (the bone moves it). */
+export function shownPinDown(spin: string, p0: XY) {
+  const [lid, ns] = spin.split(':'),
+    l = layerById(lid),
+    n = +ns;
+  if (!l || isLocked(l) || !(l.pins || []).some(p => p.n === n)) return;
+  if (S.sel !== l.id || S.selSet.size > 1) select(l.id);
+  S.pinSel = n;
+  if (isBound(l, n)) {
+    drawOverlay();
+    renderInspector();
+    return;
+  }
+  renderInspector();
+  pinDrag(l, n, p0, false);
+}
+/** the selected layer's pins with the Pin tools: mesh, rest marks, rotation ring */
+function drawEditPins(l: Layer, u: number) {
   if (S.pinSel != null && !l.pins.some(p => p.n === S.pinSel)) S.pinSel = null;
   const M = pinMatrix(l);
   // the mesh, as it bends
@@ -245,17 +386,6 @@ export function drawPins(u: number) {
       OV.append(svgEl('circle', { cx: P.x, cy: P.y, r: 1.8 * u, class: 'ov-pindot' + bc }));
     }
   });
-  if (S.drag && S.drag.lbl && S.drag.lp && S.drag.pin) {
-    const t = svgEl('text', {
-      x: S.drag.lp.x + 14 * u,
-      y: S.drag.lp.y - 12 * u,
-      class: 'ov-ang',
-      'font-size': 11 * u,
-      'stroke-width': 2.5 * u,
-    });
-    t.textContent = S.drag.lbl;
-    OV.append(t);
-  }
 }
 
 /* ---------- editing ---------- */

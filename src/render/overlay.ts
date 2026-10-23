@@ -132,7 +132,13 @@ export function drawBoneLinks(u: number) {
     );
   });
 }
+/** Redraws the canvas overlay. Pins go last, on top of the selection box: on a small layer they sit
+ *  on its handles, and a pin is the more specific thing to grab. */
 export function drawOverlay() {
+  drawOverlayBody();
+  drawPins(1 / S.scale);
+}
+function drawOverlayBody() {
   OV.replaceChildren();
   followTextEdit();
   drawGuides();
@@ -179,14 +185,18 @@ export function drawOverlay() {
     drawBoneLinks(u);
     doc.layers.forEach(b => {
       if (b.type === 'bone' && !isHidden(b))
-        drawBone(b, u, S.selSet.has(b.id), S.tool === 'bonebind' && S.bindPick.length > 0 && S.bindHover === b.id);
+        drawBone(
+          b,
+          u,
+          S.selSet.has(b.id),
+          S.tool === 'bonebind' && (S.bindPick.length > 0 || S.bindPins.length > 0) && S.bindHover === b.id,
+        );
     });
   }
   drawBindLines(
     el => OV.append(el),
     (tag, a) => svgEl(tag, a),
   );
-  drawPins(u);
   if (S.boneDraft) {
     const A = S.boneDraft.a,
       B = S.boneDraft.b;
