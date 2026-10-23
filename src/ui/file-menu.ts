@@ -22,6 +22,8 @@ import {
   menuHTML,
   menuKeydown,
   pasteLayers,
+  placeSub,
+  trackSubs,
   runLayerCommand,
   selectAllLayers,
 } from './layer-menu';
@@ -225,11 +227,13 @@ export function init(): void {
         (x: Element) => x !== it && !x.contains(it) && x.classList.remove('open'),
       );
       it.classList.toggle('open');
+      if (it.classList.contains('open')) placeSub(it);
       return;
     }
     closeFileMenu();
     if (b.dataset.lm) run(b.dataset.lm);
   });
+  trackSubs(FM);
   FM.addEventListener('keydown', (e: KeyboardEvent) =>
     menuKeydown(FM, e, () => {
       closeFileMenu();
