@@ -242,14 +242,14 @@ They're combined as they look at the playhead into one new path, which takes the
 - **Snapping** (Alt+S turns it on or off) works while moving and drawing. It can snap to objects (the edges and centres of other layers and of the canvas), to points (path nodes), to guides, to the grid, and to whole pixels. Matches show as magenta lines, and holding Ctrl/Cmd skips snapping.
 - **Grid:** a back grid sits behind the artwork and a front grid over it. The grid size is set in the grid menu.
 - **Rulers** (Alt+R): drag from a ruler to make a guide.
-- **Show bones** (Alt+B) shows or hides bones on the canvas, together with the dotted links from each bone to what is bound to it: from its joint to the middle of each layer hanging on it and to each pin that follows it, and from its tip to a child bone that doesn't start there (a pin on the joint or a connected bone needs no link). The links are only a guide on the canvas: they are never exported.
+- **Show bones** (Alt+B) shows or hides bones on the canvas, together with a dotted link from a bone to each bone bound to it with the Bind tool, from the parent bone's joint (its start) to the bound bone's joint. A bone that starts on its parent's tip (a connected chain) needs no link. The links are only a guide on the canvas: they are never exported.
 - **Guides** (Alt+L shows or hides them): drag a guide to move it, or drop it on a ruler to remove it. _Clear guides_ removes them all.
 
 The guides are saved with the project; the other view settings are remembered in this browser.
 
 **Hyperlink:** gives a layer a link (web address, mailto:, tel: or #anchor) that opens in a new tab or the same one. Clicking the layer in the exported SVG follows it.
 
-**Timeline height:** drag the timeline's top edge up or down. At its smallest it still shows the controls, the time ruler and one row; at its largest it leaves a strip of the work area. The height is remembered in this browser; double-click the edge for the default height. With the edge focused, ↑/↓ resize it by 16px (Shift: 64px), Page Up / Page Down go to the largest / smallest, Home to the default.
+**Timeline height:** drag the timeline's top edge up or down. At its smallest it shows just the controls and the time ruler; at its largest it leaves a strip of the work area. The height is remembered in this browser; double-click the edge for the default height. With the edge focused, ↑/↓ resize it by 16px (Shift: 64px), Page Up / Page Down go to the largest / smallest, Home to the default. Resizing keeps the canvas zoom percentage and leaves the artwork where it is on screen; only in the fit view (_Fit_, 1) is the artboard fitted to the new size.
 
 **Timeline length:** the timeline always fills its panel, past the end of the animation (that part is shaded). The white line marks the end: drag it to change the length (it snaps to 0.05s; Shift for 0.01s) and a tag shows the length while you drag. The Length box follows along, and typing in it still works. With the end line focused, ←/→ change the length by 0.1s (Shift: 1s).
 
