@@ -14,7 +14,9 @@ async def main():
     # the committed page is what the sources build to
     tmp=os.path.join(tempfile.mkdtemp(),'index.html')
     subprocess.run(['node',os.path.join(ROOT,'site/build.mjs'),'--out='+tmp],check=True,capture_output=True)
-    check('site/index.html is built from the current sources', open(tmp).read()==open(os.path.join(ROOT,'site/index.html')).read())
+    built=open(tmp).read()
+    check('site/index.html is built from the current sources', built==open(os.path.join(ROOT,'site/index.html')).read())
+    check('the page names no other product', 'svgator' not in built.lower())
     hero=open(os.path.join(ROOT,'site/src/hero.svg'),'rb').read()
     kb=f'{len(hero)/1024:.1f} KB'; gz=f'{len(gzip.compress(hero,9))/1024:.1f} KB'
     base=(sys.argv[1] if len(sys.argv)>1 else 'http://localhost:5199/')
@@ -33,7 +35,7 @@ async def main():
         check('every card animates (SMIL or CSS)', anim==[], anim)
         check('bones mention squash and stretch; masks mention brightness', await ev("document.getElementById('animate').textContent.includes('squash and stretch') && document.getElementById('animate').textContent.includes('opacity or brightness')"))
         imp=await ev("[...document.querySelectorAll('#import .fact h3')].map(h=>h.textContent)")
-        check('an Import section: other tools, SVGator, CSS animations, own exports', len(imp)==6 and any('SVGator' in x for x in imp) and any('CSS' in x for x in imp), imp)
+        check('an Import section: other tools, animated SVGs, CSS animations, own exports', len(imp)==6 and 'Animated SVGs' in imp and any('CSS' in x for x in imp), imp)
         check('the nav links to it', await ev("!!document.querySelector('.nav a[href=\"#import\"]')"))
         tcs=await ev("[...document.querySelectorAll('.sec .tc, .flow .tc')].map(e=>e.textContent)")
         check('section timecodes run in order', tcs==['0:03.00','0:06.00','0:09.00','0:12.00','0:15.00','0:18.00','0:21.00'], tcs)

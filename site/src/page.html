@@ -3124,7 +3124,6 @@
           <ul>
             <li>Morphs, motion paths, bones, gradients, masks and every filter parameter</li>
             <li>A player API to play, pause, seek, reverse and change speed, with events</li>
-            <li>Code written for SVGator’s player API works unchanged</li>
             <li>Repeat, ping-pong, speed and frame rate, set in the export dialog</li>
           </ul>
           <div class="trig" aria-label="Start triggers">
@@ -3197,10 +3196,10 @@
           </p>
         </div>
         <div class="fact">
-          <h3>SVGator, animation included</h3>
+          <h3>Animated SVGs</h3>
           <p>
-            Both of SVGator’s exports, JS and CSS, open as keyframes you can edit: motion paths, easing, morphs,
-            gradients, and the length, repeat and speed.
+            Animations exported from supported SVG animation tools, with a JS player or as CSS, open as keyframes you
+            can edit: motion paths, easing, morphs, gradients, and the length, repeat and speed.
           </p>
         </div>
         <div class="fact">
@@ -3828,7 +3827,7 @@
       svelte: 'Put the .svg in <code>static/</code> (SvelteKit) or <code>public/</code>.',
       angular: 'Put the .svg in <code>src/assets/</code>, or <code>public/</code> on Angular 17 and later.',
       css: 'A CSS-only export has no script, so it works as a plain image or a background.',
-      api: 'Every method returns the player, so calls can be chained. It’s also available as <code>svgatorPlayer</code>.',
+      api: 'Every method returns the player, so calls can be chained.',
     };
     function esc(s) {
       return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
