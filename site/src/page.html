@@ -875,6 +875,7 @@
       grid-template-columns: 104px minmax(0, 1fr);
     }
     .tl-names .pr,
+    .tl-head .w,
     .tl-hint,
     .app-top .pill,
     .app-top .logo {
@@ -1807,6 +1808,9 @@
   }
 
   /* ---------- free / facts ---------- */
+  .tool-facts {
+    margin-top: 40px;
+  }
   .facts {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1940,12 +1944,6 @@
   .foot .logo {
     height: 16px;
   }
-  .foot nav {
-    display: flex;
-    gap: 22px;
-    margin-left: auto;
-    flex-wrap: wrap;
-  }
 
   @media (prefers-reduced-motion: reduce) {
     html {
@@ -1981,6 +1979,7 @@
       <a href="#workflow">How it works</a>
       <a href="#images">Images</a>
       <a href="#export">Export</a>
+      <a href="#import">Import</a>
     </nav>
     <div class="top-r">
       <button class="ib" id="themeBtn" type="button" aria-label="Switch theme" title="Switch theme">
@@ -2025,8 +2024,8 @@
         <div class="hero-copy">
           <p class="lede">
             <b>SVGcinema</b> is a free animation editor that runs in your browser. Draw vector shapes or bring in SVGs
-            and images, animate them on a keyframe timeline, and export a single self-contained <b>.svg</b> that plays
-            anywhere.
+            (animated ones too) and images, animate them on a keyframe timeline, and export a single self-contained
+            <b>.svg</b> that plays anywhere.
           </p>
           <div class="cta-row">
             <a class="btn btn-pri" href="{{EDITOR_URL}}" target="_blank" rel="noopener" data-editor>
@@ -2176,7 +2175,9 @@
               >
             </div>
             <div class="tl-grid">
-              <div class="tl-names" id="tlNames"><div class="tl-head">ANIMATED LAYERS</div></div>
+              <div class="tl-names" id="tlNames">
+                <div class="tl-head"><span class="w">ANIMATED</span>LAYERS</div>
+              </div>
               <div
                 class="tl-area"
                 id="tlArea"
@@ -2195,7 +2196,7 @@
           </div>
         </div>
         <p class="caption">
-          This is the editor’s sample scene, exported from SVGcinema as one 41&nbsp;KB file and playing live on this
+          This is the editor’s sample scene, exported from SVGcinema as one 65&nbsp;KB file and playing live on this
           page.
         </p>
       </div>
@@ -2375,8 +2376,8 @@
             <div class="mini" style="--d: 3s"><i style="left: 0"></i><i style="left: 100%"></i><u></u></div>
             <h3>Bones and IK <kbd>B</kbd></h3>
             <p>
-              Rig a stalk, an arm or a tail with bones. Pose it with forward or inverse kinematics and add
-              follow-through.
+              Rig a stalk, an arm or a tail with bones. Pose it with forward or inverse kinematics, squash and stretch
+              it, and key the whole rig in one go.
             </p>
           </div>
         </article>
@@ -2481,7 +2482,8 @@
             <div class="mini" style="--d: 4s"><i style="left: 0"></i><i style="left: 60%"></i><u></u></div>
             <h3>Masks and clipping</h3>
             <p>
-              Soft masks work by opacity, so a gradient wipe reveals as you’d expect. Clipping paths use only the shape.
+              Soft masks work by opacity or brightness, so a gradient wipe reveals as you’d expect. Clipping paths use
+              only the shape.
             </p>
           </div>
         </article>
@@ -2564,6 +2566,256 @@
             <p>
               Stack filters on any layer and reorder them. Every parameter, from radius to shadow offset, has its own
               track.
+            </p>
+          </div>
+        </article>
+
+        <!-- Pins -->
+        <article class="spec">
+          <div class="spec-art mat">
+            <svg viewBox="0 0 240 150" aria-hidden="true">
+              <path
+                d="M40 75 L200 75"
+                fill="none"
+                stroke="#959cae"
+                stroke-opacity=".55"
+                stroke-width="1.4"
+                stroke-dasharray="3 4"
+              />
+              <path
+                fill="none"
+                stroke="#9a7bff"
+                stroke-width="18"
+                stroke-linecap="round"
+                d="M40 75 C80 75 90 75 120 75 S170 75 200 75"
+              >
+                <animate
+                  attributeName="d"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="spline"
+                  keyTimes="0;.33;.66;1"
+                  keySplines=".6 0 .3 1;.6 0 .3 1;.6 0 .3 1"
+                  values="M40 75 C80 75 90 75 120 75 S170 75 200 75;
+                          M40 75 C80 75 90 46 120 46 S170 96 200 96;
+                          M40 75 C80 75 90 102 120 102 S170 58 200 54;
+                          M40 75 C80 75 90 75 120 75 S170 75 200 75"
+                />
+              </path>
+              <g style="fill: var(--panel)" stroke="#7189ff" stroke-width="1.8">
+                <circle cx="40" cy="75" r="5.5" />
+                <circle cx="120" cy="75" r="5.5">
+                  <animate
+                    attributeName="cy"
+                    dur="4s"
+                    repeatCount="indefinite"
+                    calcMode="spline"
+                    keyTimes="0;.33;.66;1"
+                    keySplines=".6 0 .3 1;.6 0 .3 1;.6 0 .3 1"
+                    values="75;46;102;75"
+                  />
+                </circle>
+                <circle cx="200" cy="75" r="5.5">
+                  <animate
+                    attributeName="cy"
+                    dur="4s"
+                    repeatCount="indefinite"
+                    calcMode="spline"
+                    keyTimes="0;.33;.66;1"
+                    keySplines=".6 0 .3 1;.6 0 .3 1;.6 0 .3 1"
+                    values="75;96;54;75"
+                  />
+                </circle>
+              </g>
+            </svg>
+          </div>
+          <div class="spec-tx">
+            <div class="mini" style="--d: 4s">
+              <i style="left: 0"></i><i style="left: 33%"></i><i style="left: 66%"></i><i style="left: 100%"></i><u></u>
+            </div>
+            <h3>Pins and mesh warp <kbd>W</kbd></h3>
+            <p>
+              Pin a path, an image, text or a whole group, then drag the pins to bend it. Pins can follow bones, so a
+              rig bends a sleeve or a vine.
+            </p>
+          </div>
+        </article>
+
+        <!-- Size and corners -->
+        <article class="spec">
+          <div class="spec-art mat">
+            <svg viewBox="0 0 240 150" aria-hidden="true">
+              <rect
+                x="90"
+                y="45"
+                width="60"
+                height="60"
+                rx="4"
+                fill="#ffb84d"
+                stroke-width="3"
+                style="stroke: var(--fg)"
+              >
+                <animate
+                  attributeName="width"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="spline"
+                  keyTimes="0;.33;.66;1"
+                  keySplines=".6 0 .3 1;.6 0 .3 1;.6 0 .3 1"
+                  values="60;150;44;60"
+                />
+                <animate
+                  attributeName="x"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="spline"
+                  keyTimes="0;.33;.66;1"
+                  keySplines=".6 0 .3 1;.6 0 .3 1;.6 0 .3 1"
+                  values="90;45;98;90"
+                />
+                <animate
+                  attributeName="height"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="spline"
+                  keyTimes="0;.33;.66;1"
+                  keySplines=".6 0 .3 1;.6 0 .3 1;.6 0 .3 1"
+                  values="60;36;84;60"
+                />
+                <animate
+                  attributeName="y"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="spline"
+                  keyTimes="0;.33;.66;1"
+                  keySplines=".6 0 .3 1;.6 0 .3 1;.6 0 .3 1"
+                  values="45;57;33;45"
+                />
+                <animate
+                  attributeName="rx"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="spline"
+                  keyTimes="0;.33;.66;1"
+                  keySplines=".6 0 .3 1;.6 0 .3 1;.6 0 .3 1"
+                  values="4;18;22;4"
+                />
+              </rect>
+              <circle cx="120" cy="75" r="3.5" fill="none" stroke="#7189ff" stroke-width="1.5" />
+              <path d="M114 75h12M120 69v12" stroke="#7189ff" stroke-width="1.2" />
+            </svg>
+          </div>
+          <div class="spec-tx">
+            <div class="mini" style="--d: 4s">
+              <i style="left: 0"></i><i style="left: 33%"></i><i style="left: 66%"></i><i style="left: 100%"></i><u></u>
+            </div>
+            <h3>Size and corners</h3>
+            <p>
+              Shapes grow and shrink around their origin while the stroke keeps its width. Corner radius on rectangles,
+              polygons and stars animates too.
+            </p>
+          </div>
+        </article>
+
+        <!-- Dash patterns -->
+        <article class="spec">
+          <div class="spec-art mat">
+            <svg viewBox="0 0 240 150" aria-hidden="true">
+              <path
+                d="M30 75 C60 30 90 30 120 75 S180 120 210 75"
+                fill="none"
+                stroke="#7189ff"
+                stroke-width="5"
+                stroke-linecap="round"
+                stroke-dasharray="1 10 1 10"
+              >
+                <animate
+                  attributeName="stroke-dasharray"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="spline"
+                  keyTimes="0;.5;1"
+                  keySplines=".6 0 .3 1;.6 0 .3 1"
+                  values="1 10 1 10;26 8 4 8;1 10 1 10"
+                />
+                <animate attributeName="stroke-dashoffset" dur="4s" repeatCount="indefinite" values="0;-88" />
+              </path>
+            </svg>
+          </div>
+          <div class="spec-tx">
+            <div class="mini" style="--d: 4s">
+              <i style="left: 0"></i><i style="left: 50%"></i><i style="left: 100%"></i><u></u>
+            </div>
+            <h3>Dash patterns</h3>
+            <p>
+              Dash patterns blend from one keyframe to the next, even patterns of different lengths, and the offset
+              sends them travelling.
+            </p>
+          </div>
+        </article>
+
+        <!-- Triggers and links -->
+        <article class="spec">
+          <div class="spec-art mat">
+            <svg viewBox="0 0 240 150" aria-hidden="true">
+              <circle cx="120" cy="75" r="19" fill="none" stroke="#7189ff" stroke-width="2" opacity="0">
+                <animate
+                  attributeName="r"
+                  dur="3s"
+                  repeatCount="indefinite"
+                  keyTimes="0;.45;.8;1"
+                  values="19;19;52;52"
+                />
+                <animate
+                  attributeName="opacity"
+                  dur="3s"
+                  repeatCount="indefinite"
+                  keyTimes="0;.449;.45;.8;1"
+                  values="0;0;.6;0;0"
+                />
+              </circle>
+              <g transform="translate(120 75)">
+                <g>
+                  <animateTransform
+                    attributeName="transform"
+                    type="scale"
+                    dur="3s"
+                    repeatCount="indefinite"
+                    keyTimes="0;.42;.46;.54;1"
+                    values="1;1;.9;1;1"
+                  />
+                  <rect x="-42" y="-19" width="84" height="38" rx="19" fill="#7189ff" />
+                  <path d="M-5 -8 L9 0 L-5 8Z" fill="#fff" />
+                </g>
+              </g>
+              <g>
+                <animateTransform
+                  attributeName="transform"
+                  type="translate"
+                  dur="3s"
+                  repeatCount="indefinite"
+                  calcMode="spline"
+                  keyTimes="0;.38;.75;1"
+                  keySplines=".5 0 .3 1;0 0 1 1;.5 0 .3 1"
+                  values="196 132;134 82;134 82;196 132"
+                />
+                <path
+                  d="M0 0 L0 17 L4.5 13 L7.5 20 L10 19 L7 12.5 L12.5 12.5Z"
+                  stroke-width="1.2"
+                  stroke-linejoin="round"
+                  style="fill: var(--fg); stroke: var(--panel)"
+                />
+              </g>
+            </svg>
+          </div>
+          <div class="spec-tx">
+            <div class="mini" style="--d: 3s">
+              <i style="left: 0"></i><i style="left: 45%"></i><i style="left: 100%"></i><u></u>
+            </div>
+            <h3>Triggers and links</h3>
+            <p>
+              Play on load, on hover, on click, when scrolled into view or from your code, and pick what mouse-out does.
+              Any layer can link to a page.
             </p>
           </div>
         </article>
@@ -2873,6 +3125,7 @@
             <li>Morphs, motion paths, bones, gradients, masks and every filter parameter</li>
             <li>A player API to play, pause, seek, reverse and change speed, with events</li>
             <li>Code written for SVGator’s player API works unchanged</li>
+            <li>Repeat, ping-pong, speed and frame rate, set in the export dialog</li>
           </ul>
           <div class="trig" aria-label="Start triggers">
             <span>On load</span><span>On hover</span><span>On click</span><span>When scrolled into view</span
@@ -2900,6 +3153,7 @@
         <div class="tabs" role="tablist" aria-label="Embed code">
           <button role="tab" id="tab-html" aria-selected="true" data-fw="html">HTML</button>
           <button role="tab" id="tab-react" aria-selected="false" data-fw="react">React</button>
+          <button role="tab" id="tab-next" aria-selected="false" data-fw="next">Next.js</button>
           <button role="tab" id="tab-vue" aria-selected="false" data-fw="vue">Vue</button>
           <button role="tab" id="tab-svelte" aria-selected="false" data-fw="svelte">Svelte</button>
           <button role="tab" id="tab-angular" aria-selected="false" data-fw="angular">Angular</button>
@@ -2914,9 +3168,69 @@
       </div>
 
       <div class="sizes">
-        <div><b>41.5 KB</b><span>the sample scene, player included</span></div>
-        <div><b>11.5 KB</b><span>the same file, gzipped</span></div>
+        <div><b>64.6 KB</b><span>the sample scene, player included</span></div>
+        <div><b>16.7 KB</b><span>the same file, gzipped</span></div>
         <div><b>0</b><span>runtime dependencies</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= IMPORT ======================= -->
+  <section class="sec" id="import">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <div class="tc">0:15.00</div>
+          <h2>Open any SVG. Even animated ones.</h2>
+        </div>
+        <p>
+          Bring in work from other tools and keep editing it. Layers, shapes, text and keyframes come in as things you
+          can select and change, not as a flat picture.
+        </p>
+      </div>
+      <div class="facts">
+        <div class="fact">
+          <h3>Figma, Illustrator, Inkscape</h3>
+          <p>
+            Groups keep their names and order, transforms become position, rotate and scale, shapes stay shapes and text
+            stays text.
+          </p>
+        </div>
+        <div class="fact">
+          <h3>SVGator, animation included</h3>
+          <p>
+            Both of SVGator’s exports, JS and CSS, open as keyframes you can edit: motion paths, easing, morphs,
+            gradients, and the length, repeat and speed.
+          </p>
+        </div>
+        <div class="fact">
+          <h3>CSS animations</h3>
+          <p>
+            <code>@keyframes</code> on an SVG’s elements become keyframes too: opacity, colours, stroke, dashes, sizes
+            and transforms.
+          </p>
+        </div>
+        <div class="fact">
+          <h3>Your own exports, editable</h3>
+          <p>
+            Tick <b>Include the editable project</b> when you export, and the SVG opens back in SVGcinema exactly as you
+            left it.
+          </p>
+        </div>
+        <div class="fact">
+          <h3>Masks and filters</h3>
+          <p>
+            Clip paths and masks become clipping and mask groups; a blur or a drop shadow becomes a filter you can
+            animate.
+          </p>
+        </div>
+        <div class="fact">
+          <h3>Open or add</h3>
+          <p>
+            Open an SVG as a new project, or add it to the one you’re in: its layers arrive in a group, and a longer
+            animation lengthens your timeline.
+          </p>
+        </div>
       </div>
     </div>
   </section>
@@ -2926,7 +3240,7 @@
     <div class="wrap">
       <div class="sec-head">
         <div>
-          <div class="tc">0:15.00</div>
+          <div class="tc">0:18.00</div>
           <h2>Every tool is one key away.</h2>
         </div>
         <p>
@@ -2950,6 +3264,23 @@
           data-tip="<b>Edit nodes.</b> Drag nodes and handles. Double-click a node to switch between smooth and corner."
         >
           <b>A</b><span>Edit nodes</span>
+        </button>
+        <button
+          class="key"
+          type="button"
+          data-k="+"
+          data-k2="="
+          data-tip="<b>Add node.</b> Click a segment of the selected path to add a node there."
+        >
+          <b>+</b><span>Add node</span>
+        </button>
+        <button
+          class="key"
+          type="button"
+          data-k="-"
+          data-tip="<b>Remove node.</b> Click a node of the selected path to remove it."
+        >
+          <b>−</b><span>Remove node</span>
         </button>
         <button
           class="key"
@@ -2979,7 +3310,7 @@
           class="key"
           type="button"
           data-k="m"
-          data-tip="<b>Rectangle.</b> Shift draws a square, Alt draws from the centre. Corner radius is animatable."
+          data-tip="<b>Rectangle.</b> Shift draws a square, Alt draws from the centre. Corner radius is animatable. Polygon and Star sit beside it: ↑ and ↓ change the sides while you drag."
         >
           <b>M</b><span>Rectangle</span>
         </button>
@@ -3003,9 +3334,33 @@
           class="key"
           type="button"
           data-k="b"
-          data-tip="<b>Bone.</b> Build a rig, then pose it with forward or inverse kinematics."
+          data-tip="<b>Bone.</b> Build a rig, then pose it with forward or inverse kinematics. Bind hangs layers and bones on a bone."
         >
           <b>B</b><span>Bone</span>
+        </button>
+        <button
+          class="key"
+          type="button"
+          data-k="e"
+          data-tip="<b>Edit bone.</b> Change a rig’s rest pose, its joints, lengths and angles, without touching the keyframes."
+        >
+          <b>E</b><span>Edit bone</span>
+        </button>
+        <button
+          class="key"
+          type="button"
+          data-k="s"
+          data-tip="<b>Scale bone.</b> Drag along a bone to stretch it or squash it, keyed at the playhead."
+        >
+          <b>S</b><span>Scale bone</span>
+        </button>
+        <button
+          class="key"
+          type="button"
+          data-k="w"
+          data-tip="<b>Pin.</b> Click a path, image, text or group to pin it, then drag a pin to bend it. Pins can follow bones."
+        >
+          <b>W</b><span>Pin</span>
         </button>
         <button
           class="key"
@@ -3025,6 +3380,28 @@
         </button>
       </div>
       <p class="key-out" id="keyOut" aria-live="polite">Pick a key to see what the tool does.</p>
+      <div class="facts tool-facts">
+        <div class="fact">
+          <h3>Snapping and guides</h3>
+          <p>
+            Snap to other layers’ edges and centres, to path nodes, guides and the grid. Drag guides out of the rulers.
+          </p>
+        </div>
+        <div class="fact">
+          <h3>Align and combine</h3>
+          <p>
+            Align and distribute layers against each other or the canvas, and combine shapes with union, subtract,
+            intersect and exclude.
+          </p>
+        </div>
+        <div class="fact">
+          <h3>Drag any number</h3>
+          <p>
+            Drag the label of a number field left or right to change the value. Every animatable property keeps its own
+            row and its own keyframe toggle.
+          </p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -3033,7 +3410,7 @@
     <div class="wrap">
       <div class="sec-head">
         <div>
-          <div class="tc">0:18.00</div>
+          <div class="tc">0:21.00</div>
           <h2>Free, and it stays on your machine.</h2>
         </div>
         <p>SVGcinema is a static web app. Your artwork is drawn, animated and exported right in the browser tab.</p>
@@ -3100,10 +3477,6 @@
       ><svg class="logo" viewBox="{{LOGO_VB}}" aria-hidden="true">{{LOGO}}</svg></a
     >
     <span>A free SVG animation editor for the web.</span>
-    <nav aria-label="Footer">
-      <a href="{{EDITOR_URL}}" target="_blank" rel="noopener" data-editor>Editor</a>
-      <a href="#export">Export</a>
-    </nav>
   </div>
 </footer>
 
@@ -3157,7 +3530,7 @@
       ['Comet', 'Position', [0, 1, 2, 3]],
       ['Horizon', 'Trim end', [0.2, 1.8], 1],
       ['Stem', 'Bone rotate', [1.2, 1.9, 2.6, 3]],
-      ['Pennant', 'Skew', [1.2, 1.8, 2.4, 3], 1],
+      ['Flag', 'Pin 2', [1.2, 1.8, 2.4, 3], 1],
       ['Title', 'Opacity', [1, 1.8]],
     ];
     var names = d.getElementById('tlNames'),
@@ -3450,6 +3823,7 @@
       html: 'Put the .svg file next to your page. <code>&lt;object&gt;</code> keeps the player working; pasting the SVG code straight into your HTML works too.',
       react:
         'Put the .svg in your public folder. React doesn’t run scripts inside markup set with <code>dangerouslySetInnerHTML</code>, so use <code>&lt;object&gt;</code>.',
+      next: 'Put the .svg in <code>public/</code>. The component needs <code>"use client"</code> because it talks to the player in the browser.',
       vue: 'Put the .svg in <code>public/</code> (Vite or Vue CLI).',
       svelte: 'Put the .svg in <code>static/</code> (SvelteKit) or <code>public/</code>.',
       angular: 'Put the .svg in <code>src/assets/</code>, or <code>public/</code> on Angular 17 and later.',
@@ -3802,6 +4176,7 @@
       keyMap = {};
     keyBtns.forEach(function (k) {
       keyMap[k.dataset.k] = k;
+      if (k.dataset.k2) keyMap[k.dataset.k2] = k;
       k.addEventListener('click', function () {
         press(k);
       });
@@ -3827,7 +4202,7 @@
       if (!keysVisible || e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
       var tg = e.target;
       if (tg && (tg.isContentEditable || /^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(tg.tagName)) && e.key === ' ') return;
-      var k = keyMap[e.key.toLowerCase()];
+      var k = keyMap[e.key === '_' ? '-' : e.key.toLowerCase()];
       if (!k) return;
       if (e.key === ' ') e.preventDefault();
       press(k);

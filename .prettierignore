@@ -4,3 +4,4 @@ package-lock.json
 tests/fixtures
 site/index.html
 site/src/hero.svg
+deploy

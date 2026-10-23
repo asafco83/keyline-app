@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="hero-svg" viewBox="0 0 640 400" width="100%" shape-rendering="geometricPrecision" text-rendering="geometricPrecision"><title>Sunrise badge</title><rect x="0" y="0" width="640" height="400" fill="#14213D"/><g id="hero-l1" transform="translate(320,200) rotate(0) scale(1,1) translate(-320,-200)" opacity="1"><linearGradient id="hero-l1-gf" x1="0.5" y1="0" x2="0.5" y2="1"><stop offset="0" stop-color="rgb(11,16,38)" stop-opacity="1"/><stop offset="0.62" stop-color="rgb(20,33,61)" stop-opacity="1"/><stop offset="1" stop-color="rgb(42,47,91)" stop-opacity="1"/></linearGradient><rect id="hero-l1-s" fill="url(#hero-l1-gf)" stroke="none" x="0" y="0" width="640" height="400"/></g><g id="hero-l2" transform="translate(322.11,36.64) rotate(0) scale(1,1) translate(-322.11,-36.64)" opacity="1"><g id="hero-l2-s"><g id="hero-l3" transform="translate(46,45.14) rotate(0) scale(1,1) translate(-46,-45.14)" opacity="1"><path id="hero-l3-s" fill="#FFF4CF" stroke="none" d="M46 37L46 37L48.38 42.72L48.38 42.72L54.56 43.22L54.56 43.22L49.85 47.25L49.85 47.25L51.29 53.28L51.29 53.28L46 50.05L46 50.05L40.71 53.28L40.71 53.28L42.15 47.25L42.15 47.25L37.44 43.22L37.44 43.22L43.62 42.72L43.62 42.72L46 37Z"/></g><g id="hero-l4" transform="translate(300,26) rotate(0) scale(1,1) translate(-300,-26)" opacity="1"><path id="hero-l4-s" fill="#FFF4CF" stroke="none" d="M300 20L300 20L301.48 24.52L301.48 24.52L306 26L306 26L301.48 27.48L301.48 27.48L300 32L300 32L298.52 27.48L298.52 27.48L294 26L294 26L298.52 24.52L298.52 24.52L300 20Z"/></g><g id="hero-l5" transform="translate(604,36) rotate(0) scale(0.4,0.4) translate(-604,-36)" opacity="1"><path id="hero-l5-s" fill="#FFF4CF" stroke="none" d="M604 28L604 28L606 32.54L606 32.54L610.93 32L610.93 32L608 36L608 36L610.93 40L610.93 40L606 39.46L606 39.46L604 44L604 44L602 39.46L602 39.46L597.07 40L597.07 40L600 36L600 36L597.07 32L597.07 32L602 32.54L602 32.54L604 28Z"/></g></g></g><g id="hero-l6" transform="translate(170,365) rotate(0) scale(1,1) translate(-170,-215)" opacity="1"><g id="hero-l6-s"><g id="hero-l7" transform="translate(170,215) rotate(0) scale(1,1) translate(-170,-215)" opacity="0"><filter id="hero-l7-fx" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feGaussianBlur id="hero-l7-f1" stdDeviation="4"/></filter><radialGradient id="hero-l7-gf" cx="0.5" cy="0.5" r="0.5" fx="0.5" fy="0.5"><stop offset="0" stop-color="rgb(255,210,122)" stop-opacity="0.8"/><stop offset="0.55" stop-color="rgb(255,159,107)" stop-opacity="0.333"/><stop offset="1" stop-color="rgb(255,122,89)" stop-opacity="0"/></radialGradient><ellipse id="hero-l7-s" fill="url(#hero-l7-gf)" stroke="none" style="mix-blend-mode:screen" filter="url(#hero-l7-fx)" cx="170" cy="215" rx="100" ry="100"/></g><g id="hero-l8" transform="translate(170,215) rotate(0) scale(0.35,0.35) translate(-170,-215)" opacity="0"><path id="hero-l8-s" fill="#FFD27A" stroke="none" d="M170 119L186.05 155.11L218 131.86L213.84 171.16L253.14 167L229.89 198.95L266 215L229.89 231.05L253.14 263L213.84 258.84L218 298.14L186.05 274.89L170 311L153.95 274.89L122 298.14L126.16 258.84L86.86 263L110.11 231.05L74 215L110.11 198.95L86.86 167L126.16 171.16L122 131.86L153.95 155.11L170 119Z"/></g><g id="hero-l9" transform="translate(170,215) rotate(0) scale(1,1) translate(-170,-215)" opacity="1"><ellipse id="hero-l9-s" fill="#FF5F6D" stroke="none" cx="170" cy="215" rx="54" ry="54"/></g></g></g><g id="hero-l10" transform="translate(470,175) rotate(0) scale(1,1) translate(-470,-175)" opacity="1"><path id="hero-l10-s" fill="#6C8CFF" stroke="none" d="M470 123C498.7 123 522 146.3 522 175C522 203.7 498.7 227 470 227C441.3 227 418 203.7 418 175C418 146.3 441.3 123 470 123Z"/></g><g id="hero-l11" transform="translate(325,92.35) rotate(0) scale(1,1) translate(-325,-92.35)" opacity="0.35"><path stroke-linecap="round" stroke-dasharray="1 11" id="hero-l11-s" fill="none" stroke="#F3EEE4" stroke-width="2" stroke-dashoffset="0" d="M50 130C50 130 168.33 64 230 52C291.67 40 358.33 43.33 420 58C481.67 72.67 600 140 600 140"/></g><g id="hero-l12" transform="translate(50,130) rotate(-24.268) scale(1,1) translate(0,0)" opacity="0"><path id="hero-l12-s" fill="#F3EEE4" stroke="none" d="M-10 -6L12 0L-10 6L-10 -6Z"/></g><g id="hero-l13" transform="translate(290,275) rotate(0) scale(1,1) translate(-290,-275)" opacity="1"><g id="hero-l13-s"><style>#hero-l13-mask *{fill:#fff!important;fill-opacity:1!important;stroke:none!important;opacity:1!important;filter:none!important}</style><mask id="hero-l13-mask" mask-type="alpha" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="-100000" y="-100000" width="200000" height="200000"><g id="hero-l16" transform="translate(320,283.99) rotate(0) scale(1,1) translate(-320,-283.99)" opacity="1"><g id="hero-l16-s"><g id="hero-l17" transform="translate(320,283.99) rotate(0) scale(1,1) translate(-320,-283.99)" opacity="1"><path id="hero-l17-s" fill="#FFFFFF" stroke="none" d="M-10 300C-10 300 78.33 245.67 130 244C181.67 242.33 241.33 291 300 290C358.67 289 423.67 236.67 482 238C540.33 239.33 650 298 650 298L650 330L-10 330L-10 300Z"/></g></g></g></mask><g mask="url(#hero-l13-mask)"><g id="hero-l14" transform="translate(320,275) rotate(0) scale(1,1) translate(-320,-275)" opacity="1"><linearGradient id="hero-l14-gf" x1="0.5" y1="0" x2="0.5" y2="1"><stop offset="0" stop-color="rgb(43,76,111)" stop-opacity="1"/><stop offset="1" stop-color="rgb(22,42,69)" stop-opacity="1"/></linearGradient><rect id="hero-l14-s" fill="url(#hero-l14-gf)" stroke="none" x="0" y="220" width="640" height="110"/></g><g id="hero-l15" transform="translate(60,262) rotate(0) scale(1,1) translate(-120,-262)" opacity="0.22"><filter id="hero-l15-fx" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feGaussianBlur id="hero-l15-f1" stdDeviation="6"/></filter><ellipse id="hero-l15-s" fill="#DCE7FF" stroke="none" filter="url(#hero-l15-fx)" cx="120" cy="262" rx="120" ry="14"/></g></g></g></g><g id="hero-l18" transform="translate(592,300) rotate(0) scale(0,0) translate(-592,-300)" opacity="1"><g id="hero-l18-s"><g id="hero-l19" transform="translate(592,300) rotate(0) scale(1,1) translate(-592,-300)" opacity="1"><g id="hero-l19-s"><g id="hero-l22" transform="translate(592,284) rotate(0) scale(1,1) translate(-592,-284)" opacity="1"><path stroke-linecap="round" id="hero-l22-s" fill="none" stroke="#7FD4C1" stroke-width="5" d="M592 300L592 268"/></g><g id="hero-l20" transform="translate(592,268) rotate(0) scale(1,1) translate(-592,-268)" opacity="1"><g id="hero-l20-s"><g id="hero-l23" transform="translate(592,254) rotate(0) scale(1,1) translate(-592,-254)" opacity="1"><path stroke-linecap="round" id="hero-l23-s" fill="none" stroke="#7FD4C1" stroke-width="5" d="M592 268L592 240"/></g><g id="hero-l25" transform="translate(579,262) rotate(-30) scale(1,1) translate(-579,-262)" opacity="1"><ellipse id="hero-l25-s" fill="#5FBF9F" stroke="none" cx="579" cy="262" rx="13" ry="5"/></g><g id="hero-l21" transform="translate(592,240) rotate(0) scale(1,1) translate(-592,-240)" opacity="1"><g id="hero-l21-s"><g id="hero-l24" transform="translate(592,228) rotate(0) scale(1,1) translate(-592,-228)" opacity="1"><path stroke-linecap="round" id="hero-l24-s" fill="none" stroke="#7FD4C1" stroke-width="5" d="M592 240L592 216"/></g><g id="hero-l26" transform="translate(605,236) rotate(30) scale(1,1) translate(-605,-236)" opacity="1"><ellipse id="hero-l26-s" fill="#5FBF9F" stroke="none" cx="605" cy="236" rx="12" ry="5"/></g><g id="hero-l27" transform="translate(592,210.92) rotate(0) scale(1,1) translate(-592,-210.92)" opacity="1"><path id="hero-l27-s" fill="#FF8FB1" stroke="none" d="M592 199C601 199 599.68 198.04 602.46 206.6C605.24 215.16 605.75 213.61 598.47 218.9C591.18 224.19 592.82 224.19 585.53 218.9C578.25 213.61 578.76 215.16 581.54 206.6C584.32 198.04 583 199 592 199Z"/></g></g></g></g></g></g></g></g></g><g id="hero-l28" transform="translate(66,256.94) rotate(0) scale(1,1) translate(-66,-256.94)" opacity="1"><g id="hero-l28-s"><g id="hero-l29" transform="translate(54,300) rotate(0) scale(1,1) translate(-54,-300)" opacity="1"><path stroke-linecap="round" id="hero-l29-s" fill="none" stroke="#F3EEE4" stroke-width="3" d="M54 300L54 300"/></g><g id="hero-l30" transform="translate(56,226) rotate(0) scale(1,1) translate(-56,-226)" opacity="0"><linearGradient id="hero-l30-gf" x1="0" y1="0.5" x2="1" y2="0.5"><stop offset="0" stop-color="rgb(255,95,109)" stop-opacity="1"/><stop offset="1" stop-color="rgb(255,194,75)" stop-opacity="1"/></linearGradient><path id="hero-l30-s" fill="url(#hero-l30-gf)" stroke="none" d="M78 226L78 226L57 238.12L57 238.12L57 213.88L57 213.88L78 226Z"/></g></g></g><g id="hero-l31" transform="translate(320,344) rotate(0) scale(1,1) translate(-320,-344)" opacity="1"><g id="hero-l31-s"><g id="hero-l32" transform="translate(320,348) rotate(0) scale(1,1) translate(-320,-348)" opacity="1"><rect id="hero-l32-s" fill="#14213D" stroke="none" x="0" y="296" width="640" height="104"/></g><g id="hero-l33" transform="translate(320,296) rotate(0) scale(1,1) translate(-320,-296)" opacity="1"><path stroke-linecap="round" id="hero-l33-s" fill="none" stroke="#7FD4C1" stroke-width="6" pathLength="100" stroke-dasharray="0 300" stroke-dashoffset="150" d="M30 300C76 300 129 288 175 288C221 288 274 304 320 304C366 304 419 288 465 288C511 288 564 300 610 300"/></g><g id="hero-l34" transform="translate(320,384.73) rotate(0) scale(1,1) translate(-320,-384.73)" opacity="1"><g id="hero-l34-s"><mask id="hero-l34-mask" mask-type="alpha" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="-100000" y="-100000" width="200000" height="200000"><g id="hero-l36" transform="translate(200,385) rotate(0) scale(1,1) translate(-200,-385)" opacity="1"><g id="hero-l36-s"><g id="hero-l37" transform="translate(200,385) rotate(0) scale(0,1) translate(-200,-385)" opacity="1"><linearGradient id="hero-l37-gf" x1="0" y1="0.5" x2="1" y2="0.5"><stop offset="0" stop-color="rgb(255,255,255)" stop-opacity="1"/><stop offset="0.8" stop-color="rgb(255,255,255)" stop-opacity="1"/><stop offset="1" stop-color="rgb(255,255,255)" stop-opacity="0"/></linearGradient><rect id="hero-l37-s" fill="url(#hero-l37-gf)" stroke="none" x="200" y="376" width="240" height="18"/></g></g></g></mask><g mask="url(#hero-l34-mask)"><g id="hero-l35" transform="translate(320,384.73) rotate(0) scale(1,1) translate(-320,-384.73)" opacity="1"><text id="hero-l35-s" fill="#9FB3D9" stroke="none" x="320" y="389" font-size="10" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-weight="600" letter-spacing="3" text-anchor="middle">MADE WITH SVGCINEMA</text></g></g></g></g></g></g><g id="hero-l38" transform="translate(320.65,375.2) rotate(0) scale(1,1) translate(-320.65,-349.2)" opacity="0"><filter id="hero-l38-fx" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feDropShadow id="hero-l38-f1" dx="4" dy="0" stdDeviation="6" flood-color="#05070F" flood-opacity="0.35"/></filter><text id="hero-l38-s" fill="#F3EEE4" stroke="none" filter="url(#hero-l38-fx)" x="320" y="362" font-size="40" font-family="Georgia, Times New Roman, serif" font-weight="700" text-anchor="middle">Good morning</text></g><script><![CDATA[
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="hero-svg" viewBox="0 0 640 400" width="100%" shape-rendering="geometricPrecision" text-rendering="geometricPrecision"><title>Sunrise badge</title><rect x="0" y="0" width="640" height="400" fill="#14213D"/><g id="hero-l1" transform="translate(320,200) rotate(0) scale(1,1) translate(-320,-200)" opacity="1"><linearGradient id="hero-l1-gf" x1="0.5" y1="0" x2="0.5" y2="1"><stop offset="0" stop-color="rgb(11,16,38)" stop-opacity="1"/><stop offset="0.62" stop-color="rgb(20,33,61)" stop-opacity="1"/><stop offset="1" stop-color="rgb(42,47,91)" stop-opacity="1"/></linearGradient><rect id="hero-l1-s" fill="url(#hero-l1-gf)" stroke="none" x="0" y="0" width="640" height="400"/></g><g id="hero-l2" transform="translate(322.11,36.64) rotate(0) scale(1,1) translate(-322.11,-36.64)" opacity="1"><g id="hero-l2-s"><g id="hero-l3" transform="translate(46,45.14) rotate(0) scale(1,1) translate(-46,-45.14)" opacity="1"><path id="hero-l3-s" fill="#FFF4CF" stroke="none" d="M46 37L46 37L48.38 42.72L48.38 42.72L54.56 43.22L54.56 43.22L49.85 47.25L49.85 47.25L51.29 53.28L51.29 53.28L46 50.05L46 50.05L40.71 53.28L40.71 53.28L42.15 47.25L42.15 47.25L37.44 43.22L37.44 43.22L43.62 42.72L43.62 42.72L46 37Z"/></g><g id="hero-l4" transform="translate(300,26) rotate(0) scale(1,1) translate(-300,-26)" opacity="1"><path id="hero-l4-s" fill="#FFF4CF" stroke="none" d="M300 20L300 20L301.48 24.52L301.48 24.52L306 26L306 26L301.48 27.48L301.48 27.48L300 32L300 32L298.52 27.48L298.52 27.48L294 26L294 26L298.52 24.52L298.52 24.52L300 20Z"/></g><g id="hero-l5" transform="translate(604,36) rotate(0) scale(0.4,0.4) translate(-604,-36)" opacity="1"><path id="hero-l5-s" fill="#FFF4CF" stroke="none" d="M604 28L604 28L606 32.54L606 32.54L610.93 32L610.93 32L608 36L608 36L610.93 40L610.93 40L606 39.46L606 39.46L604 44L604 44L602 39.46L602 39.46L597.07 40L597.07 40L600 36L600 36L597.07 32L597.07 32L602 32.54L602 32.54L604 28Z"/></g></g></g><g id="hero-l6" transform="translate(170,365) rotate(0) scale(1,1) translate(-170,-215)" opacity="1"><g id="hero-l6-s"><g id="hero-l7" transform="translate(170,215) rotate(0) scale(1,1) translate(-170,-215)" opacity="0"><filter id="hero-l7-fx" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feGaussianBlur id="hero-l7-f1" stdDeviation="4"/></filter><radialGradient id="hero-l7-gf" cx="0.5" cy="0.5" r="0.5" fx="0.5" fy="0.5"><stop offset="0" stop-color="rgb(255,210,122)" stop-opacity="0.8"/><stop offset="0.55" stop-color="rgb(255,159,107)" stop-opacity="0.333"/><stop offset="1" stop-color="rgb(255,122,89)" stop-opacity="0"/></radialGradient><ellipse id="hero-l7-s" fill="url(#hero-l7-gf)" stroke="none" style="mix-blend-mode:screen" filter="url(#hero-l7-fx)" cx="170" cy="215" rx="100" ry="100"/></g><g id="hero-l8" transform="translate(170,215) rotate(0) scale(0.35,0.35) translate(-170,-215)" opacity="0"><path id="hero-l8-s" fill="#FFD27A" stroke="none" d="M170 119L186.05 155.11L218 131.86L213.84 171.16L253.14 167L229.89 198.95L266 215L229.89 231.05L253.14 263L213.84 258.84L218 298.14L186.05 274.89L170 311L153.95 274.89L122 298.14L126.16 258.84L86.86 263L110.11 231.05L74 215L110.11 198.95L86.86 167L126.16 171.16L122 131.86L153.95 155.11L170 119Z"/></g><g id="hero-l9" transform="translate(170,215) rotate(0) scale(1,1) translate(-170,-215)" opacity="1"><ellipse id="hero-l9-s" fill="#FF5F6D" stroke="none" cx="170" cy="215" rx="54" ry="54"/></g></g></g><g id="hero-l10" transform="translate(470,175) rotate(0) scale(1,1) translate(-470,-175)" opacity="1"><path id="hero-l10-s" fill="#6C8CFF" stroke="none" d="M470 123C498.7 123 522 146.3 522 175C522 203.7 498.7 227 470 227C441.3 227 418 203.7 418 175C418 146.3 441.3 123 470 123Z"/></g><g id="hero-l11" transform="translate(325,92.35) rotate(0) scale(1,1) translate(-325,-92.35)" opacity="0.35"><path stroke-linecap="round" stroke-dasharray="1 11" id="hero-l11-s" fill="none" stroke="#F3EEE4" stroke-width="2" stroke-dashoffset="0" d="M50 130C50 130 168.33 64 230 52C291.67 40 358.33 43.33 420 58C481.67 72.67 600 140 600 140"/></g><g id="hero-l12" transform="translate(50,130) rotate(-24.268) scale(1,1) translate(0,0)" opacity="0"><path id="hero-l12-s" fill="#F3EEE4" stroke="none" d="M-10 -6L12 0L-10 6L-10 -6Z"/></g><g id="hero-l13" transform="translate(290,275) rotate(0) scale(1,1) translate(-290,-275)" opacity="1"><g id="hero-l13-s"><style>#hero-l13-mask *{fill:#fff!important;fill-opacity:1!important;stroke:none!important;opacity:1!important;filter:none!important}</style><mask id="hero-l13-mask" mask-type="alpha" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="-100000" y="-100000" width="200000" height="200000"><g id="hero-l16" transform="translate(320,283.99) rotate(0) scale(1,1) translate(-320,-283.99)" opacity="1"><g id="hero-l16-s"><g id="hero-l17" transform="translate(320,283.99) rotate(0) scale(1,1) translate(-320,-283.99)" opacity="1"><path id="hero-l17-s" fill="#FFFFFF" stroke="none" d="M-10 300C-10 300 78.33 245.67 130 244C181.67 242.33 241.33 291 300 290C358.67 289 423.67 236.67 482 238C540.33 239.33 650 298 650 298L650 330L-10 330L-10 300Z"/></g></g></g></mask><g mask="url(#hero-l13-mask)"><g id="hero-l14" transform="translate(320,275) rotate(0) scale(1,1) translate(-320,-275)" opacity="1"><linearGradient id="hero-l14-gf" x1="0.5" y1="0" x2="0.5" y2="1"><stop offset="0" stop-color="rgb(43,76,111)" stop-opacity="1"/><stop offset="1" stop-color="rgb(22,42,69)" stop-opacity="1"/></linearGradient><rect id="hero-l14-s" fill="url(#hero-l14-gf)" stroke="none" x="0" y="220" width="640" height="110"/></g><g id="hero-l15" transform="translate(60,262) rotate(0) scale(1,1) translate(-120,-262)" opacity="0.22"><filter id="hero-l15-fx" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feGaussianBlur id="hero-l15-f1" stdDeviation="6"/></filter><ellipse id="hero-l15-s" fill="#DCE7FF" stroke="none" filter="url(#hero-l15-fx)" cx="120" cy="262" rx="120" ry="14"/></g></g></g></g><g id="hero-l18" transform="translate(592,300) rotate(0) scale(0,0) translate(-592,-300)" opacity="1"><g id="hero-l18-s"><g id="hero-l28" transform="translate(597.75,260) rotate(0) scale(1,1) translate(-597.75,-260)" opacity="1"><path id="hero-l28-s" fill="#5FBF9F" stroke="none" d="M596.5 298L596.5 290.4L596.5 282.8L596.5 275.2L596.5 267.6L596.5 260L596.5 252.4L596.5 244.8L596.5 237.2L596.5 229.6L596.5 222L599 222L599 229.6L599 237.2L599 244.8L599 252.4L599 260L599 267.6L599 275.2L599 282.8L599 290.4L599 298L596.5 298Z"/></g><g id="hero-l19" transform="translate(592,300) rotate(0) scale(1,1) translate(-592,-300)" opacity="1"><g id="hero-l19-s"><g id="hero-l20" transform="translate(592,268) rotate(0) scale(1,1) translate(-592,-268)" opacity="1"><g id="hero-l20-s"><g id="hero-l21" transform="translate(592,240) rotate(0) scale(1,1) translate(-592,-240)" opacity="1"><g id="hero-l21-s"></g></g></g></g></g></g><g id="hero-l25-w" transform="matrix(1,0,0,1,0,0)"><g id="hero-l25" transform="translate(579,262) rotate(-30) scale(1,1) translate(-579,-262)" opacity="1"><path id="hero-l25-s" fill="#5FBF9F" stroke="none" d="M579 257C586.18 257 592 259.24 592 262C592 264.76 586.18 267 579 267C571.82 267 566 264.76 566 262C566 259.24 571.82 257 579 257Z"/></g></g><g id="hero-l22-w" transform="matrix(1,0,0,1,0,0)"><g id="hero-l22" transform="translate(592,284) rotate(0) scale(1,1) translate(-592,-284)" opacity="1"><path stroke-linecap="round" id="hero-l22-s" fill="none" stroke="#7FD4C1" stroke-width="5" d="M592 300L592 268"/></g></g><g id="hero-l23-w" transform="matrix(1,0,0,1,0,0)"><g id="hero-l23" transform="translate(592,254) rotate(0) scale(1,1) translate(-592,-254)" opacity="1"><path stroke-linecap="round" id="hero-l23-s" fill="none" stroke="#7FD4C1" stroke-width="5" d="M592 268L592 240"/></g></g><g id="hero-l24-w" transform="matrix(1,0,0,1,0,0)"><g id="hero-l24" transform="translate(592,228) rotate(0) scale(1,1) translate(-592,-228)" opacity="1"><path stroke-linecap="round" id="hero-l24-s" fill="none" stroke="#7FD4C1" stroke-width="5" d="M592 240L592 216"/></g></g><g id="hero-l26-w" transform="matrix(1,0,0,1,0,0)"><g id="hero-l26" transform="translate(605,236) rotate(30) scale(1,1) translate(-605,-236)" opacity="1"><ellipse id="hero-l26-s" fill="#5FBF9F" stroke="none" cx="605" cy="236" rx="12" ry="5"/></g></g><g id="hero-l27-w" transform="matrix(1,0,0,1,0,0)"><g id="hero-l27" transform="translate(592,210.92) rotate(0) scale(1,1) translate(-592,-210.92)" opacity="1"><path id="hero-l27-s" fill="#FF8FB1" stroke="none" d="M592 199C601 199 599.68 198.04 602.46 206.6C605.24 215.16 605.75 213.61 598.47 218.9C591.18 224.19 592.82 224.19 585.53 218.9C578.25 213.61 578.76 215.16 581.54 206.6C584.32 198.04 583 199 592 199Z"/></g></g></g></g><g id="hero-l29" transform="translate(66,256.94) rotate(0) scale(1,1) translate(-66,-256.94)" opacity="1"><g visibility="hidden"><g id="hero-l29-s"><g id="hero-l30" transform="translate(54,300) rotate(0) scale(1,1) translate(-54,-300)" opacity="1"><path stroke-linecap="round" id="hero-l30-s" fill="none" stroke="#F3EEE4" stroke-width="3" d="M54 300L54 300"/></g><g id="hero-l31" transform="translate(56,226) rotate(0) scale(1,1) translate(-56,-226)" opacity="0"><linearGradient id="hero-l31-gf" x1="0" y1="0.5" x2="1" y2="0.5"><stop offset="0" stop-color="rgb(255,95,109)" stop-opacity="1"/><stop offset="1" stop-color="rgb(255,194,75)" stop-opacity="1"/></linearGradient><path id="hero-l31-s" fill="url(#hero-l31-gf)" stroke="none" d="M78 226L78 226L57 238.12L57 238.12L57 213.88L57 213.88L78 226Z"/></g></g></g><defs><clipPath id="hero-l29-c0"><path d="M63.72 197.21L68.02 213.23L52 208.94Z"/></clipPath><clipPath id="hero-l29-c1"><path d="M63.72 197.21L79.74 201.5L68.02 213.23Z"/></clipPath><clipPath id="hero-l29-c2"><path d="M79.74 201.5L84.04 217.52L68.02 213.23Z"/></clipPath><clipPath id="hero-l29-c3"><path d="M35.98 204.65L52 208.94L40.27 220.67Z"/></clipPath><clipPath id="hero-l29-c4"><path d="M52 208.94L68.02 213.23L56.29 224.96Z"/></clipPath><clipPath id="hero-l29-c5"><path d="M52 208.94L56.29 224.96L40.27 220.67Z"/></clipPath><clipPath id="hero-l29-c6"><path d="M68.02 213.23L84.04 217.52L72.31 229.25Z"/></clipPath><clipPath id="hero-l29-c7"><path d="M68.02 213.23L72.31 229.25L56.29 224.96Z"/></clipPath><clipPath id="hero-l29-c8"><path d="M84.04 217.52L88.33 233.54L72.31 229.25Z"/></clipPath><clipPath id="hero-l29-c9"><path d="M40.27 220.67L56.29 224.96L44.56 236.69Z"/></clipPath><clipPath id="hero-l29-c10"><path d="M56.29 224.96L60.58 240.98L44.56 236.69Z"/></clipPath><clipPath id="hero-l29-c11"><path d="M56.29 224.96L72.31 229.25L60.58 240.98Z"/></clipPath><clipPath id="hero-l29-c12"><path d="M72.31 229.25L76.6 245.27L60.58 240.98Z"/></clipPath><clipPath id="hero-l29-c13"><path d="M72.31 229.25L88.33 233.54L76.6 245.27Z"/></clipPath><clipPath id="hero-l29-c14"><path d="M88.33 233.54L92.62 249.57L76.6 245.27Z"/></clipPath><clipPath id="hero-l29-c15"><path d="M44.56 236.69L60.58 240.98L48.85 252.71Z"/></clipPath><clipPath id="hero-l29-c16"><path d="M60.58 240.98L76.6 245.27L64.88 257Z"/></clipPath><clipPath id="hero-l29-c17"><path d="M60.58 240.98L64.88 257L48.85 252.71Z"/></clipPath><clipPath id="hero-l29-c18"><path d="M48.85 252.71L53.15 268.73L37.13 264.43Z"/></clipPath><clipPath id="hero-l29-c19"><path d="M48.85 252.71L64.88 257L53.15 268.73Z"/></clipPath><clipPath id="hero-l29-c20"><path d="M64.88 257L69.17 273.02L53.15 268.73Z"/></clipPath><clipPath id="hero-l29-c21"><path d="M37.13 264.43L53.15 268.73L41.42 280.46Z"/></clipPath><clipPath id="hero-l29-c22"><path d="M53.15 268.73L69.17 273.02L57.44 284.75Z"/></clipPath><clipPath id="hero-l29-c23"><path d="M53.15 268.73L57.44 284.75L41.42 280.46Z"/></clipPath><clipPath id="hero-l29-c24"><path d="M69.17 273.02L73.46 289.04L57.44 284.75Z"/></clipPath><clipPath id="hero-l29-c25"><path d="M41.42 280.46L57.44 284.75L45.71 296.48Z"/></clipPath><clipPath id="hero-l29-c26"><path d="M57.44 284.75L61.73 300.77L45.71 296.48Z"/></clipPath><clipPath id="hero-l29-c27"><path d="M57.44 284.75L73.46 289.04L61.73 300.77Z"/></clipPath><clipPath id="hero-l29-c28"><path d="M45.71 296.48L61.73 300.77L50.01 312.5Z"/></clipPath></defs><g id="hero-l29-mesh" style="isolation:isolate"><g id="hero-l29-m0" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c0)"/></g><g id="hero-l29-m1" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c1)"/></g><g id="hero-l29-m2" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c2)"/></g><g id="hero-l29-m3" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c3)"/></g><g id="hero-l29-m4" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c4)"/></g><g id="hero-l29-m5" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c5)"/></g><g id="hero-l29-m6" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c6)"/></g><g id="hero-l29-m7" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c7)"/></g><g id="hero-l29-m8" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c8)"/></g><g id="hero-l29-m9" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c9)"/></g><g id="hero-l29-m10" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c10)"/></g><g id="hero-l29-m11" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c11)"/></g><g id="hero-l29-m12" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c12)"/></g><g id="hero-l29-m13" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c13)"/></g><g id="hero-l29-m14" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c14)"/></g><g id="hero-l29-m15" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c15)"/></g><g id="hero-l29-m16" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c16)"/></g><g id="hero-l29-m17" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c17)"/></g><g id="hero-l29-m18" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c18)"/></g><g id="hero-l29-m19" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c19)"/></g><g id="hero-l29-m20" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c20)"/></g><g id="hero-l29-m21" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c21)"/></g><g id="hero-l29-m22" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c22)"/></g><g id="hero-l29-m23" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c23)"/></g><g id="hero-l29-m24" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c24)"/></g><g id="hero-l29-m25" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c25)"/></g><g id="hero-l29-m26" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c26)"/></g><g id="hero-l29-m27" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c27)"/></g><g id="hero-l29-m28" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c28)"/></g></g></g><g id="hero-l32" transform="translate(320,344) rotate(0) scale(1,1) translate(-320,-344)" opacity="1"><g id="hero-l32-s"><g id="hero-l33" transform="translate(320,348) rotate(0) scale(1,1) translate(-320,-348)" opacity="1"><rect id="hero-l33-s" fill="#14213D" stroke="none" x="0" y="296" width="640" height="104"/></g><g id="hero-l34" transform="translate(320,296) rotate(0) scale(1,1) translate(-320,-296)" opacity="1"><path stroke-linecap="round" id="hero-l34-s" fill="none" stroke="#7FD4C1" stroke-width="6" pathLength="100" stroke-dasharray="0 300" stroke-dashoffset="150" d="M30 300C76 300 129 288 175 288C221 288 274 304 320 304C366 304 419 288 465 288C511 288 564 300 610 300"/></g><g id="hero-l35" transform="translate(320,384.73) rotate(0) scale(1,1) translate(-320,-384.73)" opacity="1"><g id="hero-l35-s"><mask id="hero-l35-mask" mask-type="luminance" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="-100000" y="-100000" width="200000" height="200000"><g id="hero-l37" transform="translate(200,385) rotate(0) scale(1,1) translate(-200,-385)" opacity="1"><g id="hero-l37-s"><g id="hero-l38" transform="translate(200,385) rotate(0) scale(0,1) translate(-200,-385)" opacity="1"><linearGradient id="hero-l38-gf" x1="0" y1="0.5" x2="1" y2="0.5"><stop offset="0" stop-color="rgb(255,255,255)" stop-opacity="1"/><stop offset="0.8" stop-color="rgb(255,255,255)" stop-opacity="1"/><stop offset="1" stop-color="rgb(255,255,255)" stop-opacity="0"/></linearGradient><rect id="hero-l38-s" fill="url(#hero-l38-gf)" stroke="none" x="200" y="376" width="240" height="18"/></g></g></g></mask><g mask="url(#hero-l35-mask)"><g id="hero-l36" transform="translate(320,384.73) rotate(0) scale(1,1) translate(-320,-384.73)" opacity="1"><text id="hero-l36-s" fill="#9FB3D9" stroke="none" x="320" y="389" font-size="10" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-weight="600" letter-spacing="3" text-anchor="middle">MADE WITH SVGCINEMA</text></g></g></g></g></g></g><g id="hero-l39" transform="translate(320.65,375.2) rotate(0) scale(1,1) translate(-320.65,-349.2)" opacity="0"><filter id="hero-l39-fx" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feDropShadow id="hero-l39-f1" dx="4" dy="0" stdDeviation="6" flood-color="#05070F" flood-opacity="0.35"/></filter><text id="hero-l39-s" fill="#F3EEE4" stroke="none" filter="url(#hero-l39-fx)" x="320" y="362" font-size="40" font-family="Georgia, Times New Roman, serif" font-weight="700" text-anchor="middle">Good morning</text></g><script><![CDATA[
 (function(){var CinEngine=function CinEngine(D, root) {
   var K = {
     pos: "v",
@@ -19,7 +19,9 @@
     skw: "v",
     fo: "n",
     so: "n",
-    dof: "n"
+    dof: "n",
+    sz: "v",
+    da: "a"
   };
   var EZ = {
     ease: [0.25, 0.1, 0.25, 1],
@@ -250,8 +252,36 @@
       };
     });
   }
+  function mixA(a, b, p) {
+    a = a || [];
+    b = b || [];
+    var i = a.length, j = b.length, o = [], k;
+    if (i !== j) {
+      if (!i) a = rep(b.map(zero), 1);
+      else if (!j) b = rep(a.map(zero), 1);
+      else {
+        var m = i * j / gcd(i, j);
+        a = rep(a, m / i);
+        b = rep(b, m / j);
+      }
+    }
+    for (k = 0; k < a.length; k++) o.push(a[k] + (b[k] - a[k]) * p);
+    return o;
+  }
+  function zero() {
+    return 0;
+  }
+  function gcd(x, y) {
+    return y ? gcd(y, x % y) : x || 1;
+  }
+  function rep(a, n) {
+    var o = [];
+    for (var r = 0; r < n; r++) o = o.concat(a);
+    return o;
+  }
   function mix(k, a, b, p) {
     if (k === "c") return mixC(a, b, p);
+    if (k === "a") return mixA(a, b, p);
     if (k === "m") return mixM(a, b, p);
     if (k === "v") return [a[0] + (b[0] - a[0]) * p, a[1] + (b[1] - a[1]) * p];
     return a + (b - a) * p;
@@ -269,6 +299,29 @@
       w0 * A[1] + w1 * (A[1] + h[1]) + w2 * (B[1] + h[3]) + w3 * B[1]
     ];
   }
+  var ARC = {}, ARCN = 0;
+  function byLength(A, h, B, p) {
+    if (p <= 0 || p >= 1) return p;
+    var key = A.join() + ";" + h.join() + ";" + B.join(), tb = ARC[key], n = 64, i;
+    if (!tb) {
+      if (++ARCN > 400) {
+        ARC = {};
+        ARCN = 1;
+      }
+      tb = [0];
+      var prev = A;
+      for (i = 1; i <= n; i++) {
+        var q = cb(A, h, B, i / n);
+        tb.push(tb[i - 1] + Math.hypot(q[0] - prev[0], q[1] - prev[1]));
+        prev = q;
+      }
+      ARC[key] = tb;
+    }
+    var want = p * tb[n];
+    if (!(tb[n] > 0)) return p;
+    for (i = 1; i <= n; i++) if (tb[i] >= want) return (i - 1 + (want - tb[i - 1]) / (tb[i] - tb[i - 1] || 1)) / n;
+    return 1;
+  }
   function at(L, k, t) {
     var tr = L.t[k], n = tr.length, i, a, b, p;
     if (n === 1 || t <= tr[0][0]) return tr[0][1];
@@ -278,23 +331,38 @@
       b = tr[i + 1];
       if (t < b[0]) {
         p = ez(a[2], (t - a[0]) / (b[0] - a[0]));
-        if (k === "pos" && a[3]) return cb(a[1], a[3], b[1], p);
+        if (k === "pos" && a[3]) return cb(a[1], a[3], b[1], L.ev ? byLength(a[1], a[3], b[1], p) : p);
         if (k === "pos" && L.sm && n > 2) return cr((tr[i - 1] || a)[1], a[1], b[1], (tr[i + 2] || b)[1], p);
         return mix(K[k] || (typeof a[1] === "string" ? "c" : typeof a[1] === "object" ? "v" : "n"), a[1], b[1], p);
       }
     }
     return tr[n - 1][1];
   }
+  var RESTV = false;
   function get(L, k, t) {
-    var tr = L.t && L.t[k];
+    var tr = !RESTV && L.t && L.t[k];
     return tr && tr.length ? at(L, k, t) : k === "org" ? L.o || [0, 0] : L.b[k];
   }
-  function comp(L, t) {
+  function comp(L, t, tfOnly) {
     var o = get(L, "org", t) || [0, 0], p = get(L, "pos", t) || [0, 0], r = get(L, "rot", t) || 0, s = get(L, "scl", t) || [1, 1], k = get(L, "skw", t) || [0, 0], tr = L.t && L.t.pos, op = get(L, "op", t);
-    if (L.or && tr && tr.length > 1) {
+    if (L.or && tr && tr.length > 1 && !RESTV) {
       var t0 = tr[0][0], t1 = tr[tr.length - 1][0], e = Math.min(0.02, (t1 - t0) / 4), ta = Math.max(t0, Math.min(t - e, t1 - 2 * e)), A = get(L, "pos", ta), B = get(L, "pos", ta + 2 * e);
       if (B[0] !== A[0] || B[1] !== A[1]) r += Math.atan2(B[1] - A[1], B[0] - A[0]) * 180 / Math.PI;
     }
+    if (tfOnly)
+      return {
+        x: p[0] + o[0],
+        y: p[1] + o[1],
+        r,
+        sx: s[0],
+        sy: s[1],
+        ox: o[0],
+        oy: o[1],
+        kx: k[0],
+        ky: k[1],
+        ba: boneAng(L),
+        cp: counterScale(L, t)
+      };
     return {
       x: p[0] + o[0],
       y: p[1] + o[1],
@@ -314,8 +382,30 @@
       so: get(L, "so", t),
       dof: get(L, "dof", t),
       rad: L.t && L.t.rad && L.t.rad.length ? get(L, "rad", t) : null,
-      trim: trimOf(L, t)
+      gb: geoBox(L, t),
+      da: L.t && L.t.da && L.t.da.length ? get(L, "da", t) : null,
+      trim: trimOf(L, t),
+      ba: boneAng(L),
+      cp: counterScale(L, t)
     };
+  }
+  var IDX = {}, EXT = null;
+  for (var ii = 0; ii < D.L.length; ii++) IDX[D.L[ii].id] = D.L[ii];
+  function layerOf(id) {
+    if (!id) return null;
+    return IDX[id] || EXT && EXT(id) || null;
+  }
+  function counterScale(L, t) {
+    var P2 = L.cs || L.type === "bone" && !L.inh ? layerOf(L.parent) : null;
+    if (!P2 || !L.cs && P2.type !== "bone") return null;
+    var s = get(P2, "scl", t) || [1, 1];
+    if (s[0] === 1 && s[1] === 1) return null;
+    var j = L.j || (L.geo ? [L.geo.x, L.geo.y] : [0, 0]);
+    return [boneAng(P2), s[0] || 1e-6, s[1] || 1e-6, j[0], j[1]];
+  }
+  function boneAng(L) {
+    if (L.ba != null) return L.ba;
+    return L.type === "bone" && L.geo && L.geo.ang ? L.geo.ang : 0;
   }
   function trimOf(L, t) {
     var T2 = L.t || {}, on2 = ["ts", "te", "to"].some(function(k) {
@@ -332,6 +422,233 @@
     return [f(len) + " " + f(100 - len), String(f(-raw))];
   }
   function shapeOf(L, t) {
+    var d = shapeBase(L, t);
+    if (d && L.t && L.t.sz && L.t.sz.length) d = sizePath(L, d, t);
+    return d && L.pins && L.pins.length && !NOPIN ? pinWarp(L, d, t) : d;
+  }
+  function fitBox(b, s, o) {
+    var kx = b[2] ? s[0] / b[2] : 1, ky = b[3] ? s[1] / b[3] : 1;
+    return [o[0] - (o[0] - b[0]) * kx, o[1] - (o[1] - b[1]) * ky, Math.max(0, s[0]), Math.max(0, s[1])];
+  }
+  function anchorOf(L, b, t) {
+    return L.sa ? [b[0] + L.sa[0] * b[2], b[1] + L.sa[1] * b[3]] : get(L, "org", t) || [0, 0];
+  }
+  function geoBox(L, t) {
+    var G2 = L.geo;
+    if (!G2 || !L.t || !L.t.sz || !L.t.sz.length || L.type !== "rect" && L.type !== "image" && L.type !== "ellipse")
+      return null;
+    var b = L.type === "ellipse" ? [(G2.cx || 0) - (G2.rx || 0), (G2.cy || 0) - (G2.ry || 0), 2 * (G2.rx || 0), 2 * (G2.ry || 0)] : [G2.x || 0, G2.y || 0, G2.w || 0, G2.h || 0];
+    return fitBox(b, get(L, "sz", t), anchorOf(L, b, t));
+  }
+  function sizePath(L, d, t) {
+    var b = pathBox(L.b && L.b.d || d), s = get(L, "sz", t), o = anchorOf(L, b, t), kx = b[2] > 1e-9 ? s[0] / b[2] : 1, ky = b[3] > 1e-9 ? s[1] / b[3] : 1;
+    return d.map(function(sp) {
+      return {
+        c: sp.c,
+        n: sp.n.map(function(q) {
+          return q.map(function(v, i) {
+            return i % 2 ? o[1] + (v - o[1]) * ky : o[0] + (v - o[0]) * kx;
+          });
+        })
+      };
+    });
+  }
+  function pathBox(sp) {
+    var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    function pt(x, y) {
+      if (x < x0) x0 = x;
+      if (x > x1) x1 = x;
+      if (y < y0) y0 = y;
+      if (y > y1) y1 = y;
+    }
+    function ext(p0, p1, p2, p3) {
+      var a = -p0 + 3 * p1 - 3 * p2 + p3, b = 2 * (p0 - 2 * p1 + p2), c = p1 - p0, out = [];
+      if (Math.abs(a) < 1e-12) {
+        if (Math.abs(b) > 1e-12) out.push(-c / b);
+      } else {
+        var D2 = b * b - 4 * a * c;
+        if (D2 >= 0) {
+          var r = Math.sqrt(D2);
+          out.push((-b + r) / (2 * a), (-b - r) / (2 * a));
+        }
+      }
+      return out.filter(function(v) {
+        return v > 0 && v < 1;
+      });
+    }
+    function seg(A, B) {
+      var X = [A[0], A[4], B[2], B[0]], Y = [A[1], A[5], B[3], B[1]];
+      pt(B[0], B[1]);
+      ext(X[0], X[1], X[2], X[3]).concat(ext(Y[0], Y[1], Y[2], Y[3])).forEach(function(t) {
+        var u = 1 - t, w0 = u * u * u, w1 = 3 * u * u * t, w2 = 3 * u * t * t, w3 = t * t * t;
+        pt(w0 * X[0] + w1 * X[1] + w2 * X[2] + w3 * X[3], w0 * Y[0] + w1 * Y[1] + w2 * Y[2] + w3 * Y[3]);
+      });
+    }
+    (sp || []).forEach(function(s) {
+      var n = s.n;
+      if (!n.length) return;
+      pt(n[0][0], n[0][1]);
+      for (var i = 1; i < n.length; i++) seg(n[i - 1], n[i]);
+      if (s.c && n.length > 1) seg(n[n.length - 1], n[0]);
+    });
+    return isFinite(x0) ? [x0, y0, x1 - x0, y1 - y0] : [0, 0, 0, 0];
+  }
+  var NOPIN = false;
+  function mmul(A, B) {
+    return [
+      A[0] * B[0] + A[2] * B[1],
+      A[1] * B[0] + A[3] * B[1],
+      A[0] * B[2] + A[2] * B[3],
+      A[1] * B[2] + A[3] * B[3],
+      A[0] * B[4] + A[2] * B[5] + A[4],
+      A[1] * B[4] + A[3] * B[5] + A[5]
+    ];
+  }
+  function minv(M) {
+    var d = M[0] * M[3] - M[1] * M[2] || 1e-12;
+    return [M[3] / d, -M[1] / d, -M[2] / d, M[0] / d, (M[2] * M[5] - M[3] * M[4]) / d, (M[1] * M[4] - M[0] * M[5]) / d];
+  }
+  function mT(x, y) {
+    return [1, 0, 0, 1, x, y];
+  }
+  function mR(deg) {
+    var a = deg * Math.PI / 180;
+    return [Math.cos(a), Math.sin(a), -Math.sin(a), Math.cos(a), 0, 0];
+  }
+  function mS(x, y) {
+    return [x, 0, 0, y, 0, 0];
+  }
+  function matOf(c) {
+    var M = [1, 0, 0, 1, 0, 0], q = c.cp;
+    if (q) {
+      M = mmul(M, mT(q[3], q[4]));
+      M = mmul(M, mR(q[0]));
+      M = mmul(M, mS(1 / q[1], 1 / q[2]));
+      M = mmul(M, mR(-q[0]));
+      M = mmul(M, mT(-q[3], -q[4]));
+    }
+    M = mmul(M, mT(c.x, c.y));
+    M = mmul(M, mR(c.r));
+    if (c.kx) M = mmul(M, [1, 0, Math.tan(c.kx * Math.PI / 180), 1, 0, 0]);
+    if (c.ky) M = mmul(M, [1, Math.tan(c.ky * Math.PI / 180), 0, 1, 0, 0]);
+    var bf = c.ba && c.sx !== c.sy;
+    if (bf) M = mmul(M, mR(c.ba));
+    M = mmul(M, mS(c.sx, c.sy));
+    if (bf) M = mmul(M, mR(-c.ba));
+    return mmul(M, mT(-c.ox, -c.oy));
+  }
+  var XFC = {};
+  function xfM(s) {
+    if (XFC[s]) return XFC[s];
+    var M = [1, 0, 0, 1, 0, 0], re = /(matrix|translate|scale|rotate|skewX|skewY)\s*\(([^)]*)\)/g, m;
+    while (m = re.exec(s)) {
+      var v = m[2].split(/[\s,]+/).filter(Boolean).map(Number), k = m[1];
+      if (k === "matrix" && v.length === 6) M = mmul(M, v);
+      else if (k === "translate") M = mmul(M, mT(v[0] || 0, v[1] || 0));
+      else if (k === "scale") M = mmul(M, mS(v[0], v.length > 1 ? v[1] : v[0]));
+      else if (k === "rotate")
+        M = v.length > 2 ? mmul(mmul(mmul(M, mT(v[1], v[2])), mR(v[0])), mT(-v[1], -v[2])) : mmul(M, mR(v[0] || 0));
+      else if (k === "skewX") M = mmul(M, [1, 0, Math.tan((v[0] || 0) * Math.PI / 180), 1, 0, 0]);
+      else if (k === "skewY") M = mmul(M, [1, Math.tan((v[0] || 0) * Math.PI / 180), 0, 1, 0, 0]);
+    }
+    return XFC[s] = M;
+  }
+  function worldOf(L, t, upTo) {
+    var M = matOf(comp(L, t, true)), p = layerOf(L.parent), g = 0;
+    while (p && p !== upTo && g++ < 100) {
+      if (p.xf) M = mmul(xfM(p.xf), M);
+      M = mmul(matOf(comp(p, t, true)), M);
+      p = layerOf(p.parent);
+    }
+    return M;
+  }
+  function pinSpace(L, t, upTo) {
+    var W = worldOf(L, t, upTo), path = L.type ? L.type === "path" : !L.mesh;
+    return path && L.xf ? mmul(W, xfM(L.xf)) : W;
+  }
+  function boundAt(L, B, t, rest) {
+    var up = [], q = layerOf(B.parent), C = null, g = 0;
+    while (q && g++ < 100) {
+      up.push(q);
+      q = layerOf(q.parent);
+    }
+    for (q = layerOf(L.parent), g = 0; q && g++ < 100; q = layerOf(q.parent))
+      if (up.indexOf(q) >= 0) {
+        C = q;
+        break;
+      }
+    var was = RESTV;
+    RESTV = rest;
+    var S = pinSpace(L, t, C), M = Math.abs(S[0] * S[3] - S[1] * S[2]) < 1e-12 ? [1, 0, 0, 1, 0, 0] : mmul(minv(S), worldOf(B, t, C));
+    RESTV = was;
+    var G2 = B.geo || {}, a = (G2.ang || 0) * Math.PI / 180, x = G2.x || 0, y = G2.y || 0, dx = M[0] * Math.cos(a) + M[2] * Math.sin(a), dy = M[1] * Math.cos(a) + M[3] * Math.sin(a);
+    return [M[0] * x + M[2] * y + M[4], M[1] * x + M[3] * y + M[5], Math.atan2(dy, dx) * 180 / Math.PI];
+  }
+  function pinAt(L, p, t) {
+    var B = p.bone ? layerOf(p.bone) : null;
+    if (B) {
+      var r = boundAt(L, B, t, true), c = boundAt(L, B, t, false);
+      return [r[0], r[1], c[0], c[1], c[2] - r[2]];
+    }
+    var P2 = get(L, "pin" + p.n, t) || [p.x, p.y];
+    return [p.x, p.y, P2[0], P2[1], get(L, "pinr" + p.n, t) || 0];
+  }
+  function pinMoves(L, t) {
+    var ps = L.pins || [], rc = Math.max(10, Math.min(1e3, L.reach || 100)), pw = Math.max(0.5, Math.min(8, 200 / rc));
+    return [
+      ps.map(function(p) {
+        var q = pinAt(L, p, t), a = q[4] * Math.PI / 180;
+        return [q[0], q[1], q[2], q[3], Math.cos(a), Math.sin(a)];
+      }),
+      pw
+    ];
+  }
+  function warpXY(mv, pw, wx, wy, x, y, out, o) {
+    var W = 0, X = 0, Y = 0, i;
+    for (i = 0; i < mv.length; i++) {
+      var m = mv[i], ex = wx - m[0], ey = wy - m[1], w = 1 / (Math.pow(ex * ex + ey * ey, pw / 2) + 1e-6), dx = x - m[0], dy = y - m[1];
+      W += w;
+      X += w * (m[2] + dx * m[4] - dy * m[5]);
+      Y += w * (m[3] + dx * m[5] + dy * m[4]);
+    }
+    out[o] = W ? X / W : x;
+    out[o + 1] = W ? Y / W : y;
+  }
+  function pinWarp(L, d, t) {
+    var q = pinMoves(L, t), mv = q[0], pw = q[1];
+    return d.map(function(sp) {
+      return {
+        c: sp.c,
+        n: sp.n.map(function(p) {
+          var out = [0, 0, 0, 0, 0, 0];
+          for (var j = 0; j < 6; j += 2) warpXY(mv, pw, p[0], p[1], p[j], p[j + 1], out, j);
+          return out;
+        })
+      };
+    });
+  }
+  function meshMats(L, t) {
+    var M = L.mesh, out = [];
+    if (!M) return out;
+    var on2 = !NOPIN && L.pins && L.pins.length, q = on2 ? pinMoves(L, t) : null, W = [], i;
+    for (i = 0; i < M.v.length; i++)
+      if (q) warpXY(q[0], q[1], M.v[i][0], M.v[i][1], M.v[i][0], M.v[i][1], W, i * 2);
+      else {
+        W[i * 2] = M.v[i][0];
+        W[i * 2 + 1] = M.v[i][1];
+      }
+    for (i = 0; i < M.t.length; i++) {
+      var T2 = M.t[i], a = M.v[T2[0]], b = M.v[T2[1]], c = M.v[T2[2]], ux = b[0] - a[0], uy = b[1] - a[1], vx = c[0] - a[0], vy = c[1] - a[1], det = ux * vy - uy * vx;
+      if (!q || !det) {
+        out.push([1, 0, 0, 1, 0, 0]);
+        continue;
+      }
+      var A0 = W[T2[0] * 2], A1 = W[T2[0] * 2 + 1], px = W[T2[1] * 2] - A0, py = W[T2[1] * 2 + 1] - A1, rx = W[T2[2] * 2] - A0, ry = W[T2[2] * 2 + 1] - A1, ia = vy / det, ib = -vx / det, ic = -uy / det, id = ux / det, ma = px * ia + rx * ic, mc = px * ib + rx * id, mb = py * ia + ry * ic, md = py * ib + ry * id;
+      out.push([ma, mb, mc, md, A0 - ma * a[0] - mc * a[1], A1 - mb * a[0] - md * a[1]]);
+    }
+    return out;
+  }
+  function shapeBase(L, t) {
     var d = get(L, "d", t), T2 = L.t || {};
     if (L.shape && T2.rad && T2.rad.length) return poly(L.shape, get(L, "rad", t), true);
     if (d && d[0] && d[0].n.length === 2 && (T2.p0 && T2.p0.length || T2.p1 && T2.p1.length)) {
@@ -406,8 +723,17 @@
   function f(n) {
     return Math.round(n * 1e3) / 1e3;
   }
+  function f6(n) {
+    return Math.round(n * 1e6) / 1e6;
+  }
   function tf(c) {
-    return "translate(" + f(c.x) + "," + f(c.y) + ") rotate(" + f(c.r) + (c.kx ? ") skewX(" + f(c.kx) : "") + (c.ky ? ") skewY(" + f(c.ky) : "") + ") scale(" + f(c.sx) + "," + f(c.sy) + ") translate(" + f(-c.ox) + "," + f(-c.oy) + ")";
+    var q = c.cp;
+    return (q ? "translate(" + f(q[3]) + "," + f(q[4]) + ") rotate(" + f(q[0]) + ") scale(" + f(1 / q[1]) + "," + f(1 / q[2]) + ") rotate(" + f(-q[0]) + ") translate(" + f(-q[3]) + "," + f(-q[4]) + ") " : "") + "translate(" + f(c.x) + "," + f(c.y) + ") rotate(" + f(c.r) + (c.kx ? ") skewX(" + f(c.kx) : "") + (c.ky ? ") skewY(" + f(c.ky) : "") + (c.ba && c.sx !== c.sy ? ") rotate(" + f(c.ba) : "") + ") scale(" + f(c.sx) + "," + f(c.sy) + (c.ba && c.sx !== c.sy ? ") rotate(" + f(-c.ba) : "") + ") translate(" + f(-c.ox) + "," + f(-c.oy) + ")";
+  }
+  function dashStr(a) {
+    return a && a.length ? a.map(function(v) {
+      return String(f(Math.max(0, v)));
+    }).join(" ") : "none";
   }
   function dstr(sp) {
     var o = "";
@@ -474,13 +800,31 @@
         s.setAttribute("pathLength", "100");
         s.setAttribute("stroke-dasharray", td[0]);
         s.setAttribute("stroke-dashoffset", td[1]);
-      } else if (c.dof != null) s.setAttribute("stroke-dashoffset", String(f(c.dof)));
+      } else {
+        if (c.dof != null) s.setAttribute("stroke-dashoffset", String(f(c.dof)));
+        if (c.da) s.setAttribute("stroke-dasharray", dashStr(c.da));
+      }
       if (c.fo != null) s.setAttribute("fill-opacity", String(f(c.fo)));
       if (c.so != null) s.setAttribute("stroke-opacity", String(f(c.so)));
       if (c.d) s.setAttribute("d", dstr(c.d));
+      if (c.gb) {
+        var gb = c.gb, ga = L.type === "ellipse" ? { cx: gb[0] + gb[2] / 2, cy: gb[1] + gb[3] / 2, rx: gb[2] / 2, ry: gb[3] / 2 } : { x: gb[0], y: gb[1], width: gb[2], height: gb[3] };
+        for (var gk in ga) s.setAttribute(gk, String(f(ga[gk])));
+      }
       if (c.rad != null && !L.shape) {
         s.setAttribute("rx", String(f(c.rad)));
         s.setAttribute("ry", String(f(c.rad)));
+      }
+      if (L.dw) {
+        var wb = layerOf(L.dw), we = el(D.p + L.id + "-w");
+        if (wb && we) we.setAttribute("transform", "matrix(" + worldOf(wb, t, layerOf(L.du)).map(f6).join(",") + ")");
+      }
+      if (L.mesh) {
+        var ms = meshMats(L, t);
+        for (var mk = 0; mk < ms.length; mk++) {
+          var me = el(D.p + L.id + "-m" + mk);
+          if (me) me.setAttribute("transform", "matrix(" + ms[mk].map(f6).join(",") + ")");
+        }
       }
       if (L.fa)
         for (var fk in L.fa) {
@@ -714,6 +1058,17 @@
     },
     apply,
     comp,
+    lookup: function(fn) {
+      EXT = fn;
+    },
+    meshMats,
+    pinAt,
+    worldOf,
+    restPins: function(on2) {
+      var was = NOPIN;
+      NOPIN = !!on2;
+      return was;
+    },
     get,
     gAttrs,
     linP,
@@ -721,6 +1076,9 @@
     isG,
     pc,
     dstr,
+    dashStr,
+    pathBox,
+    xfM,
     poly,
     corners,
     maxRad,
@@ -784,5 +1142,5 @@
   });
   return P;
 };
-var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"hero-","dur":3,"it":0,"dir":"normal","speed":1,"fps":0,"fill":1,"L":[{"id":"l1","o":[320,200],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"fill":[[0,{"g":"lin","a":180,"s":[[0,"#0B1026"],[0.62,"#14213D"],[1,"#2A2F5B"]]},"inOutSine"],[2.2,{"g":"lin","a":180,"s":[[0,"#2E3B73"],[0.62,"#B9617F"],[1,"#F2A65E"]]},"ease"]]}},{"id":"l2","o":[322.11,36.64],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"op":[[1,1,"inOutSine"],[2.2,0,"ease"]]}},{"id":"l3","o":[46,45.14],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rad":[[0,0,"inOutSine"],[1.2,2.2,"ease"]]},"shape":{"kind":"star","cx":46,"cy":46,"r":9,"rot":0,"n":5,"ratio":0.45}},{"id":"l4","o":[300,26],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"op":[[0,1,"hold"],[0.3,0.25,"hold"],[0.6,1,"hold"],[0.9,0.25,"hold"],[1.2,1,"hold"]]}},{"id":"l5","o":[604,36],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rot":[[0,0,"linear"],[3,120,"linear"]],"scl":[[0,[0.4,0.4],"outElastic"],[1,[1,1],"ease"]]}},{"id":"l6","o":[170,215],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"pos":[[0,[0,150],"outBack"],[1.2,[0,0],"ease"]]}},{"id":"l7","o":[170,215],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"fx.f1.sd":[[0,4,"inOutSine"],[1.6,14,"ease"]],"op":[[0,0,"outQuad"],[1.2,1,"ease"]]},"fa":{"fx.f1.sd":["-f1","stdDeviation"]}},{"id":"l8","o":[170,215],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":0.9,"fill":null,"stk":null,"sw":null},"t":{"rot":[[0,0,"linear"],[3,60,"linear"]],"scl":[[0,[0.35,0.35],"outBack"],[1.2,[1,1],"ease"]],"op":[[0,0,"outQuad"],[0.7,0.9,"ease"]]}},{"id":"l9","o":[170,215],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"fill":[[0,"#FF5F6D","inOutSine"],[1.6,"#FFC24B","ease"]]}},{"id":"l10","o":[470,175],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"d":[[0,[{"c":true,"n":[[470,123,441.3,123,498.7,123],[522,175,522,146.3,522,203.7],[470,227,498.7,227,441.3,227],[418,175,418,203.7,418,146.3]]}],"inOutBack"],[1.1,[{"c":true,"n":[[470,103,462,103,478,103],[510,175,510,131,510,219],[470,247,478,247,462,247],[430,175,430,219,430,131]]}],[0.7,0,0.2,1.4]],[2.1,[{"c":true,"n":[[470,131,422,131,518,131],[536,175,536,165,536,185],[470,219,518,219,422,219],[404,175,404,185,404,165]]}],"inOutCubic"],[3,[{"c":true,"n":[[470,123,441.3,123,498.7,123],[522,175,522,146.3,522,203.7],[470,227,498.7,227,441.3,227],[418,175,418,203.7,418,146.3]]}],"ease"]],"fill":[[0,"#6C8CFF","inOut"],[1.5,"#C77DFF","inOut"],[3,"#6C8CFF","ease"]],"rot":[[0,0,"inOutQuart"],[3,180,"ease"]]}},{"id":"l11","o":[325,92.35],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":0.35,"fill":null,"stk":null,"sw":null},"t":{"dof":[[0,0,"linear"],[3,-48,"linear"]]}},{"id":"l12","o":[0,0],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"pos":[[0,[50,130],"linear"],[1,[230,52],"linear"],[2,[420,58],"linear"],[3,[600,140],"linear"]],"op":[[0,0,"linear"],[0.4,1,"linear"],[2.6,1,"linear"],[3,0,"ease"]]},"sm":1,"or":1},{"id":"l15","o":[120,262],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":0.22,"fill":null,"stk":null,"sw":null},"t":{"pos":[[0,[-60,0],"inOutSine"],[3,[420,0],"ease"]]},"fa":{"fx.f1.sd":["-f1","stdDeviation"]}},{"id":"l18","o":[592,300],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"scl":[[0.6,[0,0],"outBack"],[1.4,[1,1],"ease"]]}},{"id":"l19","o":[592,300],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rot":[[1.2,0,"inOutSine"],[1.9,-5,"inOutSine"],[2.6,3,"inOutSine"],[3,0,"ease"]]}},{"id":"l20","o":[592,268],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rot":[[1.3,0,"inOutSine"],[2,-9,"inOutSine"],[2.7,5.4,"inOutSine"],[3,0,"ease"]]}},{"id":"l21","o":[592,240],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rot":[[1.4,0,"inOutSine"],[2.1,-14,"inOutSine"],[2.8,8.4,"inOutSine"],[3,0,"ease"]]}},{"id":"l29","o":[54,300],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null,"d":[{"c":false,"n":[[54,300,54,300,54,300],[54,214,54,214,54,214]]}]},"t":{"p1":[[0.2,[54,300],"outCubic"],[1,[54,214],"ease"]]}},{"id":"l30","o":[56,226],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"op":[[0.9,0,"outQuad"],[1.2,1,"ease"]],"skw":[[1.2,[0,0],"inOutSine"],[1.8,[0,14],"inOutSine"],[2.4,[0,-10],"inOutSine"],[3,[0,0],"ease"]],"rad":[[1.2,0,"inOutSine"],[2,3,"ease"]]},"shape":{"kind":"polygon","cx":64,"cy":226,"r":14,"rot":90,"n":3}},{"id":"l33","o":[320,296],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"te":[[0.2,0,"inOutCubic"],[1.8,100,"ease"]]}},{"id":"l37","o":[200,385],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"scl":[[1.8,[0,1],"outCubic"],[2.6,[1,1],"ease"]]}},{"id":"l38","o":[320.65,349.2],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"op":[[1,0,"outQuad"],[1.8,1,"ease"]],"pos":[[1,[0,26],"outBack"],[1.8,[0,0],"ease"]],"fx.f1.dy":[[1,0,"outQuad"],[1.8,4,"ease"]]},"fa":{"fx.f1.dx":["-f1","dx"],"fx.f1.dy":["-f1","dy"],"fx.f1.sd":["-f1","stdDeviation"],"fx.f1.col":["-f1","flood-color"],"fx.f1.op":["-f1","flood-opacity"]}}]},s);s.player=s.svgatorPlayer=P;P.stop();P._cleanup=[];function L(t,e,f){t.addEventListener(e,f);P._cleanup.push(function(){t.removeEventListener(e,f);});}function fwd(){if(P.direction!==1||P.isRollingBack)P.set("direction",1);P.play();}function out(){var a="pause";if(a==="pause")P.pause();else if(a==="reverse")P.rollback();else if(a==="start")P.stop();else if(a==="restart")P.restart();}P.play();})();
+var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"hero-","dur":3,"it":0,"dir":"normal","speed":1,"fps":0,"fill":1,"L":[{"id":"l1","o":[320,200],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"fill":[[0,{"g":"lin","a":180,"s":[[0,"#0B1026"],[0.62,"#14213D"],[1,"#2A2F5B"]]},"inOutSine"],[2.2,{"g":"lin","a":180,"s":[[0,"#2E3B73"],[0.62,"#B9617F"],[1,"#F2A65E"]]},"ease"]]}},{"id":"l2","o":[322.11,36.64],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"op":[[1,1,"inOutSine"],[2.2,0,"ease"]]}},{"id":"l3","o":[46,45.14],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rad":[[0,0,"inOutSine"],[1.2,2.2,"ease"]]},"shape":{"kind":"star","cx":46,"cy":46,"r":9,"rot":0,"n":5,"ratio":0.45}},{"id":"l4","o":[300,26],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"op":[[0,1,"hold"],[0.3,0.25,"hold"],[0.6,1,"hold"],[0.9,0.25,"hold"],[1.2,1,"hold"]]}},{"id":"l5","o":[604,36],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rot":[[0,0,"linear"],[3,120,"linear"]],"scl":[[0,[0.4,0.4],"outElastic"],[1,[1,1],"ease"]]}},{"id":"l6","o":[170,215],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"pos":[[0,[0,150],"outBack"],[1.2,[0,0],"ease"]]}},{"id":"l7","o":[170,215],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"fx.f1.sd":[[0,4,"inOutSine"],[1.6,14,"ease"]],"op":[[0,0,"outQuad"],[1.2,1,"ease"]]},"fa":{"fx.f1.sd":["-f1","stdDeviation"]}},{"id":"l8","o":[170,215],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":0.9,"fill":null,"stk":null,"sw":null},"t":{"rot":[[0,0,"linear"],[3,60,"linear"]],"scl":[[0,[0.35,0.35],"outBack"],[1.2,[1,1],"ease"]],"op":[[0,0,"outQuad"],[0.7,0.9,"ease"]]}},{"id":"l9","o":[170,215],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"fill":[[0,"#FF5F6D","inOutSine"],[1.6,"#FFC24B","ease"]]}},{"id":"l10","o":[470,175],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"d":[[0,[{"c":true,"n":[[470,123,441.3,123,498.7,123],[522,175,522,146.3,522,203.7],[470,227,498.7,227,441.3,227],[418,175,418,203.7,418,146.3]]}],"inOutBack"],[1.1,[{"c":true,"n":[[470,103,462,103,478,103],[510,175,510,131,510,219],[470,247,478,247,462,247],[430,175,430,219,430,131]]}],[0.7,0,0.2,1.4]],[2.1,[{"c":true,"n":[[470,131,422,131,518,131],[536,175,536,165,536,185],[470,219,518,219,422,219],[404,175,404,185,404,165]]}],"inOutCubic"],[3,[{"c":true,"n":[[470,123,441.3,123,498.7,123],[522,175,522,146.3,522,203.7],[470,227,498.7,227,441.3,227],[418,175,418,203.7,418,146.3]]}],"ease"]],"fill":[[0,"#6C8CFF","inOut"],[1.5,"#C77DFF","inOut"],[3,"#6C8CFF","ease"]],"rot":[[0,0,"inOutQuart"],[3,180,"ease"]]}},{"id":"l11","o":[325,92.35],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":0.35,"fill":null,"stk":null,"sw":null},"t":{"dof":[[0,0,"linear"],[3,-48,"linear"]],"da":[[0,[1,11],"inOutSine"],[1.5,[5,7],"inOutSine"],[3,[1,11],"ease"]]}},{"id":"l12","o":[0,0],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"pos":[[0,[50,130],"linear"],[1,[230,52],"linear"],[2,[420,58],"linear"],[3,[600,140],"linear"]],"op":[[0,0,"linear"],[0.4,1,"linear"],[2.6,1,"linear"],[3,0,"ease"]]},"sm":1,"or":1},{"id":"l15","o":[120,262],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":0.22,"fill":null,"stk":null,"sw":null},"t":{"sz":[[0,[240,28],"inOutSine"],[3,[330,40],"ease"]],"pos":[[0,[-60,0],"inOutSine",[160,-24,-160,-24]],[3,[420,0],"ease"]]},"fa":{"fx.f1.sd":["-f1","stdDeviation"]},"type":"ellipse","geo":{"cx":120,"cy":262,"rx":120,"ry":14},"ev":1},{"id":"l18","o":[592,300],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"scl":[[0.6,[0,0],"outBack"],[1.4,[1,1],"ease"]]}},{"id":"l19","o":[592,300],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rot":[[1.2,0,"inOutSine"],[1.9,-5,"inOutSine"],[2.6,3,"inOutSine"],[3,0,"ease"]]},"parent":"l18","geo":{"x":592,"y":300,"ang":-90}},{"id":"l20","o":[592,268],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rot":[[1.3,0,"inOutSine"],[2,-9,"inOutSine"],[2.7,5.4,"inOutSine"],[3,0,"ease"]]},"parent":"l19","geo":{"x":592,"y":268,"ang":-90}},{"id":"l25","o":[579,262],"b":{"pos":[0,0],"rot":-30,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null,"d":[{"c":true,"n":[[579,257,571.82,257,586.18,257],[592,262,592,259.24,592,264.76],[579,267,586.18,267,571.82,267],[566,262,566,264.76,566,259.24]]}]},"t":{"pin2":[[1.3,[568,262],"inOutSine"],[1.8,[569,255],"inOutSine"],[2.3,[568,268],"inOutSine"],[2.8,[568,262],"ease"]]},"pins":[{"n":1,"x":590,"y":262},{"n":2,"x":568,"y":262}],"parent":"l20","dw":"l20","du":"l18"},{"id":"l21","o":[592,240],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rot":[[1.4,0,"inOutSine"],[2.1,-14,"inOutSine"],[2.8,8.4,"inOutSine"],[3,0,"ease"]],"scl":[[1.4,[1,1],"inOutSine"],[1.75,[1.18,0.85],"inOutSine"],[2.1,[0.9,1.11],"inOutSine"],[2.5,[1,1],"ease"]]},"ba":-90,"parent":"l20","geo":{"x":592,"y":240,"ang":-90}},{"id":"l29","o":[66,256.94],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"pin2":[[1.2,[54,216],"inOutSine"],[1.8,[58.5,215],"inOutSine"],[2.4,[50.5,216.5],"inOutSine"],[3,[54,216],"ease"]]},"pins":[{"n":1,"x":54,"y":298},{"n":2,"x":54,"y":216}],"mesh":{"v":[[63.72,197.21],[68.02,213.23],[52,208.94],[79.74,201.5],[84.04,217.52],[35.98,204.65],[40.27,220.67],[56.29,224.96],[72.31,229.25],[88.33,233.54],[44.56,236.69],[60.58,240.98],[76.6,245.27],[92.62,249.57],[48.85,252.71],[64.88,257],[53.15,268.73],[37.13,264.43],[69.17,273.02],[41.42,280.46],[57.44,284.75],[73.46,289.04],[45.71,296.48],[61.73,300.77],[50.01,312.5]],"t":[[0,1,2],[0,3,1],[3,4,1],[5,2,6],[2,1,7],[2,7,6],[1,4,8],[1,8,7],[4,9,8],[6,7,10],[7,11,10],[7,8,11],[8,12,11],[8,9,12],[9,13,12],[10,11,14],[11,12,15],[11,15,14],[14,16,17],[14,15,16],[15,18,16],[17,16,19],[16,18,20],[16,20,19],[18,21,20],[19,20,22],[20,23,22],[20,21,23],[22,23,24]]}},{"id":"l30","o":[54,300],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null,"d":[{"c":false,"n":[[54,300,54,300,54,300],[54,214,54,214,54,214]]}]},"t":{"p1":[[0.2,[54,300],"outCubic"],[1,[54,214],"ease"]]}},{"id":"l31","o":[56,226],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"op":[[0.9,0,"outQuad"],[1.2,1,"ease"]],"skw":[[1.2,[0,0],"inOutSine"],[1.8,[0,14],"inOutSine"],[2.4,[0,-10],"inOutSine"],[3,[0,0],"ease"]],"rad":[[1.2,0,"inOutSine"],[2,3,"ease"]]},"shape":{"kind":"polygon","cx":64,"cy":226,"r":14,"rot":90,"n":3}},{"id":"l34","o":[320,296],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"te":[[0.2,0,"inOutCubic"],[1.8,100,"ease"]]}},{"id":"l38","o":[200,385],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"scl":[[1.8,[0,1],"outCubic"],[2.6,[1,1],"ease"]]}},{"id":"l39","o":[320.65,349.2],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"op":[[1,0,"outQuad"],[1.8,1,"ease"]],"pos":[[1,[0,26],"outBack"],[1.8,[0,0],"ease"]],"fx.f1.dy":[[1,0,"outQuad"],[1.8,4,"ease"]]},"fa":{"fx.f1.dx":["-f1","dx"],"fx.f1.dy":["-f1","dy"],"fx.f1.sd":["-f1","stdDeviation"],"fx.f1.col":["-f1","flood-color"],"fx.f1.op":["-f1","flood-opacity"]}},{"id":"l28","o":[597.75,260],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null,"d":[{"c":true,"n":[[596.5,298,596.5,298,596.5,298],[596.5,290.4,596.5,290.4,596.5,290.4],[596.5,282.8,596.5,282.8,596.5,282.8],[596.5,275.2,596.5,275.2,596.5,275.2],[596.5,267.6,596.5,267.6,596.5,267.6],[596.5,260,596.5,260,596.5,260],[596.5,252.4,596.5,252.4,596.5,252.4],[596.5,244.8,596.5,244.8,596.5,244.8],[596.5,237.2,596.5,237.2,596.5,237.2],[596.5,229.60000000000002,596.5,229.60000000000002,596.5,229.60000000000002],[596.5,222,596.5,222,596.5,222],[599,222,599,222,599,222],[599,229.60000000000002,599,229.60000000000002,599,229.60000000000002],[599,237.2,599,237.2,599,237.2],[599,244.8,599,244.8,599,244.8],[599,252.4,599,252.4,599,252.4],[599,260,599,260,599,260],[599,267.6,599,267.6,599,267.6],[599,275.2,599,275.2,599,275.2],[599,282.8,599,282.8,599,282.8],[599,290.4,599,290.4,599,290.4],[599,298,599,298,599,298]]}]},"t":{},"pins":[{"n":1,"x":592,"y":300,"bone":"l19"},{"n":2,"x":592,"y":268,"bone":"l20"},{"n":3,"x":592,"y":240,"bone":"l21"}],"parent":"l18"},{"id":"l22","o":[592,284],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{},"parent":"l19","dw":"l19","du":"l18"},{"id":"l23","o":[592,254],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{},"parent":"l20","dw":"l20","du":"l18"},{"id":"l24","o":[592,228],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{},"parent":"l21","dw":"l21","du":"l18"},{"id":"l26","o":[605,236],"b":{"pos":[0,0],"rot":30,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{},"parent":"l21","dw":"l21","du":"l18"},{"id":"l27","o":[592,210.92],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{},"parent":"l21","dw":"l21","du":"l18"}]},s);s.player=s.svgatorPlayer=P;P.stop();P._cleanup=[];function L(t,e,f){t.addEventListener(e,f);P._cleanup.push(function(){t.removeEventListener(e,f);});}function fwd(){if(P.direction!==1||P.isRollingBack)P.set("direction",1);P.play();}function out(){var a="pause";if(a==="pause")P.pause();else if(a==="reverse")P.rollback();else if(a==="start")P.stop();else if(a==="restart")P.restart();}P.play();})();
 ]]></script></svg>

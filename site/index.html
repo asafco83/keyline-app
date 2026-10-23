@@ -879,6 +879,7 @@
       grid-template-columns: 104px minmax(0, 1fr);
     }
     .tl-names .pr,
+    .tl-head .w,
     .tl-hint,
     .app-top .pill,
     .app-top .logo {
@@ -1811,6 +1812,9 @@
   }
 
   /* ---------- free / facts ---------- */
+  .tool-facts {
+    margin-top: 40px;
+  }
   .facts {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1944,12 +1948,6 @@
   .foot .logo {
     height: 16px;
   }
-  .foot nav {
-    display: flex;
-    gap: 22px;
-    margin-left: auto;
-    flex-wrap: wrap;
-  }
 
   @media (prefers-reduced-motion: reduce) {
     html {
@@ -1986,6 +1984,7 @@
       <a href="#workflow">How it works</a>
       <a href="#images">Images</a>
       <a href="#export">Export</a>
+      <a href="#import">Import</a>
     </nav>
     <div class="top-r">
       <button class="ib" id="themeBtn" type="button" aria-label="Switch theme" title="Switch theme">
@@ -2030,8 +2029,8 @@
         <div class="hero-copy">
           <p class="lede">
             <b>SVGcinema</b> is a free animation editor that runs in your browser. Draw vector shapes or bring in SVGs
-            and images, animate them on a keyframe timeline, and export a single self-contained <b>.svg</b> that plays
-            anywhere.
+            (animated ones too) and images, animate them on a keyframe timeline, and export a single self-contained
+            <b>.svg</b> that plays anywhere.
           </p>
           <div class="cta-row">
             <a class="btn btn-pri" href="editor/" target="_blank" rel="noopener" data-editor>
@@ -2107,7 +2106,7 @@
             </div>
             <div class="canvas mat">
               <p class="board-label"><b>Sunrise badge</b>640 × 400</p>
-              <div class="board" id="board"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="hero-svg" viewBox="0 0 640 400" width="100%" shape-rendering="geometricPrecision" text-rendering="geometricPrecision"><title>Sunrise badge</title><rect x="0" y="0" width="640" height="400" fill="#14213D"/><g id="hero-l1" transform="translate(320,200) rotate(0) scale(1,1) translate(-320,-200)" opacity="1"><linearGradient id="hero-l1-gf" x1="0.5" y1="0" x2="0.5" y2="1"><stop offset="0" stop-color="rgb(11,16,38)" stop-opacity="1"/><stop offset="0.62" stop-color="rgb(20,33,61)" stop-opacity="1"/><stop offset="1" stop-color="rgb(42,47,91)" stop-opacity="1"/></linearGradient><rect id="hero-l1-s" fill="url(#hero-l1-gf)" stroke="none" x="0" y="0" width="640" height="400"/></g><g id="hero-l2" transform="translate(322.11,36.64) rotate(0) scale(1,1) translate(-322.11,-36.64)" opacity="1"><g id="hero-l2-s"><g id="hero-l3" transform="translate(46,45.14) rotate(0) scale(1,1) translate(-46,-45.14)" opacity="1"><path id="hero-l3-s" fill="#FFF4CF" stroke="none" d="M46 37L46 37L48.38 42.72L48.38 42.72L54.56 43.22L54.56 43.22L49.85 47.25L49.85 47.25L51.29 53.28L51.29 53.28L46 50.05L46 50.05L40.71 53.28L40.71 53.28L42.15 47.25L42.15 47.25L37.44 43.22L37.44 43.22L43.62 42.72L43.62 42.72L46 37Z"/></g><g id="hero-l4" transform="translate(300,26) rotate(0) scale(1,1) translate(-300,-26)" opacity="1"><path id="hero-l4-s" fill="#FFF4CF" stroke="none" d="M300 20L300 20L301.48 24.52L301.48 24.52L306 26L306 26L301.48 27.48L301.48 27.48L300 32L300 32L298.52 27.48L298.52 27.48L294 26L294 26L298.52 24.52L298.52 24.52L300 20Z"/></g><g id="hero-l5" transform="translate(604,36) rotate(0) scale(0.4,0.4) translate(-604,-36)" opacity="1"><path id="hero-l5-s" fill="#FFF4CF" stroke="none" d="M604 28L604 28L606 32.54L606 32.54L610.93 32L610.93 32L608 36L608 36L610.93 40L610.93 40L606 39.46L606 39.46L604 44L604 44L602 39.46L602 39.46L597.07 40L597.07 40L600 36L600 36L597.07 32L597.07 32L602 32.54L602 32.54L604 28Z"/></g></g></g><g id="hero-l6" transform="translate(170,365) rotate(0) scale(1,1) translate(-170,-215)" opacity="1"><g id="hero-l6-s"><g id="hero-l7" transform="translate(170,215) rotate(0) scale(1,1) translate(-170,-215)" opacity="0"><filter id="hero-l7-fx" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feGaussianBlur id="hero-l7-f1" stdDeviation="4"/></filter><radialGradient id="hero-l7-gf" cx="0.5" cy="0.5" r="0.5" fx="0.5" fy="0.5"><stop offset="0" stop-color="rgb(255,210,122)" stop-opacity="0.8"/><stop offset="0.55" stop-color="rgb(255,159,107)" stop-opacity="0.333"/><stop offset="1" stop-color="rgb(255,122,89)" stop-opacity="0"/></radialGradient><ellipse id="hero-l7-s" fill="url(#hero-l7-gf)" stroke="none" style="mix-blend-mode:screen" filter="url(#hero-l7-fx)" cx="170" cy="215" rx="100" ry="100"/></g><g id="hero-l8" transform="translate(170,215) rotate(0) scale(0.35,0.35) translate(-170,-215)" opacity="0"><path id="hero-l8-s" fill="#FFD27A" stroke="none" d="M170 119L186.05 155.11L218 131.86L213.84 171.16L253.14 167L229.89 198.95L266 215L229.89 231.05L253.14 263L213.84 258.84L218 298.14L186.05 274.89L170 311L153.95 274.89L122 298.14L126.16 258.84L86.86 263L110.11 231.05L74 215L110.11 198.95L86.86 167L126.16 171.16L122 131.86L153.95 155.11L170 119Z"/></g><g id="hero-l9" transform="translate(170,215) rotate(0) scale(1,1) translate(-170,-215)" opacity="1"><ellipse id="hero-l9-s" fill="#FF5F6D" stroke="none" cx="170" cy="215" rx="54" ry="54"/></g></g></g><g id="hero-l10" transform="translate(470,175) rotate(0) scale(1,1) translate(-470,-175)" opacity="1"><path id="hero-l10-s" fill="#6C8CFF" stroke="none" d="M470 123C498.7 123 522 146.3 522 175C522 203.7 498.7 227 470 227C441.3 227 418 203.7 418 175C418 146.3 441.3 123 470 123Z"/></g><g id="hero-l11" transform="translate(325,92.35) rotate(0) scale(1,1) translate(-325,-92.35)" opacity="0.35"><path stroke-linecap="round" stroke-dasharray="1 11" id="hero-l11-s" fill="none" stroke="#F3EEE4" stroke-width="2" stroke-dashoffset="0" d="M50 130C50 130 168.33 64 230 52C291.67 40 358.33 43.33 420 58C481.67 72.67 600 140 600 140"/></g><g id="hero-l12" transform="translate(50,130) rotate(-24.268) scale(1,1) translate(0,0)" opacity="0"><path id="hero-l12-s" fill="#F3EEE4" stroke="none" d="M-10 -6L12 0L-10 6L-10 -6Z"/></g><g id="hero-l13" transform="translate(290,275) rotate(0) scale(1,1) translate(-290,-275)" opacity="1"><g id="hero-l13-s"><style>#hero-l13-mask *{fill:#fff!important;fill-opacity:1!important;stroke:none!important;opacity:1!important;filter:none!important}</style><mask id="hero-l13-mask" mask-type="alpha" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="-100000" y="-100000" width="200000" height="200000"><g id="hero-l16" transform="translate(320,283.99) rotate(0) scale(1,1) translate(-320,-283.99)" opacity="1"><g id="hero-l16-s"><g id="hero-l17" transform="translate(320,283.99) rotate(0) scale(1,1) translate(-320,-283.99)" opacity="1"><path id="hero-l17-s" fill="#FFFFFF" stroke="none" d="M-10 300C-10 300 78.33 245.67 130 244C181.67 242.33 241.33 291 300 290C358.67 289 423.67 236.67 482 238C540.33 239.33 650 298 650 298L650 330L-10 330L-10 300Z"/></g></g></g></mask><g mask="url(#hero-l13-mask)"><g id="hero-l14" transform="translate(320,275) rotate(0) scale(1,1) translate(-320,-275)" opacity="1"><linearGradient id="hero-l14-gf" x1="0.5" y1="0" x2="0.5" y2="1"><stop offset="0" stop-color="rgb(43,76,111)" stop-opacity="1"/><stop offset="1" stop-color="rgb(22,42,69)" stop-opacity="1"/></linearGradient><rect id="hero-l14-s" fill="url(#hero-l14-gf)" stroke="none" x="0" y="220" width="640" height="110"/></g><g id="hero-l15" transform="translate(60,262) rotate(0) scale(1,1) translate(-120,-262)" opacity="0.22"><filter id="hero-l15-fx" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feGaussianBlur id="hero-l15-f1" stdDeviation="6"/></filter><ellipse id="hero-l15-s" fill="#DCE7FF" stroke="none" filter="url(#hero-l15-fx)" cx="120" cy="262" rx="120" ry="14"/></g></g></g></g><g id="hero-l18" transform="translate(592,300) rotate(0) scale(0,0) translate(-592,-300)" opacity="1"><g id="hero-l18-s"><g id="hero-l19" transform="translate(592,300) rotate(0) scale(1,1) translate(-592,-300)" opacity="1"><g id="hero-l19-s"><g id="hero-l22" transform="translate(592,284) rotate(0) scale(1,1) translate(-592,-284)" opacity="1"><path stroke-linecap="round" id="hero-l22-s" fill="none" stroke="#7FD4C1" stroke-width="5" d="M592 300L592 268"/></g><g id="hero-l20" transform="translate(592,268) rotate(0) scale(1,1) translate(-592,-268)" opacity="1"><g id="hero-l20-s"><g id="hero-l23" transform="translate(592,254) rotate(0) scale(1,1) translate(-592,-254)" opacity="1"><path stroke-linecap="round" id="hero-l23-s" fill="none" stroke="#7FD4C1" stroke-width="5" d="M592 268L592 240"/></g><g id="hero-l25" transform="translate(579,262) rotate(-30) scale(1,1) translate(-579,-262)" opacity="1"><ellipse id="hero-l25-s" fill="#5FBF9F" stroke="none" cx="579" cy="262" rx="13" ry="5"/></g><g id="hero-l21" transform="translate(592,240) rotate(0) scale(1,1) translate(-592,-240)" opacity="1"><g id="hero-l21-s"><g id="hero-l24" transform="translate(592,228) rotate(0) scale(1,1) translate(-592,-228)" opacity="1"><path stroke-linecap="round" id="hero-l24-s" fill="none" stroke="#7FD4C1" stroke-width="5" d="M592 240L592 216"/></g><g id="hero-l26" transform="translate(605,236) rotate(30) scale(1,1) translate(-605,-236)" opacity="1"><ellipse id="hero-l26-s" fill="#5FBF9F" stroke="none" cx="605" cy="236" rx="12" ry="5"/></g><g id="hero-l27" transform="translate(592,210.92) rotate(0) scale(1,1) translate(-592,-210.92)" opacity="1"><path id="hero-l27-s" fill="#FF8FB1" stroke="none" d="M592 199C601 199 599.68 198.04 602.46 206.6C605.24 215.16 605.75 213.61 598.47 218.9C591.18 224.19 592.82 224.19 585.53 218.9C578.25 213.61 578.76 215.16 581.54 206.6C584.32 198.04 583 199 592 199Z"/></g></g></g></g></g></g></g></g></g><g id="hero-l28" transform="translate(66,256.94) rotate(0) scale(1,1) translate(-66,-256.94)" opacity="1"><g id="hero-l28-s"><g id="hero-l29" transform="translate(54,300) rotate(0) scale(1,1) translate(-54,-300)" opacity="1"><path stroke-linecap="round" id="hero-l29-s" fill="none" stroke="#F3EEE4" stroke-width="3" d="M54 300L54 300"/></g><g id="hero-l30" transform="translate(56,226) rotate(0) scale(1,1) translate(-56,-226)" opacity="0"><linearGradient id="hero-l30-gf" x1="0" y1="0.5" x2="1" y2="0.5"><stop offset="0" stop-color="rgb(255,95,109)" stop-opacity="1"/><stop offset="1" stop-color="rgb(255,194,75)" stop-opacity="1"/></linearGradient><path id="hero-l30-s" fill="url(#hero-l30-gf)" stroke="none" d="M78 226L78 226L57 238.12L57 238.12L57 213.88L57 213.88L78 226Z"/></g></g></g><g id="hero-l31" transform="translate(320,344) rotate(0) scale(1,1) translate(-320,-344)" opacity="1"><g id="hero-l31-s"><g id="hero-l32" transform="translate(320,348) rotate(0) scale(1,1) translate(-320,-348)" opacity="1"><rect id="hero-l32-s" fill="#14213D" stroke="none" x="0" y="296" width="640" height="104"/></g><g id="hero-l33" transform="translate(320,296) rotate(0) scale(1,1) translate(-320,-296)" opacity="1"><path stroke-linecap="round" id="hero-l33-s" fill="none" stroke="#7FD4C1" stroke-width="6" pathLength="100" stroke-dasharray="0 300" stroke-dashoffset="150" d="M30 300C76 300 129 288 175 288C221 288 274 304 320 304C366 304 419 288 465 288C511 288 564 300 610 300"/></g><g id="hero-l34" transform="translate(320,384.73) rotate(0) scale(1,1) translate(-320,-384.73)" opacity="1"><g id="hero-l34-s"><mask id="hero-l34-mask" mask-type="alpha" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="-100000" y="-100000" width="200000" height="200000"><g id="hero-l36" transform="translate(200,385) rotate(0) scale(1,1) translate(-200,-385)" opacity="1"><g id="hero-l36-s"><g id="hero-l37" transform="translate(200,385) rotate(0) scale(0,1) translate(-200,-385)" opacity="1"><linearGradient id="hero-l37-gf" x1="0" y1="0.5" x2="1" y2="0.5"><stop offset="0" stop-color="rgb(255,255,255)" stop-opacity="1"/><stop offset="0.8" stop-color="rgb(255,255,255)" stop-opacity="1"/><stop offset="1" stop-color="rgb(255,255,255)" stop-opacity="0"/></linearGradient><rect id="hero-l37-s" fill="url(#hero-l37-gf)" stroke="none" x="200" y="376" width="240" height="18"/></g></g></g></mask><g mask="url(#hero-l34-mask)"><g id="hero-l35" transform="translate(320,384.73) rotate(0) scale(1,1) translate(-320,-384.73)" opacity="1"><text id="hero-l35-s" fill="#9FB3D9" stroke="none" x="320" y="389" font-size="10" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-weight="600" letter-spacing="3" text-anchor="middle">MADE WITH SVGCINEMA</text></g></g></g></g></g></g><g id="hero-l38" transform="translate(320.65,375.2) rotate(0) scale(1,1) translate(-320.65,-349.2)" opacity="0"><filter id="hero-l38-fx" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feDropShadow id="hero-l38-f1" dx="4" dy="0" stdDeviation="6" flood-color="#05070F" flood-opacity="0.35"/></filter><text id="hero-l38-s" fill="#F3EEE4" stroke="none" filter="url(#hero-l38-fx)" x="320" y="362" font-size="40" font-family="Georgia, Times New Roman, serif" font-weight="700" text-anchor="middle">Good morning</text></g><script><![CDATA[
+              <div class="board" id="board"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="hero-svg" viewBox="0 0 640 400" width="100%" shape-rendering="geometricPrecision" text-rendering="geometricPrecision"><title>Sunrise badge</title><rect x="0" y="0" width="640" height="400" fill="#14213D"/><g id="hero-l1" transform="translate(320,200) rotate(0) scale(1,1) translate(-320,-200)" opacity="1"><linearGradient id="hero-l1-gf" x1="0.5" y1="0" x2="0.5" y2="1"><stop offset="0" stop-color="rgb(11,16,38)" stop-opacity="1"/><stop offset="0.62" stop-color="rgb(20,33,61)" stop-opacity="1"/><stop offset="1" stop-color="rgb(42,47,91)" stop-opacity="1"/></linearGradient><rect id="hero-l1-s" fill="url(#hero-l1-gf)" stroke="none" x="0" y="0" width="640" height="400"/></g><g id="hero-l2" transform="translate(322.11,36.64) rotate(0) scale(1,1) translate(-322.11,-36.64)" opacity="1"><g id="hero-l2-s"><g id="hero-l3" transform="translate(46,45.14) rotate(0) scale(1,1) translate(-46,-45.14)" opacity="1"><path id="hero-l3-s" fill="#FFF4CF" stroke="none" d="M46 37L46 37L48.38 42.72L48.38 42.72L54.56 43.22L54.56 43.22L49.85 47.25L49.85 47.25L51.29 53.28L51.29 53.28L46 50.05L46 50.05L40.71 53.28L40.71 53.28L42.15 47.25L42.15 47.25L37.44 43.22L37.44 43.22L43.62 42.72L43.62 42.72L46 37Z"/></g><g id="hero-l4" transform="translate(300,26) rotate(0) scale(1,1) translate(-300,-26)" opacity="1"><path id="hero-l4-s" fill="#FFF4CF" stroke="none" d="M300 20L300 20L301.48 24.52L301.48 24.52L306 26L306 26L301.48 27.48L301.48 27.48L300 32L300 32L298.52 27.48L298.52 27.48L294 26L294 26L298.52 24.52L298.52 24.52L300 20Z"/></g><g id="hero-l5" transform="translate(604,36) rotate(0) scale(0.4,0.4) translate(-604,-36)" opacity="1"><path id="hero-l5-s" fill="#FFF4CF" stroke="none" d="M604 28L604 28L606 32.54L606 32.54L610.93 32L610.93 32L608 36L608 36L610.93 40L610.93 40L606 39.46L606 39.46L604 44L604 44L602 39.46L602 39.46L597.07 40L597.07 40L600 36L600 36L597.07 32L597.07 32L602 32.54L602 32.54L604 28Z"/></g></g></g><g id="hero-l6" transform="translate(170,365) rotate(0) scale(1,1) translate(-170,-215)" opacity="1"><g id="hero-l6-s"><g id="hero-l7" transform="translate(170,215) rotate(0) scale(1,1) translate(-170,-215)" opacity="0"><filter id="hero-l7-fx" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feGaussianBlur id="hero-l7-f1" stdDeviation="4"/></filter><radialGradient id="hero-l7-gf" cx="0.5" cy="0.5" r="0.5" fx="0.5" fy="0.5"><stop offset="0" stop-color="rgb(255,210,122)" stop-opacity="0.8"/><stop offset="0.55" stop-color="rgb(255,159,107)" stop-opacity="0.333"/><stop offset="1" stop-color="rgb(255,122,89)" stop-opacity="0"/></radialGradient><ellipse id="hero-l7-s" fill="url(#hero-l7-gf)" stroke="none" style="mix-blend-mode:screen" filter="url(#hero-l7-fx)" cx="170" cy="215" rx="100" ry="100"/></g><g id="hero-l8" transform="translate(170,215) rotate(0) scale(0.35,0.35) translate(-170,-215)" opacity="0"><path id="hero-l8-s" fill="#FFD27A" stroke="none" d="M170 119L186.05 155.11L218 131.86L213.84 171.16L253.14 167L229.89 198.95L266 215L229.89 231.05L253.14 263L213.84 258.84L218 298.14L186.05 274.89L170 311L153.95 274.89L122 298.14L126.16 258.84L86.86 263L110.11 231.05L74 215L110.11 198.95L86.86 167L126.16 171.16L122 131.86L153.95 155.11L170 119Z"/></g><g id="hero-l9" transform="translate(170,215) rotate(0) scale(1,1) translate(-170,-215)" opacity="1"><ellipse id="hero-l9-s" fill="#FF5F6D" stroke="none" cx="170" cy="215" rx="54" ry="54"/></g></g></g><g id="hero-l10" transform="translate(470,175) rotate(0) scale(1,1) translate(-470,-175)" opacity="1"><path id="hero-l10-s" fill="#6C8CFF" stroke="none" d="M470 123C498.7 123 522 146.3 522 175C522 203.7 498.7 227 470 227C441.3 227 418 203.7 418 175C418 146.3 441.3 123 470 123Z"/></g><g id="hero-l11" transform="translate(325,92.35) rotate(0) scale(1,1) translate(-325,-92.35)" opacity="0.35"><path stroke-linecap="round" stroke-dasharray="1 11" id="hero-l11-s" fill="none" stroke="#F3EEE4" stroke-width="2" stroke-dashoffset="0" d="M50 130C50 130 168.33 64 230 52C291.67 40 358.33 43.33 420 58C481.67 72.67 600 140 600 140"/></g><g id="hero-l12" transform="translate(50,130) rotate(-24.268) scale(1,1) translate(0,0)" opacity="0"><path id="hero-l12-s" fill="#F3EEE4" stroke="none" d="M-10 -6L12 0L-10 6L-10 -6Z"/></g><g id="hero-l13" transform="translate(290,275) rotate(0) scale(1,1) translate(-290,-275)" opacity="1"><g id="hero-l13-s"><style>#hero-l13-mask *{fill:#fff!important;fill-opacity:1!important;stroke:none!important;opacity:1!important;filter:none!important}</style><mask id="hero-l13-mask" mask-type="alpha" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="-100000" y="-100000" width="200000" height="200000"><g id="hero-l16" transform="translate(320,283.99) rotate(0) scale(1,1) translate(-320,-283.99)" opacity="1"><g id="hero-l16-s"><g id="hero-l17" transform="translate(320,283.99) rotate(0) scale(1,1) translate(-320,-283.99)" opacity="1"><path id="hero-l17-s" fill="#FFFFFF" stroke="none" d="M-10 300C-10 300 78.33 245.67 130 244C181.67 242.33 241.33 291 300 290C358.67 289 423.67 236.67 482 238C540.33 239.33 650 298 650 298L650 330L-10 330L-10 300Z"/></g></g></g></mask><g mask="url(#hero-l13-mask)"><g id="hero-l14" transform="translate(320,275) rotate(0) scale(1,1) translate(-320,-275)" opacity="1"><linearGradient id="hero-l14-gf" x1="0.5" y1="0" x2="0.5" y2="1"><stop offset="0" stop-color="rgb(43,76,111)" stop-opacity="1"/><stop offset="1" stop-color="rgb(22,42,69)" stop-opacity="1"/></linearGradient><rect id="hero-l14-s" fill="url(#hero-l14-gf)" stroke="none" x="0" y="220" width="640" height="110"/></g><g id="hero-l15" transform="translate(60,262) rotate(0) scale(1,1) translate(-120,-262)" opacity="0.22"><filter id="hero-l15-fx" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feGaussianBlur id="hero-l15-f1" stdDeviation="6"/></filter><ellipse id="hero-l15-s" fill="#DCE7FF" stroke="none" filter="url(#hero-l15-fx)" cx="120" cy="262" rx="120" ry="14"/></g></g></g></g><g id="hero-l18" transform="translate(592,300) rotate(0) scale(0,0) translate(-592,-300)" opacity="1"><g id="hero-l18-s"><g id="hero-l28" transform="translate(597.75,260) rotate(0) scale(1,1) translate(-597.75,-260)" opacity="1"><path id="hero-l28-s" fill="#5FBF9F" stroke="none" d="M596.5 298L596.5 290.4L596.5 282.8L596.5 275.2L596.5 267.6L596.5 260L596.5 252.4L596.5 244.8L596.5 237.2L596.5 229.6L596.5 222L599 222L599 229.6L599 237.2L599 244.8L599 252.4L599 260L599 267.6L599 275.2L599 282.8L599 290.4L599 298L596.5 298Z"/></g><g id="hero-l19" transform="translate(592,300) rotate(0) scale(1,1) translate(-592,-300)" opacity="1"><g id="hero-l19-s"><g id="hero-l20" transform="translate(592,268) rotate(0) scale(1,1) translate(-592,-268)" opacity="1"><g id="hero-l20-s"><g id="hero-l21" transform="translate(592,240) rotate(0) scale(1,1) translate(-592,-240)" opacity="1"><g id="hero-l21-s"></g></g></g></g></g></g><g id="hero-l25-w" transform="matrix(1,0,0,1,0,0)"><g id="hero-l25" transform="translate(579,262) rotate(-30) scale(1,1) translate(-579,-262)" opacity="1"><path id="hero-l25-s" fill="#5FBF9F" stroke="none" d="M579 257C586.18 257 592 259.24 592 262C592 264.76 586.18 267 579 267C571.82 267 566 264.76 566 262C566 259.24 571.82 257 579 257Z"/></g></g><g id="hero-l22-w" transform="matrix(1,0,0,1,0,0)"><g id="hero-l22" transform="translate(592,284) rotate(0) scale(1,1) translate(-592,-284)" opacity="1"><path stroke-linecap="round" id="hero-l22-s" fill="none" stroke="#7FD4C1" stroke-width="5" d="M592 300L592 268"/></g></g><g id="hero-l23-w" transform="matrix(1,0,0,1,0,0)"><g id="hero-l23" transform="translate(592,254) rotate(0) scale(1,1) translate(-592,-254)" opacity="1"><path stroke-linecap="round" id="hero-l23-s" fill="none" stroke="#7FD4C1" stroke-width="5" d="M592 268L592 240"/></g></g><g id="hero-l24-w" transform="matrix(1,0,0,1,0,0)"><g id="hero-l24" transform="translate(592,228) rotate(0) scale(1,1) translate(-592,-228)" opacity="1"><path stroke-linecap="round" id="hero-l24-s" fill="none" stroke="#7FD4C1" stroke-width="5" d="M592 240L592 216"/></g></g><g id="hero-l26-w" transform="matrix(1,0,0,1,0,0)"><g id="hero-l26" transform="translate(605,236) rotate(30) scale(1,1) translate(-605,-236)" opacity="1"><ellipse id="hero-l26-s" fill="#5FBF9F" stroke="none" cx="605" cy="236" rx="12" ry="5"/></g></g><g id="hero-l27-w" transform="matrix(1,0,0,1,0,0)"><g id="hero-l27" transform="translate(592,210.92) rotate(0) scale(1,1) translate(-592,-210.92)" opacity="1"><path id="hero-l27-s" fill="#FF8FB1" stroke="none" d="M592 199C601 199 599.68 198.04 602.46 206.6C605.24 215.16 605.75 213.61 598.47 218.9C591.18 224.19 592.82 224.19 585.53 218.9C578.25 213.61 578.76 215.16 581.54 206.6C584.32 198.04 583 199 592 199Z"/></g></g></g></g><g id="hero-l29" transform="translate(66,256.94) rotate(0) scale(1,1) translate(-66,-256.94)" opacity="1"><g visibility="hidden"><g id="hero-l29-s"><g id="hero-l30" transform="translate(54,300) rotate(0) scale(1,1) translate(-54,-300)" opacity="1"><path stroke-linecap="round" id="hero-l30-s" fill="none" stroke="#F3EEE4" stroke-width="3" d="M54 300L54 300"/></g><g id="hero-l31" transform="translate(56,226) rotate(0) scale(1,1) translate(-56,-226)" opacity="0"><linearGradient id="hero-l31-gf" x1="0" y1="0.5" x2="1" y2="0.5"><stop offset="0" stop-color="rgb(255,95,109)" stop-opacity="1"/><stop offset="1" stop-color="rgb(255,194,75)" stop-opacity="1"/></linearGradient><path id="hero-l31-s" fill="url(#hero-l31-gf)" stroke="none" d="M78 226L78 226L57 238.12L57 238.12L57 213.88L57 213.88L78 226Z"/></g></g></g><defs><clipPath id="hero-l29-c0"><path d="M63.72 197.21L68.02 213.23L52 208.94Z"/></clipPath><clipPath id="hero-l29-c1"><path d="M63.72 197.21L79.74 201.5L68.02 213.23Z"/></clipPath><clipPath id="hero-l29-c2"><path d="M79.74 201.5L84.04 217.52L68.02 213.23Z"/></clipPath><clipPath id="hero-l29-c3"><path d="M35.98 204.65L52 208.94L40.27 220.67Z"/></clipPath><clipPath id="hero-l29-c4"><path d="M52 208.94L68.02 213.23L56.29 224.96Z"/></clipPath><clipPath id="hero-l29-c5"><path d="M52 208.94L56.29 224.96L40.27 220.67Z"/></clipPath><clipPath id="hero-l29-c6"><path d="M68.02 213.23L84.04 217.52L72.31 229.25Z"/></clipPath><clipPath id="hero-l29-c7"><path d="M68.02 213.23L72.31 229.25L56.29 224.96Z"/></clipPath><clipPath id="hero-l29-c8"><path d="M84.04 217.52L88.33 233.54L72.31 229.25Z"/></clipPath><clipPath id="hero-l29-c9"><path d="M40.27 220.67L56.29 224.96L44.56 236.69Z"/></clipPath><clipPath id="hero-l29-c10"><path d="M56.29 224.96L60.58 240.98L44.56 236.69Z"/></clipPath><clipPath id="hero-l29-c11"><path d="M56.29 224.96L72.31 229.25L60.58 240.98Z"/></clipPath><clipPath id="hero-l29-c12"><path d="M72.31 229.25L76.6 245.27L60.58 240.98Z"/></clipPath><clipPath id="hero-l29-c13"><path d="M72.31 229.25L88.33 233.54L76.6 245.27Z"/></clipPath><clipPath id="hero-l29-c14"><path d="M88.33 233.54L92.62 249.57L76.6 245.27Z"/></clipPath><clipPath id="hero-l29-c15"><path d="M44.56 236.69L60.58 240.98L48.85 252.71Z"/></clipPath><clipPath id="hero-l29-c16"><path d="M60.58 240.98L76.6 245.27L64.88 257Z"/></clipPath><clipPath id="hero-l29-c17"><path d="M60.58 240.98L64.88 257L48.85 252.71Z"/></clipPath><clipPath id="hero-l29-c18"><path d="M48.85 252.71L53.15 268.73L37.13 264.43Z"/></clipPath><clipPath id="hero-l29-c19"><path d="M48.85 252.71L64.88 257L53.15 268.73Z"/></clipPath><clipPath id="hero-l29-c20"><path d="M64.88 257L69.17 273.02L53.15 268.73Z"/></clipPath><clipPath id="hero-l29-c21"><path d="M37.13 264.43L53.15 268.73L41.42 280.46Z"/></clipPath><clipPath id="hero-l29-c22"><path d="M53.15 268.73L69.17 273.02L57.44 284.75Z"/></clipPath><clipPath id="hero-l29-c23"><path d="M53.15 268.73L57.44 284.75L41.42 280.46Z"/></clipPath><clipPath id="hero-l29-c24"><path d="M69.17 273.02L73.46 289.04L57.44 284.75Z"/></clipPath><clipPath id="hero-l29-c25"><path d="M41.42 280.46L57.44 284.75L45.71 296.48Z"/></clipPath><clipPath id="hero-l29-c26"><path d="M57.44 284.75L61.73 300.77L45.71 296.48Z"/></clipPath><clipPath id="hero-l29-c27"><path d="M57.44 284.75L73.46 289.04L61.73 300.77Z"/></clipPath><clipPath id="hero-l29-c28"><path d="M45.71 296.48L61.73 300.77L50.01 312.5Z"/></clipPath></defs><g id="hero-l29-mesh" style="isolation:isolate"><g id="hero-l29-m0" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c0)"/></g><g id="hero-l29-m1" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c1)"/></g><g id="hero-l29-m2" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c2)"/></g><g id="hero-l29-m3" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c3)"/></g><g id="hero-l29-m4" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c4)"/></g><g id="hero-l29-m5" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c5)"/></g><g id="hero-l29-m6" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c6)"/></g><g id="hero-l29-m7" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c7)"/></g><g id="hero-l29-m8" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c8)"/></g><g id="hero-l29-m9" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c9)"/></g><g id="hero-l29-m10" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c10)"/></g><g id="hero-l29-m11" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c11)"/></g><g id="hero-l29-m12" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c12)"/></g><g id="hero-l29-m13" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c13)"/></g><g id="hero-l29-m14" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c14)"/></g><g id="hero-l29-m15" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c15)"/></g><g id="hero-l29-m16" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c16)"/></g><g id="hero-l29-m17" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c17)"/></g><g id="hero-l29-m18" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c18)"/></g><g id="hero-l29-m19" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c19)"/></g><g id="hero-l29-m20" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c20)"/></g><g id="hero-l29-m21" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c21)"/></g><g id="hero-l29-m22" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c22)"/></g><g id="hero-l29-m23" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c23)"/></g><g id="hero-l29-m24" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c24)"/></g><g id="hero-l29-m25" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c25)"/></g><g id="hero-l29-m26" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c26)"/></g><g id="hero-l29-m27" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c27)"/></g><g id="hero-l29-m28" transform="matrix(1,0,0,1,0,0)" style="mix-blend-mode:plus-lighter"><use href="#hero-l29-s" clip-path="url(#hero-l29-c28)"/></g></g></g><g id="hero-l32" transform="translate(320,344) rotate(0) scale(1,1) translate(-320,-344)" opacity="1"><g id="hero-l32-s"><g id="hero-l33" transform="translate(320,348) rotate(0) scale(1,1) translate(-320,-348)" opacity="1"><rect id="hero-l33-s" fill="#14213D" stroke="none" x="0" y="296" width="640" height="104"/></g><g id="hero-l34" transform="translate(320,296) rotate(0) scale(1,1) translate(-320,-296)" opacity="1"><path stroke-linecap="round" id="hero-l34-s" fill="none" stroke="#7FD4C1" stroke-width="6" pathLength="100" stroke-dasharray="0 300" stroke-dashoffset="150" d="M30 300C76 300 129 288 175 288C221 288 274 304 320 304C366 304 419 288 465 288C511 288 564 300 610 300"/></g><g id="hero-l35" transform="translate(320,384.73) rotate(0) scale(1,1) translate(-320,-384.73)" opacity="1"><g id="hero-l35-s"><mask id="hero-l35-mask" mask-type="luminance" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="-100000" y="-100000" width="200000" height="200000"><g id="hero-l37" transform="translate(200,385) rotate(0) scale(1,1) translate(-200,-385)" opacity="1"><g id="hero-l37-s"><g id="hero-l38" transform="translate(200,385) rotate(0) scale(0,1) translate(-200,-385)" opacity="1"><linearGradient id="hero-l38-gf" x1="0" y1="0.5" x2="1" y2="0.5"><stop offset="0" stop-color="rgb(255,255,255)" stop-opacity="1"/><stop offset="0.8" stop-color="rgb(255,255,255)" stop-opacity="1"/><stop offset="1" stop-color="rgb(255,255,255)" stop-opacity="0"/></linearGradient><rect id="hero-l38-s" fill="url(#hero-l38-gf)" stroke="none" x="200" y="376" width="240" height="18"/></g></g></g></mask><g mask="url(#hero-l35-mask)"><g id="hero-l36" transform="translate(320,384.73) rotate(0) scale(1,1) translate(-320,-384.73)" opacity="1"><text id="hero-l36-s" fill="#9FB3D9" stroke="none" x="320" y="389" font-size="10" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-weight="600" letter-spacing="3" text-anchor="middle">MADE WITH SVGCINEMA</text></g></g></g></g></g></g><g id="hero-l39" transform="translate(320.65,375.2) rotate(0) scale(1,1) translate(-320.65,-349.2)" opacity="0"><filter id="hero-l39-fx" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feDropShadow id="hero-l39-f1" dx="4" dy="0" stdDeviation="6" flood-color="#05070F" flood-opacity="0.35"/></filter><text id="hero-l39-s" fill="#F3EEE4" stroke="none" filter="url(#hero-l39-fx)" x="320" y="362" font-size="40" font-family="Georgia, Times New Roman, serif" font-weight="700" text-anchor="middle">Good morning</text></g><script><![CDATA[
 (function(){var CinEngine=function CinEngine(D, root) {
   var K = {
     pos: "v",
@@ -2128,7 +2127,9 @@
     skw: "v",
     fo: "n",
     so: "n",
-    dof: "n"
+    dof: "n",
+    sz: "v",
+    da: "a"
   };
   var EZ = {
     ease: [0.25, 0.1, 0.25, 1],
@@ -2359,8 +2360,36 @@
       };
     });
   }
+  function mixA(a, b, p) {
+    a = a || [];
+    b = b || [];
+    var i = a.length, j = b.length, o = [], k;
+    if (i !== j) {
+      if (!i) a = rep(b.map(zero), 1);
+      else if (!j) b = rep(a.map(zero), 1);
+      else {
+        var m = i * j / gcd(i, j);
+        a = rep(a, m / i);
+        b = rep(b, m / j);
+      }
+    }
+    for (k = 0; k < a.length; k++) o.push(a[k] + (b[k] - a[k]) * p);
+    return o;
+  }
+  function zero() {
+    return 0;
+  }
+  function gcd(x, y) {
+    return y ? gcd(y, x % y) : x || 1;
+  }
+  function rep(a, n) {
+    var o = [];
+    for (var r = 0; r < n; r++) o = o.concat(a);
+    return o;
+  }
   function mix(k, a, b, p) {
     if (k === "c") return mixC(a, b, p);
+    if (k === "a") return mixA(a, b, p);
     if (k === "m") return mixM(a, b, p);
     if (k === "v") return [a[0] + (b[0] - a[0]) * p, a[1] + (b[1] - a[1]) * p];
     return a + (b - a) * p;
@@ -2378,6 +2407,29 @@
       w0 * A[1] + w1 * (A[1] + h[1]) + w2 * (B[1] + h[3]) + w3 * B[1]
     ];
   }
+  var ARC = {}, ARCN = 0;
+  function byLength(A, h, B, p) {
+    if (p <= 0 || p >= 1) return p;
+    var key = A.join() + ";" + h.join() + ";" + B.join(), tb = ARC[key], n = 64, i;
+    if (!tb) {
+      if (++ARCN > 400) {
+        ARC = {};
+        ARCN = 1;
+      }
+      tb = [0];
+      var prev = A;
+      for (i = 1; i <= n; i++) {
+        var q = cb(A, h, B, i / n);
+        tb.push(tb[i - 1] + Math.hypot(q[0] - prev[0], q[1] - prev[1]));
+        prev = q;
+      }
+      ARC[key] = tb;
+    }
+    var want = p * tb[n];
+    if (!(tb[n] > 0)) return p;
+    for (i = 1; i <= n; i++) if (tb[i] >= want) return (i - 1 + (want - tb[i - 1]) / (tb[i] - tb[i - 1] || 1)) / n;
+    return 1;
+  }
   function at(L, k, t) {
     var tr = L.t[k], n = tr.length, i, a, b, p;
     if (n === 1 || t <= tr[0][0]) return tr[0][1];
@@ -2387,23 +2439,38 @@
       b = tr[i + 1];
       if (t < b[0]) {
         p = ez(a[2], (t - a[0]) / (b[0] - a[0]));
-        if (k === "pos" && a[3]) return cb(a[1], a[3], b[1], p);
+        if (k === "pos" && a[3]) return cb(a[1], a[3], b[1], L.ev ? byLength(a[1], a[3], b[1], p) : p);
         if (k === "pos" && L.sm && n > 2) return cr((tr[i - 1] || a)[1], a[1], b[1], (tr[i + 2] || b)[1], p);
         return mix(K[k] || (typeof a[1] === "string" ? "c" : typeof a[1] === "object" ? "v" : "n"), a[1], b[1], p);
       }
     }
     return tr[n - 1][1];
   }
+  var RESTV = false;
   function get(L, k, t) {
-    var tr = L.t && L.t[k];
+    var tr = !RESTV && L.t && L.t[k];
     return tr && tr.length ? at(L, k, t) : k === "org" ? L.o || [0, 0] : L.b[k];
   }
-  function comp(L, t) {
+  function comp(L, t, tfOnly) {
     var o = get(L, "org", t) || [0, 0], p = get(L, "pos", t) || [0, 0], r = get(L, "rot", t) || 0, s = get(L, "scl", t) || [1, 1], k = get(L, "skw", t) || [0, 0], tr = L.t && L.t.pos, op = get(L, "op", t);
-    if (L.or && tr && tr.length > 1) {
+    if (L.or && tr && tr.length > 1 && !RESTV) {
       var t0 = tr[0][0], t1 = tr[tr.length - 1][0], e = Math.min(0.02, (t1 - t0) / 4), ta = Math.max(t0, Math.min(t - e, t1 - 2 * e)), A = get(L, "pos", ta), B = get(L, "pos", ta + 2 * e);
       if (B[0] !== A[0] || B[1] !== A[1]) r += Math.atan2(B[1] - A[1], B[0] - A[0]) * 180 / Math.PI;
     }
+    if (tfOnly)
+      return {
+        x: p[0] + o[0],
+        y: p[1] + o[1],
+        r,
+        sx: s[0],
+        sy: s[1],
+        ox: o[0],
+        oy: o[1],
+        kx: k[0],
+        ky: k[1],
+        ba: boneAng(L),
+        cp: counterScale(L, t)
+      };
     return {
       x: p[0] + o[0],
       y: p[1] + o[1],
@@ -2423,8 +2490,30 @@
       so: get(L, "so", t),
       dof: get(L, "dof", t),
       rad: L.t && L.t.rad && L.t.rad.length ? get(L, "rad", t) : null,
-      trim: trimOf(L, t)
+      gb: geoBox(L, t),
+      da: L.t && L.t.da && L.t.da.length ? get(L, "da", t) : null,
+      trim: trimOf(L, t),
+      ba: boneAng(L),
+      cp: counterScale(L, t)
     };
+  }
+  var IDX = {}, EXT = null;
+  for (var ii = 0; ii < D.L.length; ii++) IDX[D.L[ii].id] = D.L[ii];
+  function layerOf(id) {
+    if (!id) return null;
+    return IDX[id] || EXT && EXT(id) || null;
+  }
+  function counterScale(L, t) {
+    var P2 = L.cs || L.type === "bone" && !L.inh ? layerOf(L.parent) : null;
+    if (!P2 || !L.cs && P2.type !== "bone") return null;
+    var s = get(P2, "scl", t) || [1, 1];
+    if (s[0] === 1 && s[1] === 1) return null;
+    var j = L.j || (L.geo ? [L.geo.x, L.geo.y] : [0, 0]);
+    return [boneAng(P2), s[0] || 1e-6, s[1] || 1e-6, j[0], j[1]];
+  }
+  function boneAng(L) {
+    if (L.ba != null) return L.ba;
+    return L.type === "bone" && L.geo && L.geo.ang ? L.geo.ang : 0;
   }
   function trimOf(L, t) {
     var T2 = L.t || {}, on2 = ["ts", "te", "to"].some(function(k) {
@@ -2441,6 +2530,233 @@
     return [f(len) + " " + f(100 - len), String(f(-raw))];
   }
   function shapeOf(L, t) {
+    var d = shapeBase(L, t);
+    if (d && L.t && L.t.sz && L.t.sz.length) d = sizePath(L, d, t);
+    return d && L.pins && L.pins.length && !NOPIN ? pinWarp(L, d, t) : d;
+  }
+  function fitBox(b, s, o) {
+    var kx = b[2] ? s[0] / b[2] : 1, ky = b[3] ? s[1] / b[3] : 1;
+    return [o[0] - (o[0] - b[0]) * kx, o[1] - (o[1] - b[1]) * ky, Math.max(0, s[0]), Math.max(0, s[1])];
+  }
+  function anchorOf(L, b, t) {
+    return L.sa ? [b[0] + L.sa[0] * b[2], b[1] + L.sa[1] * b[3]] : get(L, "org", t) || [0, 0];
+  }
+  function geoBox(L, t) {
+    var G2 = L.geo;
+    if (!G2 || !L.t || !L.t.sz || !L.t.sz.length || L.type !== "rect" && L.type !== "image" && L.type !== "ellipse")
+      return null;
+    var b = L.type === "ellipse" ? [(G2.cx || 0) - (G2.rx || 0), (G2.cy || 0) - (G2.ry || 0), 2 * (G2.rx || 0), 2 * (G2.ry || 0)] : [G2.x || 0, G2.y || 0, G2.w || 0, G2.h || 0];
+    return fitBox(b, get(L, "sz", t), anchorOf(L, b, t));
+  }
+  function sizePath(L, d, t) {
+    var b = pathBox(L.b && L.b.d || d), s = get(L, "sz", t), o = anchorOf(L, b, t), kx = b[2] > 1e-9 ? s[0] / b[2] : 1, ky = b[3] > 1e-9 ? s[1] / b[3] : 1;
+    return d.map(function(sp) {
+      return {
+        c: sp.c,
+        n: sp.n.map(function(q) {
+          return q.map(function(v, i) {
+            return i % 2 ? o[1] + (v - o[1]) * ky : o[0] + (v - o[0]) * kx;
+          });
+        })
+      };
+    });
+  }
+  function pathBox(sp) {
+    var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    function pt(x, y) {
+      if (x < x0) x0 = x;
+      if (x > x1) x1 = x;
+      if (y < y0) y0 = y;
+      if (y > y1) y1 = y;
+    }
+    function ext(p0, p1, p2, p3) {
+      var a = -p0 + 3 * p1 - 3 * p2 + p3, b = 2 * (p0 - 2 * p1 + p2), c = p1 - p0, out = [];
+      if (Math.abs(a) < 1e-12) {
+        if (Math.abs(b) > 1e-12) out.push(-c / b);
+      } else {
+        var D2 = b * b - 4 * a * c;
+        if (D2 >= 0) {
+          var r = Math.sqrt(D2);
+          out.push((-b + r) / (2 * a), (-b - r) / (2 * a));
+        }
+      }
+      return out.filter(function(v) {
+        return v > 0 && v < 1;
+      });
+    }
+    function seg(A, B) {
+      var X = [A[0], A[4], B[2], B[0]], Y = [A[1], A[5], B[3], B[1]];
+      pt(B[0], B[1]);
+      ext(X[0], X[1], X[2], X[3]).concat(ext(Y[0], Y[1], Y[2], Y[3])).forEach(function(t) {
+        var u = 1 - t, w0 = u * u * u, w1 = 3 * u * u * t, w2 = 3 * u * t * t, w3 = t * t * t;
+        pt(w0 * X[0] + w1 * X[1] + w2 * X[2] + w3 * X[3], w0 * Y[0] + w1 * Y[1] + w2 * Y[2] + w3 * Y[3]);
+      });
+    }
+    (sp || []).forEach(function(s) {
+      var n = s.n;
+      if (!n.length) return;
+      pt(n[0][0], n[0][1]);
+      for (var i = 1; i < n.length; i++) seg(n[i - 1], n[i]);
+      if (s.c && n.length > 1) seg(n[n.length - 1], n[0]);
+    });
+    return isFinite(x0) ? [x0, y0, x1 - x0, y1 - y0] : [0, 0, 0, 0];
+  }
+  var NOPIN = false;
+  function mmul(A, B) {
+    return [
+      A[0] * B[0] + A[2] * B[1],
+      A[1] * B[0] + A[3] * B[1],
+      A[0] * B[2] + A[2] * B[3],
+      A[1] * B[2] + A[3] * B[3],
+      A[0] * B[4] + A[2] * B[5] + A[4],
+      A[1] * B[4] + A[3] * B[5] + A[5]
+    ];
+  }
+  function minv(M) {
+    var d = M[0] * M[3] - M[1] * M[2] || 1e-12;
+    return [M[3] / d, -M[1] / d, -M[2] / d, M[0] / d, (M[2] * M[5] - M[3] * M[4]) / d, (M[1] * M[4] - M[0] * M[5]) / d];
+  }
+  function mT(x, y) {
+    return [1, 0, 0, 1, x, y];
+  }
+  function mR(deg) {
+    var a = deg * Math.PI / 180;
+    return [Math.cos(a), Math.sin(a), -Math.sin(a), Math.cos(a), 0, 0];
+  }
+  function mS(x, y) {
+    return [x, 0, 0, y, 0, 0];
+  }
+  function matOf(c) {
+    var M = [1, 0, 0, 1, 0, 0], q = c.cp;
+    if (q) {
+      M = mmul(M, mT(q[3], q[4]));
+      M = mmul(M, mR(q[0]));
+      M = mmul(M, mS(1 / q[1], 1 / q[2]));
+      M = mmul(M, mR(-q[0]));
+      M = mmul(M, mT(-q[3], -q[4]));
+    }
+    M = mmul(M, mT(c.x, c.y));
+    M = mmul(M, mR(c.r));
+    if (c.kx) M = mmul(M, [1, 0, Math.tan(c.kx * Math.PI / 180), 1, 0, 0]);
+    if (c.ky) M = mmul(M, [1, Math.tan(c.ky * Math.PI / 180), 0, 1, 0, 0]);
+    var bf = c.ba && c.sx !== c.sy;
+    if (bf) M = mmul(M, mR(c.ba));
+    M = mmul(M, mS(c.sx, c.sy));
+    if (bf) M = mmul(M, mR(-c.ba));
+    return mmul(M, mT(-c.ox, -c.oy));
+  }
+  var XFC = {};
+  function xfM(s) {
+    if (XFC[s]) return XFC[s];
+    var M = [1, 0, 0, 1, 0, 0], re = /(matrix|translate|scale|rotate|skewX|skewY)\s*\(([^)]*)\)/g, m;
+    while (m = re.exec(s)) {
+      var v = m[2].split(/[\s,]+/).filter(Boolean).map(Number), k = m[1];
+      if (k === "matrix" && v.length === 6) M = mmul(M, v);
+      else if (k === "translate") M = mmul(M, mT(v[0] || 0, v[1] || 0));
+      else if (k === "scale") M = mmul(M, mS(v[0], v.length > 1 ? v[1] : v[0]));
+      else if (k === "rotate")
+        M = v.length > 2 ? mmul(mmul(mmul(M, mT(v[1], v[2])), mR(v[0])), mT(-v[1], -v[2])) : mmul(M, mR(v[0] || 0));
+      else if (k === "skewX") M = mmul(M, [1, 0, Math.tan((v[0] || 0) * Math.PI / 180), 1, 0, 0]);
+      else if (k === "skewY") M = mmul(M, [1, Math.tan((v[0] || 0) * Math.PI / 180), 0, 1, 0, 0]);
+    }
+    return XFC[s] = M;
+  }
+  function worldOf(L, t, upTo) {
+    var M = matOf(comp(L, t, true)), p = layerOf(L.parent), g = 0;
+    while (p && p !== upTo && g++ < 100) {
+      if (p.xf) M = mmul(xfM(p.xf), M);
+      M = mmul(matOf(comp(p, t, true)), M);
+      p = layerOf(p.parent);
+    }
+    return M;
+  }
+  function pinSpace(L, t, upTo) {
+    var W = worldOf(L, t, upTo), path = L.type ? L.type === "path" : !L.mesh;
+    return path && L.xf ? mmul(W, xfM(L.xf)) : W;
+  }
+  function boundAt(L, B, t, rest) {
+    var up = [], q = layerOf(B.parent), C = null, g = 0;
+    while (q && g++ < 100) {
+      up.push(q);
+      q = layerOf(q.parent);
+    }
+    for (q = layerOf(L.parent), g = 0; q && g++ < 100; q = layerOf(q.parent))
+      if (up.indexOf(q) >= 0) {
+        C = q;
+        break;
+      }
+    var was = RESTV;
+    RESTV = rest;
+    var S = pinSpace(L, t, C), M = Math.abs(S[0] * S[3] - S[1] * S[2]) < 1e-12 ? [1, 0, 0, 1, 0, 0] : mmul(minv(S), worldOf(B, t, C));
+    RESTV = was;
+    var G2 = B.geo || {}, a = (G2.ang || 0) * Math.PI / 180, x = G2.x || 0, y = G2.y || 0, dx = M[0] * Math.cos(a) + M[2] * Math.sin(a), dy = M[1] * Math.cos(a) + M[3] * Math.sin(a);
+    return [M[0] * x + M[2] * y + M[4], M[1] * x + M[3] * y + M[5], Math.atan2(dy, dx) * 180 / Math.PI];
+  }
+  function pinAt(L, p, t) {
+    var B = p.bone ? layerOf(p.bone) : null;
+    if (B) {
+      var r = boundAt(L, B, t, true), c = boundAt(L, B, t, false);
+      return [r[0], r[1], c[0], c[1], c[2] - r[2]];
+    }
+    var P2 = get(L, "pin" + p.n, t) || [p.x, p.y];
+    return [p.x, p.y, P2[0], P2[1], get(L, "pinr" + p.n, t) || 0];
+  }
+  function pinMoves(L, t) {
+    var ps = L.pins || [], rc = Math.max(10, Math.min(1e3, L.reach || 100)), pw = Math.max(0.5, Math.min(8, 200 / rc));
+    return [
+      ps.map(function(p) {
+        var q = pinAt(L, p, t), a = q[4] * Math.PI / 180;
+        return [q[0], q[1], q[2], q[3], Math.cos(a), Math.sin(a)];
+      }),
+      pw
+    ];
+  }
+  function warpXY(mv, pw, wx, wy, x, y, out, o) {
+    var W = 0, X = 0, Y = 0, i;
+    for (i = 0; i < mv.length; i++) {
+      var m = mv[i], ex = wx - m[0], ey = wy - m[1], w = 1 / (Math.pow(ex * ex + ey * ey, pw / 2) + 1e-6), dx = x - m[0], dy = y - m[1];
+      W += w;
+      X += w * (m[2] + dx * m[4] - dy * m[5]);
+      Y += w * (m[3] + dx * m[5] + dy * m[4]);
+    }
+    out[o] = W ? X / W : x;
+    out[o + 1] = W ? Y / W : y;
+  }
+  function pinWarp(L, d, t) {
+    var q = pinMoves(L, t), mv = q[0], pw = q[1];
+    return d.map(function(sp) {
+      return {
+        c: sp.c,
+        n: sp.n.map(function(p) {
+          var out = [0, 0, 0, 0, 0, 0];
+          for (var j = 0; j < 6; j += 2) warpXY(mv, pw, p[0], p[1], p[j], p[j + 1], out, j);
+          return out;
+        })
+      };
+    });
+  }
+  function meshMats(L, t) {
+    var M = L.mesh, out = [];
+    if (!M) return out;
+    var on2 = !NOPIN && L.pins && L.pins.length, q = on2 ? pinMoves(L, t) : null, W = [], i;
+    for (i = 0; i < M.v.length; i++)
+      if (q) warpXY(q[0], q[1], M.v[i][0], M.v[i][1], M.v[i][0], M.v[i][1], W, i * 2);
+      else {
+        W[i * 2] = M.v[i][0];
+        W[i * 2 + 1] = M.v[i][1];
+      }
+    for (i = 0; i < M.t.length; i++) {
+      var T2 = M.t[i], a = M.v[T2[0]], b = M.v[T2[1]], c = M.v[T2[2]], ux = b[0] - a[0], uy = b[1] - a[1], vx = c[0] - a[0], vy = c[1] - a[1], det = ux * vy - uy * vx;
+      if (!q || !det) {
+        out.push([1, 0, 0, 1, 0, 0]);
+        continue;
+      }
+      var A0 = W[T2[0] * 2], A1 = W[T2[0] * 2 + 1], px = W[T2[1] * 2] - A0, py = W[T2[1] * 2 + 1] - A1, rx = W[T2[2] * 2] - A0, ry = W[T2[2] * 2 + 1] - A1, ia = vy / det, ib = -vx / det, ic = -uy / det, id = ux / det, ma = px * ia + rx * ic, mc = px * ib + rx * id, mb = py * ia + ry * ic, md = py * ib + ry * id;
+      out.push([ma, mb, mc, md, A0 - ma * a[0] - mc * a[1], A1 - mb * a[0] - md * a[1]]);
+    }
+    return out;
+  }
+  function shapeBase(L, t) {
     var d = get(L, "d", t), T2 = L.t || {};
     if (L.shape && T2.rad && T2.rad.length) return poly(L.shape, get(L, "rad", t), true);
     if (d && d[0] && d[0].n.length === 2 && (T2.p0 && T2.p0.length || T2.p1 && T2.p1.length)) {
@@ -2515,8 +2831,17 @@
   function f(n) {
     return Math.round(n * 1e3) / 1e3;
   }
+  function f6(n) {
+    return Math.round(n * 1e6) / 1e6;
+  }
   function tf(c) {
-    return "translate(" + f(c.x) + "," + f(c.y) + ") rotate(" + f(c.r) + (c.kx ? ") skewX(" + f(c.kx) : "") + (c.ky ? ") skewY(" + f(c.ky) : "") + ") scale(" + f(c.sx) + "," + f(c.sy) + ") translate(" + f(-c.ox) + "," + f(-c.oy) + ")";
+    var q = c.cp;
+    return (q ? "translate(" + f(q[3]) + "," + f(q[4]) + ") rotate(" + f(q[0]) + ") scale(" + f(1 / q[1]) + "," + f(1 / q[2]) + ") rotate(" + f(-q[0]) + ") translate(" + f(-q[3]) + "," + f(-q[4]) + ") " : "") + "translate(" + f(c.x) + "," + f(c.y) + ") rotate(" + f(c.r) + (c.kx ? ") skewX(" + f(c.kx) : "") + (c.ky ? ") skewY(" + f(c.ky) : "") + (c.ba && c.sx !== c.sy ? ") rotate(" + f(c.ba) : "") + ") scale(" + f(c.sx) + "," + f(c.sy) + (c.ba && c.sx !== c.sy ? ") rotate(" + f(-c.ba) : "") + ") translate(" + f(-c.ox) + "," + f(-c.oy) + ")";
+  }
+  function dashStr(a) {
+    return a && a.length ? a.map(function(v) {
+      return String(f(Math.max(0, v)));
+    }).join(" ") : "none";
   }
   function dstr(sp) {
     var o = "";
@@ -2583,13 +2908,31 @@
         s.setAttribute("pathLength", "100");
         s.setAttribute("stroke-dasharray", td[0]);
         s.setAttribute("stroke-dashoffset", td[1]);
-      } else if (c.dof != null) s.setAttribute("stroke-dashoffset", String(f(c.dof)));
+      } else {
+        if (c.dof != null) s.setAttribute("stroke-dashoffset", String(f(c.dof)));
+        if (c.da) s.setAttribute("stroke-dasharray", dashStr(c.da));
+      }
       if (c.fo != null) s.setAttribute("fill-opacity", String(f(c.fo)));
       if (c.so != null) s.setAttribute("stroke-opacity", String(f(c.so)));
       if (c.d) s.setAttribute("d", dstr(c.d));
+      if (c.gb) {
+        var gb = c.gb, ga = L.type === "ellipse" ? { cx: gb[0] + gb[2] / 2, cy: gb[1] + gb[3] / 2, rx: gb[2] / 2, ry: gb[3] / 2 } : { x: gb[0], y: gb[1], width: gb[2], height: gb[3] };
+        for (var gk in ga) s.setAttribute(gk, String(f(ga[gk])));
+      }
       if (c.rad != null && !L.shape) {
         s.setAttribute("rx", String(f(c.rad)));
         s.setAttribute("ry", String(f(c.rad)));
+      }
+      if (L.dw) {
+        var wb = layerOf(L.dw), we = el(D.p + L.id + "-w");
+        if (wb && we) we.setAttribute("transform", "matrix(" + worldOf(wb, t, layerOf(L.du)).map(f6).join(",") + ")");
+      }
+      if (L.mesh) {
+        var ms = meshMats(L, t);
+        for (var mk = 0; mk < ms.length; mk++) {
+          var me = el(D.p + L.id + "-m" + mk);
+          if (me) me.setAttribute("transform", "matrix(" + ms[mk].map(f6).join(",") + ")");
+        }
       }
       if (L.fa)
         for (var fk in L.fa) {
@@ -2823,6 +3166,17 @@
     },
     apply,
     comp,
+    lookup: function(fn) {
+      EXT = fn;
+    },
+    meshMats,
+    pinAt,
+    worldOf,
+    restPins: function(on2) {
+      var was = NOPIN;
+      NOPIN = !!on2;
+      return was;
+    },
     get,
     gAttrs,
     linP,
@@ -2830,6 +3184,9 @@
     isG,
     pc,
     dstr,
+    dashStr,
+    pathBox,
+    xfM,
     poly,
     corners,
     maxRad,
@@ -2893,7 +3250,7 @@
   });
   return P;
 };
-var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"hero-","dur":3,"it":0,"dir":"normal","speed":1,"fps":0,"fill":1,"L":[{"id":"l1","o":[320,200],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"fill":[[0,{"g":"lin","a":180,"s":[[0,"#0B1026"],[0.62,"#14213D"],[1,"#2A2F5B"]]},"inOutSine"],[2.2,{"g":"lin","a":180,"s":[[0,"#2E3B73"],[0.62,"#B9617F"],[1,"#F2A65E"]]},"ease"]]}},{"id":"l2","o":[322.11,36.64],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"op":[[1,1,"inOutSine"],[2.2,0,"ease"]]}},{"id":"l3","o":[46,45.14],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rad":[[0,0,"inOutSine"],[1.2,2.2,"ease"]]},"shape":{"kind":"star","cx":46,"cy":46,"r":9,"rot":0,"n":5,"ratio":0.45}},{"id":"l4","o":[300,26],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"op":[[0,1,"hold"],[0.3,0.25,"hold"],[0.6,1,"hold"],[0.9,0.25,"hold"],[1.2,1,"hold"]]}},{"id":"l5","o":[604,36],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rot":[[0,0,"linear"],[3,120,"linear"]],"scl":[[0,[0.4,0.4],"outElastic"],[1,[1,1],"ease"]]}},{"id":"l6","o":[170,215],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"pos":[[0,[0,150],"outBack"],[1.2,[0,0],"ease"]]}},{"id":"l7","o":[170,215],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"fx.f1.sd":[[0,4,"inOutSine"],[1.6,14,"ease"]],"op":[[0,0,"outQuad"],[1.2,1,"ease"]]},"fa":{"fx.f1.sd":["-f1","stdDeviation"]}},{"id":"l8","o":[170,215],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":0.9,"fill":null,"stk":null,"sw":null},"t":{"rot":[[0,0,"linear"],[3,60,"linear"]],"scl":[[0,[0.35,0.35],"outBack"],[1.2,[1,1],"ease"]],"op":[[0,0,"outQuad"],[0.7,0.9,"ease"]]}},{"id":"l9","o":[170,215],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"fill":[[0,"#FF5F6D","inOutSine"],[1.6,"#FFC24B","ease"]]}},{"id":"l10","o":[470,175],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"d":[[0,[{"c":true,"n":[[470,123,441.3,123,498.7,123],[522,175,522,146.3,522,203.7],[470,227,498.7,227,441.3,227],[418,175,418,203.7,418,146.3]]}],"inOutBack"],[1.1,[{"c":true,"n":[[470,103,462,103,478,103],[510,175,510,131,510,219],[470,247,478,247,462,247],[430,175,430,219,430,131]]}],[0.7,0,0.2,1.4]],[2.1,[{"c":true,"n":[[470,131,422,131,518,131],[536,175,536,165,536,185],[470,219,518,219,422,219],[404,175,404,185,404,165]]}],"inOutCubic"],[3,[{"c":true,"n":[[470,123,441.3,123,498.7,123],[522,175,522,146.3,522,203.7],[470,227,498.7,227,441.3,227],[418,175,418,203.7,418,146.3]]}],"ease"]],"fill":[[0,"#6C8CFF","inOut"],[1.5,"#C77DFF","inOut"],[3,"#6C8CFF","ease"]],"rot":[[0,0,"inOutQuart"],[3,180,"ease"]]}},{"id":"l11","o":[325,92.35],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":0.35,"fill":null,"stk":null,"sw":null},"t":{"dof":[[0,0,"linear"],[3,-48,"linear"]]}},{"id":"l12","o":[0,0],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"pos":[[0,[50,130],"linear"],[1,[230,52],"linear"],[2,[420,58],"linear"],[3,[600,140],"linear"]],"op":[[0,0,"linear"],[0.4,1,"linear"],[2.6,1,"linear"],[3,0,"ease"]]},"sm":1,"or":1},{"id":"l15","o":[120,262],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":0.22,"fill":null,"stk":null,"sw":null},"t":{"pos":[[0,[-60,0],"inOutSine"],[3,[420,0],"ease"]]},"fa":{"fx.f1.sd":["-f1","stdDeviation"]}},{"id":"l18","o":[592,300],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"scl":[[0.6,[0,0],"outBack"],[1.4,[1,1],"ease"]]}},{"id":"l19","o":[592,300],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rot":[[1.2,0,"inOutSine"],[1.9,-5,"inOutSine"],[2.6,3,"inOutSine"],[3,0,"ease"]]}},{"id":"l20","o":[592,268],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rot":[[1.3,0,"inOutSine"],[2,-9,"inOutSine"],[2.7,5.4,"inOutSine"],[3,0,"ease"]]}},{"id":"l21","o":[592,240],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rot":[[1.4,0,"inOutSine"],[2.1,-14,"inOutSine"],[2.8,8.4,"inOutSine"],[3,0,"ease"]]}},{"id":"l29","o":[54,300],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null,"d":[{"c":false,"n":[[54,300,54,300,54,300],[54,214,54,214,54,214]]}]},"t":{"p1":[[0.2,[54,300],"outCubic"],[1,[54,214],"ease"]]}},{"id":"l30","o":[56,226],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"op":[[0.9,0,"outQuad"],[1.2,1,"ease"]],"skw":[[1.2,[0,0],"inOutSine"],[1.8,[0,14],"inOutSine"],[2.4,[0,-10],"inOutSine"],[3,[0,0],"ease"]],"rad":[[1.2,0,"inOutSine"],[2,3,"ease"]]},"shape":{"kind":"polygon","cx":64,"cy":226,"r":14,"rot":90,"n":3}},{"id":"l33","o":[320,296],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"te":[[0.2,0,"inOutCubic"],[1.8,100,"ease"]]}},{"id":"l37","o":[200,385],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"scl":[[1.8,[0,1],"outCubic"],[2.6,[1,1],"ease"]]}},{"id":"l38","o":[320.65,349.2],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"op":[[1,0,"outQuad"],[1.8,1,"ease"]],"pos":[[1,[0,26],"outBack"],[1.8,[0,0],"ease"]],"fx.f1.dy":[[1,0,"outQuad"],[1.8,4,"ease"]]},"fa":{"fx.f1.dx":["-f1","dx"],"fx.f1.dy":["-f1","dy"],"fx.f1.sd":["-f1","stdDeviation"],"fx.f1.col":["-f1","flood-color"],"fx.f1.op":["-f1","flood-opacity"]}}]},s);s.player=s.svgatorPlayer=P;P.stop();P._cleanup=[];function L(t,e,f){t.addEventListener(e,f);P._cleanup.push(function(){t.removeEventListener(e,f);});}function fwd(){if(P.direction!==1||P.isRollingBack)P.set("direction",1);P.play();}function out(){var a="pause";if(a==="pause")P.pause();else if(a==="reverse")P.rollback();else if(a==="start")P.stop();else if(a==="restart")P.restart();}P.play();})();
+var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"hero-","dur":3,"it":0,"dir":"normal","speed":1,"fps":0,"fill":1,"L":[{"id":"l1","o":[320,200],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"fill":[[0,{"g":"lin","a":180,"s":[[0,"#0B1026"],[0.62,"#14213D"],[1,"#2A2F5B"]]},"inOutSine"],[2.2,{"g":"lin","a":180,"s":[[0,"#2E3B73"],[0.62,"#B9617F"],[1,"#F2A65E"]]},"ease"]]}},{"id":"l2","o":[322.11,36.64],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"op":[[1,1,"inOutSine"],[2.2,0,"ease"]]}},{"id":"l3","o":[46,45.14],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rad":[[0,0,"inOutSine"],[1.2,2.2,"ease"]]},"shape":{"kind":"star","cx":46,"cy":46,"r":9,"rot":0,"n":5,"ratio":0.45}},{"id":"l4","o":[300,26],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"op":[[0,1,"hold"],[0.3,0.25,"hold"],[0.6,1,"hold"],[0.9,0.25,"hold"],[1.2,1,"hold"]]}},{"id":"l5","o":[604,36],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rot":[[0,0,"linear"],[3,120,"linear"]],"scl":[[0,[0.4,0.4],"outElastic"],[1,[1,1],"ease"]]}},{"id":"l6","o":[170,215],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"pos":[[0,[0,150],"outBack"],[1.2,[0,0],"ease"]]}},{"id":"l7","o":[170,215],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"fx.f1.sd":[[0,4,"inOutSine"],[1.6,14,"ease"]],"op":[[0,0,"outQuad"],[1.2,1,"ease"]]},"fa":{"fx.f1.sd":["-f1","stdDeviation"]}},{"id":"l8","o":[170,215],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":0.9,"fill":null,"stk":null,"sw":null},"t":{"rot":[[0,0,"linear"],[3,60,"linear"]],"scl":[[0,[0.35,0.35],"outBack"],[1.2,[1,1],"ease"]],"op":[[0,0,"outQuad"],[0.7,0.9,"ease"]]}},{"id":"l9","o":[170,215],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"fill":[[0,"#FF5F6D","inOutSine"],[1.6,"#FFC24B","ease"]]}},{"id":"l10","o":[470,175],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"d":[[0,[{"c":true,"n":[[470,123,441.3,123,498.7,123],[522,175,522,146.3,522,203.7],[470,227,498.7,227,441.3,227],[418,175,418,203.7,418,146.3]]}],"inOutBack"],[1.1,[{"c":true,"n":[[470,103,462,103,478,103],[510,175,510,131,510,219],[470,247,478,247,462,247],[430,175,430,219,430,131]]}],[0.7,0,0.2,1.4]],[2.1,[{"c":true,"n":[[470,131,422,131,518,131],[536,175,536,165,536,185],[470,219,518,219,422,219],[404,175,404,185,404,165]]}],"inOutCubic"],[3,[{"c":true,"n":[[470,123,441.3,123,498.7,123],[522,175,522,146.3,522,203.7],[470,227,498.7,227,441.3,227],[418,175,418,203.7,418,146.3]]}],"ease"]],"fill":[[0,"#6C8CFF","inOut"],[1.5,"#C77DFF","inOut"],[3,"#6C8CFF","ease"]],"rot":[[0,0,"inOutQuart"],[3,180,"ease"]]}},{"id":"l11","o":[325,92.35],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":0.35,"fill":null,"stk":null,"sw":null},"t":{"dof":[[0,0,"linear"],[3,-48,"linear"]],"da":[[0,[1,11],"inOutSine"],[1.5,[5,7],"inOutSine"],[3,[1,11],"ease"]]}},{"id":"l12","o":[0,0],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"pos":[[0,[50,130],"linear"],[1,[230,52],"linear"],[2,[420,58],"linear"],[3,[600,140],"linear"]],"op":[[0,0,"linear"],[0.4,1,"linear"],[2.6,1,"linear"],[3,0,"ease"]]},"sm":1,"or":1},{"id":"l15","o":[120,262],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":0.22,"fill":null,"stk":null,"sw":null},"t":{"sz":[[0,[240,28],"inOutSine"],[3,[330,40],"ease"]],"pos":[[0,[-60,0],"inOutSine",[160,-24,-160,-24]],[3,[420,0],"ease"]]},"fa":{"fx.f1.sd":["-f1","stdDeviation"]},"type":"ellipse","geo":{"cx":120,"cy":262,"rx":120,"ry":14},"ev":1},{"id":"l18","o":[592,300],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"scl":[[0.6,[0,0],"outBack"],[1.4,[1,1],"ease"]]}},{"id":"l19","o":[592,300],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rot":[[1.2,0,"inOutSine"],[1.9,-5,"inOutSine"],[2.6,3,"inOutSine"],[3,0,"ease"]]},"parent":"l18","geo":{"x":592,"y":300,"ang":-90}},{"id":"l20","o":[592,268],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rot":[[1.3,0,"inOutSine"],[2,-9,"inOutSine"],[2.7,5.4,"inOutSine"],[3,0,"ease"]]},"parent":"l19","geo":{"x":592,"y":268,"ang":-90}},{"id":"l25","o":[579,262],"b":{"pos":[0,0],"rot":-30,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null,"d":[{"c":true,"n":[[579,257,571.82,257,586.18,257],[592,262,592,259.24,592,264.76],[579,267,586.18,267,571.82,267],[566,262,566,264.76,566,259.24]]}]},"t":{"pin2":[[1.3,[568,262],"inOutSine"],[1.8,[569,255],"inOutSine"],[2.3,[568,268],"inOutSine"],[2.8,[568,262],"ease"]]},"pins":[{"n":1,"x":590,"y":262},{"n":2,"x":568,"y":262}],"parent":"l20","dw":"l20","du":"l18"},{"id":"l21","o":[592,240],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"rot":[[1.4,0,"inOutSine"],[2.1,-14,"inOutSine"],[2.8,8.4,"inOutSine"],[3,0,"ease"]],"scl":[[1.4,[1,1],"inOutSine"],[1.75,[1.18,0.85],"inOutSine"],[2.1,[0.9,1.11],"inOutSine"],[2.5,[1,1],"ease"]]},"ba":-90,"parent":"l20","geo":{"x":592,"y":240,"ang":-90}},{"id":"l29","o":[66,256.94],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"pin2":[[1.2,[54,216],"inOutSine"],[1.8,[58.5,215],"inOutSine"],[2.4,[50.5,216.5],"inOutSine"],[3,[54,216],"ease"]]},"pins":[{"n":1,"x":54,"y":298},{"n":2,"x":54,"y":216}],"mesh":{"v":[[63.72,197.21],[68.02,213.23],[52,208.94],[79.74,201.5],[84.04,217.52],[35.98,204.65],[40.27,220.67],[56.29,224.96],[72.31,229.25],[88.33,233.54],[44.56,236.69],[60.58,240.98],[76.6,245.27],[92.62,249.57],[48.85,252.71],[64.88,257],[53.15,268.73],[37.13,264.43],[69.17,273.02],[41.42,280.46],[57.44,284.75],[73.46,289.04],[45.71,296.48],[61.73,300.77],[50.01,312.5]],"t":[[0,1,2],[0,3,1],[3,4,1],[5,2,6],[2,1,7],[2,7,6],[1,4,8],[1,8,7],[4,9,8],[6,7,10],[7,11,10],[7,8,11],[8,12,11],[8,9,12],[9,13,12],[10,11,14],[11,12,15],[11,15,14],[14,16,17],[14,15,16],[15,18,16],[17,16,19],[16,18,20],[16,20,19],[18,21,20],[19,20,22],[20,23,22],[20,21,23],[22,23,24]]}},{"id":"l30","o":[54,300],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null,"d":[{"c":false,"n":[[54,300,54,300,54,300],[54,214,54,214,54,214]]}]},"t":{"p1":[[0.2,[54,300],"outCubic"],[1,[54,214],"ease"]]}},{"id":"l31","o":[56,226],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"op":[[0.9,0,"outQuad"],[1.2,1,"ease"]],"skw":[[1.2,[0,0],"inOutSine"],[1.8,[0,14],"inOutSine"],[2.4,[0,-10],"inOutSine"],[3,[0,0],"ease"]],"rad":[[1.2,0,"inOutSine"],[2,3,"ease"]]},"shape":{"kind":"polygon","cx":64,"cy":226,"r":14,"rot":90,"n":3}},{"id":"l34","o":[320,296],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"te":[[0.2,0,"inOutCubic"],[1.8,100,"ease"]]}},{"id":"l38","o":[200,385],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"scl":[[1.8,[0,1],"outCubic"],[2.6,[1,1],"ease"]]}},{"id":"l39","o":[320.65,349.2],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{"op":[[1,0,"outQuad"],[1.8,1,"ease"]],"pos":[[1,[0,26],"outBack"],[1.8,[0,0],"ease"]],"fx.f1.dy":[[1,0,"outQuad"],[1.8,4,"ease"]]},"fa":{"fx.f1.dx":["-f1","dx"],"fx.f1.dy":["-f1","dy"],"fx.f1.sd":["-f1","stdDeviation"],"fx.f1.col":["-f1","flood-color"],"fx.f1.op":["-f1","flood-opacity"]}},{"id":"l28","o":[597.75,260],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null,"d":[{"c":true,"n":[[596.5,298,596.5,298,596.5,298],[596.5,290.4,596.5,290.4,596.5,290.4],[596.5,282.8,596.5,282.8,596.5,282.8],[596.5,275.2,596.5,275.2,596.5,275.2],[596.5,267.6,596.5,267.6,596.5,267.6],[596.5,260,596.5,260,596.5,260],[596.5,252.4,596.5,252.4,596.5,252.4],[596.5,244.8,596.5,244.8,596.5,244.8],[596.5,237.2,596.5,237.2,596.5,237.2],[596.5,229.60000000000002,596.5,229.60000000000002,596.5,229.60000000000002],[596.5,222,596.5,222,596.5,222],[599,222,599,222,599,222],[599,229.60000000000002,599,229.60000000000002,599,229.60000000000002],[599,237.2,599,237.2,599,237.2],[599,244.8,599,244.8,599,244.8],[599,252.4,599,252.4,599,252.4],[599,260,599,260,599,260],[599,267.6,599,267.6,599,267.6],[599,275.2,599,275.2,599,275.2],[599,282.8,599,282.8,599,282.8],[599,290.4,599,290.4,599,290.4],[599,298,599,298,599,298]]}]},"t":{},"pins":[{"n":1,"x":592,"y":300,"bone":"l19"},{"n":2,"x":592,"y":268,"bone":"l20"},{"n":3,"x":592,"y":240,"bone":"l21"}],"parent":"l18"},{"id":"l22","o":[592,284],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{},"parent":"l19","dw":"l19","du":"l18"},{"id":"l23","o":[592,254],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{},"parent":"l20","dw":"l20","du":"l18"},{"id":"l24","o":[592,228],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{},"parent":"l21","dw":"l21","du":"l18"},{"id":"l26","o":[605,236],"b":{"pos":[0,0],"rot":30,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{},"parent":"l21","dw":"l21","du":"l18"},{"id":"l27","o":[592,210.92],"b":{"pos":[0,0],"rot":0,"scl":[1,1],"op":1,"fill":null,"stk":null,"sw":null},"t":{},"parent":"l21","dw":"l21","du":"l18"}]},s);s.player=s.svgatorPlayer=P;P.stop();P._cleanup=[];function L(t,e,f){t.addEventListener(e,f);P._cleanup.push(function(){t.removeEventListener(e,f);});}function fwd(){if(P.direction!==1||P.isRollingBack)P.set("direction",1);P.play();}function out(){var a="pause";if(a==="pause")P.pause();else if(a==="reverse")P.rollback();else if(a==="start")P.stop();else if(a==="restart")P.restart();}P.play();})();
 ]]></script></svg></div>
             </div>
             <aside class="insp" aria-label="Document properties">
@@ -2968,7 +3325,9 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
               >
             </div>
             <div class="tl-grid">
-              <div class="tl-names" id="tlNames"><div class="tl-head">ANIMATED LAYERS</div></div>
+              <div class="tl-names" id="tlNames">
+                <div class="tl-head"><span class="w">ANIMATED</span>LAYERS</div>
+              </div>
               <div
                 class="tl-area"
                 id="tlArea"
@@ -2987,7 +3346,7 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
           </div>
         </div>
         <p class="caption">
-          This is the editor’s sample scene, exported from SVGcinema as one 41&nbsp;KB file and playing live on this
+          This is the editor’s sample scene, exported from SVGcinema as one 65&nbsp;KB file and playing live on this
           page.
         </p>
       </div>
@@ -3167,8 +3526,8 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
             <div class="mini" style="--d: 3s"><i style="left: 0"></i><i style="left: 100%"></i><u></u></div>
             <h3>Bones and IK <kbd>B</kbd></h3>
             <p>
-              Rig a stalk, an arm or a tail with bones. Pose it with forward or inverse kinematics and add
-              follow-through.
+              Rig a stalk, an arm or a tail with bones. Pose it with forward or inverse kinematics, squash and stretch
+              it, and key the whole rig in one go.
             </p>
           </div>
         </article>
@@ -3273,7 +3632,8 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
             <div class="mini" style="--d: 4s"><i style="left: 0"></i><i style="left: 60%"></i><u></u></div>
             <h3>Masks and clipping</h3>
             <p>
-              Soft masks work by opacity, so a gradient wipe reveals as you’d expect. Clipping paths use only the shape.
+              Soft masks work by opacity or brightness, so a gradient wipe reveals as you’d expect. Clipping paths use
+              only the shape.
             </p>
           </div>
         </article>
@@ -3356,6 +3716,256 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
             <p>
               Stack filters on any layer and reorder them. Every parameter, from radius to shadow offset, has its own
               track.
+            </p>
+          </div>
+        </article>
+
+        <!-- Pins -->
+        <article class="spec">
+          <div class="spec-art mat">
+            <svg viewBox="0 0 240 150" aria-hidden="true">
+              <path
+                d="M40 75 L200 75"
+                fill="none"
+                stroke="#959cae"
+                stroke-opacity=".55"
+                stroke-width="1.4"
+                stroke-dasharray="3 4"
+              />
+              <path
+                fill="none"
+                stroke="#9a7bff"
+                stroke-width="18"
+                stroke-linecap="round"
+                d="M40 75 C80 75 90 75 120 75 S170 75 200 75"
+              >
+                <animate
+                  attributeName="d"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="spline"
+                  keyTimes="0;.33;.66;1"
+                  keySplines=".6 0 .3 1;.6 0 .3 1;.6 0 .3 1"
+                  values="M40 75 C80 75 90 75 120 75 S170 75 200 75;
+                          M40 75 C80 75 90 46 120 46 S170 96 200 96;
+                          M40 75 C80 75 90 102 120 102 S170 58 200 54;
+                          M40 75 C80 75 90 75 120 75 S170 75 200 75"
+                />
+              </path>
+              <g style="fill: var(--panel)" stroke="#7189ff" stroke-width="1.8">
+                <circle cx="40" cy="75" r="5.5" />
+                <circle cx="120" cy="75" r="5.5">
+                  <animate
+                    attributeName="cy"
+                    dur="4s"
+                    repeatCount="indefinite"
+                    calcMode="spline"
+                    keyTimes="0;.33;.66;1"
+                    keySplines=".6 0 .3 1;.6 0 .3 1;.6 0 .3 1"
+                    values="75;46;102;75"
+                  />
+                </circle>
+                <circle cx="200" cy="75" r="5.5">
+                  <animate
+                    attributeName="cy"
+                    dur="4s"
+                    repeatCount="indefinite"
+                    calcMode="spline"
+                    keyTimes="0;.33;.66;1"
+                    keySplines=".6 0 .3 1;.6 0 .3 1;.6 0 .3 1"
+                    values="75;96;54;75"
+                  />
+                </circle>
+              </g>
+            </svg>
+          </div>
+          <div class="spec-tx">
+            <div class="mini" style="--d: 4s">
+              <i style="left: 0"></i><i style="left: 33%"></i><i style="left: 66%"></i><i style="left: 100%"></i><u></u>
+            </div>
+            <h3>Pins and mesh warp <kbd>W</kbd></h3>
+            <p>
+              Pin a path, an image, text or a whole group, then drag the pins to bend it. Pins can follow bones, so a
+              rig bends a sleeve or a vine.
+            </p>
+          </div>
+        </article>
+
+        <!-- Size and corners -->
+        <article class="spec">
+          <div class="spec-art mat">
+            <svg viewBox="0 0 240 150" aria-hidden="true">
+              <rect
+                x="90"
+                y="45"
+                width="60"
+                height="60"
+                rx="4"
+                fill="#ffb84d"
+                stroke-width="3"
+                style="stroke: var(--fg)"
+              >
+                <animate
+                  attributeName="width"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="spline"
+                  keyTimes="0;.33;.66;1"
+                  keySplines=".6 0 .3 1;.6 0 .3 1;.6 0 .3 1"
+                  values="60;150;44;60"
+                />
+                <animate
+                  attributeName="x"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="spline"
+                  keyTimes="0;.33;.66;1"
+                  keySplines=".6 0 .3 1;.6 0 .3 1;.6 0 .3 1"
+                  values="90;45;98;90"
+                />
+                <animate
+                  attributeName="height"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="spline"
+                  keyTimes="0;.33;.66;1"
+                  keySplines=".6 0 .3 1;.6 0 .3 1;.6 0 .3 1"
+                  values="60;36;84;60"
+                />
+                <animate
+                  attributeName="y"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="spline"
+                  keyTimes="0;.33;.66;1"
+                  keySplines=".6 0 .3 1;.6 0 .3 1;.6 0 .3 1"
+                  values="45;57;33;45"
+                />
+                <animate
+                  attributeName="rx"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="spline"
+                  keyTimes="0;.33;.66;1"
+                  keySplines=".6 0 .3 1;.6 0 .3 1;.6 0 .3 1"
+                  values="4;18;22;4"
+                />
+              </rect>
+              <circle cx="120" cy="75" r="3.5" fill="none" stroke="#7189ff" stroke-width="1.5" />
+              <path d="M114 75h12M120 69v12" stroke="#7189ff" stroke-width="1.2" />
+            </svg>
+          </div>
+          <div class="spec-tx">
+            <div class="mini" style="--d: 4s">
+              <i style="left: 0"></i><i style="left: 33%"></i><i style="left: 66%"></i><i style="left: 100%"></i><u></u>
+            </div>
+            <h3>Size and corners</h3>
+            <p>
+              Shapes grow and shrink around their origin while the stroke keeps its width. Corner radius on rectangles,
+              polygons and stars animates too.
+            </p>
+          </div>
+        </article>
+
+        <!-- Dash patterns -->
+        <article class="spec">
+          <div class="spec-art mat">
+            <svg viewBox="0 0 240 150" aria-hidden="true">
+              <path
+                d="M30 75 C60 30 90 30 120 75 S180 120 210 75"
+                fill="none"
+                stroke="#7189ff"
+                stroke-width="5"
+                stroke-linecap="round"
+                stroke-dasharray="1 10 1 10"
+              >
+                <animate
+                  attributeName="stroke-dasharray"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="spline"
+                  keyTimes="0;.5;1"
+                  keySplines=".6 0 .3 1;.6 0 .3 1"
+                  values="1 10 1 10;26 8 4 8;1 10 1 10"
+                />
+                <animate attributeName="stroke-dashoffset" dur="4s" repeatCount="indefinite" values="0;-88" />
+              </path>
+            </svg>
+          </div>
+          <div class="spec-tx">
+            <div class="mini" style="--d: 4s">
+              <i style="left: 0"></i><i style="left: 50%"></i><i style="left: 100%"></i><u></u>
+            </div>
+            <h3>Dash patterns</h3>
+            <p>
+              Dash patterns blend from one keyframe to the next, even patterns of different lengths, and the offset
+              sends them travelling.
+            </p>
+          </div>
+        </article>
+
+        <!-- Triggers and links -->
+        <article class="spec">
+          <div class="spec-art mat">
+            <svg viewBox="0 0 240 150" aria-hidden="true">
+              <circle cx="120" cy="75" r="19" fill="none" stroke="#7189ff" stroke-width="2" opacity="0">
+                <animate
+                  attributeName="r"
+                  dur="3s"
+                  repeatCount="indefinite"
+                  keyTimes="0;.45;.8;1"
+                  values="19;19;52;52"
+                />
+                <animate
+                  attributeName="opacity"
+                  dur="3s"
+                  repeatCount="indefinite"
+                  keyTimes="0;.449;.45;.8;1"
+                  values="0;0;.6;0;0"
+                />
+              </circle>
+              <g transform="translate(120 75)">
+                <g>
+                  <animateTransform
+                    attributeName="transform"
+                    type="scale"
+                    dur="3s"
+                    repeatCount="indefinite"
+                    keyTimes="0;.42;.46;.54;1"
+                    values="1;1;.9;1;1"
+                  />
+                  <rect x="-42" y="-19" width="84" height="38" rx="19" fill="#7189ff" />
+                  <path d="M-5 -8 L9 0 L-5 8Z" fill="#fff" />
+                </g>
+              </g>
+              <g>
+                <animateTransform
+                  attributeName="transform"
+                  type="translate"
+                  dur="3s"
+                  repeatCount="indefinite"
+                  calcMode="spline"
+                  keyTimes="0;.38;.75;1"
+                  keySplines=".5 0 .3 1;0 0 1 1;.5 0 .3 1"
+                  values="196 132;134 82;134 82;196 132"
+                />
+                <path
+                  d="M0 0 L0 17 L4.5 13 L7.5 20 L10 19 L7 12.5 L12.5 12.5Z"
+                  stroke-width="1.2"
+                  stroke-linejoin="round"
+                  style="fill: var(--fg); stroke: var(--panel)"
+                />
+              </g>
+            </svg>
+          </div>
+          <div class="spec-tx">
+            <div class="mini" style="--d: 3s">
+              <i style="left: 0"></i><i style="left: 45%"></i><i style="left: 100%"></i><u></u>
+            </div>
+            <h3>Triggers and links</h3>
+            <p>
+              Play on load, on hover, on click, when scrolled into view or from your code, and pick what mouse-out does.
+              Any layer can link to a page.
             </p>
           </div>
         </article>
@@ -3665,6 +4275,7 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
             <li>Morphs, motion paths, bones, gradients, masks and every filter parameter</li>
             <li>A player API to play, pause, seek, reverse and change speed, with events</li>
             <li>Code written for SVGator’s player API works unchanged</li>
+            <li>Repeat, ping-pong, speed and frame rate, set in the export dialog</li>
           </ul>
           <div class="trig" aria-label="Start triggers">
             <span>On load</span><span>On hover</span><span>On click</span><span>When scrolled into view</span
@@ -3692,6 +4303,7 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
         <div class="tabs" role="tablist" aria-label="Embed code">
           <button role="tab" id="tab-html" aria-selected="true" data-fw="html">HTML</button>
           <button role="tab" id="tab-react" aria-selected="false" data-fw="react">React</button>
+          <button role="tab" id="tab-next" aria-selected="false" data-fw="next">Next.js</button>
           <button role="tab" id="tab-vue" aria-selected="false" data-fw="vue">Vue</button>
           <button role="tab" id="tab-svelte" aria-selected="false" data-fw="svelte">Svelte</button>
           <button role="tab" id="tab-angular" aria-selected="false" data-fw="angular">Angular</button>
@@ -3706,9 +4318,69 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
       </div>
 
       <div class="sizes">
-        <div><b>41.5 KB</b><span>the sample scene, player included</span></div>
-        <div><b>11.5 KB</b><span>the same file, gzipped</span></div>
+        <div><b>64.6 KB</b><span>the sample scene, player included</span></div>
+        <div><b>16.7 KB</b><span>the same file, gzipped</span></div>
         <div><b>0</b><span>runtime dependencies</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= IMPORT ======================= -->
+  <section class="sec" id="import">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <div class="tc">0:15.00</div>
+          <h2>Open any SVG. Even animated ones.</h2>
+        </div>
+        <p>
+          Bring in work from other tools and keep editing it. Layers, shapes, text and keyframes come in as things you
+          can select and change, not as a flat picture.
+        </p>
+      </div>
+      <div class="facts">
+        <div class="fact">
+          <h3>Figma, Illustrator, Inkscape</h3>
+          <p>
+            Groups keep their names and order, transforms become position, rotate and scale, shapes stay shapes and text
+            stays text.
+          </p>
+        </div>
+        <div class="fact">
+          <h3>SVGator, animation included</h3>
+          <p>
+            Both of SVGator’s exports, JS and CSS, open as keyframes you can edit: motion paths, easing, morphs,
+            gradients, and the length, repeat and speed.
+          </p>
+        </div>
+        <div class="fact">
+          <h3>CSS animations</h3>
+          <p>
+            <code>@keyframes</code> on an SVG’s elements become keyframes too: opacity, colours, stroke, dashes, sizes
+            and transforms.
+          </p>
+        </div>
+        <div class="fact">
+          <h3>Your own exports, editable</h3>
+          <p>
+            Tick <b>Include the editable project</b> when you export, and the SVG opens back in SVGcinema exactly as you
+            left it.
+          </p>
+        </div>
+        <div class="fact">
+          <h3>Masks and filters</h3>
+          <p>
+            Clip paths and masks become clipping and mask groups; a blur or a drop shadow becomes a filter you can
+            animate.
+          </p>
+        </div>
+        <div class="fact">
+          <h3>Open or add</h3>
+          <p>
+            Open an SVG as a new project, or add it to the one you’re in: its layers arrive in a group, and a longer
+            animation lengthens your timeline.
+          </p>
+        </div>
       </div>
     </div>
   </section>
@@ -3718,7 +4390,7 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
     <div class="wrap">
       <div class="sec-head">
         <div>
-          <div class="tc">0:15.00</div>
+          <div class="tc">0:18.00</div>
           <h2>Every tool is one key away.</h2>
         </div>
         <p>
@@ -3742,6 +4414,23 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
           data-tip="<b>Edit nodes.</b> Drag nodes and handles. Double-click a node to switch between smooth and corner."
         >
           <b>A</b><span>Edit nodes</span>
+        </button>
+        <button
+          class="key"
+          type="button"
+          data-k="+"
+          data-k2="="
+          data-tip="<b>Add node.</b> Click a segment of the selected path to add a node there."
+        >
+          <b>+</b><span>Add node</span>
+        </button>
+        <button
+          class="key"
+          type="button"
+          data-k="-"
+          data-tip="<b>Remove node.</b> Click a node of the selected path to remove it."
+        >
+          <b>−</b><span>Remove node</span>
         </button>
         <button
           class="key"
@@ -3771,7 +4460,7 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
           class="key"
           type="button"
           data-k="m"
-          data-tip="<b>Rectangle.</b> Shift draws a square, Alt draws from the centre. Corner radius is animatable."
+          data-tip="<b>Rectangle.</b> Shift draws a square, Alt draws from the centre. Corner radius is animatable. Polygon and Star sit beside it: ↑ and ↓ change the sides while you drag."
         >
           <b>M</b><span>Rectangle</span>
         </button>
@@ -3795,9 +4484,33 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
           class="key"
           type="button"
           data-k="b"
-          data-tip="<b>Bone.</b> Build a rig, then pose it with forward or inverse kinematics."
+          data-tip="<b>Bone.</b> Build a rig, then pose it with forward or inverse kinematics. Bind hangs layers and bones on a bone."
         >
           <b>B</b><span>Bone</span>
+        </button>
+        <button
+          class="key"
+          type="button"
+          data-k="e"
+          data-tip="<b>Edit bone.</b> Change a rig’s rest pose, its joints, lengths and angles, without touching the keyframes."
+        >
+          <b>E</b><span>Edit bone</span>
+        </button>
+        <button
+          class="key"
+          type="button"
+          data-k="s"
+          data-tip="<b>Scale bone.</b> Drag along a bone to stretch it or squash it, keyed at the playhead."
+        >
+          <b>S</b><span>Scale bone</span>
+        </button>
+        <button
+          class="key"
+          type="button"
+          data-k="w"
+          data-tip="<b>Pin.</b> Click a path, image, text or group to pin it, then drag a pin to bend it. Pins can follow bones."
+        >
+          <b>W</b><span>Pin</span>
         </button>
         <button
           class="key"
@@ -3817,6 +4530,28 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
         </button>
       </div>
       <p class="key-out" id="keyOut" aria-live="polite">Pick a key to see what the tool does.</p>
+      <div class="facts tool-facts">
+        <div class="fact">
+          <h3>Snapping and guides</h3>
+          <p>
+            Snap to other layers’ edges and centres, to path nodes, guides and the grid. Drag guides out of the rulers.
+          </p>
+        </div>
+        <div class="fact">
+          <h3>Align and combine</h3>
+          <p>
+            Align and distribute layers against each other or the canvas, and combine shapes with union, subtract,
+            intersect and exclude.
+          </p>
+        </div>
+        <div class="fact">
+          <h3>Drag any number</h3>
+          <p>
+            Drag the label of a number field left or right to change the value. Every animatable property keeps its own
+            row and its own keyframe toggle.
+          </p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -3825,7 +4560,7 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
     <div class="wrap">
       <div class="sec-head">
         <div>
-          <div class="tc">0:18.00</div>
+          <div class="tc">0:21.00</div>
           <h2>Free, and it stays on your machine.</h2>
         </div>
         <p>SVGcinema is a static web app. Your artwork is drawn, animated and exported right in the browser tab.</p>
@@ -3892,15 +4627,11 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
       ><svg class="logo" viewBox="0 0 83.855 16.741" aria-hidden="true"><path class="lg-b" d="M4.775 16.537 C4.042 16.537 3.353 16.403 2.709 16.136 C2.065 15.869 1.51 15.49 1.044 14.998 C0.579 14.506 0.23 13.924 0 13.254 L1.995 12.359 C2.288 12.998 2.694 13.5 3.212 13.867 C3.73 14.233 4.304 14.417 4.932 14.417 C5.267 14.417 5.555 14.364 5.796 14.26 C6.037 14.155 6.225 14.011 6.361 13.828 C6.497 13.644 6.565 13.427 6.565 13.176 C6.565 12.904 6.482 12.671 6.314 12.477 C6.147 12.283 5.885 12.129 5.529 12.013 L3.236 11.26 C2.304 10.956 1.602 10.524 1.131 9.964 C0.66 9.404 0.424 8.731 0.424 7.945 C0.424 7.254 0.594 6.647 0.935 6.123 C1.275 5.6 1.751 5.192 2.364 4.898 C2.976 4.605 3.681 4.459 4.476 4.459 C5.178 4.459 5.827 4.579 6.424 4.82 C7.021 5.061 7.537 5.401 7.971 5.841 C8.406 6.281 8.733 6.809 8.953 7.427 L6.974 8.322 C6.754 7.778 6.424 7.351 5.984 7.042 C5.544 6.733 5.042 6.579 4.476 6.579 C4.152 6.579 3.864 6.631 3.613 6.736 C3.361 6.841 3.168 6.99 3.031 7.184 C2.895 7.377 2.827 7.6 2.827 7.851 C2.827 8.123 2.916 8.362 3.094 8.566 C3.272 8.77 3.539 8.93 3.895 9.045 L6.141 9.767 C7.084 10.071 7.788 10.495 8.254 11.04 C8.72 11.584 8.953 12.249 8.953 13.034 C8.953 13.715 8.775 14.32 8.419 14.849 C8.063 15.377 7.573 15.791 6.95 16.089 C6.327 16.388 5.602 16.537 4.775 16.537 Z"/><path class="lg-b" d="M13.037 16.348 L9.031 4.647 L11.701 4.647 L14.45 13.208 L17.199 4.647 L19.869 4.647 L15.864 16.348 Z"/><path class="lg-b" d="M23.191 4.906 C23.908 4.608 24.691 4.459 25.539 4.459 C26.387 4.459 27.149 4.6 27.824 4.883 C28.5 5.165 29.073 5.542 29.544 6.014 C30.015 6.485 30.35 7.008 30.549 7.584 L28.398 8.621 C28.199 8.055 27.851 7.587 27.353 7.215 C26.856 6.843 26.251 6.657 25.539 6.657 C24.848 6.657 24.241 6.82 23.717 7.144 C23.193 7.469 22.788 7.917 22.5 8.487 C22.212 9.058 22.068 9.726 22.068 10.49 C22.068 11.254 22.22 11.924 22.523 12.5 C22.827 13.076 23.243 13.527 23.772 13.851 C24.301 14.176 24.911 14.338 25.602 14.338 C26.136 14.338 26.636 14.236 27.102 14.032 C27.568 13.828 27.945 13.532 28.233 13.144 C28.521 12.757 28.665 12.291 28.665 11.746 L28.665 11.715 L25.539 11.715 L25.539 9.673 L31.099 9.673 L31.099 10.914 C31.099 11.867 30.942 12.697 30.628 13.403 C30.314 14.11 29.892 14.697 29.364 15.163 C28.835 15.629 28.243 15.974 27.589 16.199 C26.934 16.424 26.272 16.537 25.602 16.537 C24.764 16.537 23.984 16.385 23.262 16.081 C22.539 15.778 21.906 15.354 21.361 14.809 C20.817 14.265 20.392 13.626 20.089 12.893 C19.785 12.16 19.633 11.359 19.633 10.49 C19.633 9.621 19.78 8.817 20.073 8.079 C20.366 7.341 20.78 6.702 21.314 6.163 C21.848 5.623 22.474 5.205 23.191 4.906 Z"/><path class="lg-a" d="M37.08 16.741 C36.222 16.741 35.45 16.545 34.764 16.152 C34.078 15.759 33.533 15.223 33.13 14.542 C32.727 13.862 32.526 13.097 32.526 12.249 C32.526 11.401 32.725 10.639 33.122 9.964 C33.52 9.288 34.065 8.757 34.756 8.37 C35.447 7.982 36.222 7.788 37.08 7.788 C37.719 7.788 38.311 7.898 38.855 8.118 C39.4 8.338 39.866 8.644 40.253 9.037 C40.641 9.43 40.918 9.893 41.086 10.427 L39.044 11.307 C38.897 10.877 38.649 10.537 38.298 10.286 C37.947 10.034 37.541 9.909 37.08 9.909 C36.672 9.909 36.308 10.008 35.989 10.207 C35.669 10.406 35.418 10.684 35.235 11.04 C35.052 11.396 34.96 11.804 34.96 12.265 C34.96 12.725 35.052 13.134 35.235 13.49 C35.418 13.846 35.669 14.123 35.989 14.322 C36.308 14.521 36.672 14.621 37.08 14.621 C37.552 14.621 37.96 14.495 38.306 14.244 C38.651 13.992 38.897 13.652 39.044 13.223 L41.086 14.118 C40.929 14.621 40.656 15.071 40.269 15.469 C39.881 15.867 39.416 16.178 38.871 16.403 C38.327 16.629 37.73 16.741 37.08 16.741 Z"/><path class="lg-a" d="M41.683 16.553 L41.683 7.977 L44.039 7.977 L44.039 16.553 Z"/><path class="lg-p" style="--i:0" d="M48.237 3.673 L48.237 2.319 C48.237 2.042 48.461 1.818 48.738 1.818 L50.092 1.818 C50.368 1.818 50.593 2.042 50.593 2.319 L50.593 3.673 C50.593 3.949 50.368 4.174 50.092 4.174 L48.738 4.174 C48.461 4.174 48.237 3.949 48.237 3.673 Z"/><path class="lg-p" style="--i:1" d="M52.794 3.673 L52.794 2.319 C52.794 2.042 53.018 1.818 53.295 1.818 L54.649 1.818 C54.925 1.818 55.15 2.042 55.15 2.319 L55.15 3.673 C55.15 3.949 54.925 4.174 54.649 4.174 L53.295 4.174 C53.018 4.174 52.794 3.949 52.794 3.673 Z"/><path class="lg-p" style="--i:2" d="M57.351 3.673 L57.351 2.319 C57.351 2.042 57.575 1.818 57.852 1.818 L59.206 1.818 C59.483 1.818 59.707 2.042 59.707 2.319 L59.707 3.673 C59.707 3.949 59.483 4.174 59.206 4.174 L57.852 4.174 C57.575 4.174 57.351 3.949 57.351 3.673 Z"/><path class="lg-p" style="--i:3" d="M61.908 3.673 L61.908 2.319 C61.908 2.042 62.132 1.818 62.409 1.818 L63.763 1.818 C64.04 1.818 64.264 2.042 64.264 2.319 L64.264 3.673 C64.264 3.949 64.04 4.174 63.763 4.174 L62.409 4.174 C62.132 4.174 61.908 3.949 61.908 3.673 Z"/><path class="lg-p" style="--i:4" d="M66.465 3.673 L66.465 2.319 C66.465 2.042 66.689 1.818 66.966 1.818 L68.32 1.818 C68.597 1.818 68.821 2.042 68.821 2.319 L68.821 3.673 C68.821 3.949 68.597 4.174 68.32 4.174 L66.966 4.174 C66.689 4.174 66.465 3.949 66.465 3.673 Z"/><path class="lg-p" style="--i:5" d="M71.022 3.673 L71.022 2.319 C71.022 2.042 71.247 1.818 71.523 1.818 L72.877 1.818 C73.154 1.818 73.378 2.042 73.378 2.319 L73.378 3.673 C73.378 3.949 73.154 4.174 72.877 4.174 L71.523 4.174 C71.247 4.174 71.022 3.949 71.022 3.673 Z"/><path class="lg-p" style="--i:6" d="M75.579 3.673 L75.579 2.319 C75.579 2.042 75.804 1.818 76.08 1.818 L77.434 1.818 C77.711 1.818 77.935 2.042 77.935 2.319 L77.935 3.673 C77.935 3.949 77.711 4.174 77.434 4.174 L76.08 4.174 C75.804 4.174 75.579 3.949 75.579 3.673 Z"/><path class="lg-a" d="M44.981 16.553 L44.981 7.977 L47.18 7.977 L47.18 9.673 L47.054 9.296 C47.253 8.783 47.575 8.404 48.02 8.157 C48.465 7.911 48.986 7.788 49.583 7.788 C50.232 7.788 50.8 7.924 51.287 8.197 C51.774 8.469 52.154 8.849 52.426 9.335 C52.698 9.822 52.834 10.39 52.834 11.04 L52.834 16.553 L50.478 16.553 L50.478 11.542 C50.478 11.207 50.413 10.919 50.282 10.678 C50.151 10.438 49.968 10.249 49.732 10.113 C49.497 9.977 49.222 9.909 48.908 9.909 C48.604 9.909 48.332 9.977 48.091 10.113 C47.85 10.249 47.664 10.438 47.533 10.678 C47.402 10.919 47.337 11.207 47.337 11.542 L47.337 16.553 Z"/><path class="lg-a" d="M57.939 16.537 C57.028 16.537 56.237 16.335 55.567 15.932 C54.897 15.529 54.379 14.987 54.012 14.307 C53.646 13.626 53.463 12.872 53.463 12.045 C53.463 11.186 53.654 10.422 54.036 9.752 C54.418 9.082 54.934 8.553 55.583 8.165 C56.232 7.778 56.965 7.584 57.782 7.584 C58.462 7.584 59.065 7.692 59.588 7.906 C60.112 8.121 60.554 8.422 60.915 8.809 C61.277 9.197 61.551 9.644 61.74 10.152 C61.928 10.66 62.023 11.212 62.023 11.809 C62.023 11.977 62.015 12.142 61.999 12.304 C61.983 12.466 61.955 12.605 61.913 12.72 L55.489 12.72 L55.489 10.993 L60.578 10.993 L59.462 11.809 C59.567 11.359 59.562 10.958 59.447 10.608 C59.332 10.257 59.13 9.979 58.842 9.775 C58.554 9.571 58.201 9.469 57.782 9.469 C57.373 9.469 57.023 9.568 56.729 9.767 C56.436 9.966 56.216 10.26 56.07 10.647 C55.923 11.034 55.866 11.506 55.897 12.061 C55.855 12.542 55.913 12.966 56.07 13.333 C56.227 13.699 56.468 13.985 56.792 14.189 C57.117 14.393 57.51 14.495 57.97 14.495 C58.389 14.495 58.748 14.411 59.046 14.244 C59.345 14.076 59.578 13.846 59.745 13.553 L61.63 14.448 C61.462 14.867 61.198 15.233 60.837 15.547 C60.476 15.862 60.049 16.105 59.557 16.278 C59.065 16.451 58.525 16.537 57.939 16.537 Z"/><path class="lg-a" d="M62.619 16.348 L62.619 7.773 L64.818 7.773 L64.818 9.862 L64.583 9.516 C64.708 8.856 65.012 8.37 65.494 8.055 C65.975 7.741 66.551 7.584 67.222 7.584 C67.934 7.584 68.559 7.765 69.098 8.126 C69.638 8.487 69.975 8.972 70.112 9.579 L69.436 9.642 C69.719 8.94 70.122 8.422 70.646 8.087 C71.169 7.752 71.782 7.584 72.483 7.584 C73.101 7.584 73.648 7.72 74.125 7.993 C74.601 8.265 74.975 8.644 75.248 9.131 C75.52 9.618 75.656 10.186 75.656 10.835 L75.656 16.348 L73.3 16.348 L73.3 11.338 C73.3 11.003 73.24 10.715 73.119 10.474 C72.999 10.233 72.829 10.045 72.609 9.909 C72.389 9.773 72.122 9.705 71.808 9.705 C71.504 9.705 71.24 9.773 71.015 9.909 C70.79 10.045 70.617 10.233 70.496 10.474 C70.376 10.715 70.316 11.003 70.316 11.338 L70.316 16.348 L67.96 16.348 L67.96 11.338 C67.96 11.003 67.9 10.715 67.779 10.474 C67.659 10.233 67.489 10.045 67.269 9.909 C67.049 9.773 66.782 9.705 66.468 9.705 C66.164 9.705 65.9 9.773 65.674 9.909 C65.449 10.045 65.277 10.233 65.156 10.474 C65.036 10.715 64.975 11.003 64.975 11.338 L64.975 16.348 Z"/><path class="lg-a" d="M79.08 16.537 C78.462 16.537 77.928 16.437 77.478 16.239 C77.028 16.04 76.682 15.754 76.441 15.383 C76.201 15.011 76.08 14.568 76.08 14.055 C76.08 13.574 76.19 13.147 76.41 12.775 C76.63 12.404 76.968 12.092 77.423 11.841 C77.878 11.589 78.447 11.411 79.127 11.307 L81.75 10.883 L81.75 12.61 L79.551 13.003 C79.216 13.066 78.96 13.173 78.782 13.325 C78.604 13.477 78.515 13.694 78.515 13.977 C78.515 14.239 78.614 14.443 78.813 14.589 C79.012 14.736 79.258 14.809 79.551 14.809 C79.939 14.809 80.279 14.725 80.572 14.558 C80.865 14.39 81.093 14.163 81.255 13.875 C81.418 13.587 81.499 13.27 81.499 12.924 L81.499 10.694 C81.499 10.369 81.371 10.097 81.114 9.877 C80.858 9.657 80.509 9.548 80.07 9.548 C79.651 9.548 79.282 9.663 78.962 9.893 C78.643 10.123 78.41 10.427 78.263 10.804 L76.379 9.909 C76.546 9.427 76.813 9.013 77.18 8.668 C77.546 8.322 77.986 8.055 78.499 7.867 C79.012 7.678 79.572 7.584 80.18 7.584 C80.902 7.584 81.541 7.715 82.096 7.977 C82.651 8.239 83.083 8.602 83.392 9.068 C83.7 9.534 83.855 10.076 83.855 10.694 L83.855 16.348 L81.656 16.348 L81.656 14.966 L82.19 14.872 C81.939 15.249 81.661 15.561 81.358 15.807 C81.054 16.053 80.714 16.236 80.337 16.356 C79.96 16.477 79.541 16.537 79.08 16.537 Z"/><path class="lg-a" d="M45.787 3.425 L41.46 5.924 C41.129 6.115 40.715 5.876 40.715 5.494 L40.715 0.497 C40.715 0.115 41.129 -0.124 41.46 0.067 L45.787 2.566 C46.118 2.757 46.118 3.234 45.787 3.425 Z"/></svg></a
     >
     <span>A free SVG animation editor for the web.</span>
-    <nav aria-label="Footer">
-      <a href="editor/" target="_blank" rel="noopener" data-editor>Editor</a>
-      <a href="#export">Export</a>
-    </nav>
   </div>
 </footer>
 
 <script id="snips" type="application/json">
-  {"html":"<object id=\"cin-anim\" type=\"image/svg+xml\" data=\"sunrise-badge.svg\" aria-label=\"Sunrise badge\" style=\"width:100%;max-width:640px\"><\/object>\n\n<script>\n  document.getElementById('cin-anim').addEventListener('load', (e) => {\n    const player = e.target.contentDocument.getElementById('cin-svg').player;\n    player.ready((p) => {\n      p.on('end', () => console.log('finished'));\n      // p.play(); p.pause(); p.reverse(); p.seek(50); p.set('speed', 2);\n    });\n  });\n<\/script>","react":"import { useEffect, useRef } from \"react\";\n\nexport default function SunriseBadge({ onReady }) {\n  const ref = useRef(null);\n\n  useEffect(() => {\n    const el = ref.current;\n    const handleLoad = () => {\n      const player = el.contentDocument?.getElementById(\"cin-svg\")?.player;\n      if (player) player.ready((p) => onReady?.(p));\n    };\n    el.addEventListener(\"load\", handleLoad);\n    return () => {\n      el.removeEventListener(\"load\", handleLoad);\n      el.contentDocument?.getElementById(\"cin-svg\")?.player?.destruct();\n    };\n  }, [onReady]);\n\n  return (\n    <object ref={ref} type=\"image/svg+xml\" data=\"/sunrise-badge.svg\" aria-label=\"Sunrise badge\"\n      style={{ width: \"100%\", maxWidth: 640 }} />\n  );\n}\n\n// Usage: <SunriseBadge onReady={(player) => player.play()} />","vue":"<template>\n  <object ref=\"anim\" type=\"image/svg+xml\" data=\"/sunrise-badge.svg\" aria-label=\"Sunrise badge\"\n    style=\"width:100%;max-width:640px\" @load=\"onLoad\" />\n<\/template>\n\n<script setup>\nimport { ref, onBeforeUnmount } from \"vue\";\n\nconst anim = ref(null);\nlet player = null;\n\nfunction onLoad() {\n  player = anim.value.contentDocument?.getElementById(\"cin-svg\")?.player;\n  player.ready((p) => {\n    p.on('end', () => console.log('finished'));\n    // p.play(); p.pause(); p.reverse(); p.seek(50); p.set('speed', 2);\n  });\n}\n\nonBeforeUnmount(() => player?.destruct());\n<\/script>","svelte":"<script>\n  import { onDestroy } from \"svelte\";\n  let el;\n  let player;\n\n  function onLoad() {\n    player = el.contentDocument?.getElementById(\"cin-svg\")?.player;\n    player?.ready((p) => p.on(\"end\", () => console.log(\"finished\")));\n  }\n\n  onDestroy(() => player?.destruct());\n<\/script>\n\n<object bind:this={el} on:load={onLoad} type=\"image/svg+xml\" data=\"/sunrise-badge.svg\"\n  aria-label=\"Sunrise badge\" style=\"width:100%;max-width:640px\"><\/object>","angular":"// sunrisebadge.component.ts\nimport { Component, ElementRef, OnDestroy, ViewChild } from \"@angular/core\";\n\n@Component({\n  selector: \"app-sunrise-badge\",\n  standalone: true,\n  template: `<object #anim type=\"image/svg+xml\" data=\"assets/sunrise-badge.svg\" aria-label=\"Sunrise badge\"\n    style=\"width:100%;max-width:640px\" (load)=\"onLoad()\"><\/object>`,\n})\nexport class SunriseBadgeComponent implements OnDestroy {\n  @ViewChild(\"anim\") anim!: ElementRef<HTMLObjectElement>;\n  player: any;\n\n  onLoad() {\n    this.player = this.anim.nativeElement.contentDocument?.getElementById(\"cin-svg\")?.player;\n    this.player?.ready((p: any) => p.on(\"end\", () => console.log(\"finished\")));\n  }\n\n  ngOnDestroy() { this.player?.destruct(); }\n}","api":"// Get the player (inline SVG, or from an <object>'s contentDocument)\nconst player = document.getElementById(\"cin-svg\").player;   // also .svgatorPlayer\n\n// Methods (all chainable)\nplayer.play();            // play from the current point; restarts if it has ended\nplayer.pause();\nplayer.toggle();          // alias: togglePlay()\nplayer.restart();\nplayer.reverse();         // flip direction and play\nplayer.rollback();        // play backwards to the start, then stop\nplayer.stop();            // stop and jump to the first frame\nplayer.seek(50);          // jump to 50%\nplayer.seekTo(1200);      // jump to 1200 ms\nplayer.seekBy(-250);      // move 250 ms back\nplayer.set(\"speed\", 2);   // speed, fps (1–100), iterations (0 = infinite),\n                          // direction (1 | -1), alternate (bool), fill (1 | -1)\nplayer.ready((p) => {});  // runs once the player is ready\nplayer.destruct();        // detach the player and its listeners\n\n// Events: play, pause, restart, reverse, stop, end, keyframe\nplayer.on(\"end\", (offsetMs) => console.log(\"ended at\", offsetMs));\nplayer.on(\"keyframe\", (offsetMs) => { /* every drawn frame */ });\nplayer.off(\"end\");\n\n// Read-only state\nplayer.currentTime   // ms\nplayer.duration      // ms, one loop\nplayer.totalTime     // ms, all iterations\nplayer.state         // \"playing\" | \"paused\" | \"ended\" | \"rollback\"\nplayer.isPlaying, player.isReversed, player.isRollingBack, player.hasEnded,\nplayer.isInfinite, player.isAlternate, player.isBackwards,\nplayer.speed, player.fps, player.direction, player.fill, player.iterations","css":"<!-- CSS-only export: works as a normal image -->\n<img src=\"sunrise-badge.svg\" alt=\"Sunrise badge\" width=\"640\" height=\"400\" />\n\n<!-- or as a background -->\n<div style=\"background:url(sunrise-badge.svg) center/contain no-repeat;aspect-ratio:640/400\"><\/div>"}
+  {"html":"<object id=\"cin-anim\" type=\"image/svg+xml\" data=\"sunrise-badge.svg\" aria-label=\"Sunrise badge\" style=\"width:100%;max-width:640px\"><\/object>\n\n<script>\n  document.getElementById('cin-anim').addEventListener('load', (e) => {\n    const player = e.target.contentDocument.getElementById('cin-svg').player;\n    player.ready((p) => {\n      p.on('end', () => console.log('finished'));\n      // p.play(); p.pause(); p.reverse(); p.seek(50); p.set('speed', 2);\n    });\n  });\n<\/script>","react":"import { useEffect, useRef } from \"react\";\n\nexport default function SunriseBadge({ onReady }) {\n  const ref = useRef(null);\n\n  useEffect(() => {\n    const el = ref.current;\n    const handleLoad = () => {\n      const player = el.contentDocument?.getElementById(\"cin-svg\")?.player;\n      if (player) player.ready((p) => onReady?.(p));\n    };\n    el.addEventListener(\"load\", handleLoad);\n    return () => {\n      el.removeEventListener(\"load\", handleLoad);\n      el.contentDocument?.getElementById(\"cin-svg\")?.player?.destruct();\n    };\n  }, [onReady]);\n\n  return (\n    <object ref={ref} type=\"image/svg+xml\" data=\"/sunrise-badge.svg\" aria-label=\"Sunrise badge\"\n      style={{ width: \"100%\", maxWidth: 640 }} />\n  );\n}\n\n// Usage: <SunriseBadge onReady={(player) => player.play()} />","next":"\"use client\";\n\nimport { useEffect, useRef } from \"react\";\n\nexport default function SunriseBadge({ onReady }) {\n  const ref = useRef(null);\n\n  useEffect(() => {\n    const el = ref.current;\n    const handleLoad = () => {\n      const player = el.contentDocument?.getElementById(\"cin-svg\")?.player;\n      if (player) player.ready((p) => onReady?.(p));\n    };\n    el.addEventListener(\"load\", handleLoad);\n    return () => {\n      el.removeEventListener(\"load\", handleLoad);\n      el.contentDocument?.getElementById(\"cin-svg\")?.player?.destruct();\n    };\n  }, [onReady]);\n\n  return (\n    <object ref={ref} type=\"image/svg+xml\" data=\"/sunrise-badge.svg\" aria-label=\"Sunrise badge\"\n      style={{ width: \"100%\", maxWidth: 640 }} />\n  );\n}\n\n// Usage: <SunriseBadge onReady={(player) => player.play()} />","vue":"<template>\n  <object ref=\"anim\" type=\"image/svg+xml\" data=\"/sunrise-badge.svg\" aria-label=\"Sunrise badge\"\n    style=\"width:100%;max-width:640px\" @load=\"onLoad\" />\n<\/template>\n\n<script setup>\nimport { ref, onBeforeUnmount } from \"vue\";\n\nconst anim = ref(null);\nlet player = null;\n\nfunction onLoad() {\n  player = anim.value.contentDocument?.getElementById(\"cin-svg\")?.player;\n  player.ready((p) => {\n    p.on('end', () => console.log('finished'));\n    // p.play(); p.pause(); p.reverse(); p.seek(50); p.set('speed', 2);\n  });\n}\n\nonBeforeUnmount(() => player?.destruct());\n<\/script>","svelte":"<script>\n  import { onDestroy } from \"svelte\";\n  let el;\n  let player;\n\n  function onLoad() {\n    player = el.contentDocument?.getElementById(\"cin-svg\")?.player;\n    player?.ready((p) => p.on(\"end\", () => console.log(\"finished\")));\n  }\n\n  onDestroy(() => player?.destruct());\n<\/script>\n\n<object bind:this={el} on:load={onLoad} type=\"image/svg+xml\" data=\"/sunrise-badge.svg\"\n  aria-label=\"Sunrise badge\" style=\"width:100%;max-width:640px\"><\/object>","angular":"// sunrisebadge.component.ts\nimport { Component, ElementRef, OnDestroy, ViewChild } from \"@angular/core\";\n\n@Component({\n  selector: \"app-sunrise-badge\",\n  standalone: true,\n  template: `<object #anim type=\"image/svg+xml\" data=\"assets/sunrise-badge.svg\" aria-label=\"Sunrise badge\"\n    style=\"width:100%;max-width:640px\" (load)=\"onLoad()\"><\/object>`,\n})\nexport class SunriseBadgeComponent implements OnDestroy {\n  @ViewChild(\"anim\") anim!: ElementRef<HTMLObjectElement>;\n  player: any;\n\n  onLoad() {\n    this.player = this.anim.nativeElement.contentDocument?.getElementById(\"cin-svg\")?.player;\n    this.player?.ready((p: any) => p.on(\"end\", () => console.log(\"finished\")));\n  }\n\n  ngOnDestroy() { this.player?.destruct(); }\n}","api":"// Get the player (inline SVG, or from an <object>'s contentDocument)\nconst player = document.getElementById(\"cin-svg\").player;   // also .svgatorPlayer\n\n// Methods (all chainable)\nplayer.play();            // play from the current point; restarts if it has ended\nplayer.pause();\nplayer.toggle();          // alias: togglePlay()\nplayer.restart();\nplayer.reverse();         // flip direction and play\nplayer.rollback();        // play backwards to the start, then stop\nplayer.stop();            // stop and jump to the first frame\nplayer.seek(50);          // jump to 50%\nplayer.seekTo(1200);      // jump to 1200 ms\nplayer.seekBy(-250);      // move 250 ms back\nplayer.set(\"speed\", 2);   // speed, fps (1–100), iterations (0 = infinite),\n                          // direction (1 | -1), alternate (bool), fill (1 | -1)\nplayer.ready((p) => {});  // runs once the player is ready\nplayer.destruct();        // detach the player and its listeners\n\n// Events: play, pause, restart, reverse, stop, end, keyframe\nplayer.on(\"end\", (offsetMs) => console.log(\"ended at\", offsetMs));\nplayer.on(\"keyframe\", (offsetMs) => { /* every drawn frame */ });\nplayer.off(\"end\");\n\n// Read-only state\nplayer.currentTime   // ms\nplayer.duration      // ms, one loop\nplayer.totalTime     // ms, all iterations\nplayer.state         // \"playing\" | \"paused\" | \"ended\" | \"rollback\"\nplayer.isPlaying, player.isReversed, player.isRollingBack, player.hasEnded,\nplayer.isInfinite, player.isAlternate, player.isBackwards,\nplayer.speed, player.fps, player.direction, player.fill, player.iterations","css":"<!-- CSS-only export: works as a normal image -->\n<img src=\"sunrise-badge.svg\" alt=\"Sunrise badge\" width=\"640\" height=\"400\" />\n\n<!-- or as a background -->\n<div style=\"background:url(sunrise-badge.svg) center/contain no-repeat;aspect-ratio:640/400\"><\/div>"}
 </script>
 <script>
   (function () {
@@ -3949,7 +4680,7 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
       ['Comet', 'Position', [0, 1, 2, 3]],
       ['Horizon', 'Trim end', [0.2, 1.8], 1],
       ['Stem', 'Bone rotate', [1.2, 1.9, 2.6, 3]],
-      ['Pennant', 'Skew', [1.2, 1.8, 2.4, 3], 1],
+      ['Flag', 'Pin 2', [1.2, 1.8, 2.4, 3], 1],
       ['Title', 'Opacity', [1, 1.8]],
     ];
     var names = d.getElementById('tlNames'),
@@ -4242,6 +4973,7 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
       html: 'Put the .svg file next to your page. <code>&lt;object&gt;</code> keeps the player working; pasting the SVG code straight into your HTML works too.',
       react:
         'Put the .svg in your public folder. React doesn’t run scripts inside markup set with <code>dangerouslySetInnerHTML</code>, so use <code>&lt;object&gt;</code>.',
+      next: 'Put the .svg in <code>public/</code>. The component needs <code>"use client"</code> because it talks to the player in the browser.',
       vue: 'Put the .svg in <code>public/</code> (Vite or Vue CLI).',
       svelte: 'Put the .svg in <code>static/</code> (SvelteKit) or <code>public/</code>.',
       angular: 'Put the .svg in <code>src/assets/</code>, or <code>public/</code> on Angular 17 and later.',
@@ -4594,6 +5326,7 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
       keyMap = {};
     keyBtns.forEach(function (k) {
       keyMap[k.dataset.k] = k;
+      if (k.dataset.k2) keyMap[k.dataset.k2] = k;
       k.addEventListener('click', function () {
         press(k);
       });
@@ -4619,7 +5352,7 @@ var s=document.getElementById("hero-svg");if(!s)return;var P=CinEngine({"p":"her
       if (!keysVisible || e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
       var tg = e.target;
       if (tg && (tg.isContentEditable || /^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(tg.tagName)) && e.key === ' ') return;
-      var k = keyMap[e.key.toLowerCase()];
+      var k = keyMap[e.key === '_' ? '-' : e.key.toLowerCase()];
       if (!k) return;
       if (e.key === ' ') e.preventDefault();
       press(k);

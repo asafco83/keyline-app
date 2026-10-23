@@ -3,8 +3,9 @@
 // one self-contained site/index.html. Usage:
 //   node site/build.mjs                      # editor links point to ./editor/
 //   node site/build.mjs --editor=https://…   # editor links point somewhere else
+//   node site/build.mjs --out=/abs/path.html # write somewhere else (relative paths are inside site/)
 import { readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, isAbsolute, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -55,5 +56,7 @@ const html =
   body.slice(cut).trim() +
   '\n</body>\n</html>\n';
 
-writeFileSync(join(here, out), html);
-console.log(`site/${out}: ${(html.length / 1024).toFixed(1)} KB, editor links → ${editor}`);
+writeFileSync(isAbsolute(out) ? out : join(here, out), html);
+console.log(
+  `${isAbsolute(out) ? out : 'site/' + out}: ${(html.length / 1024).toFixed(1)} KB, editor links → ${editor}`,
+);

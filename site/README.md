@@ -21,6 +21,7 @@ The logo is read from `public/brand/svgcinema-logo-white.svg` at build time, so 
 ```bash
 node site/build.mjs                                            # editor links → editor/
 node site/build.mjs --editor=https://example.com/app/          # editor links → anywhere else
+npm run build:deploy                                           # editor + page together in deploy/
 ```
 
 `npx prettier --write site` formats the sources; `index.html` and `hero.svg` are generated, so `.prettierignore`
@@ -28,8 +29,9 @@ skips them.
 
 ## Deploying
 
-Put `site/index.html` at the root of the site and the editor build (`dist/` from `npm run build`) in an `editor/`
-folder beside it. The editor builds with relative paths (`base: './'`), so it works from a subfolder unchanged.
+`npm run build:deploy` builds the editor and the page and puts them together in `deploy/` (git-ignored): upload its
+contents to any static host. By hand: put `site/index.html` at the root of the site and the editor build (`dist/`
+from `npm run build`) in an `editor/` folder beside it. The editor builds with relative paths (`base: './'`), so it works from a subfolder unchanged.
 Both live on the same origin, so the page and the editor share the light/dark choice
 (`localStorage['svgcinema:theme']`).
 
@@ -40,13 +42,22 @@ Every "Open the editor" link opens the editor in a new tab, so the landing page 
 - **Hero:** a copy of the editor window. `hero.svg` is inlined and its own player runs it; the timeline under it
   lists the scene's real layers and keyframe times (`TRACKS` in the page script) and scrubs the player with
   `seekTo()`.
-- **What it animates:** eight small looping demos (morph, motion path, trim path, bones, gradients, masks, easing,
-  filters). They pause while off screen.
+- **What it animates:** twelve small looping demos (morph, motion path, trim path, bones, gradients, masks, easing,
+  filters, pins, size and corners, dash patterns, triggers and links), drawn with SMIL or CSS. They pause while off
+  screen.
 - **How it works:** draw, animate, export, scrubbed by scrolling.
 - **Images:** importing and the export dialog's image optimization, with a working copy of its image panel. It
   draws a test photo and compresses it with the visitor's own browser encoders, the same ones the editor uses.
-- **Export:** JS player vs. pure CSS, and the embed code for each framework.
-- **Tools, Free, final call to action.** Pressing a tool key while the Tools section is in view lights up that key.
+- **Export:** JS player vs. pure CSS, the embed code for each framework (Next.js included), and the hero file's size.
+- **Import:** opening SVGs from other tools, SVGator's JS and CSS exports and other CSS animations as editable
+  keyframes, and SVGcinema exports that carry the editable project.
+- **Tools, Free, final call to action.** Pressing a tool key while the Tools section is in view lights up that key
+  (`+` / `=` and `-` too); under the keys, snapping and guides, align and booleans, and number dragging.
+- **Footer:** the logo (back to top) and the tagline, no links.
+
+`tests/browser/site.py` checks the page: that `index.html` is built from the current sources, that it runs without
+errors, the feature cards and sections, the quoted sizes against `src/hero.svg`, the footer, the tool keys and the
+phone layout.
 
 Motion is turned off for visitors who ask for reduced motion.
 
@@ -63,11 +74,13 @@ Object.assign(st.doc.ex, { mode: 'js', trigger: 'load', size: 'responsive', pref
 copy(build.buildExport(null).code); // → src/hero.svg
 st.doc.ex.prefix = 'cin';
 const out = {};
-for (const fw of ['html', 'react', 'vue', 'svelte', 'angular', 'api']) out[fw] = snip.snippet(fw);
+for (const fw of ['html', 'react', 'next', 'vue', 'svelte', 'angular', 'api']) out[fw] = snip.snippet(fw);
 st.doc.ex.mode = 'css';
 out.css = snip.snippet('html');
 copy(JSON.stringify(out, null, 1)); // → src/snippets.json
 ```
 
 Keep the `hero` prefix: the page script finds the player at `#hero-svg`. If the scene's keyframes change, update
-`TRACKS` in `src/page.html` to match, and the file sizes quoted in the Export section.
+`TRACKS` in `src/page.html` to match, and the file sizes quoted in the Export section and under the hero
+(`tests/browser/site.py` checks the Export section's sizes against `src/hero.svg`). Start from a fresh editor (clear
+the site's storage) so the sample scene is the one exported.
