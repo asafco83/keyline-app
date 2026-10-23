@@ -41,6 +41,15 @@ async def main():
         geo=lambda sel: ev(f"""(()=>{{const s=document.querySelector('{sel}'),r=s.getBoundingClientRect();return {{top:r.top,bottom:r.bottom,left:r.left,right:r.right,scroll:s.scrollHeight>s.clientHeight+1,ov:getComputedStyle(s).overflowY,shown:getComputedStyle(s).display!=='none'}}}})()""")
         g=await geo('#fileMenu [data-sub=element] > .lm-sub')
         check('a submenu that fits has no scrollbar and stays in the window', g['shown'] and not g['scroll'] and g['ov']!='auto' and g['bottom']<=900, g)
+        # crossing the gap slowly from the item to its submenu keeps it open
+        it=await pg.locator('#fileMenu [data-sub=element] > button').bounding_box(); sb=await geo('#fileMenu [data-sub=element] > .lm-sub')
+        y=it['y']+it['height']/2; x0=it['x']+it['width']-6
+        stayed=True
+        await pg.mouse.move(x0,y)
+        for x in range(int(x0), int(sb['left'])+6):
+            await pg.mouse.move(x,y)
+            if not (await geo('#fileMenu [data-sub=element] > .lm-sub'))['shown']: stayed=False; break
+        check('moving slowly across the gap into a submenu keeps it open', stayed, (x0, sb['left']))
         await pg.hover('#fileMenu [data-lm=mp]'); await pg.wait_for_timeout(120)
         g2=await geo('#fileMenu [data-lm=mp] + .lm-sub')
         hit=await ev(f"(()=>{{const e=document.elementFromPoint({(g2['left']+g2['right'])/2},{g2['top']+12});return !!(e&&e.closest('[data-lm=mp] + .lm-sub'))}})()")

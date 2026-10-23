@@ -2901,6 +2901,21 @@ details summary {
   left: auto;
   right: calc(100% + 2px);
 }
+/* an invisible bridge over the gap between an item and its submenu, so the pointer can cross it
+   (slowly, too) without the submenu closing */
+.lm-sub::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -10px;
+  width: 10px;
+}
+.lm-sub.left::before,
+.lm.flip .lm-sub::before {
+  left: auto;
+  right: -10px;
+}
 /* the tick column of checkable items (main menu › View) */
 .lm-chk {
   width: 14px;
