@@ -7,9 +7,10 @@ import { IDB, assetURL } from '../io/assets';
 import { updateFileInfo } from '../io/file-state';
 import { normalizeDoc } from '../io/open';
 import { sampleDoc } from '../model/sample';
-import { fit, frame, renderAll } from '../render/stage';
+import { frame, renderAll } from '../render/stage';
 import { BM } from '../ui/file-menu';
 import { fitTimeline } from '../ui/topbar';
+import { workAreaResized } from '../tools/hand';
 
 export async function boot() {
   $('#bUndo').innerHTML = ICON.undo;
@@ -62,10 +63,8 @@ export async function boot() {
   renderAll();
   S.loading = false;
   updateFileInfo();
-  new ResizeObserver(() => {
-    fit();
-    frame();
-  }).observe(WRAP);
+  // fits the artboard now the document is here (and on later resizes: tools/hand)
+  workAreaResized();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => frame());
   requestAnimationFrame(t => {
     S.last = t;

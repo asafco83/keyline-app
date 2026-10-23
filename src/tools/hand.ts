@@ -67,6 +67,26 @@ export function fitView() {
 export function zoomTo(scale: number) {
   zoomAt(scale / S.scale);
 }
+/** The work area's box at the last resize. */
+let lastWrap: { cx: number; cy: number } | null = null;
+/** The work area changed size. In the fit view the artboard is fitted again; at any other zoom the
+ *  zoom percentage stays the same and the artwork stays where it is on screen. */
+export function workAreaResized() {
+  const wr = WRAP.getBoundingClientRect();
+  if (!doc || !wr.width || !wr.height) return;
+  const c = { cx: wr.left + wr.width / 2, cy: wr.top + wr.height / 2 },
+    prev = lastWrap;
+  lastWrap = c;
+  if (prev && !isFitView()) {
+    S.zoom = S.scale / fitScale();
+    fit();
+    // the artboard is centred in the work area: move it back by as much as the centre moved
+    S.pan.x -= c.cx - prev.cx;
+    S.pan.y -= c.cy - prev.cy;
+  } else fit();
+  applyPan();
+  frame();
+}
 export function isFitView() {
   return Math.abs(S.zoom - 1) < 1e-6 && !S.pan.x && !S.pan.y;
 }
@@ -153,6 +173,6 @@ export function init(): void {
     },
     { passive: false },
   );
-  // keep the artboard on screen when the window or panels change size
-  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => applyPan()).observe(WRAP);
+  // the window or a panel (the timeline's height) changes the work area's size
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => workAreaResized()).observe(WRAP);
 }

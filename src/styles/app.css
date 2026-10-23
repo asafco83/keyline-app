@@ -2530,6 +2530,11 @@ details summary {
   min-width: 0;
   accent-color: var(--accent);
 }
+/* a slider in a row of 28px fields: centred on them, not stretched to the top */
+.rf > input[type='range'],
+.row > input[type='range'] {
+  align-self: center;
+}
 .row .rng + .nf {
   flex: 0 0 76px;
 }
@@ -4083,7 +4088,7 @@ select.sel {
 .ov-pindot.is-bound {
   fill: var(--head);
 }
-/* the link from a bone to what is bound to it: a dotted line, shown with the bones (never exported) */
+/* the link from a bone to a bone bound to it (Bind tool): dotted, shown with the bones, never exported */
 .ov-blink {
   fill: none;
   stroke: var(--accent);
@@ -4093,9 +4098,6 @@ select.sel {
   vector-effect: non-scaling-stroke;
   pointer-events: none;
   opacity: 0.85;
-}
-.ov-blink.is-pin {
-  stroke: var(--head);
 }
 .ov-pinrest {
   fill: none;

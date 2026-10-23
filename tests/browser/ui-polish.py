@@ -2,9 +2,10 @@ import asyncio, sys, json, math
 from playwright.async_api import async_playwright
 import os
 OUT=os.environ.get('CIN_OUT','/tmp/svgcinema-shots/'); os.makedirs(OUT, exist_ok=True)
-# UI polish: the timeline's top edge resizes it (min / max / saved / reset / keys), pins bound to bones
-# in the playhead red, dotted links from bones to what is bound to them (shown with the bones, never
-# exported), double-click renames in the Layers panel and the timeline, drag-to-change on number
+# UI polish: the timeline's top edge resizes it (min / max / saved / reset / keys; the canvas zoom stays
+# unless the view is fitted), pins bound to bones in the playhead red, dotted links between bones bound
+# with the Bind tool (from the parent's joint; shown with the bones, never exported), sliders centred on
+# their row, double-click renames in the Layers panel and the timeline, drag-to-change on number
 # field labels everywhere (one undo step, no focus after a drag), the Size "Keep proportions" toggle,
 # and the toggle column that keeps paired fields the same width.
 async def main():
@@ -16,7 +17,7 @@ async def main():
         await pg.goto(url, wait_until='domcontentloaded'); await pg.wait_for_timeout(2500)
         await pg.evaluate("localStorage.removeItem('svgcinema:tlH')")
         await pg.reload(wait_until='domcontentloaded'); await pg.wait_for_timeout(2000)
-        imp="async()=>{ window.st=await import('/src/core/state.ts'); window.hi=await import('/src/core/history.ts'); window.ov=await import('/src/render/overlay.ts'); window.B=await import('/src/export/build.ts'); window.PP=await import('/src/ui/props-panel.ts'); window.TR=await import('/src/ui/tl-resize.ts'); }"
+        imp="async()=>{ window.st=await import('/src/core/state.ts'); window.hi=await import('/src/core/history.ts'); window.ov=await import('/src/render/overlay.ts'); window.B=await import('/src/export/build.ts'); window.PP=await import('/src/ui/props-panel.ts'); window.TR=await import('/src/ui/tl-resize.ts'); window.ha=await import('/src/tools/hand.ts'); window.BO=await import('/src/tools/bones.ts'); window.SG=await import('/src/render/stage.ts'); }"
         await pg.evaluate(imp)
         ev=pg.evaluate; R={}; F=[]
         def check(n,c,i=None):
@@ -36,9 +37,10 @@ async def main():
         check('dragging the edge up makes it taller by as much', abs(await tlh()-(288+g['y']+3-500))<=1, await tlh())
         await grip(899)
         mn=await tlh()
-        want=await ev("(()=>{const t=document.querySelector('.panel.tl');return t.querySelector('.tl-ctrl').offsetHeight+t.querySelector('.tl-ruler').offsetHeight+t.querySelector('.tl-body > .tl-row:not(.tl-ruler)').offsetHeight})()")
-        vis=await ev("(()=>{const r=document.querySelector('.tl-body > .tl-row:not(.tl-ruler)').getBoundingClientRect(),s=tlscroll.getBoundingClientRect();return r.bottom<=s.bottom+1})()")
-        check('smallest: the controls, the ruler and one row', mn>=want and mn<=want+20 and vis, (mn,want,vis))
+        want=await ev("(()=>{const t=document.querySelector('.panel.tl');return t.querySelector('.tl-ctrl').offsetHeight+t.querySelector('.tl-ruler').offsetHeight})()")
+        vis=await ev("(()=>{const r=document.querySelector('.tl-ruler').getBoundingClientRect(),s=tlscroll.getBoundingClientRect();return r.bottom<=s.bottom+1})()")
+        rows=await ev("(()=>{const r=document.querySelector('.tl-body > .tl-row:not(.tl-ruler)').getBoundingClientRect(),s=tlscroll.getBoundingClientRect();return Math.max(0,Math.min(r.bottom,s.bottom)-Math.max(r.top,s.top))})()")
+        check('smallest: just the controls and the time ruler, no rows', mn>=want and mn<=want+18 and vis and rows<=3, (mn,want,vis,rows))
         await grip(0)
         mx=await tlh(); wrap=await ev("Math.round(document.getElementById('wrap').getBoundingClientRect().height)")
         check('largest: a strip of the work area stays', wrap>=118 and wrap<=125 and mx>600, (mx,wrap))
@@ -54,6 +56,29 @@ async def main():
         check('double-click goes back to the default height', await tlh()==288, await tlh())
         await ev("hi.setTime(0)")
 
+        # canvas zoom while resizing: kept (and the artwork stays put) unless the view is fitted
+        await ev("ha.fitView()"); await pg.wait_for_timeout(100)
+        await ev("ha.zoomTo(2)"); await pg.wait_for_timeout(100)
+        art=lambda: ev("(()=>{const r=document.getElementById('artboard').getBoundingClientRect();return [Math.round(r.left),Math.round(r.top)]})()")
+        z0=await ev("zValT.textContent"); a0=await art()
+        await grip(420); await pg.wait_for_timeout(150)
+        z1=await ev("zValT.textContent"); a1=await art()
+        check('resizing keeps the zoom percentage', z0=='200%' and z1==z0 and abs(await ev("st.S.scale")-2)<1e-6, (z0,z1))
+        check('and the artwork where it was on screen', abs(a1[0]-a0[0])<=1 and abs(a1[1]-a0[1])<=1, (a0,a1))
+        await grip(800); await pg.wait_for_timeout(150)
+        check('also when the timeline gets shorter', await ev("zValT.textContent")=='200%' and await art()==a0, (await ev("zValT.textContent"), await art()))
+        await ev("ha.fitView()"); await pg.wait_for_timeout(100)
+        f0=await ev("st.S.scale")
+        await grip(420); await pg.wait_for_timeout(150)
+        f1=await ev("st.S.scale")
+        check('in the fit view the artboard is fitted again', f1<f0 and await ev("ha.isFitView()") and abs(f1-await ev("SG.fitScale()"))<1e-6, (f0,f1))
+        await pg.locator('#tlGrip').dblclick(); await pg.wait_for_timeout(150)
+
+        # sliders sit centred on their row
+        await ev(f"hi.select('{await lid('Sky')}')"); await pg.wait_for_timeout(150)
+        off=await ev("[...document.querySelectorAll('#insp .row input[type=range]')].filter(e=>e.offsetParent).map(e=>{const r=e.getBoundingClientRect(),q=e.closest('.row').getBoundingClientRect();return Math.round((r.top+r.height/2)-(q.top+q.height/2))})")
+        check('sliders are centred on their row', len(off)>=2 and all(abs(o)<=1 for o in off), off)
+
         # ---- 2 & 4. bound pins in red, bone links
         await ev("hi.setTime(2.2)")
         await ev(f"hi.select('{await lid('Tendril')}')"); await ev("hi.setTool('pin')"); await pg.wait_for_timeout(200)
@@ -68,19 +93,26 @@ async def main():
         check('ordinary pins keep the accent colour', free and all(s!=red for s in free), free)
         await pg.screenshot(path=OUT+'ui-polish-pins.png')
         await ev("hi.setTool('select')"); await pg.wait_for_timeout(150)
-        links=await ev("[...document.querySelectorAll('.ov-blink')].map(e=>st.layerById(e.dataset.blink).name)")
-        check('dotted links from bones to what is bound to them', len(links)>=4 and set(links)<={'Stem','Stem 2','Stem 3'}, links)
+        # (2.2 s: the Sprout has grown from scale 0)
+        check('a connected chain of bones needs no links', await ev("document.querySelectorAll('.ov-blink').length")==0, await ev("document.querySelectorAll('.ov-blink').length"))
+        # a bone bound to Stem away from its tip (as the Bind tool leaves it)
+        spur=await ev(f"""(()=>{{const l=st.mkLayer('bone','Spur',{{x:612,y:284,len:14,ang:0}},{{fill:'none'}});l.o=[612,284];l.parent='{await lid('Stem')}';st.doc.layers.push(l);SG.renderAll();ov.drawOverlay();return l.id}})()""")
+        ln=await ev("[...document.querySelectorAll('.ov-blink')].map(e=>[e.dataset.blink,e.dataset.child,+e.getAttribute('x1'),+e.getAttribute('y1'),+e.getAttribute('x2'),+e.getAttribute('y2')])")
+        pj=await ev(f"(()=>{{const p=BO.bonePts(st.layerById('{await lid('Stem')}')).J;return [p.x,p.y]}})()")
+        cj=await ev(f"(()=>{{const p=BO.bonePts(st.layerById('{spur}')).J;return [p.x,p.y]}})()")
+        check('a dotted link from the parent bone to a bound bone', len(ln)==1 and ln[0][:2]==[await lid('Stem'),spur], ln)
+        check('it starts at the parent bone\'s joint (its start) and ends at the bound bone\'s joint', ln and abs(ln[0][2]-pj[0])<0.02 and abs(ln[0][3]-pj[1])<0.02 and abs(ln[0][4]-cj[0])<0.02 and abs(ln[0][5]-cj[1])<0.02, (ln,pj,cj))
         check('drawn dotted', await ev("getComputedStyle(document.querySelector('.ov-blink')).strokeDasharray")!='none')
+        check('no links to layers or pins', await ev("[...document.querySelectorAll('.ov-blink')].every(e=>st.layerById(e.dataset.child).type==='bone')"))
         await ev("st.S.showBones=false; ov.drawOverlay()")
         check('hidden with Show bones off', await ev("document.querySelectorAll('.ov-blink').length")==0 and await ev("document.querySelectorAll('.ov-bone').length")==0)
         await ev("st.S.showBones=true; ov.drawOverlay()")
-        n0=await ev("document.querySelectorAll('.ov-blink').length")
-        await ev(f"st.layerById('{await lid('Stem 3')}').hid=true; ov.drawOverlay()")
-        n1=await ev("[...document.querySelectorAll('.ov-blink')].map(e=>st.layerById(e.dataset.blink).name)")
-        check('a hidden bone shows no links', 'Stem 3' not in n1 and len(n1)<n0, (n0,n1))
-        await ev(f"st.layerById('{await lid('Stem 3')}').hid=false; ov.drawOverlay()")
+        await ev(f"st.layerById('{spur}').hid=true; ov.drawOverlay()")
+        check('a hidden bone shows no link', await ev("document.querySelectorAll('.ov-blink').length")==0)
+        await ev(f"st.layerById('{spur}').hid=false; ov.drawOverlay()")
         out=await ev("B.buildExport(null)")
         check('links are not in the export', 'ov-blink' not in out and 'blink' not in out)
+        await ev(f"st.doc.layers.splice(st.doc.layers.findIndex(l=>l.id==='{spur}'),1); SG.renderAll()")
         await ev("hi.setTime(0)")
 
         # ---- 3. rename by double-click

@@ -1,6 +1,6 @@
 // SVGcinema — ui/tl-resize
-// The timeline's height: drag its top edge up or down. The smallest height still shows the controls,
-// the time ruler and one row; the largest leaves a strip of the work area. Remembered between visits;
+// The timeline's height: drag its top edge up or down. The smallest height shows just the controls and
+// the time ruler (no layer rows); the largest leaves a strip of the work area. Remembered between visits;
 // double-click the edge (or Home on it) to go back to the default height. ↑/↓ on the focused edge
 // nudge it by 16px (Shift: 64px).
 import { drawRulers } from '../render/guides';
@@ -9,7 +9,7 @@ export const TL_KEY = 'svgcinema:tlH';
 export const TL_DEFAULT = 288;
 /** the work area keeps at least this much height (its ruler and a strip of canvas) */
 export const STAGE_MIN = 120;
-const ROW = 27; // .tl-row height, used before the timeline has rendered a row
+const ROW = 27; // the time ruler's height, used before the timeline has rendered
 
 const app = () => document.getElementById('app') as HTMLElement;
 const tl = () => document.querySelector('.panel.tl') as HTMLElement;
@@ -18,12 +18,10 @@ const tl = () => document.querySelector('.panel.tl') as HTMLElement;
 export function tlRange(): [number, number] {
   const t = tl(),
     ctrl = t && (t.querySelector('.tl-ctrl') as HTMLElement),
-    ruler = t && (t.querySelector('.tl-ruler') as HTMLElement),
-    row = t && (t.querySelector('.tl-body > .tl-row:not(.tl-ruler), .tl-empty') as HTMLElement);
+    ruler = t && (t.querySelector('.tl-ruler') as HTMLElement);
   const min =
     (ctrl ? ctrl.offsetHeight : 44) +
     (ruler ? ruler.offsetHeight : ROW) +
-    Math.min(row ? row.offsetHeight : ROW, ROW) +
     // the top border and the horizontal scrollbar, if there is one
     1 +
     (() => {
