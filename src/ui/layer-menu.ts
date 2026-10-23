@@ -186,11 +186,18 @@ function saveHyperlink(remove?: boolean): void {
 
 /* ---------- the menu ---------- */
 
-type Item = { id: string; label: string; on?: boolean; key?: string; sub?: Item[] } | '-';
+/** A menu entry (also used by the main menu): `check` shows a tick column, `sub` a submenu. */
+export type Item = { id: string; label: string; on?: boolean; key?: string; check?: boolean; sub?: Item[] } | '-';
 const M = () => $('#layermenu') as HTMLElement;
 export function closeLayerMenu() {
   const m = M();
   if (m) m.hidden = true;
+}
+/** The Element commands for the selection; `main` leaves out what the main menu has elsewhere
+ *  (Copy / Paste is in Edit, Animate has its own menu). */
+export function layerItems(main = false): Item[] {
+  const all = items();
+  return main ? all.filter(it => it === '-' || (it.id !== 'cp' && it.id !== 'anim')) : all;
 }
 function items(): Item[] {
   const roots = selectedRoots(),
@@ -276,6 +283,7 @@ function items(): Item[] {
         { id: 'back', label: 'Send to back', on: true, key: 'Ctrl ⇧ [' },
       ],
     },
+    { id: 'hide', label: roots.length && roots.every(x => x.hid) ? 'Show' : 'Hide', on: any, key: 'Ctrl H' },
     { id: 'lock', label: roots.length && roots.every(x => x.lock) ? 'Unlock' : 'Lock', on: any, key: 'Ctrl L' },
     '-',
     { id: 'rotr', label: 'Rotate 90° right', on: free },
@@ -285,6 +293,9 @@ function items(): Item[] {
     { id: 'flipv', label: 'Flip vertical', on: free },
   ];
 }
+export function menuHTML(list: Item[]): string {
+  return html(list);
+}
 function html(list: Item[]): string {
   const out: string[] = [];
   list.forEach(it => {
@@ -292,9 +303,11 @@ function html(list: Item[]): string {
       if (out.length && out[out.length - 1] !== '<hr>') out.push('<hr>');
       return;
     }
-    const dis = it.sub ? it.on === false || !it.sub.some(s => s !== '-' && s.on) : !it.on;
+    const dis = it.sub ? it.on === false || !it.sub.some(s => s !== '-' && s.on) : !it.on,
+      chk = it.check !== undefined,
+      role = chk ? `menuitemcheckbox" aria-checked="${it.check}` : 'menuitem';
     out.push(
-      `<div class="lm-it${it.sub ? ' has-sub' : ''}"><button role="menuitem" data-lm="${it.id}"${dis ? ' disabled' : ''}${it.sub ? ' aria-haspopup="true"' : ''}><span>${esc(it.label)}</span>${it.sub ? '<i class="lm-arrow">▸</i>' : `<kbd>${it.key || ''}</kbd>`}</button>${
+      `<div class="lm-it${it.sub ? ' has-sub' : ''}"><button role="${role}" data-lm="${it.id}"${dis ? ' disabled' : ''}${it.sub ? ' aria-haspopup="true"' : ''}>${chk ? `<span class="lm-chk">${it.check ? '✓' : ''}</span>` : ''}<span>${esc(it.label)}</span>${it.sub ? '<i class="lm-arrow">▸</i>' : `<kbd>${it.key || ''}</kbd>`}</button>${
         it.sub && !dis ? `<div class="ctx lm-sub" role="menu">${html(it.sub)}</div>` : ''
       }</div>`,
     );
@@ -313,6 +326,34 @@ export function openLayerMenu(x: number, y: number) {
   m.classList.toggle('flip', x + r.width * 2 > innerWidth);
   const f = m.querySelector('button:not(:disabled)') as HTMLElement;
   if (f) f.focus();
+}
+/** Arrow keys, Enter and Esc in a menu built with menuHTML (submenus open to the right). */
+export function menuKeydown(m: HTMLElement, e: KeyboardEvent, close: () => void) {
+  const cur = document.activeElement as HTMLElement,
+    list = (cur && (cur.closest('.lm-sub') as HTMLElement)) || m,
+    bs = [...list.querySelectorAll(':scope > .lm-it > button:not(:disabled)')] as HTMLElement[],
+    i = bs.indexOf(cur);
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    (e.key === 'ArrowDown' ? bs[i + 1] || bs[0] : bs[i - 1] || bs[bs.length - 1]).focus();
+  } else if ((e.key === 'ArrowRight' || e.key === 'Enter') && cur && cur.getAttribute('aria-haspopup')) {
+    e.preventDefault();
+    const s = cur.parentElement.querySelector('.lm-sub button:not(:disabled)') as HTMLElement;
+    cur.parentElement.classList.add('open');
+    if (s) s.focus();
+  } else if (e.key === 'ArrowLeft' && list !== m) {
+    e.preventDefault();
+    const it = list.parentElement;
+    it.classList.remove('open');
+    (it.querySelector('button') as HTMLElement).focus();
+  } else if (e.key === 'Escape') {
+    e.stopPropagation();
+    close();
+  }
+}
+/** Runs an Element command (the ids of layerItems()) on the selection. */
+export function runLayerCommand(id: string) {
+  run(id);
 }
 function run(id: string) {
   const l = selLayer();
@@ -338,6 +379,7 @@ function run(id: string) {
   else if (id === 'front' || id === 'back') l && arrangeEnd(l, id === 'front');
   else if (id === 'fwd' || id === 'bwd') l && arrange(l, id === 'fwd' ? 1 : -1);
   else if (id === 'lock') toggleLock();
+  else if (id === 'hide') toggleHide();
   else if (id === 'rotr' || id === 'rotl') rotate(id === 'rotr' ? 90 : -90);
   else if (id === 'fliph' || id === 'flipv') flip(id === 'fliph' ? 0 : 1);
 }
@@ -392,34 +434,7 @@ export function init(): void {
     if (!b || b.disabled || b.getAttribute('aria-haspopup')) return;
     run(b.dataset.lm);
   });
-  m.addEventListener('keydown', (e: KeyboardEvent) => {
-    const cur = document.activeElement as HTMLElement,
-      list = cur && (cur.closest('.lm-sub') || m),
-      bs = [...list.querySelectorAll(':scope > .lm-it > button:not(:disabled)')] as HTMLElement[],
-      i = bs.indexOf(cur);
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      (e.key === 'ArrowDown' ? bs[i + 1] || bs[0] : bs[i - 1] || bs[bs.length - 1]).focus();
-    } else if (e.key === 'ArrowRight' && cur.getAttribute('aria-haspopup')) {
-      e.preventDefault();
-      const s = cur.parentElement.querySelector('.lm-sub button:not(:disabled)') as HTMLElement;
-      cur.parentElement.classList.add('open');
-      if (s) s.focus();
-    } else if (e.key === 'ArrowLeft' && list !== m) {
-      e.preventDefault();
-      const it = list.parentElement;
-      it.classList.remove('open');
-      (it.querySelector('button') as HTMLElement).focus();
-    } else if (e.key === 'Enter' && cur.getAttribute('aria-haspopup')) {
-      e.preventDefault();
-      cur.parentElement.classList.add('open');
-      const s = cur.parentElement.querySelector('.lm-sub button:not(:disabled)') as HTMLElement;
-      if (s) s.focus();
-    } else if (e.key === 'Escape') {
-      e.stopPropagation();
-      closeLayerMenu();
-    }
-  });
+  m.addEventListener('keydown', (e: KeyboardEvent) => menuKeydown(m, e, closeLayerMenu));
   document.addEventListener('pointerdown', (e: PointerEvent) => {
     if (!m.hidden && !m.contains(e.target as Node)) closeLayerMenu();
   });

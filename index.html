@@ -28,10 +28,10 @@
         <button
           class="btn ghost ib"
           id="bMenu"
-          aria-label="File menu"
+          aria-label="Main menu"
           aria-haspopup="menu"
           aria-expanded="false"
-          title="File menu"
+          title="Menu"
         ></button>
         <div class="brand">
           <svg class="logo" viewBox="0 0 83.855 16.741" role="img" aria-label="SVGcinema">
@@ -653,15 +653,57 @@
       hidden
     />
     <input type="file" id="fProj" accept=".SVGcinema,.zip,.json,.svg,image/svg+xml" hidden />
-    <div class="ctx filemenu" id="fileMenu" role="menu" aria-label="File" hidden>
-      <button role="menuitem" id="bNew"><span>New project…</span><kbd></kbd></button>
-      <button role="menuitem" id="bOpen"><span>Open…</span><kbd>Ctrl O</kbd></button>
+    <div class="ctx lm filemenu" id="fileMenu" role="menu" aria-label="Main menu" hidden>
+      <div class="lm-it">
+        <button role="menuitem" id="bNew"><span>New project…</span><kbd></kbd></button>
+      </div>
+      <div class="lm-it">
+        <button role="menuitem" id="bOpen"><span>Open…</span><kbd>Ctrl O</kbd></button>
+      </div>
       <hr />
-      <button role="menuitem" id="bSave"><span>Save</span><kbd>Ctrl S</kbd></button>
-      <button role="menuitem" id="bSaveAs"><span>Save as…</span><kbd>Ctrl ⇧ S</kbd></button>
+      <div class="lm-it has-sub" data-sub="edit">
+        <button role="menuitem" aria-haspopup="true"><span>Edit</span><i class="lm-arrow">▸</i></button>
+        <div class="ctx lm-sub" role="menu" aria-label="Edit"></div>
+      </div>
+      <div class="lm-it has-sub" data-sub="element">
+        <button role="menuitem" aria-haspopup="true"><span>Element</span><i class="lm-arrow">▸</i></button>
+        <div class="ctx lm-sub" role="menu" aria-label="Element"></div>
+      </div>
+      <div class="lm-it has-sub" data-sub="animate">
+        <button role="menuitem" aria-haspopup="true"><span>Animate</span><i class="lm-arrow">▸</i></button>
+        <div class="ctx lm-sub" role="menu" aria-label="Animate"></div>
+      </div>
       <hr />
-      <button role="menuitem" id="bImport"><span>Import files…</span><kbd>Ctrl I</kbd></button>
-      <button role="menuitem" id="bExport2"><span>Export SVG…</span><kbd>Ctrl E</kbd></button>
+      <div class="lm-it">
+        <button role="menuitem" id="bSave"><span>Save</span><kbd>Ctrl S</kbd></button>
+      </div>
+      <div class="lm-it">
+        <button role="menuitem" id="bSaveAs"><span>Save as…</span><kbd>Ctrl ⇧ S</kbd></button>
+      </div>
+      <div class="lm-it">
+        <button role="menuitem" id="bImport"><span>Import files…</span><kbd>Ctrl I</kbd></button>
+      </div>
+      <div class="lm-it">
+        <button role="menuitem" id="bExport2"><span>Export SVG…</span><kbd>Ctrl E</kbd></button>
+      </div>
+      <hr />
+      <div class="lm-it has-sub" data-sub="view">
+        <button role="menuitem" aria-haspopup="true"><span>View</span><i class="lm-arrow">▸</i></button>
+        <div class="ctx lm-sub" role="menu" aria-label="View"></div>
+      </div>
+      <div class="lm-it has-sub" data-sub="help">
+        <button role="menuitem" aria-haspopup="true"><span>Help</span><i class="lm-arrow">▸</i></button>
+        <div class="ctx lm-sub" role="menu" aria-label="Help"></div>
+      </div>
+    </div>
+    <div class="modal" id="mAbout" hidden>
+      <div class="dlg about" role="dialog" aria-modal="true" aria-labelledby="abTitle">
+        <header>
+          <h2 id="abTitle">About SVGcinema</h2>
+          <button class="btn ghost ib" data-close aria-label="Close">✕</button>
+        </header>
+        <div class="body" id="aboutBody"></div>
+      </div>
     </div>
     <div class="modal" id="mSave" hidden>
       <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="sTitle">
