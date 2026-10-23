@@ -83,6 +83,13 @@ async def main():
         g3=await geo('#fileMenu [data-lm=mp] + .lm-sub')
         hit=await ev(f"(()=>{{const e=document.elementFromPoint({(g3['left']+g3['right'])/2},{g3['top']+12});return !!(e&&e.closest('[data-lm=mp] + .lm-sub'))}})()")
         check('in a very short window the submenu scrolls, and Set motion path still opens beside it, in full', g['scroll'] and g3['shown'] and hit and (g3['left']>=g['right']-4 or g3['right']<=g['left']+4) and g3['bottom']<=420, (g,g3))
+        # and with the scrollbar there, crossing slowly from Set motion path into its submenu keeps it open
+        it=await pg.locator('#fileMenu [data-lm=mp]').bounding_box(); y=it['y']+it['height']/2
+        stayed=True
+        for x in range(int(it['x']+it['width']-6), int(g3['left'])+8):
+            await pg.mouse.move(x,y)
+            if not (await geo('#fileMenu [data-lm=mp] + .lm-sub'))['shown']: stayed=False; break
+        check('moving slowly over the scrollbar and the gap into the next level keeps it open', stayed)
         await pg.keyboard.press('Escape'); await pg.set_viewport_size({'width':1440,'height':900}); await pg.wait_for_timeout(100)
         # keyboard
         await pg.click('#bMenu'); await pg.wait_for_timeout(80)

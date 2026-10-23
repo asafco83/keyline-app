@@ -169,6 +169,7 @@ export function deleteKeys() {
   ed.end({ insp: true });
 }
 export function select(id: string | null, mode?: 'add' | 'toggle' | string) {
+  S.pinFocus = false;
   if (id !== S.sel && mode !== 'toggle' && mode !== 'range') S.keys.clear();
   if (!id) {
     S.sel = null;

@@ -358,8 +358,12 @@ export interface EditorState {
   showBones: boolean;
   /** Show pins (Alt+P): every pinned layer's pins outside the Pin tools */
   showPins: boolean;
+  /** a pin was just picked with the Select tool: Delete removes it (not the layer) */
+  pinFocus?: boolean;
   /** pins picked with the Bind tool (to bind to a bone) */
   bindPins: { lid: string; n: number }[];
+  /** the Bind tool's pointer is over empty canvas (a click there unbinds the picks) */
+  bindEmpty?: boolean;
   boneDraft: any;
   /** Bind tool: the layers picked as children, the bone under the pointer, the pointer (doc / screen) */
   bindPick: string[];

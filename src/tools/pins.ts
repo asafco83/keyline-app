@@ -224,13 +224,15 @@ const SHOW_TOOLS = ['select', 'pin', 'pinedit', 'bone', 'boneedit', 'bonescale',
  *  to bind them to a bone. Pins bound to a bone are red everywhere. */
 export function drawPins(u: number) {
   const pinTool = isPinTool(S.tool),
-    cur = pinLayer();
-  if (pinTool && cur && cur.pins && cur.pins.length) drawEditPins(cur, u);
+    cur = pinLayer(),
+    // the Select tool edits the selected layer's pins as the Pin tool does (with Show pins on)
+    edit = pinTool || (S.tool === 'select' && S.showPins && S.selSet.size === 1);
+  if (edit && cur && cur.pins && cur.pins.length) drawEditPins(cur, u);
   pinLabel(u);
   if (!S.showPins || !SHOW_TOOLS.includes(S.tool)) return;
   const live = S.tool === 'select' || S.tool === 'bonebind';
   doc.layers.forEach(l => {
-    if (!l.pins || !l.pins.length || (pinTool && l === cur) || isHidden(l) || !byId('e-' + l.id)) return;
+    if (!l.pins || !l.pins.length || (edit && l === cur) || isHidden(l) || !byId('e-' + l.id)) return;
     const mine = !pinTool && (l.id === S.sel || S.selSet.has(l.id));
     drawShownPins(l, u, mine, live && !isLocked(l));
   });
@@ -296,6 +298,7 @@ export function shownPinDown(spin: string, p0: XY) {
   if (!l || isLocked(l) || !(l.pins || []).some(p => p.n === n)) return;
   if (S.sel !== l.id || S.selSet.size > 1) select(l.id);
   S.pinSel = n;
+  S.pinFocus = true;
   if (isBound(l, n)) {
     drawOverlay();
     renderInspector();
@@ -328,7 +331,7 @@ function drawEditPins(l: Layer, u: number) {
     OV.append(svgEl('path', { d, transform: mtx(M), class: 'ov-mesh' }));
   }
   // the artwork at rest, while it is bent
-  if (S.tool === 'pin' && bent(l)) {
+  if ((S.tool === 'pin' || S.tool === 'select') && bent(l)) {
     if (meshOf(l)) {
       const s = byId('e-' + l.id + '-s') as unknown as SVGGraphicsElement;
       try {
@@ -366,12 +369,12 @@ function drawEditPins(l: Layer, u: number) {
       bound = isBound(l, p.n);
     // a pin bound to a bone: a ring around it, and no rest mark or rotation ring (the bone moves it)
     if (bound) OV.append(svgEl('circle', { cx: P.x, cy: P.y, r: 9.5 * u, class: 'ov-pinbound' }));
-    if (!bound && S.tool === 'pin' && Math.hypot(P.x - R.x, P.y - R.y) > 0.5 / S.scale) {
+    if (!bound && (S.tool === 'pin' || S.tool === 'select') && Math.hypot(P.x - R.x, P.y - R.y) > 0.5 / S.scale) {
       // where the pin sits at rest
       OV.append(svgEl('line', { x1: R.x, y1: R.y, x2: P.x, y2: P.y, class: 'ov-pinrest' }));
       OV.append(svgEl('circle', { cx: R.x, cy: R.y, r: 4 * u, class: 'ov-pinrest' }));
     }
-    if (sel && S.tool === 'pin' && !bound) {
+    if (sel && (S.tool === 'pin' || S.tool === 'select') && !bound) {
       const a = (pinRot(l, p.n) * Math.PI) / 180,
         kx = P.x + RING * u * Math.cos(a),
         ky = P.y + RING * u * Math.sin(a);
@@ -447,7 +450,8 @@ export function removeAllPins(l: Layer) {
 }
 /** Delete / Backspace with a pin selected in the pin tools */
 export function deleteSelectedPin() {
-  if (!isPinTool(S.tool) || S.pinSel == null) return false;
+  // the Pin tools; with the Select tool, only right after a pin was picked (else Delete is the layer's)
+  if (!(isPinTool(S.tool) || (S.tool === 'select' && S.pinFocus)) || S.pinSel == null) return false;
   const l = pinLayer();
   if (!l || !l.pins || !l.pins.some(p => p.n === S.pinSel)) return false;
   removePin(l, S.pinSel);
@@ -475,28 +479,38 @@ function addPin(l: Layer, p: XY) {
   S.pinSel = n;
   ed.end({ insp: true });
 }
-export function pinsDown(e: PointerEvent, p0: XY) {
+/** A press on one of the selected layer's pins or on the selected pin's rotation ring (Pin tools, and
+ *  the Select tool): pick it, then drag it (Alt: at rest) or turn it. Returns false when the press
+ *  wasn't on one. */
+export function pinHandleDown(e: PointerEvent, p0: XY): boolean {
   const t = e.target as any,
     ring = t.closest && t.closest('[data-pinring]'),
     pe = t.closest && t.closest('[data-pin]'),
-    bone = S.tool === 'pin' && S.pinBind && t.closest && t.closest('[data-bone]'),
     l = pinLayer();
+  if (!(ring || pe) || !l || isLocked(l)) return false;
+  const n = +(ring || pe).dataset[ring ? 'pinring' : 'pin'];
+  S.pinSel = n;
+  S.pinFocus = true;
+  // a pin bound to a bone follows the bone: it can be picked (and deleted), not dragged
+  if (isBound(l, n)) {
+    drawOverlay();
+    renderInspector();
+    return true;
+  }
+  renderInspector();
+  if (ring) rotateDrag(l, n, p0);
+  else pinDrag(l, n, p0, S.tool === 'pinedit' || e.altKey);
+  return true;
+}
+export function pinsDown(e: PointerEvent, p0: XY) {
+  const t = e.target as any,
+    bone = S.tool === 'pin' && S.pinBind && t.closest && t.closest('[data-bone]');
   if (bone) {
     const s = selLayer();
     if (s && pinnable(s) && !isLocked(s)) bindBone(s, bone.dataset.bone);
     return;
   }
-  if ((ring || pe) && l && !isLocked(l)) {
-    const n = +(ring || pe).dataset[ring ? 'pinring' : 'pin'];
-    S.pinSel = n;
-    // a pin bound to a bone follows the bone: it can be picked (and deleted), not dragged
-    if (isBound(l, n)) {
-      drawOverlay();
-      renderInspector();
-      return;
-    }
-    return ring ? rotateDrag(l, n, p0) : pinDrag(l, n, p0, S.tool === 'pinedit' || e.altKey);
-  }
+  if (pinHandleDown(e, p0)) return;
   if (S.pinBind) return;
   if (S.tool === 'pinedit') {
     S.pinSel = null;
