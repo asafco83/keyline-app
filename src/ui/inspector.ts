@@ -213,6 +213,29 @@ export function applyCollapse() {
     );
   });
 }
+/** "/": closes every section of the inspector, or opens them all when they are all closed already. */
+export function toggleAllSections() {
+  const hs = [...INSP.querySelectorAll('.sec > h3')];
+  if (!hs.length) return false;
+  const closed = closedSet(),
+    titles = hs.map(secTitle),
+    shut = titles.some(t => !closed.has(t));
+  titles.forEach(t => (shut ? closed.add(t) : closed.delete(t)));
+  try {
+    localStorage.setItem(CLOSED_STORE, JSON.stringify([...closed]));
+  } catch (_) {}
+  hs.forEach((h3: Element) => {
+    h3.parentElement.classList.toggle('closed', shut);
+    const b = h3.querySelector('.sec-tg'),
+      t = secTitle(h3);
+    if (b) {
+      b.setAttribute('aria-expanded', String(!shut));
+      b.setAttribute('aria-label', `${shut ? 'Expand' : 'Collapse'} ${t}`);
+      b.setAttribute('title', `${shut ? 'Show' : 'Hide'} this section`);
+    }
+  });
+  return true;
+}
 function toggleSection(h3: Element) {
   const t = secTitle(h3),
     closed = closedSet(),

@@ -1,0 +1,157 @@
+import asyncio, sys, json, os
+from playwright.async_api import async_playwright
+OUT=os.environ.get('CIN_OUT','/tmp/svgcinema-shots/'); os.makedirs(OUT, exist_ok=True)
+# Shortcuts on any keyboard layout (Hebrew: Ctrl+ז is still undo), the new shortcuts (Ctrl+A / Ctrl+Shift+A,
+# Ctrl+H, Ctrl+arrows, Ctrl+X on keyframes, Shift+Space, F1, Alt+G, "/", Ctrl+wheel on the timeline,
+# Alt+drag), the Keyboard shortcuts window, no text selection in the UI, the canvas marquee and the
+# Layers panel search.
+async def main():
+    async with async_playwright() as p:
+        b=await p.chromium.launch(); pg=await b.new_page(viewport={'width':1440,'height':900}); pg.set_default_timeout(5000)
+        errs=[]; pg.on('pageerror',lambda e: errs.append(str(e)))
+        await pg.goto((sys.argv[1] if len(sys.argv)>1 else 'http://localhost:5199/')); await pg.wait_for_timeout(2500)
+        await pg.evaluate("async()=>{ window.st=await import('/src/core/state.ts'); window.hi=await import('/src/core/history.ts'); window.V=await import('/src/core/view.ts'); window.K=await import('/src/core/keys.ts'); }")
+        ev=pg.evaluate; R={}; F=[]
+        def check(n,c,i=None):
+            R[n]=('ok' if c else 'FAIL')+('' if i is None else f' {i}')
+            if not c: F.append(n)
+        lid=lambda n: ev(f"st.doc.layers.find(l=>l.name==='{n}').id")
+        key=lambda k,code,mods='': ev(f"window.dispatchEvent(new KeyboardEvent('keydown',{{key:'{k}',code:'{code}',bubbles:true,cancelable:true,{mods}}}))")
+        top=lambda: ev("st.doc.layers.filter(l=>!l.parent&&!l.hid&&!l.lock).map(l=>l.id).sort().join()")
+        sel=lambda: ev("[...st.S.selSet].sort().join()")
+        await pg.mouse.click(700,80)  # focus the page (empty canvas strip above the artboard)
+
+        # ---- layout-independent letters
+        check('keyName: a Hebrew letter on the Z key is z', await ev("K.keyName({key:'ז',code:'KeyZ',shiftKey:false})")=='z' and await ev("K.keyName({key:'z',code:'KeyW',shiftKey:false})")=='z')
+        sun=await lid('Sun')
+        await ev(f"(()=>{{const e=hi.beginEdit();st.layerById('{sun}').name='Sun!';e.end()}})()")
+        await key('ז','KeyZ','ctrlKey:true')
+        check('Ctrl+Z undoes on a Hebrew layout', await ev(f"st.layerById('{sun}').name")=='Sun')
+        await key('ז','KeyZ','ctrlKey:true,shiftKey:true')
+        check('Ctrl+Shift+Z redoes on a Hebrew layout', await ev(f"st.layerById('{sun}').name")=='Sun!')
+        await ev("hi.undo()")
+        await key('ה','KeyV')
+        await key('ם','KeyO'); t1=await ev("st.S.tool"); await key('ה','KeyV')
+        check('tool letters too (O on a Hebrew layout picks the Ellipse)', t1=='ellipse' and await ev("st.S.tool")=='select', t1)
+
+        # ---- select all / deselect / no text highlight
+        await ev("st.S.kbArea='stage'"); await pg.mouse.click(700,80)
+        await pg.keyboard.press('Control+a'); await pg.wait_for_timeout(150)
+        check('Ctrl+A selects every top-level layer (shown, unlocked)', await sel()==await top() and await ev("st.S.selSet.size")>3, await ev("st.S.selSet.size"))
+        check('and highlights no text on the page', await ev("String(getSelection())")=='')
+        await key('ש','KeyA','ctrlKey:true')
+        check('Ctrl+A on a Hebrew layout too (no page text selected)', await sel()==await top() and await ev("String(getSelection())")=='')
+        await pg.keyboard.press('Control+Shift+a'); await pg.wait_for_timeout(100)
+        check('Ctrl+Shift+A deselects', await ev("st.S.selSet.size")==0)
+        await ev("st.S.kbArea='timeline'"); await pg.keyboard.press('Control+a'); await pg.wait_for_timeout(100)
+        check('in the timeline Ctrl+A selects every keyframe', await ev("st.S.keys.size")>20 and await ev("st.S.selSet.size")<=1, await ev("st.S.keys.size"))
+        await ev("st.S.keys.clear(); st.S.kbArea='stage'")
+        ui=await ev("[getComputedStyle(document.querySelector('#lCount')).userSelect, getComputedStyle(document.querySelector('.tl-name')).userSelect, getComputedStyle(document.getElementById('pname')).userSelect]")
+        check('UI text can\'t be highlighted; fields can', ui==['none','none','text'], ui)
+
+        # ---- Ctrl+H, Ctrl+arrows
+        await ev(f"hi.select('{sun}')")
+        await pg.keyboard.press('Control+h'); h1=await ev(f"st.layerById('{sun}').hid")
+        await pg.keyboard.press('Control+h'); h2=await ev(f"st.layerById('{sun}').hid")
+        check('Ctrl+H hides the selection and shows it again', h1 is True and h2 is False)
+        sib=lambda: ev(f"(()=>{{const l=st.layerById('{sun}');return st.doc.layers.filter(x=>x.parent===l.parent).map(x=>x.name)}})()")
+        s0=await sib()
+        await pg.keyboard.press('Control+ArrowDown'); s1=await sib()
+        await pg.keyboard.press('Control+Shift+ArrowUp'); s2=await sib()
+        check('Ctrl+↓ sends backward, Ctrl+Shift+↑ brings to front', s1.index('Sun')==s0.index('Sun')-1 and s2[-1]=='Sun', (s0,s1,s2))
+        await ev("hi.undo(); hi.undo()")
+        check('(undone)', await sib()==s0)
+
+        # ---- keyframes: Ctrl+X, Shift+Space
+        title=await lid('Title')
+        await ev(f"(()=>{{const l=st.layerById('{title}');st.S.keys=new Set([l.t.op[0]]);st.S.sel='{title}';st.S.selSet=new Set(['{title}'])}})()")
+        n0=await ev(f"st.layerById('{title}').t.op.length")
+        await pg.keyboard.press('Control+x'); await pg.wait_for_timeout(100)
+        check('Ctrl+X cuts the selected keyframes', await ev(f"st.layerById('{title}').t.op.length")==n0-1 and await ev("!!(st.S.clip&&st.S.clip.length)"))
+        await ev("hi.undo()")
+        await ev("hi.setTime(1.5)"); await pg.keyboard.press('Shift+Space'); await pg.wait_for_timeout(80)
+        check('Shift+Space goes back to the start', await ev("st.S.time")==0 and not await ev("st.S.playing"))
+
+        # ---- view: Alt+G, "/", Ctrl+wheel on the timeline
+        g0=await ev("V.VIEW.gridFront"); await pg.keyboard.press('Alt+g'); g1=await ev("V.VIEW.gridFront"); await pg.keyboard.press('Alt+g')
+        check('Alt+G turns the front grid on and off', g1==(not g0) and await ev("V.VIEW.gridFront")==g0)
+        await ev(f"hi.select('{sun}')"); await pg.wait_for_timeout(100)
+        await ev("localStorage.removeItem('svgcinema:inspClosed')")
+        await pg.keyboard.press('/'); c1=await ev("[...document.querySelectorAll('#insp .sec')].every(s=>s.classList.contains('closed'))")
+        await pg.keyboard.press('/'); c2=await ev("[...document.querySelectorAll('#insp .sec')].some(s=>s.classList.contains('closed'))")
+        check('"/" closes every inspector section, and opens them again', c1 and not c2)
+        pps0=await ev("st.S.pps"); bb=await pg.locator('#tlscroll').bounding_box()
+        await pg.mouse.move(bb['x']+500,bb['y']+60); await pg.keyboard.down('Control'); await pg.mouse.wheel(0,-300); await pg.keyboard.up('Control'); await pg.wait_for_timeout(150)
+        check('Ctrl+scroll zooms the timeline', await ev("st.S.pps")>pps0 and await ev("+document.getElementById('tZoom').value")==await ev("st.S.pps"), (pps0, await ev("st.S.pps")))
+
+        # ---- Alt+drag duplicates
+        # a box on top of everything
+        box=await ev("(async()=>{const SG=await import('/src/render/stage.ts');const l=st.mkLayer('rect','Box',{x:60,y:60,w:90,h:60});st.doc.layers.push(l);SG.renderAll();return l.id})()")
+        await ev(f"hi.select('{box}')"); n=await ev("st.doc.layers.length"); p0=await ev(f"JSON.stringify(st.layerById('{box}').b.pos)")
+        u0=await ev("st.S.undo.length")
+        r=await ev(f"(()=>{{const e=document.getElementById('e-{box}').getBoundingClientRect();return [e.x+e.width*.3,e.y+e.height*.3]}})()")
+        await pg.keyboard.down('Alt'); await pg.mouse.move(r[0],r[1]); await pg.mouse.down(); await pg.mouse.move(r[0]+30,r[1]+20,steps=5); await pg.mouse.up(); await pg.keyboard.up('Alt'); await pg.wait_for_timeout(150)
+        cp=await ev("st.layerById(st.S.sel)")
+        check('Alt+drag drags a copy and leaves the original', await ev("st.doc.layers.length")==n+1 and cp['name']=='Box copy' and await ev(f"JSON.stringify(st.layerById('{box}').b.pos)")==p0 and cp['b']['pos']!=json.loads(p0), (cp['name'],cp['b']['pos']))
+        check('in one undo step', await ev("st.S.undo.length")==u0+1)
+        await ev("hi.undo()")
+        check('(undone)', await ev("st.doc.layers.length")==n)
+        await ev(f"st.doc.layers.splice(st.doc.layers.findIndex(l=>l.id==='{box}'),1); hi.select(null)")
+
+        # ---- shortcuts window
+        await pg.keyboard.press('F1'); await pg.wait_for_timeout(150)
+        tabs=await ev("[...document.querySelectorAll('#skTabs [role=tab]')].map(b=>b.textContent)")
+        check('F1 opens the shortcuts window with its tabs', not await ev("mKeys.hidden") and tabs==['Common','Selection & layers','Tools','Timeline','View'], tabs)
+        rows=await ev("[...document.querySelectorAll('#skBody .sk-row')].length")
+        check('Common lists undo with key caps', rows>10 and await ev("[...document.querySelectorAll('#skBody .sk-row')][0].textContent.includes('Undo') && document.querySelector('#skBody .sk-row kbd')!=null"))
+        await pg.click('#sk-tools'); tl=await ev("document.getElementById('skBody').textContent")
+        check('Tools come from the real bindings (E edit bone, S scale bone, W pin, M rectangle)', all(x in tl for x in ['Edit bone tool','Scale bone tool','Pin tool','Rectangle']) and 'Star' not in tl.split('Polygon')[0], tl[:120])
+        await pg.click('#sk-timeline'); tt=await ev("document.getElementById('skBody').textContent")
+        check('Timeline lists the Animate keys', 'Animate position' in tt and 'Shift' in tt)
+        await pg.fill('#skFind','hide'); hits=await ev("[...document.querySelectorAll('#skBody .sk-row .sk-l')].map(e=>e.textContent)")
+        check('search finds shortcuts across tabs', hits==['Hide or show the selection'], hits)
+        await pg.screenshot(path=OUT+'shortcuts.png')
+        await pg.keyboard.press('Escape'); a=await ev("[mKeys.hidden, skFind.value]")
+        await pg.keyboard.press('Escape'); b2=await ev("mKeys.hidden")
+        check('Esc clears the search, then closes', a==[False,''] and b2)
+        await pg.click('#bKeys'); await pg.wait_for_timeout(100)
+        check('the keyboard button opens it too', not await ev("mKeys.hidden")); await pg.keyboard.press('Escape')
+
+        # ---- marquee
+        await ev("hi.select(null)")
+        art=await pg.locator('#artboard').bounding_box()
+        async def marq(x0,y0,x1,y1,mod=None):
+            if mod: await pg.keyboard.down(mod)
+            await pg.mouse.move(x0,y0); await pg.mouse.down(); await pg.mouse.move((x0+x1)/2,(y0+y1)/2,steps=4)
+            mid=await ev("[!!document.querySelector('.ov-marq'), document.querySelectorAll('#overlay .ov-box').length]")
+            await pg.mouse.move(x1,y1,steps=4); await pg.mouse.up(); await pg.wait_for_timeout(150)
+            if mod: await pg.keyboard.up(mod)
+            return mid
+        mid=await marq(art['x']-20,art['y']-24,art['x']+60,art['y']+40)
+        s1=await ev("[...st.S.selSet].map(id=>st.layerById(id)).map(l=>[l.name,!!l.parent])")
+        check('dragging from an empty spot draws a marquee, outlining what it will pick', mid[0] and mid[1]>=1, mid)
+        check('it selects the top-level layers it touches', len(s1)>=1 and ['Sky',False] in s1 and all(not x[1] for x in s1), s1)
+        check('and leaves no marquee behind', not await ev("!!document.querySelector('.ov-marq')"))
+        await marq(art['x']-20,art['y']-24,art['x']+60,art['y']+40,'Shift')
+        check('Shift+marquee over the same layers takes them out again', await ev("st.S.selSet.size")==0)
+        await marq(art['x']-20,art['y']-24,art['x']+60,art['y']+40,'Control')
+        s3=await ev("[...st.S.selSet].map(id=>st.layerById(id).type)")
+        check('Ctrl+marquee picks the shapes inside groups', len(s3)>=1 and 'group' not in s3, s3)
+        await pg.mouse.click(art['x']-20,art['y']-24); await pg.wait_for_timeout(100)
+        check('a click on an empty spot still deselects', await ev("st.S.selSet.size")==0)
+        await pg.screenshot(path=OUT+'marquee.png')
+
+        # ---- layers search
+        await pg.fill('#lpFind','stem'); await pg.wait_for_timeout(100)
+        names=await ev("[...document.querySelectorAll('#lp .lp-row .lp-name')].map(e=>e.textContent)")
+        check('search shows the matches inside their groups', names==['Sprout','Stem','Stem 2','Stem 3'], names)
+        check('with the match marked and counted', await ev("document.querySelectorAll('#lp mark').length")==3 and await ev("lpFindN.textContent")=='3')
+        await pg.press('#lpFind','Enter'); await pg.wait_for_timeout(100)
+        check('Enter selects every match', sorted(await ev("[...st.S.selSet].map(id=>st.layerById(id).name)"))==['Stem','Stem 2','Stem 3'])
+        await pg.fill('#lpFind','zzz'); await pg.wait_for_timeout(80)
+        check('no match says so', 'zzz' in await ev("document.querySelector('#lp .lp-empty').textContent"))
+        await pg.press('#lpFind','Escape'); await pg.wait_for_timeout(80)
+        check('Esc clears it and the tree comes back', await ev("lpFind.value")=='' and await ev("document.querySelectorAll('#lp .lp-row').length")>10)
+        R['errors']=errs; print(json.dumps(R,indent=1,ensure_ascii=False)); print('FAILS',F+(['errors'] if errs else []))
+        await b.close()
+asyncio.run(main())

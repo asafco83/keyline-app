@@ -159,9 +159,6 @@ export function init(): void {
   });
   $('#bUndo').addEventListener('click', undo);
   $('#bRedo').addEventListener('click', redo);
-  $('#bKeys').addEventListener('click', () => {
-    $('#mKeys').hidden = false;
-  });
   $('#pname').addEventListener('change', (e: Event) => {
     doc.name = (e.target as any).value.trim() || 'Untitled animation';
     artLabel();

@@ -128,6 +128,20 @@ export function transformSection(l: Layer) {
 
 /* ---------- Shape settings: polygon sides, star points & ratio, corner radius, line ends ---------- */
 
+/** The eyedropper (browsers that have one): picks a colour anywhere on screen for the layer's fill or
+ *  stroke. Also I (fill) and Alt+I (stroke). */
+export function pickPaint(l: Layer, k: PropKey) {
+  if (!l || !(window as any).EyeDropper) return false;
+  new (window as any).EyeDropper()
+    .open()
+    .then((r: { sRGBHex: string }) => {
+      const ed = beginEdit();
+      setProp(l, k, r.sRGBHex);
+      ed.end({ insp: true });
+    })
+    .catch(() => {});
+  return true;
+}
 /** Size keeps its proportions: images by default (lockAR), other shapes when turned on (szLock) */
 export const szLocked = (l: Layer) => (l && l.type === 'image' ? S.lockAR : !!S.szLock);
 /** Size: the shape's width and height, animatable (it grows around the origin), with the same
@@ -536,15 +550,7 @@ export function propsClick(a: string, b: HTMLElement, l: Layer) {
     return true;
   }
   if (a === 'pick') {
-    const k = b.dataset.k as PropKey;
-    new (window as any).EyeDropper()
-      .open()
-      .then((r: { sRGBHex: string }) => {
-        const ed = beginEdit();
-        setProp(l, k, r.sRGBHex);
-        ed.end({ insp: true });
-      })
-      .catch(() => {});
+    pickPaint(l, b.dataset.k as PropKey);
     return true;
   }
   if (a === 'fxdel' || a === 'fxmove') {

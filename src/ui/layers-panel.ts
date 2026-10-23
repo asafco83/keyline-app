@@ -3,7 +3,7 @@ import { syncLayerActions } from './animate-menu';
 import type { Layer } from '../model/types';
 import { $, H, ICON, NOFILL, TICON, clone, esc, r2, r3 } from '../core/constants';
 import { LP } from '../core/dom';
-import { beginEdit, select } from '../core/history';
+import { beginEdit, select, selectMany } from '../core/history';
 import { makeMask, releaseMask } from '../core/masks';
 import { S, doc, layerById, mkLayer, selLayer, uid } from '../core/state';
 import { toast } from '../io/open';
@@ -28,10 +28,42 @@ const MASK_IC =
 /** The "clipped" hook shown before layers that a mask or clip folder applies to. */
 const CLIP_IC =
   '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 10.5H5V3"/><path d="M2.8 5.2L5 3l2.2 2.2"/></svg>';
+/** the Layers panel search (empty: the whole tree) */
+let query = '';
+export function setLayerQuery(q: string) {
+  query = q;
+  renderLayers();
+}
+/** layers whose name contains the search, case-insensitively */
+export function layerMatches(q = query): Layer[] {
+  const s = q.trim().toLowerCase();
+  return s ? doc.layers.filter(l => l.name.toLowerCase().includes(s)) : [];
+}
+/** the name with the searched part marked */
+function nameHTML(name: string) {
+  const s = query.trim().toLowerCase(),
+    i = s ? name.toLowerCase().indexOf(s) : -1;
+  if (i < 0) return esc(name);
+  return (
+    esc(name.slice(0, i)) + '<mark>' + esc(name.slice(i, i + s.length)) + '</mark>' + esc(name.slice(i + s.length))
+  );
+}
 export function renderLayers() {
-  const rows = treeRows(null, 0, [], true);
+  let rows = treeRows(null, 0, [], true);
+  const q = query.trim(),
+    nEl = document.getElementById('lpFindN');
+  if (q) {
+    // the matches, inside their (opened) groups so you can see where they are
+    const hits = layerMatches(),
+      keep = new Set<string>();
+    hits.forEach(l => [l, ...ancestors(l)].forEach(a => keep.add(a.id)));
+    rows = treeRows(null, 0, [], false).filter(([l]) => keep.has(l.id));
+    if (nEl) nEl.textContent = hits.length ? String(hits.length) : '';
+  } else if (nEl) nEl.textContent = '';
   if (!rows.length)
-    LP.innerHTML = `<p class="lp-empty">Layers appear here. Draw with the tools on the left, or drop SVG and image files onto the canvas.</p>`;
+    LP.innerHTML = q
+      ? `<p class="lp-empty">No layer is called “${esc(q)}”.</p>`
+      : `<p class="lp-empty">Layers appear here. Draw with the tools on the left, or drop SVG and image files onto the canvas.</p>`;
   else {
     // tree guides: for each row, which ancestor levels continue below it (a vertical dotted
     // line passes through), and whether the row itself is its parent's last child (an elbow)
@@ -66,7 +98,7 @@ export function renderLayers() {
           : '';
         return `<div class="lp-row${S.selSet.has(l.id) ? ' sel' : ''}${l.hid ? ' hid' : ''}" draggable="true" tabindex="0" role="treeitem" aria-selected="${S.selSet.has(l.id)}" aria-level="${d + 1}" data-lid="${l.id}" style="padding-left:${4 + d * 18}px">${guides ? `<span class="lp-guides" aria-hidden="true">${guides}</span>` : ''}
       ${grp && n ? `<button class="tl-ic" data-la="exp" aria-label="${open ? 'Collapse' : 'Expand'} ${esc(l.name)}">${open ? ICON.down : ICON.right}</button>${clip}` : `<span class="lp-sp">${clip}</span>`}
-      <span class="lp-ty" title="${l.type}">${TICON[l.type] || TICON.raw}</span><span class="lp-name" title="${esc(l.name)}">${esc(l.name)}</span>${l.mask ? `<span class="lp-mask" title="${l.mask === 'clip' ? 'Clip group: the Clip path folder clips the layers below it' : 'Mask group: the Masks folder masks the layers below it'}">${l.mask === 'clip' ? 'CLIP' : 'MASK'}</span>` : l.maskSrc ? '<span class="lp-mask ic" title="The layers in this folder are the mask">' + MASK_IC + '</span>' : ''}${l.link ? `<span class="lp-link" title="Links to ${esc(l.link.url)}">🔗</span>` : ''}
+      <span class="lp-ty" title="${l.type}">${TICON[l.type] || TICON.raw}</span><span class="lp-name" title="${esc(l.name)}">${nameHTML(l.name)}</span>${l.mask ? `<span class="lp-mask" title="${l.mask === 'clip' ? 'Clip group: the Clip path folder clips the layers below it' : 'Mask group: the Masks folder masks the layers below it'}">${l.mask === 'clip' ? 'CLIP' : 'MASK'}</span>` : l.maskSrc ? '<span class="lp-mask ic" title="The layers in this folder are the mask">' + MASK_IC + '</span>' : ''}${l.link ? `<span class="lp-link" title="Links to ${esc(l.link.url)}">🔗</span>` : ''}
       <button class="tl-ic${l.hid ? '' : ' vis-hide'}" data-la="hid" aria-label="${l.hid ? 'Show' : 'Hide'} ${esc(l.name)}">${l.hid ? ICON.eyeoff : ICON.eye}</button>
       <button class="tl-ic${l.lock ? '' : ' vis-hide'}" data-la="lock" aria-label="${l.lock ? 'Unlock' : 'Lock'} ${esc(l.name)}">${l.lock ? ICON.lock : ICON.unlock}</button>
       ${hasTracks(l) ? '<i class="lp-anim" title="Has keyframes"></i>' : '<i class="lp-anim none" aria-hidden="true"></i>'}</div>`;
@@ -235,8 +267,15 @@ export function deleteSel() {
   ed.end({ insp: true });
 }
 export function duplicate(l: Layer) {
-  const ed = beginEdit(),
-    list = [l, ...descendants(l)],
+  const ed = beginEdit();
+  copyLayer(l, true);
+  ed.end({ insp: true });
+}
+/** Puts a copy of `l` (and everything inside it) just above it and selects the copy; `offset` moves it
+ *  16 units down and right (Duplicate), without it the copy sits on the original (Alt+drag). No undo
+ *  step of its own. */
+export function copyLayer(l: Layer, offset: boolean): Layer {
+  const list = [l, ...descendants(l)],
     map: Record<string, string> = {};
   const clones = list.map(x => {
     const c = clone(x);
@@ -250,14 +289,16 @@ export function duplicate(l: Layer) {
   const root = clones[0];
   root.name = l.name + ' copy';
   root.hid = false;
-  if (root.t.pos && root.t.pos.length) root.t.pos.forEach(q => (q[1] = [q[1][0] + 16, q[1][1] + 16]));
-  else root.b.pos = [root.b.pos[0] + 16, root.b.pos[1] + 16];
+  if (offset) {
+    if (root.t.pos && root.t.pos.length) root.t.pos.forEach(q => (q[1] = [q[1][0] + 16, q[1][1] + 16]));
+    else root.b.pos = [root.b.pos[0] + 16, root.b.pos[1] + 16];
+  }
   doc.layers.splice(doc.layers.indexOf(l) + 1, 0, root);
   doc.layers.push(...clones.slice(1));
   S.sel = root.id;
   S.selSet = new Set<string>([root.id]);
   S.keys.clear();
-  ed.end({ insp: true });
+  return root;
 }
 export function arrange(l: Layer, dir: number) {
   const sib = kids(pidOf(l)),
@@ -273,6 +314,27 @@ export function arrange(l: Layer, dir: number) {
 }
 
 export function init(): void {
+  // search: filters the tree as you type; Enter selects every match, ↓ goes to the list, Esc clears
+  const find = document.getElementById('lpFind') as HTMLInputElement | null;
+  if (find) {
+    find.addEventListener('input', () => setLayerQuery(find.value));
+    find.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && find.value) {
+        e.stopPropagation();
+        find.value = '';
+        setLayerQuery('');
+      } else if (e.key === 'Enter') {
+        const ids = layerMatches().map(l => l.id);
+        if (ids.length) selectMany(ids);
+      } else if (e.key === 'ArrowDown') {
+        const r = LP.querySelector('.lp-row') as HTMLElement | null;
+        if (r) {
+          e.preventDefault();
+          r.focus();
+        }
+      }
+    });
+  }
   LP.addEventListener('click', (e: MouseEvent) => {
     const r = (e.target as any).closest('.lp-row');
     if (!r) {

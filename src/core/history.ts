@@ -205,6 +205,21 @@ export function select(id: string | null, mode?: 'add' | 'toggle' | string) {
     if (row) row.scrollIntoView({ block: 'nearest' });
   }
 }
+/** Selects exactly these layers (the last one is the primary), as Select all and the canvas marquee do. */
+export function selectMany(ids: string[]) {
+  S.keys.clear();
+  S.selSet = new Set<any>(ids);
+  S.sel = ids.length ? ids[ids.length - 1] : null;
+  ids.forEach(id => {
+    const l = layerById(id);
+    if (l) ancestors(l).forEach(a => (S.lexp[a.id] = true));
+  });
+  S.node = null;
+  renderLayers();
+  renderTimeline();
+  renderInspector();
+  frame();
+}
 export function setTime(t: number) {
   S.time = clamp(r3(t), 0, doc.dur);
   S.ptime = S.time;

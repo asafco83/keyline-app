@@ -6,7 +6,9 @@ import type { Keyframe, Layer, XY } from '../model/types';
 import { motionHandleDrag, segmentDrag, straighten } from './motion-path';
 import { H, clamp, clone, r2, xfp } from '../core/constants';
 import { INSP, WRAP } from '../core/dom';
-import { beginEdit, select, setProp, setTool } from '../core/history';
+import { beginEdit, commit, select, setProp, setTool } from '../core/history';
+import { copyLayer } from '../ui/layers-panel';
+import { marqueeDrag } from './marquee';
 import { S, layerById } from '../core/state';
 import { isLocked, parentMatrix } from '../model/tree';
 import { boxOf, docPt, drawOverlay, obbOf } from '../render/overlay';
@@ -73,7 +75,8 @@ export function endDrag(e: PointerEvent) {
     }
   }
 }
-export function moveDrag(l: Layer, p0: XY) {
+/** Drags a layer on the canvas. `ed0`: an undo step already open (Alt+drag made a copy in it). */
+export function moveDrag(l: Layer, p0: XY, ed0?: { end(o?: any): void }) {
   const PMi = parentMatrix(l).inverse(),
     lp0 = xfp(PMi, p0.x, p0.y),
     start = clone(H.get(l, 'pos', S.time)),
@@ -83,7 +86,7 @@ export function moveDrag(l: Layer, p0: XY) {
     // snapping: the layer's box against everything else
     T = snapTargets(selfAndKids(l)),
     box0 = boxOf(l),
-    ed = beginEdit();
+    ed = ed0 || beginEdit();
   let moved = false;
   S.drag = {
     move(p, e) {
@@ -109,10 +112,19 @@ export function moveDrag(l: Layer, p0: XY) {
     },
     up() {
       clearSnap();
-      ed.end();
+      ed.end(ed0 ? { insp: true } : undefined);
     },
   };
 }
+/** Alt+drag: drag a copy of the layer, leaving the original where it was (one undo step). */
+function dupDrag(l: Layer, p0: XY) {
+  const ed = beginEdit(),
+    c = copyLayer(l, false);
+  commit({ insp: true });
+  moveDrag(c, p0, ed);
+}
+/** A drag on the layer: moves it, or a copy of it with Alt */
+const dragLayer = (l: Layer, p: XY, e: PointerEvent) => (e.altKey ? dupDrag(l, p) : moveDrag(l, p));
 
 let lastSeg: { id: string; i: number; t: number } | null = null,
   lastText: { id: string; t: number; x: number; y: number } | null = null;
@@ -244,13 +256,15 @@ export function init(): void {
           return startTextEdit(l);
         }
         lastText = { id, t: now, x: e.clientX, y: e.clientY };
-        if (t === 'select') moveDrag(l, p);
+        if (t === 'select') dragLayer(l, p, e);
         return;
       }
     }
     // inside the selected layer's box (also for layers that aren't drawn, like masks): move it
     const cur = S.sel && layerById(S.sel);
-    if (cur && t === 'select' && !isLocked(cur) && insideBox(cur, p)) return moveDrag(cur, p);
+    if (cur && t === 'select' && !isLocked(cur) && insideBox(cur, p)) return dragLayer(cur, p, e);
+    // an empty spot: drag a marquee (a click without dragging deselects, in marqueeDrag)
+    if (t === 'select') return marqueeDrag(p, e);
     if (S.sel || S.selSet.size) {
       S.keys.clear();
       select(null);

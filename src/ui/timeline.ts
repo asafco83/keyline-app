@@ -434,6 +434,25 @@ export function marquee(e: PointerEvent, lane: HTMLElement) {
 
 export function init(): void {
   TLS.addEventListener('scroll', () => updatePlayhead());
+  // Ctrl+wheel (or a pinch) zooms the timeline around the pointer
+  TLS.addEventListener(
+    'wheel',
+    (e: WheelEvent) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      e.preventDefault();
+      const r = TLS.getBoundingClientRect(),
+        x = e.clientX - r.left,
+        t = (TLS.scrollLeft + x - tln()) / S.pps,
+        z = $('#tZoom') as HTMLInputElement,
+        pps = Math.round(clamp(S.pps * Math.exp(-e.deltaY * 0.0015), +z.min || 40, +z.max || 420));
+      if (pps === S.pps) return;
+      S.pps = pps;
+      z.value = String(pps);
+      z.dispatchEvent(new Event('input', { bubbles: true }));
+      if (t >= 0) TLS.scrollLeft = Math.max(0, tln() + t * pps - x);
+    },
+    { passive: false },
+  );
   // the shown range fills the panel, so redraw when the panel changes size
   let lastW = 0;
   if (typeof ResizeObserver !== 'undefined')

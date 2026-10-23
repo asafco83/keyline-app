@@ -3,6 +3,7 @@ import { zoomShortcut } from './zoom-menu';
 import { animateShortcut } from './animate-menu';
 import { viewShortcut } from './view-menu';
 import {
+  arrangeEnd,
   clearLayerClip,
   closeLayerMenu,
   copyLayers,
@@ -10,11 +11,17 @@ import {
   hasLayerClip,
   layerShortcut,
   pasteLayers,
+  selectAllLayers,
+  toggleHide,
 } from './layer-menu';
+import { keyName } from '../core/keys';
+import { openShortcuts } from './shortcuts';
+import { pickPaint } from './props-panel';
+import { toggleAllSections } from './inspector';
 import { pickTool } from './tools-rail';
 import { setSpace } from '../tools/hand';
 import { $, H, TOOL_INFO, clone, r2 } from '../core/constants';
-import { beginEdit, deleteKeys, redo, select, setProp, setTime, setTool, undo } from '../core/history';
+import { beginEdit, deleteKeys, redo, select, selectMany, setProp, setTime, setTool, undo } from '../core/history';
 import { closeMenu, copyKeys, duplicateKeys, jumpKey, pasteKeys, selectAllKeys, shiftKeys } from '../core/keyframes';
 import { togglePlay } from '../core/playback';
 import { S, doc, selLayer } from '../core/state';
@@ -72,7 +79,8 @@ export function init(): void {
       }
     }
     const modk = e.ctrlKey || e.metaKey,
-      kk = (e.key || '').toLowerCase();
+      // letter shortcuts by the physical key, so they work on any keyboard layout
+      kk = keyName(e).toLowerCase();
     if (modk && kk === 's') {
       e.preventDefault();
       if (!$('#mSave').hidden) return;
@@ -99,6 +107,11 @@ export function init(): void {
       closeFileMenu();
       return;
     }
+    if (e.key === 'F1') {
+      e.preventDefault();
+      openShortcuts();
+      return;
+    }
     if (typing) return;
     if ([...(document.querySelectorAll as any)('.modal')].some(x => !x.hidden)) return;
     if (zoomShortcut(e)) {
@@ -107,7 +120,7 @@ export function init(): void {
     }
     const mod = e.ctrlKey || e.metaKey,
       l = selLayer(),
-      k = e.key;
+      k = keyName(e);
     if (mod && k.toLowerCase() === 'z') {
       e.preventDefault();
       e.shiftKey ? redo() : undo();
@@ -120,6 +133,26 @@ export function init(): void {
     }
     if (viewShortcut(e)) {
       e.preventDefault();
+      return;
+    }
+    // Ctrl+X: cut the selected keyframes (layers: below)
+    if (mod && !e.shiftKey && k.toLowerCase() === 'x' && S.keys.size) {
+      e.preventDefault();
+      clearLayerClip();
+      copyKeys();
+      deleteKeys();
+      return;
+    }
+    // Ctrl+H: hide / show the selection
+    if (mod && !e.shiftKey && k.toLowerCase() === 'h') {
+      e.preventDefault();
+      toggleHide();
+      return;
+    }
+    // Ctrl+↑ / Ctrl+↓: bring forward / send backward (Shift: to the front / back)
+    if (mod && (k === 'ArrowUp' || k === 'ArrowDown')) {
+      e.preventDefault();
+      if (l) e.shiftKey ? arrangeEnd(l, k === 'ArrowUp') : arrange(l, k === 'ArrowUp' ? 1 : -1);
       return;
     }
     if (layerShortcut(e)) {
@@ -149,13 +182,12 @@ export function init(): void {
       }
       return;
     }
+    // Ctrl+A: every layer (every keyframe while working in the timeline); Ctrl+Shift+A: nothing
     if (mod && k.toLowerCase() === 'a') {
       e.preventDefault();
-      if (e.shiftKey) {
-        S.keys.clear();
-        renderTimeline();
-        renderInspector();
-      } else selectAllKeys();
+      if (e.shiftKey) selectMany([]);
+      else if (S.kbArea === 'timeline') selectAllKeys();
+      else selectAllLayers();
       return;
     }
     if (k === 'F9') {
@@ -181,6 +213,13 @@ export function init(): void {
       return;
     }
     if (mod) return;
+    if (k === ' ' && e.shiftKey) {
+      // Shift+Space: stop and go back to the start
+      e.preventDefault();
+      if (S.playing) togglePlay();
+      setTime(0);
+      return;
+    }
     if (k === ' ') {
       // hold Space for the hand tool; a tap (no drag) plays/pauses on release
       e.preventDefault();
@@ -273,6 +312,16 @@ export function init(): void {
     }
     if (animateShortcut(e)) {
       e.preventDefault();
+      return;
+    }
+    // I / Alt+I: pick the fill / stroke colour from the screen
+    if (k.toLowerCase() === 'i' && !e.shiftKey && l && !isLocked(l)) {
+      if (pickPaint(l, e.altKey ? 'stk' : 'fill')) e.preventDefault();
+      return;
+    }
+    // "/": close (or open) every inspector section
+    if (k === '/' && !e.shiftKey && !e.altKey) {
+      if (toggleAllSections()) e.preventDefault();
       return;
     }
     const lk = k.toLowerCase(),

@@ -159,9 +159,15 @@ The editor opens with a sample scene (also under File → New → **Open sample 
 
 Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to go back to Select.
 
+**Selecting on the canvas:** click a layer (the outermost one; Ctrl+click picks inside a group, Shift+click adds or removes). Drag from an empty spot for a **marquee**: every top-level layer it touches is selected when you let go (each gets a dashed outline while you drag); Shift adds them to the selection or takes them out, Ctrl picks the shapes inside groups. A click on an empty spot deselects. Alt+drag a layer drags a copy, leaving the original (one undo step). Ctrl+A selects every top-level layer that is shown and unlocked (every keyframe while you work in the timeline); Ctrl+Shift+A deselects.
+
+**Keyboard shortcuts** (F1, or the keyboard button in the top bar) lists every shortcut in tabs (Common, Selection & layers, Tools, Timeline, View) with a search box; the tool and Animate keys come from the real bindings, and on a Mac Ctrl and Alt show as ⌘ and ⌥. Letter shortcuts go by the physical key, so they work on any keyboard layout (Ctrl+Z is undo with a Hebrew or Russian layout too). Besides the ones below: Ctrl+H hides or shows the selection, Ctrl+↑ / ↓ bring forward / send backward (with Shift: to the front / back), Ctrl+X cuts the selected keyframes, Shift+Space stops and goes back to the start, I / Alt+I pick the fill / stroke colour from the screen (browsers with an eyedropper), / closes or opens every inspector section, Alt+G turns the front grid on or off, and Ctrl+scroll over the timeline zooms it around the pointer.
+
+The interface's own text (labels, menus, the layer list) can't be highlighted, so a stray drag or Select all never paints it; fields, text you type and code views can be selected as usual.
+
 **Zoom:** click the percentage at the bottom of the work area for a menu with a slider (2%–3200%), a typed value, _Fit selection_ (2), _Fit_ (1), _Zoom 100%_ (0), _Zoom in_ (Ctrl +) and _Zoom out_ (Ctrl −). The − / + buttons beside it step the zoom; Ctrl+wheel zooms at the pointer.
 
-**Layers panel tree:** dotted lines join each group to its children, so nesting is easy to follow. Double-click a layer's name to rename it (Enter keeps the new name, Esc cancels); the same works on a layer's name in the timeline. Layers that a mask or clip folder applies to show a small hook before their icon (hover it for which folder), and the folder itself carries a mask badge.
+**Layers panel tree:** dotted lines join each group to its children, so nesting is easy to follow. **Search** (above the tree) shows the layers whose name contains what you type, inside their groups, with the match marked and counted; Enter selects every match, ↓ moves into the list, Esc clears it. Double-click a layer's name to rename it (Enter keeps the new name, Esc cancels); the same works on a layer's name in the timeline. Layers that a mask or clip folder applies to show a small hook before their icon (hover it for which folder), and the folder itself carries a mask badge.
 
 **Layers panel actions** grey out when they don't apply:
 
