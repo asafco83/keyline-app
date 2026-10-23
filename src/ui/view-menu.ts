@@ -78,6 +78,10 @@ function syncButtons() {
   $('#vSnap').classList.toggle('on', VIEW.snap);
   $('#vGrid').classList.toggle('on', VIEW.gridFront || VIEW.gridBack || VIEW.rulers);
 }
+/** Turns a view setting on or off (rulers, guides, grids, snapping, bones), as the menus do. */
+export function toggleView(k: string) {
+  toggle(k);
+}
 function toggle(k: string) {
   if (k === 'bones') {
     S.showBones = !S.showBones;

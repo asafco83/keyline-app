@@ -22,6 +22,10 @@ const ITEMS: Item[] = [
   ['in', 'Zoom in', 'Ctrl +'],
   ['out', 'Zoom out', 'Ctrl −'],
 ];
+/** Zoom 100% / fit / fit selection / in / out (the main menu's View items) */
+export function zoomCommand(id: string) {
+  return run(id);
+}
 function run(id: string) {
   if (id === 'sel') return fitSelection();
   if (id === 'fit') fitView();

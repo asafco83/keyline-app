@@ -2450,16 +2450,20 @@ details summary {
   padding: 8px 12px 0;
   border-bottom: 1px solid var(--line);
   flex: none;
+  /* narrow windows scroll the tabs sideways, without a scrollbar */
   overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.sk-tabs::-webkit-scrollbar {
+  display: none;
 }
 .sk-tabs [role='tab'] {
   border: 0;
   background: transparent;
   color: var(--muted);
   font: 500 13px var(--f-ui);
-  padding: 8px 12px 9px;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
+  padding: 8px 12px 10px;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -2468,7 +2472,7 @@ details summary {
 }
 .sk-tabs [role='tab'][aria-selected='true'] {
   color: var(--accent-fg);
-  border-bottom-color: var(--accent);
+  box-shadow: inset 0 -2px 0 var(--accent);
 }
 .sk-body {
   flex: 1;
@@ -2479,6 +2483,22 @@ details summary {
 .sk-grid {
   columns: 2;
   column-gap: 32px;
+}
+.sk-sec {
+  break-inside: avoid;
+  padding-top: 10px;
+}
+.sk-sec h3 {
+  margin: 0 0 2px;
+  font: 600 11px var(--f-ui);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.sk-ctx {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
 }
 .sk-row {
   display: flex;
@@ -2869,6 +2889,21 @@ details summary {
   display: none;
   max-height: 70vh;
   overflow: auto;
+}
+/* the tick column of checkable items (main menu › View) */
+.lm-chk {
+  width: 14px;
+  flex: none;
+  color: var(--accent-fg);
+  font-size: 12px;
+}
+.ctx button:has(> .lm-chk) {
+  justify-content: flex-start;
+  gap: 6px;
+}
+.ctx button:has(> .lm-chk) kbd {
+  margin-left: auto;
+  padding-left: 12px;
 }
 .lm.flip .lm-sub {
   left: auto;
@@ -4385,4 +4420,73 @@ select.sel {
 }
 .ir-list li + li {
   margin-top: 4px;
+}
+
+/* Help › About SVGcinema */
+.dlg.about {
+  width: min(520px, 100%);
+}
+.ab-top {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 8px 0 4px;
+  text-align: center;
+}
+.ab-top .logo {
+  height: 30px;
+  width: auto;
+}
+.ab-top p {
+  margin: 0;
+  color: var(--muted);
+}
+.ab-facts {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 8px 12px;
+  margin: 0;
+  font-size: 12.5px;
+}
+.ab-facts dt {
+  color: var(--muted);
+}
+.ab-facts dd {
+  margin: 0;
+  line-height: 1.45;
+}
+.ab-lic summary {
+  cursor: pointer;
+  color: var(--accent-fg);
+  font-size: 12.5px;
+}
+.ab-lic pre {
+  margin: 8px 0 0;
+  max-height: 260px;
+  overflow: auto;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+  font: 11px/1.5 var(--f-code);
+  white-space: pre-wrap;
+}
+.ab-oss h3 {
+  margin: 4px 0 6px;
+  font: 600 11px var(--f-ui);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ab-oss ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.ab-oss b {
+  color: var(--fg);
+  font-weight: 500;
 }

@@ -154,8 +154,12 @@ export function init(): void {
     applyProject(blankDoc(clamp(w, 16, 8000), clamp(hh, 16, 8000)), {}, null);
     $('#mNew').hidden = true;
   });
-  $('#nSample').addEventListener('click', () => {
-    applyProject(sampleDoc(), {}, null);
-    $('#mNew').hidden = true;
-  });
+  $('#nSample').addEventListener('click', () => openSample(true));
+}
+/** Help › Open the sample scene: the editor's tour of every feature (asks to save changes first). */
+export async function openSample(asked = false) {
+  if (!asked && !(await confirmDiscard('Opening the sample scene closes this project. Save your changes first?')))
+    return;
+  applyProject(sampleDoc(), {}, null);
+  $('#mNew').hidden = true;
 }
