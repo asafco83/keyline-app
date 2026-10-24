@@ -26,6 +26,7 @@ import { TLB } from '../core/dom';
 import { bezOf, easeDir, easeFam, easeLabel, famName, sameEase, thumb } from './easing';
 import { toast } from '../io/open';
 import { frame } from '../render/stage';
+import { renderTimeline } from './timeline';
 
 export const GRAPH_H = 236;
 const PAD = 18;
@@ -238,10 +239,7 @@ function readout(svg: SVGSVGElement, x: number, y: number, text: string) {
   t.setAttribute('x', '7');
   g.setAttribute('visibility', 'visible');
 }
-let rerender: () => void = () => {};
-export function onGraphRender(fn: () => void) {
-  rerender = fn;
-}
+const rerender = () => renderTimeline();
 function keyDrag(e0: PointerEvent, svg: SVGSVGElement, l: Layer, k: string, i: number, c: number) {
   const tr = l.t[k],
     q = tr[i],

@@ -1,5 +1,5 @@
 // SVGcinema — ui/timeline
-import { graphNames, graphSVG, graphTrack, graphable, onGraphRender } from './graph';
+import { graphNames, graphSVG, graphTrack, graphable } from './graph';
 import type { Keyframe, Layer, PropKey } from '../model/types';
 import { $, ICON, clamp, clone, esc, fmt, isFrozen, layerTracks, propLabel, r3 } from '../core/constants';
 import { TLB, TLS } from '../core/dom';
@@ -34,7 +34,6 @@ export function ticks(W: number, span = doc.dur) {
   }
   return h + `<div class="tl-out" style="left:${W}px"></div>`;
 }
-onGraphRender(() => renderTimeline());
 export function renderTimeline() {
   const W = doc.dur * S.pps,
     span = shownSpan(),
