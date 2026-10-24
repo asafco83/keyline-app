@@ -23,7 +23,7 @@ Gradients and trim path have been taken off this list and are being built.
 ## Polish
 
 - **Wiggle / loop modifiers**: random jitter, and repeating part of a track.
-- **Accessibility in exports**: title and description, and respecting reduced-motion settings.
+- **Accessibility in exports**: title and description (respecting reduced-motion settings is built: Export › Less motion).
 
 ## Export
 

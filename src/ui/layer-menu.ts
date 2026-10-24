@@ -8,7 +8,7 @@ import { WRAP, LP } from '../core/dom';
 import { beginEdit, select, selectMany, setProp } from '../core/history';
 import { keyLower } from '../core/keys';
 import { S, doc, layerById, selLayer, uid } from '../core/state';
-import { convertToPath } from '../core/layer-ops';
+import { convertToPath, textConvertible } from '../core/layer-ops';
 import { descendants, isLocked, kids, pidOf, selectedRoots } from '../model/tree';
 import { toast } from '../io/open';
 import { align, ALIGN, setMotionPath } from './align';
@@ -243,8 +243,8 @@ function items(): Item[] {
     { id: 'link', label: l && l.link ? 'Edit hyperlink…' : 'Hyperlink…', on: one },
     {
       id: 'topath',
-      label: 'Convert to path',
-      on: one && free && (l.type === 'rect' || l.type === 'ellipse'),
+      label: l && l.type === 'text' ? 'Convert to shapes' : 'Convert to path',
+      on: one && free && (l.type === 'rect' || l.type === 'ellipse' || textConvertible(l)),
       key: 'Ctrl ⇧ P',
     },
     { id: 'export', label: 'Export selection…', on: any, key: 'Ctrl ⇧ E' },
@@ -481,7 +481,7 @@ export function layerShortcut(e: KeyboardEvent) {
   if (k === 'l' && !e.shiftKey) return l ? (toggleLock(), true) : false;
   if (e.shiftKey && k === 'o') return l ? (centerOrigin(l), true) : false;
   if (e.shiftKey && k === 'p')
-    return l && (l.type === 'rect' || l.type === 'ellipse') ? (convertToPath(l), true) : false;
+    return l && (l.type === 'rect' || l.type === 'ellipse' || textConvertible(l)) ? (convertToPath(l), true) : false;
   if (e.shiftKey && k === 'e') return l ? (exportSelection(), true) : false;
   if (e.shiftKey && (e.key === '}' || e.key === ']' || e.code === 'BracketRight'))
     return l ? (arrangeEnd(l, true), true) : false;

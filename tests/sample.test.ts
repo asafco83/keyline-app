@@ -23,6 +23,9 @@ describe('sample scene', () => {
     expect(by('Horizon').parent).toBe(by('Landscape').id);
     expect(L.filter(l => l.parent === by('Landscape').id)[0].name).toBe('Ground');
   });
+  it('sets a letter case on a text layer', () => {
+    expect(some(l => l.type === 'text' && !!l.geo.tcase)).toBe(true);
+  });
   it('shows bones: a chain of bones carrying shapes, with rotation keyframes', () => {
     const bones = L.filter(l => l.type === 'bone');
     expect(bones.length).toBeGreaterThanOrEqual(3);

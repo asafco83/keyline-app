@@ -35,6 +35,8 @@ import { toggleAllSections } from './inspector';
 import { currentTheme, toggleTheme } from './theme';
 import { openShortcuts } from './shortcuts';
 import { openSample } from './topbar';
+import { clearRecent, loadRecent, openRecent, recentList, recentWhen } from '../io/recent';
+import { type SameKind, sameKinds, selectSame } from '../core/select-same';
 import LICENSE_TEXT from '../../LICENSE?raw';
 
 export const FM = $('#fileMenu');
@@ -43,11 +45,19 @@ export const BM = $('#bMenu');
 /** where the website is: beside the editor when it runs from the site's editor/ folder */
 const SITE = /\/editor\/(index\.html)?$/.test(location.pathname) ? '../' : null;
 
+const SAME: Array<[SameKind, string]> = [
+  ['fill', 'Fill'],
+  ['stk', 'Stroke'],
+  ['sw', 'Stroke width'],
+  ['font', 'Font'],
+  ['type', 'Kind of layer'],
+];
 function editItems(): Item[] {
   const keys = S.keys.size > 0,
     roots = selectedRoots(),
     any = roots.length > 0,
-    l = selLayer();
+    l = selLayer(),
+    same = sameKinds(l);
   return [
     { id: 'ed:undo', label: 'Undo', on: S.undo.length > 0, key: 'Ctrl Z' },
     { id: 'ed:redo', label: 'Redo', on: S.redo.length > 0, key: 'Ctrl ⇧ Z' },
@@ -67,6 +77,12 @@ function editItems(): Item[] {
     '-',
     { id: 'ed:all', label: 'Select all', on: doc.layers.length > 0, key: 'Ctrl A' },
     { id: 'ed:none', label: 'Deselect all', on: any || keys, key: 'Ctrl ⇧ A' },
+    {
+      id: 'ed:same',
+      label: 'Select same',
+      on: same.length > 0,
+      sub: SAME.filter(([k]) => same.includes(k)).map(([k, label]): Item => ({ id: 'same:' + k, label, on: true })),
+    },
   ];
 }
 function animateItems(): Item[] {
@@ -109,7 +125,25 @@ function helpItems(): Item[] {
     { id: 'hp:about', label: 'About SVGcinema', on: true },
   ];
 }
+function recentItems(): Item[] {
+  const l = recentList();
+  return l.length
+    ? [
+        ...l.map(
+          (e, i): Item => ({
+            id: 'rc:' + i,
+            label: e.name.replace(/\.svgcinema(\.zip)?$/i, ''),
+            on: true,
+            key: recentWhen(e.at),
+          }),
+        ),
+        '-',
+        { id: 'rc:clear', label: 'Clear the list', on: true },
+      ]
+    : [];
+}
 const SUBS: Record<string, () => Item[]> = {
+  recent: recentItems,
   edit: editItems,
   element: () => layerItems(true),
   animate: animateItems,
@@ -117,8 +151,8 @@ const SUBS: Record<string, () => Item[]> = {
   help: helpItems,
 };
 /** fills the submenus for the current selection; a submenu with nothing to do greys out */
-function fill() {
-  FM.querySelectorAll('[data-sub]').forEach((it: HTMLElement) => {
+function fill(only?: string) {
+  FM.querySelectorAll(only ? `[data-sub="${only}"]` : '[data-sub]').forEach((it: HTMLElement) => {
     const list = SUBS[it.dataset.sub](),
       on = list.some(x => x !== '-' && x.on !== false && (x.on || x.sub)),
       b = it.querySelector(':scope > button') as HTMLButtonElement;
@@ -126,6 +160,11 @@ function fill() {
     b.disabled = !on;
     (it.querySelector('.lm-sub') as HTMLElement).innerHTML = on ? menuHTML(list) : '';
   });
+}
+/** the recent list loads from storage the first time: fill its submenu once it's there */
+function refillRecent() {
+  const it = FM.querySelector('[data-sub="recent"]');
+  if (it && !it.classList.contains('open')) fill('recent');
 }
 function run(id: string) {
   const keys = S.keys.size > 0,
@@ -152,6 +191,9 @@ function run(id: string) {
   else if (id === 'ed:del') keys ? deleteKeys() : deleteSel();
   else if (id === 'ed:all') selectAllLayers();
   else if (id === 'ed:none') selectMany([]);
+  else if (id === 'rc:clear') clearRecent();
+  else if (id.startsWith('rc:')) openRecent(+id.slice(3));
+  else if (id.startsWith('same:')) selectSame(id.slice(5) as SameKind);
   else if (id.startsWith('anim:')) animateProp(id.slice(5) as PropKey);
   else if (id === 'vw:100' || id === 'vw:fit' || id === 'vw:sel' || id === 'vw:in' || id === 'vw:out')
     zoomCommand(id.slice(3));
@@ -166,6 +208,7 @@ function run(id: string) {
 }
 
 export function openFileMenu() {
+  loadRecent().then(() => !FM.hidden && refillRecent());
   const r = BM.getBoundingClientRect();
   fill();
   FM.hidden = false;

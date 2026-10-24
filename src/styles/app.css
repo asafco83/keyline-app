@@ -4537,3 +4537,9 @@ select.sel {
   font-weight: 700;
   margin-right: 2px;
 }
+
+/* Text: letter case buttons */
+.tx-case {
+  font: 600 11.5px/1 var(--f-ui);
+  letter-spacing: 0.02em;
+}
