@@ -15,7 +15,7 @@ async def main():
             R[n]=('ok' if c else 'FAIL')+('' if i is None else f' {i}')
             if not c: F.append(n)
         dis=lambda: ev("({anim:lAnim.disabled, ungroup:lUngroup.disabled, group:lGroup.disabled, del:lDel.disabled})")
-        menu=lambda: ev("[...document.querySelectorAll('#animMenu button')].map(b=>b.textContent.trim().replace(/\\s+/g,' '))")
+        menu=lambda: ev("[...document.querySelectorAll('#animMenu button[data-k]')].map(b=>b.textContent.trim().replace(/\\s+/g,' '))")
         lay=await ev("(()=>{const a=document.getElementById('lp').getBoundingClientRect(),f=document.querySelector('.lp-foot').getBoundingClientRect(),p=document.getElementById('paneLayers').getBoundingClientRect();return {footBelowList:f.top>=a.bottom-1, atBottom:Math.abs(f.bottom-p.bottom)<2, oldBarGone: !document.querySelector('#paneLayers .side-act'), textless:[lGroup,lUngroup,lDel].every(b=>!b.textContent.trim() && b.querySelector('svg'))}})()")
         check('actions sit at the bottom of the layers panel, icon-only', all(lay.values()), lay)
         await ev("hi.select(null)"); d=await dis()

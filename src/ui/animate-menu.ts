@@ -10,6 +10,7 @@ import { propOK } from '../core/keyframes';
 import { S, layerById, sortTrack } from '../core/state';
 import { isLocked, kids, pidOf } from '../model/tree';
 import { canMask } from '../core/masks';
+import { openPresets } from './presets-panel';
 
 /** Menu sections, in SVGator's order. Letters are Shift shortcuts (Shift+C is the Convert Point tool). */
 export const ANIM_GROUPS: Array<Array<[PropKey, string, string?]>> = [
@@ -104,11 +105,17 @@ export function openAnimMenu() {
   )
     .filter(Boolean)
     .join('<hr>');
+  m.innerHTML =
+    `<button role="menuitem" data-presets="1"><span class="am-l"><i class="am-pre" aria-hidden="true">✦</i>Presets…</span><kbd></kbd></button><hr>` +
+    m.innerHTML;
   m.hidden = false;
   btn.setAttribute('aria-expanded', 'true');
   // open upwards from the button, kept inside the window
-  const r = btn.getBoundingClientRect(),
-    mr = m.getBoundingClientRect();
+  const r = btn.getBoundingClientRect();
+  // never over the button: taller than the room above it, the menu scrolls
+  m.style.maxHeight = Math.max(160, r.top - 10) + 'px';
+  m.style.overflowY = 'auto';
+  const mr = m.getBoundingClientRect();
   m.style.left = Math.max(4, Math.min(r.left, innerWidth - mr.width - 4)) + 'px';
   m.style.top = Math.max(4, r.top - mr.height - 6) + 'px';
   const first = m.querySelector<HTMLElement>('button');
@@ -146,6 +153,11 @@ export function init(): void {
   $('#lUnmask').innerHTML = ICON.unmask;
   $('#lAnim').addEventListener('click', () => (MENU().hidden ? openAnimMenu() : closeAnimMenu()));
   MENU().addEventListener('click', (e: MouseEvent) => {
+    if ((e.target as HTMLElement).closest('[data-presets]')) {
+      closeAnimMenu();
+      openPresets($('#lAnim') as HTMLElement);
+      return;
+    }
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-k]');
     if (!b) return;
     closeAnimMenu();

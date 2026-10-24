@@ -144,12 +144,23 @@ export function normalizeDoc(d: Partial<Doc>): Doc {
   return o;
 }
 export let toastT: ReturnType<typeof setTimeout> | 0 = 0;
-export function toast(m: string) {
+/** A short message at the bottom. With `act`, it carries a button (e.g. Undo) and stays a little longer. */
+export function toast(m: string, act?: { label: string; run: () => void }) {
   const t = $('#toast');
   t.textContent = m;
+  if (act) {
+    const b = document.createElement('button');
+    b.className = 'toast-act';
+    b.textContent = act.label;
+    b.addEventListener('click', () => {
+      t.hidden = true;
+      act.run();
+    });
+    t.appendChild(b);
+  }
   t.hidden = false;
   clearTimeout(toastT);
-  toastT = setTimeout(() => (t.hidden = true), 3000);
+  toastT = setTimeout(() => (t.hidden = true), act ? 6000 : 3000);
 }
 
 export function init(): void {

@@ -28,6 +28,8 @@ import {
   selectAllLayers,
 } from './layer-menu';
 import { ANIM_GROUPS, animateProp } from './animate-menu';
+import { openPresets } from './presets-panel';
+import { ONION } from './onion';
 import { deleteSel, duplicate } from './layers-panel';
 import { zoomCommand } from './zoom-menu';
 import { toggleView } from './view-menu';
@@ -94,7 +96,8 @@ function animateItems(): Item[] {
       .map(([k, label, key]): Item => ({ id: 'anim:' + k, label, on: free, key: key ? '⇧ ' + key : '' })),
   )
     .filter(g => g.length)
-    .flatMap((g, i) => (i ? ['-' as Item, ...g] : g));
+    .flatMap((g, i) => (i ? ['-' as Item, ...g] : g))
+    .reduce((a: Item[], it, i) => (i ? [...a, it] : [{ id: 'presets', label: 'Presets…', on: free }, '-', it]), []);
 }
 function viewItems(): Item[] {
   return [
@@ -111,6 +114,7 @@ function viewItems(): Item[] {
     { id: 'vw:snap', label: 'Snapping', on: true, check: VIEW.snap, key: 'Alt S' },
     { id: 'vw:bones', label: 'Bones', on: true, check: S.showBones, key: 'Alt B' },
     { id: 'vw:pins', label: 'Pins', on: true, check: S.showPins, key: 'Alt P' },
+    { id: 'vw:onion', label: 'Onion skin', on: true, check: ONION.on, key: 'Alt O' },
     '-',
     { id: 'vw:sections', label: 'Collapse or expand sections', on: true, key: '/' },
     { id: 'vw:theme', label: 'Dark theme', on: true, check: currentTheme() === 'dark' },
@@ -194,6 +198,7 @@ function run(id: string) {
   else if (id === 'rc:clear') clearRecent();
   else if (id.startsWith('rc:')) openRecent(+id.slice(3));
   else if (id.startsWith('same:')) selectSame(id.slice(5) as SameKind);
+  else if (id === 'presets') openPresets(null);
   else if (id.startsWith('anim:')) animateProp(id.slice(5) as PropKey);
   else if (id === 'vw:100' || id === 'vw:fit' || id === 'vw:sel' || id === 'vw:in' || id === 'vw:out')
     zoomCommand(id.slice(3));

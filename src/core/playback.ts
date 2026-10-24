@@ -15,7 +15,7 @@ export function togglePlay() {
     if (!S.loop && S.time >= doc.dur - 0.001) S.time = 0;
     S.ptime = S.time;
     S.last = performance.now();
-  }
+  } else frame(); // redraw what playing hides (onion skin)
   updatePlayBtn();
 }
 export function loop(now: number) {
@@ -35,6 +35,7 @@ export function loop(now: number) {
         S.ptime = T;
         S.playing = false;
         updatePlayBtn();
+        setTimeout(frame, 0);
       }
       S.time = S.ptime;
     }
