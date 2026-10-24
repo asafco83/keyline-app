@@ -123,7 +123,7 @@ site/                    The landing page (one self-contained index.html), see s
 
 The editor opens with a sample scene (also under File → New → **Open sample scene**). It doubles as a tour of what SVGcinema can animate; select a layer to see how it's done:
 
-- **Sky**: an animated linear gradient, night to dawn. **Night sky**: star shapes with an animated corner radius, a blink made of hold keyframes and an elastic pulse; **Sparkle** is a symbol with two instances sharing a pulsing dot, the second starting 0.4 s later; the group fades out.
+- **Sky**: an animated linear gradient, night to dawn. **Night sky**: star shapes with an animated corner radius, a blink made of hold keyframes and an elastic pulse; **Sparkle** is a symbol with two instances sharing a pulsing dot, the second starting 0.15 s later; the group fades out.
 - **Sunrise**: a group rising as one. **Glow** has a radial gradient, an animated blur filter and screen blending; **Rays** spin and scale; the **Sun** changes colour.
 - **Blob** morphs between shapes with a custom easing curve. **Comet** follows a curved motion path and turns along it; **Comet trail** shows travelling dashes (an animated dash offset) that stretch and shrink (an animated dash pattern).
 - **Hills** is a clipping group: the drifting **Mist**, which grows as it goes (an animated size) along an arc at an even speed, only shows inside the hill silhouette (the **Clip path** folder).
