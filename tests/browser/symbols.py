@@ -1,0 +1,81 @@
+import asyncio, sys, json, os
+from playwright.async_api import async_playwright
+OUT=os.environ.get('CIN_OUT','/tmp/svgcinema-shots/'); os.makedirs(OUT, exist_ok=True)
+# Symbols: Element ▸ Make symbol, instances (Duplicate, Assets), the layers panel / inspector marks,
+# editing a symbol in isolation (edits reach every instance), time offset, Detach, deleting a symbol,
+# and the JS export's <use>.
+async def main():
+    async with async_playwright() as p:
+        b=await p.chromium.launch(); pg=await b.new_page(viewport={'width':1440,'height':900}); pg.set_default_timeout(5000)
+        errs=[]; pg.on('pageerror',lambda e: errs.append(str(e)))
+        await pg.goto((sys.argv[1] if len(sys.argv)>1 else 'http://localhost:5199/')); await pg.wait_for_timeout(2500)
+        await pg.evaluate("async()=>{ window.st=await import('/src/core/state.ts'); window.hi=await import('/src/core/history.ts'); window.bu=await import('/src/export/build.ts'); window.tr=await import('/src/model/tree.ts'); }")
+        ev=pg.evaluate; R={}; F=[]
+        def check(n,c,i=None):
+            R[n]=('ok' if c else 'FAIL')+('' if i is None else f' {i}')
+            if not c: F.append(n)
+        sun=await ev("st.doc.layers.find(l=>l.name==='Sun').id")
+        await ev(f"hi.select('{sun}'); hi.setTime(2.2)"); await pg.wait_for_timeout(150)
+        # Make symbol from the main menu (a single shape gets a group)
+        await pg.click('#bMenu'); await pg.hover('#fileMenu [data-sub=element] > button'); await pg.wait_for_timeout(150)
+        await pg.click('#fileMenu [data-lm=mksym]'); await pg.wait_for_timeout(200)
+        inst=await ev("st.S.sel"); sym=await ev("st.layerById(st.S.sel).sym")
+        check('Make symbol groups the shape and makes the group a symbol', sym and await ev(f"st.layerById('{sun}').parent")==inst, (inst,sym))
+        check('the inspector says SYMBOL · 1 instance, with an Instance section', 'symbol · 1 instance' in await ev("document.querySelector('.insp-head .chip').textContent") and await ev("!!document.getElementById('symSec')"))
+        await pg.keyboard.press('Control+d'); await pg.wait_for_timeout(200)
+        i2=await ev("st.S.sel")
+        check('Duplicate makes another instance', await ev(f"st.layerById('{i2}').sym")==sym and i2!=inst)
+        check('the layers panel marks instances with ×2', await ev(f"document.querySelector('.lp-row[data-lid=\"{i2}\"] .lp-symn').textContent")=='×2')
+        await ev(f"(()=>{{const l=st.layerById('{i2}');l.b.pos=[l.b.pos[0]+120,l.b.pos[1]];hi.commit({{insp:true}})}})()"); await pg.wait_for_timeout(100)
+        # edit the symbol: double-click the second instance on the canvas
+        el=pg.locator(f"#e-{i2}"); bb=await el.bounding_box()
+        await pg.mouse.dblclick(bb['x']+bb['width']*0.35, bb['y']+bb['height']*0.3); await pg.wait_for_timeout(250)
+        check('double-clicking an instance edits the symbol', await ev("st.S.symEdit")==i2 and not await ev("document.getElementById('symChip').hidden"), await ev("st.S.symEdit"))
+        check('the chip names it and says changes apply to both', 'Editing symbol' in await ev("document.getElementById('symChip').textContent") and 'all 2 instances' in await ev("document.getElementById('symChip').textContent"))
+        check('the rest dims, the other instance shows as an outline', await ev("!!document.querySelector('#iso .iso-dim') && document.querySelectorAll('#iso .iso-other').length===1"))
+        await pg.screenshot(path=OUT+'symbols-edit.png')
+        await pg.mouse.click(bb['x']+bb['width']*0.35, bb['y']+bb['height']*0.3); await pg.wait_for_timeout(150)
+        child=await ev("st.S.sel")
+        check('a click inside picks the shape inside the instance', child and await ev(f"st.layerById('{child}').parent")==i2, child)
+        # change its fill through the inspector
+        await ev(f"(()=>{{const ed=hi.beginEdit();st.layerById('{child}').b.fill='#00ff88';ed.end({{insp:true}})}})()"); await pg.wait_for_timeout(150)
+        other=await ev(f"tr.descendants(st.layerById('{inst}')).map(l=>l.b.fill)")
+        check('the edit reaches the other instance', '#00ff88' in other, other)
+        await pg.mouse.click(700, 120); await pg.wait_for_timeout(100)
+        check('outside the instance nothing can be picked', await ev("!st.S.sel"))
+        await pg.keyboard.press('Escape'); await pg.wait_for_timeout(150)
+        check('Esc ends editing and selects the instance', not await ev("st.S.symEdit") and await ev("st.S.sel")==i2 and await ev("document.getElementById('symChip').hidden"))
+        # time offset
+        await pg.fill('#sym-off','0.5'); await pg.press('#sym-off','Enter'); await pg.wait_for_timeout(150)
+        check('a time offset shifts this instance’s contents', await ev(f"st.layerById('{i2}').symOff")==0.5)
+        # Assets
+        await pg.click('button[data-v=assets]'); await pg.wait_for_timeout(150)
+        card=await ev(f"document.querySelector('.sym-card[data-sym={sym}] .sym-n').textContent")
+        check('Assets lists the symbol with its instances', card=='2 instances', card)
+        await pg.click(f'.sym-card[data-sym={sym}] [data-symadd]'); await pg.wait_for_timeout(200)
+        check('clicking it adds an instance', await ev(f"st.doc.layers.filter(l=>l.sym==='{sym}').length")==3)
+        # export
+        await ev("st.doc.ex.mode='js'")
+        code=await ev("bu.buildExport(null).code")
+        check('the JS export writes an instance as <use> (offset ones in full)', code.count('<use href="#')>=1, code.count('<use href="#'))
+        rp=await b.new_page(viewport={'width':640,'height':400}); await rp.set_content('<html><body></body></html>')
+        await rp.evaluate("c=>{const u=URL.createObjectURL(new Blob([c],{type:'image/svg+xml'}));const o=document.createElement('object');o.type='image/svg+xml';o.data=u;o.id='o';o.style.width='640px';document.body.appendChild(o);}", code)
+        await rp.wait_for_timeout(1200)
+        ub=await rp.evaluate("(()=>{const d=document.getElementById('o').contentDocument,u=d&&d.querySelector('use[href^=\"#\"]');if(!u)return null;const b=u.getBBox();return [b.width,b.height]})()")
+        check('the <use> draws the shared contents in the exported file', ub and ub[0]>10 and ub[1]>10, ub)
+        await rp.close()
+        # detach + delete
+        i3=await ev("st.S.sel")
+        await ev("hi.select(null)"); await ev(f"hi.select('{i3}')"); await pg.wait_for_timeout(100)
+        await pg.click('[data-symact=detach]'); await pg.wait_for_timeout(150)
+        check('Detach instance leaves a plain group', await ev(f"!st.layerById('{i3}').sym") and await ev(f"st.layerById('{i3}').type")=='group')
+        await pg.click(f'.sym-card[data-sym={sym}] [data-symdel]'); await pg.wait_for_timeout(100)
+        check('Delete asks first when the symbol has instances', await ev(f"document.querySelector('.sym-card[data-sym={sym}] [data-symdel]').textContent")=='Delete?' and await ev(f"!!st.doc.symbols['{sym}']"))
+        await pg.click(f'.sym-card[data-sym={sym}] [data-symdel]'); await pg.wait_for_timeout(150)
+        check('then deletes it; instances become groups', await ev(f"!st.doc.symbols['{sym}']") and await ev(f"!st.layerById('{inst}').sym") and await ev(f"!document.querySelector('.sym-card[data-sym={sym}]')"))
+        await ev("hi.undo()"); await pg.wait_for_timeout(150)
+        check('undo brings it back', await ev(f"!!st.doc.symbols['{sym}']"))
+        check('no page errors', not errs, errs[:3])
+        print(json.dumps(R, indent=1, ensure_ascii=False)); print('FAILS', F)
+        await b.close()
+asyncio.run(main())

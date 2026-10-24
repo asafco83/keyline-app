@@ -23,6 +23,11 @@ describe('sample scene', () => {
     expect(by('Horizon').parent).toBe(by('Landscape').id);
     expect(L.filter(l => l.parent === by('Landscape').id)[0].name).toBe('Ground');
   });
+  it('shows a symbol with two instances, one starting later', () => {
+    const inst = L.filter(l => l.sym && doc.symbols && doc.symbols[l.sym]);
+    expect(inst.length).toBeGreaterThanOrEqual(2);
+    expect(inst.some(l => l.symOff)).toBe(true);
+  });
   it('sets a letter case on a text layer', () => {
     expect(some(l => l.type === 'text' && !!l.geo.tcase)).toBe(true);
   });

@@ -4591,7 +4591,7 @@ select.sel {
   background: var(--raised);
   border: 1px solid var(--line);
   border-radius: 9px;
-  box-shadow: var(--shade);
+  box-shadow: 0 12px 32px var(--shade);
   overflow: hidden;
   font-size: 12.5px;
   color: var(--fg);
@@ -4772,7 +4772,7 @@ select.sel {
   background: var(--raised);
   border: 1px solid var(--line);
   border-radius: 10px;
-  box-shadow: var(--shade);
+  box-shadow: 0 12px 32px var(--shade);
   overflow: hidden;
   color: var(--fg);
   font-size: 12.5px;
@@ -5056,7 +5056,7 @@ select.sel {
   background: var(--raised);
   border: 1px solid var(--line);
   border-radius: 9px;
-  box-shadow: var(--shade);
+  box-shadow: 0 12px 32px var(--shade);
 }
 .onionpop p {
   grid-column: 1 / -1;
@@ -5231,4 +5231,166 @@ select.sel {
   stroke: currentColor;
   stroke-width: 2.2;
   stroke-linecap: round;
+}
+
+/* Symbols (ui/symbols-ui), matched to the "Symbols" mockups */
+.lp-ty.sym {
+  color: var(--accent);
+}
+.lp-symn {
+  flex: none;
+  margin-left: 4px;
+  padding: 0 6px;
+  border-radius: 8px;
+  background: var(--raised);
+  color: var(--accent);
+  font-size: 11px;
+  line-height: 16px;
+}
+.insp-head .chip.sym {
+  background: var(--accent-soft);
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+.sym-note {
+  margin: 4px 0 8px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 15px;
+}
+#iso {
+  pointer-events: none;
+}
+.iso-dim {
+  fill: var(--panel);
+  opacity: 0.72;
+}
+.iso-other.og * {
+  stroke-dasharray: 3 3 !important;
+}
+.iso-other {
+  opacity: 0.75;
+}
+.sym-chip {
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  z-index: 8;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 6px 0 12px;
+  border-radius: 16px;
+  background: var(--fg);
+  color: var(--panel);
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px var(--shade);
+}
+.sym-chip[hidden] {
+  display: none;
+}
+.sym-chip .sc-ic {
+  display: grid;
+}
+.sym-chip button {
+  height: 24px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sym-chip button span {
+  opacity: 0.7;
+  font-weight: 400;
+}
+.sym-list {
+  padding: 4px 12px 8px;
+  border-bottom: 1px solid var(--line);
+}
+.sym-h {
+  padding: 6px 0 4px;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+.sym-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.sym-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 6px 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--raised);
+}
+.sym-th {
+  width: 100%;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+}
+.sym-th svg {
+  max-width: 100%;
+  max-height: 52px;
+  width: 72px;
+  height: 48px;
+}
+.sym-th:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.sym-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+.sym-rename {
+  width: 100%;
+  height: 22px;
+}
+.sym-n {
+  color: var(--muted);
+  font-size: 10.5px;
+}
+.sym-acts {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  gap: 2px;
+}
+.sym-acts .armed {
+  width: auto;
+  padding: 0 6px;
+  color: var(--head);
+  font-size: 11px;
+  opacity: 1;
+}
+.sym-hint {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 15px;
 }

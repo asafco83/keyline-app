@@ -12,7 +12,6 @@ Gradients and trim path have been taken off this list and are being built.
 
 ## Workflow
 
-- **Symbols / library**: reusable components, like SVGator's "Save to library".
 - **Path tools**: outline stroke (stroke → fill), offset path, simplify, reverse path direction.
 - **Copy / paste extras**: copy and paste a layer's style or animation onto other layers.
 - **Multi-select editing**: change a property on all selected layers at once.

@@ -1,4 +1,5 @@
 // SVGcinema — ui/inspector
+import { instanceChip, instanceSection } from './symbols-ui';
 import { layerBox } from '../render/mesh';
 import { bgPaint, parseBg, setBg } from '../model/background';
 import type { Ease, Layer, PathData, PropKey, Vec2 } from '../model/types';
@@ -103,8 +104,9 @@ export function renderInspector() {
     refreshDocFields();
     return;
   }
-  let h = `<div class="insp-head"><input class="txt ih-name" id="ln" data-name value="${esc(l.name)}" spellcheck="false" aria-label="Layer name"><span class="chip">${l.type}</span></div>`;
+  let h = `<div class="insp-head"><input class="txt ih-name" id="ln" data-name value="${esc(l.name)}" spellcheck="false" aria-label="Layer name"><span class="chip${l.sym ? ' sym' : ''}">${l.sym ? instanceChip(l) || l.type : l.type}</span></div>`;
   h += alignBar();
+  h += instanceSection(l);
   if (S.selSet.size > 1)
     h += `<section class="sec"><h3>${S.selSet.size} layers selected</h3><div class="btns"><button class="btn" data-act="grp">Group them</button><button class="btn danger" data-act="delsel">Delete all</button></div><p>The fields below edit “${esc(l.name)}”.</p></section>`;
   if (S.keys.size) h += keyPanel();

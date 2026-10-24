@@ -1,6 +1,8 @@
 // SVGcinema — ui/layer-menu
 // Right-click menu for layers, on the canvas and in the Layers panel (modelled on SVGator's), the
 // layer clipboard (cut / copy / paste / paste in place), and the Hyperlink dialog.
+import { detach, isInstance, makeSymbol } from '../core/symbols';
+import { enterSymbol } from './symbols-ui';
 import { layerBox } from '../render/mesh';
 import type { Layer, PropKey } from '../model/types';
 import { $, H, clone, esc, r2, valueAt } from '../core/constants';
@@ -260,6 +262,10 @@ function items(): Item[] {
     { id: 'mask', label: 'Create mask', on: canMask() },
     { id: 'unmask', label: l && l.mask === 'clip' ? 'Release clipping path' : 'Release mask', on: one && !!l.mask },
     '-',
+    { id: 'mksym', label: 'Make symbol', on: any && free && !(one && isInstance(l)) },
+    { id: 'edsym', label: 'Edit symbol', on: one && isInstance(l) },
+    { id: 'detach', label: 'Detach instance', on: one && isInstance(l) },
+    '-',
     {
       id: 'align',
       label: 'Align',
@@ -461,7 +467,13 @@ function run(id: string) {
   else if (id === 'export') exportSelection();
   else if (id === 'clip' || id === 'mask') makeMask(id === 'clip' ? 'clip' : 'mask');
   else if (id === 'unmask') l && releaseMask(l);
-  else if (id.startsWith('bool:')) booleanOp(id.slice(5) as BoolOp);
+  else if (id === 'mksym') makeSymbolFromSelection();
+  else if (id === 'edsym') l && enterSymbol(l);
+  else if (id === 'detach' && l && isInstance(l)) {
+    const ed = beginEdit();
+    detach(l);
+    ed.end({ insp: true });
+  } else if (id.startsWith('bool:')) booleanOp(id.slice(5) as BoolOp);
   else if (id.startsWith('al:')) align(id.slice(3));
   else if (id === 'front' || id === 'back') l && arrangeEnd(l, id === 'front');
   else if (id === 'fwd' || id === 'bwd') l && arrange(l, id === 'fwd' ? 1 : -1);
@@ -469,6 +481,21 @@ function run(id: string) {
   else if (id === 'hide') toggleHide();
   else if (id === 'rotr' || id === 'rotl') rotate(id === 'rotr' ? 90 : -90);
   else if (id === 'fliph' || id === 'flipv') flip(id === 'fliph' ? 0 : 1);
+}
+/** Element ▸ Make symbol: the selected group, or a new group of the selected layers, becomes a symbol */
+export function makeSymbolFromSelection() {
+  const roots = selectedRoots();
+  if (!roots.length) return;
+  if (roots.length > 1 || roots[0].type !== 'group' || roots[0].mask) groupSel();
+  const g = selLayer();
+  if (!g) return;
+  const ed = beginEdit();
+  // a group made for the symbol takes the shape's name
+  if (g !== roots[0] && roots.length === 1) g.name = roots[0].name;
+  const id = makeSymbol(g, roots.length === 1 ? roots[0].name : undefined);
+  ed.end({ insp: true });
+  toast(`“${g.name}” is now a symbol. Duplicate it (Ctrl+D or Alt+drag) for more instances.`);
+  return id;
 }
 /** Keyboard shortcuts for the menu's commands. Returns true when handled. */
 export function layerShortcut(e: KeyboardEvent) {

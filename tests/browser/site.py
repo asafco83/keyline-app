@@ -29,8 +29,8 @@ async def main():
         rows=await ev("[...document.querySelectorAll('#tlNames .nm')].map(e=>e.textContent)")
         check('the hero timeline lists the scene\'s layers, a pinned one included', len(rows)==9 and 'Flag' in rows, rows)
         cards=await ev("[...document.querySelectorAll('.spec h3')].map(h=>h.childNodes[0].textContent.trim())")
-        want=['Pins and mesh warp','Size and corners','Dash patterns','Triggers and links','Bones and IK','Shape morphing']
-        check('twelve feature cards, the newer features among them', len(cards)==12 and all(w in cards for w in want), cards)
+        want=['Pins and mesh warp','Size and corners','Dash patterns','Triggers and links','Bones and IK','Shape morphing','Animation presets','Graph editor','Onion skin','Symbols']
+        check('sixteen feature cards, the newer features among them', len(cards)==16 and all(w in cards for w in want), cards)
         anim=await ev("[...document.querySelectorAll('.spec')].filter(s=>!(s.querySelector('animate,animateMotion,animateTransform')||[...s.querySelectorAll('.spec-art *')].some(e=>getComputedStyle(e).animationName!=='none'))).map(s=>s.querySelector('h3').textContent)")
         check('every card animates (SMIL or CSS)', anim==[], anim)
         check('bones mention squash and stretch; masks mention brightness', await ev("document.getElementById('animate').textContent.includes('squash and stretch') && document.getElementById('animate').textContent.includes('opacity or brightness')"))
