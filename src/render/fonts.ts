@@ -85,7 +85,7 @@ export function webFont(family: unknown): WebFont | null {
 /** font-family value for markup: the web font with its generic fallback */
 export function familyCSS(family: string) {
   const f = webFont(family);
-  if (f) return `${f.family}, ${f.cat === 'handwriting' || f.cat === 'display' ? 'sans-serif' : f.cat}`;
+  if (f) return `${f.family}, ${['serif', 'sans-serif', 'monospace'].includes(f.cat) ? f.cat : 'sans-serif'}`;
   if (isLocalFamily(family)) return `'${String(family).replace(/'/g, '')}', sans-serif`;
   return family;
 }

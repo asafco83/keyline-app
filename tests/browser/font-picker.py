@@ -1,0 +1,78 @@
+import asyncio, sys, json, os
+from playwright.async_api import async_playwright
+OUT=os.environ.get('CIN_OUT','/tmp/svgcinema-shots/'); os.makedirs(OUT, exist_ok=True)
+# The Font field's list (ui/font-picker): previews, sections (Favourites, Recent, Basic, one group per
+# script, On this computer), search, type and script filters, favourites, keyboard, choosing a font.
+async def main():
+    async with async_playwright() as p:
+        b=await p.chromium.launch(); pg=await b.new_page(viewport={'width':1440,'height':900}); pg.set_default_timeout(5000)
+        errs=[]; pg.on('pageerror',lambda e: errs.append(str(e)))
+        await pg.goto((sys.argv[1] if len(sys.argv)>1 else 'http://localhost:5199/')); await pg.wait_for_timeout(2500)
+        await pg.evaluate("async()=>{ window.st=await import('/src/core/state.ts'); window.hi=await import('/src/core/history.ts'); localStorage.removeItem('svgcinema:fontFav'); localStorage.removeItem('svgcinema:fontRecent'); }")
+        ev=pg.evaluate; R={}; F=[]
+        def check(n,c,i=None):
+            R[n]=('ok' if c else 'FAIL')+('' if i is None else f' {i}')
+            if not c: F.append(n)
+        title=await ev("st.doc.layers.find(l=>l.name==='Title').id")
+        await ev(f"hi.select('{title}')"); await pg.wait_for_timeout(150)
+        heads=lambda: ev("[...document.querySelectorAll('#fontPop .fp-head')].map(h=>h.childNodes[0].textContent)")
+        fams=lambda: ev("[...document.querySelectorAll('#fontPop .fp-opt')].map(o=>o.dataset.font)")
+        check('the Font field is a button showing the font name in that font', await ev("document.getElementById('g-family').tagName")=='BUTTON' and await ev("document.querySelector('#g-family span').style.fontFamily")!='')
+        await pg.click('#g-family'); await pg.wait_for_timeout(200)
+        check('it opens the font list with the search box focused', await ev("!!document.getElementById('fontPop') && document.activeElement.id==='fpFind'"))
+        h=await heads()
+        check('sections: Basic, then a group per script, then On this computer', h[0]=='BASIC' and h.index('HEBREW')<h.index('LATIN')<h.index('CYRILLIC') and 'ARABIC' in h and 'SYMBOLS' in h and h[-1]=='ON THIS COMPUTER', h)
+        check('a font covering several scripts is in each of their groups', (await fams()).count('Rubik')==3)
+        check('the current font is marked', await ev("[...document.querySelectorAll('#fontPop .fp-opt.cur')].every(o=>o.dataset.font===st.layerById('"+title+"').geo.family)") and await ev("document.querySelectorAll('#fontPop .fp-opt.cur').length")>=1)
+        prev=await ev("(()=>{const g=n=>[...document.querySelectorAll('#fontPop .fp-opt')].find(o=>o.dataset.font===n);return {lat:g('Lora').querySelector('.fp-prev').textContent,cyr:[...document.querySelectorAll('#fontPop .fp-opt[data-font=Lora]')].map(o=>o.querySelector('.fp-prev').textContent),heb:g('Alef').querySelector('.fp-prev').textContent,sym:g('Noto Sans Symbols 2').querySelector('.fp-prev').textContent,ff:g('Lora').querySelector('.fp-prev').style.fontFamily}})()")
+        check('rows preview the layer’s text, in the font itself', prev['lat']=='Good morning' and 'Lora' in prev['ff'], prev)
+        check('…or a sample in the group’s script', prev['heb']=='בוקר טוב' and 'Доброе утро' in prev['cyr'] and '★' in prev['sym'], prev)
+        check('headings stay pinned while scrolling', await ev("getComputedStyle(document.querySelector('#fontPop .fp-head')).position")=='sticky')
+        await pg.screenshot(path=OUT+'font-picker.png', clip={'x':1080,'y':0,'width':360,'height':900})
+        # search
+        await pg.fill('#fpFind','fra'); await pg.wait_for_timeout(100)
+        check('search narrows the list by name', set(await fams())=={'Frank Ruhl Libre'}, await fams())
+        await pg.fill('#fpFind','zzzz'); await pg.wait_for_timeout(100)
+        check('says when nothing matches', await ev("!!document.querySelector('#fontPop .fp-none')"))
+        await pg.fill('#fpFind',''); await pg.wait_for_timeout(100)
+        # type
+        await pg.click('#fontPop [data-fptype=mono]'); await pg.wait_for_timeout(100)
+        check('the Mono chip keeps only monospaced fonts', set(await fams())=={'ui-monospace, Menlo, Consolas, monospace','Fira Code'}, await fams())
+        await pg.click('#fontPop [data-fptype=all]')
+        # script
+        await pg.select_option('#fpScript','hebrew'); await pg.wait_for_timeout(100)
+        check('a script shows that group alone', await heads()==['HEBREW'] and 'Heebo' in await fams() and 'Lora' not in await fams(), await heads())
+        await pg.select_option('#fpScript','any'); await pg.wait_for_timeout(100)
+        # favourites
+        await pg.locator('#fontPop [data-fpstar="Lora"]').first.click(); await pg.wait_for_timeout(100)
+        h=await heads()
+        check('★ adds a favourite, listed at the top', h[0]=='FAVOURITES' and (await fams())[0]=='Lora', h)
+        check('remembered in this browser', await ev("JSON.parse(localStorage.getItem('svgcinema:fontFav'))")==['Lora'])
+        # keyboard
+        await pg.focus('#fpFind'); await pg.fill('#fpFind','heebo'); await pg.wait_for_timeout(100)
+        await pg.keyboard.press('ArrowDown'); await pg.keyboard.press('Enter'); await pg.wait_for_timeout(200)
+        check('the arrow keys and Enter choose a font', await ev(f"st.layerById('{title}').geo.family")=='Heebo' and not await ev("!!document.getElementById('fontPop')"))
+        check('a Google Font keeps the nearest weight it has', await ev(f"st.layerById('{title}').geo.weight")=='700')
+        check('the field shows it', await ev("document.querySelector('#g-family span').textContent")=='Heebo')
+        await pg.click('#g-family'); await pg.wait_for_timeout(150)
+        h=await heads()
+        check('chosen fonts are listed under Recent', 'RECENT' in h and await ev("[...document.querySelectorAll('#fontPop .fp-head')].find(x=>x.childNodes[0].textContent==='RECENT').nextElementSibling.dataset.font")=='Heebo', h)
+        await pg.keyboard.press('Escape'); await pg.wait_for_timeout(100)
+        check('Esc closes the list and keeps the selection', not await ev("!!document.getElementById('fontPop')") and await ev("st.S.sel")==title and await ev("document.activeElement.id")=='g-family')
+        await ev("hi.undo()"); await pg.wait_for_timeout(100)
+        check('one undo step goes back to the old font', await ev(f"st.layerById('{title}').geo.family")!='Heebo')
+        # click a font, click outside
+        await pg.click('#g-family'); await pg.locator('#fontPop .fp-opt[data-font="Lora"]').first.click(); await pg.wait_for_timeout(150)
+        check('clicking a font uses it', await ev(f"st.layerById('{title}').geo.family")=='Lora')
+        await pg.click('#g-family'); await pg.mouse.click(600,450); await pg.wait_for_timeout(100)
+        check('clicking elsewhere closes the list', not await ev("!!document.getElementById('fontPop')"))
+        # a Hebrew text previews itself in the Hebrew group
+        await ev(f"(()=>{{const l=st.layerById('{title}');l.geo.text='שלום עולם';hi.select(l.id)}})()"); await pg.wait_for_timeout(100)
+        await pg.click('#g-family'); await pg.wait_for_timeout(150)
+        hp=await ev("(()=>{const o=[...document.querySelectorAll('#fontPop .fp-opt[data-font=Heebo]')];return o.map(x=>x.querySelector('.fp-prev').textContent)})()")
+        check('Hebrew text previews itself in the Hebrew group and a Latin sample in the Latin one', hp[-2:]==['שלום עולם','Good morning'], hp)
+        await pg.keyboard.press('Escape')
+        check('no page errors', not errs, errs[:3])
+        print(json.dumps(R, indent=1, ensure_ascii=False)); print('FAILS', F)
+        await b.close()
+asyncio.run(main())
