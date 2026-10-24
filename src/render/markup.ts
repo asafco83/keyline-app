@@ -1,6 +1,6 @@
 // SVGcinema — render/markup
 import { filterSVG } from '../model/filters';
-import { anchorX, textLines } from './text-layout';
+import { anchorX, textDir, textLines } from './text-layout';
 import { ensureFaces, facesFor, familyCSS, isLocalFamily, outlineD, webFont } from './fonts';
 import type { Composite } from '../runtime/engine';
 import type { Layer } from '../model/types';
@@ -127,6 +127,7 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
       'text-decoration': G.deco || null,
       'letter-spacing': G.ls ? r3(G.ls) : null,
       'text-anchor': G.anchor,
+      direction: textDir(G) === 'rtl' ? 'rtl' : null,
     });
     const lh = r3((G.lh || 1.2) * (G.size || 16)),
       wf = webFont(G.family) || isLocalFamily(G.family),
@@ -144,6 +145,7 @@ export function layerSVG(l: Layer, ctx: MarkupCtx, c: Composite, children?: stri
         'text-decoration',
         'letter-spacing',
         'text-anchor',
+        'direction',
       ].forEach(k => delete a[k]);
       a.d = od;
     }

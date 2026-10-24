@@ -460,7 +460,9 @@ export function sampleDoc(): any {
     {
       x: 320,
       y: 389,
-      text: 'MADE WITH SVGCINEMA',
+      // letter case: typed in mixed case, shown in capitals
+      text: 'Made with SVGcinema',
+      tcase: 'upper',
       size: 10,
       family: FONTS[0][0],
       weight: '600',

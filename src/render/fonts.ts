@@ -6,7 +6,7 @@
 // every browser and inside <img>. Embedding keeps the text selectable and is smaller for long text.
 import type { Geometry } from '../model/types';
 import { SUBSET_RANGES, WEB_FONTS, type WebFont } from '../model/font-catalog';
-import { anchorX, textLines } from './text-layout';
+import { anchorX, textDir, textLines, visualAnchor, visualLine } from './text-layout';
 
 /* ---------- fonts installed on this computer (Local Font Access API, Chrome / Edge) ---------- */
 
@@ -214,16 +214,17 @@ function b64(buf: ArrayBuffer) {
     s += String.fromCharCode.apply(null, Array.from(u.subarray(i, i + 0x8000)));
   return btoa(s);
 }
-/** True when the text reads right to left (outlines would need shaping, so such text is embedded). */
-export function isRTL(s: string) {
-  return /[֐-ࣿיִ-﷿ﹰ-﻿]/.test(String(s || ''));
+/** True when the text has letters that join (Arabic script): drawing them as outlines would need
+ *  shaping, so such text is embedded instead. Hebrew is drawn as outlines, in right-to-left order. */
+export function needsShaping(s: string) {
+  return /[\u0600-\u08ff\ufb50-\ufdff\ufe70-\ufeff]/.test(String(s || ''));
 }
 /** Fetch what export needs for these text layers. Failures are left for buildExport to fall back on. */
 export async function prepareFonts(geos: Geometry[], mode: 'outline' | 'embed') {
   const jobs: Promise<unknown>[] = [];
   let ot: any = null;
   for (const G of geos) {
-    const outline = mode === 'outline' && !isRTL(G.text);
+    const outline = mode === 'outline' && !needsShaping(G.text);
     for (const fc of facesFor(G)) {
       if (outline && !OT[fc.key])
         jobs.push(
@@ -269,10 +270,10 @@ export function fontFaceCSS(keys: Iterable<string>) {
 const r2 = (v: number) => Math.round(v * 100) / 100;
 /**
  * The text as one path in the layer's own space, or null when the fonts aren't loaded (or the text
- * is right-to-left). Handles alignment, letter spacing, line breaks and decoration lines.
+ * has joined Arabic letters). Handles alignment, right-to-left order (Hebrew), letter spacing, line breaks and decoration lines.
  */
 export function outlineD(G: Geometry): string | null {
-  if (isRTL(G.text)) return null;
+  if (needsShaping(G.text)) return null;
   const faces = facesFor(G);
   if (!faces.length || faces.some(fc => !OT[fc.key])) return null;
   const f = faces[0].f,
@@ -289,12 +290,14 @@ export function outlineD(G: Geometry): string | null {
     deco = String(G.deco || '').split(/\s+/),
     post = main.tables.post || {},
     os2 = main.tables.os2 || {},
-    ax = anchorX(G);
+    ax = anchorX(G),
+    rtl = textDir(G) === 'rtl',
+    va = visualAnchor(G);
   let d = '';
   textLines(G).forEach((line, li) => {
     const y = G.y + li * lh,
       glyphs: Array<{ font: any; g: any }> = [];
-    for (const ch of line) {
+    for (const ch of visualLine(line, rtl)) {
       const font = fontFor(ch.codePointAt(0));
       glyphs.push({ font, g: font.charToGlyph(ch) });
     }
@@ -307,7 +310,7 @@ export function outlineD(G: Geometry): string | null {
       return a + (i < glyphs.length - 1 ? ls : 0);
     });
     const w = adv.reduce((s, v) => s + v, 0);
-    let x = G.anchor === 'middle' ? ax - w / 2 : G.anchor === 'end' ? ax - w : ax;
+    let x = va === 'middle' ? ax - w / 2 : va === 'end' ? ax - w : ax;
     const x0 = x;
     glyphs.forEach((q, i) => {
       const pd = q.g.getPath(x, y, size).toPathData(2);

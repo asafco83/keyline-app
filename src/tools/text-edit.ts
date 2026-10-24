@@ -9,7 +9,7 @@ import { H, byId } from '../core/constants';
 import { beginEdit } from '../core/history';
 import { S, layerById } from '../core/state';
 import { familyCSS } from '../render/fonts';
-import { anchorX, textLines, textWidth } from '../render/text-layout';
+import { anchorX, textDir, textLines, textWidth, visualAnchor } from '../render/text-layout';
 import { frame, renderStage } from '../render/stage';
 
 let ta: HTMLTextAreaElement | null = null,
@@ -31,7 +31,8 @@ function layout(l: Layer) {
     lines = textLines(G),
     w = G.wrap && G.ww > 0 ? G.ww : Math.max(size * 0.6, ...lines.map(s => textWidth(s, G))) + size * 0.4,
     ax = anchorX(G),
-    left = G.wrap && G.ww > 0 ? G.x : G.anchor === 'middle' ? ax - w / 2 : G.anchor === 'end' ? ax - w : ax,
+    va = visualAnchor(G),
+    left = G.wrap && G.ww > 0 ? G.x : va === 'middle' ? ax - w / 2 : va === 'end' ? ax - w : ax,
     // the first baseline sits about 0.8em below the top of a line box
     top = G.y - size * 0.8 - (lh - size) / 2;
   return { size, lh, w, left, top, h: Math.max(1, lines.length) * lh };
@@ -50,7 +51,10 @@ function place(l: Layer) {
     font: `${G.italic ? 'italic ' : ''}${G.weight || 400} ${L.size}px/${L.lh}px ${familyCSS(G.family)}`,
     letterSpacing: (G.ls || 0) + 'px',
     textDecoration: G.deco || 'none',
-    textAlign: G.anchor === 'middle' ? 'center' : G.anchor === 'end' ? 'right' : 'left',
+    textAlign: { start: 'left', middle: 'center', end: 'right' }[visualAnchor(G)],
+    direction: textDir(G),
+    textTransform:
+      ({ upper: 'uppercase', lower: 'lowercase', title: 'capitalize' } as Record<string, string>)[G.tcase] || 'none',
     whiteSpace: G.wrap && G.ww > 0 ? 'pre-wrap' : 'pre',
     color: 'transparent',
     caretColor: typeof c.fill === 'string' && c.fill !== 'none' && !/^url/.test(c.fill) ? c.fill : '#5b7cfa',
@@ -64,7 +68,8 @@ export function startTextEdit(l: Layer, selectAll?: boolean) {
   edit = beginEdit();
   ta = document.createElement('textarea');
   ta.className = 'cin-tedit';
-  ta.spellcheck = false;
+  // the browser's own spell check: it underlines misspelt words in the language of the person's browser
+  ta.spellcheck = true;
   ta.setAttribute('aria-label', 'Text');
   ta.value = String(l.geo.text || '');
   document.body.appendChild(ta);

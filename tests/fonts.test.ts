@@ -2,7 +2,16 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import opentype from 'opentype.js';
-import { facesFor, fontURL, isRTL, outlineD, pickWeight, primeFont, subsetsFor, webFont } from '../src/render/fonts';
+import {
+  facesFor,
+  fontURL,
+  needsShaping,
+  outlineD,
+  pickWeight,
+  primeFont,
+  subsetsFor,
+  webFont,
+} from '../src/render/fonts';
 import { layerSVG } from '../src/render/markup';
 import { H } from '../src/core/constants';
 
@@ -39,7 +48,8 @@ describe('web fonts', () => {
     const f = webFont('Heebo');
     expect(subsetsFor(f, 'Hello')).toEqual(['latin']);
     expect(subsetsFor(f, 'שלום Hello')).toEqual(['hebrew', 'latin']);
-    expect(isRTL('שלום')).toBe(true);
+    expect(needsShaping('שלום')).toBe(false);
+    expect(needsShaping('مرحبا')).toBe(true);
     expect(fontURL(f, 'latin', 400, 'normal', 'woff')).toBe(
       'https://cdn.jsdelivr.net/npm/@fontsource/heebo@5.3.0/files/heebo-latin-400-normal.woff',
     );

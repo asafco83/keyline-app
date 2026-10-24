@@ -39,7 +39,8 @@ src/
     dom.ts               References to the main DOM elements
     history.ts           Undo/redo snapshots, setProp/toggleKey, selection, tool switching
     keyframes.ts         Keyframe clipboard, reverse, distribute, nudge, context menu
-    layer-ops.ts         Convert to path, morph into another shape
+    layer-ops.ts         Convert to path (text to shapes), morph into another shape
+    select-same.ts       Edit › Select same (fill, stroke, stroke width, font, kind)
     playback.ts          Editor preview playback loop
 
   model/
@@ -56,7 +57,7 @@ src/
 
   render/
     markup.ts            Layer → SVG markup (shared by the editor canvas and the exporter)
-    text-layout.ts       Text line breaking ("Keep width" wrapping) and measuring
+    text-layout.ts       Text line breaking ("Keep width" wrapping), measuring, direction, case, RTL order
     stage.ts             Canvas render, fit, per-frame update
     overlay.ts           Selection box, handles, motion paths, nodes, pen preview
     mesh.ts              Builds and refreshes meshes from the canvas, measures meshed layers
@@ -85,6 +86,7 @@ src/
     css-anim.ts          CSS keyframe animations (SVGator CSS exports and others) → the same
     zip.ts               Minimal zip writer/reader and the .SVGcinema builder
     save.ts  open.ts  guard.ts  file-state.ts   Save/Save as, open, unsaved-changes prompt
+    recent.ts            Open recent (file handles, or stored copies)
 
   export/
     build.ts             Builds the exported SVG (JS player or CSS keyframes)
@@ -159,7 +161,7 @@ The editor opens with a sample scene (also under File → New → **Open sample 
 
 Drawing tools stay active after each shape, as in Adobe apps. Press V or Esc to go back to Select.
 
-**Main menu** (☰, left of the logo), laid out like SVGator's: _New project_, _Open_ · **Edit ▸** (undo, redo, cut, copy, paste, paste in place, duplicate, delete, select all, deselect all; keyframes when keyframes are selected) · **Element ▸** (the right-click menu's layer commands: group, ungroup, delete, center origin, motion path, hyperlink, convert to path, export selection, booleans, masks, align, arrange, hide, lock, rotate, flip) · **Animate ▸** (the properties the selection can animate, with their ⇧ keys) · _Save_, _Save as_, _Import files_, _Export SVG_ · **View ▸** (zoom, rulers, guides, grids, snapping, bones, collapse sections, dark theme; ticks show what is on) · **Help ▸** (keyboard shortcuts, open the sample scene, the website when the editor runs from the site's `editor/` folder, and **About SVGcinema**: the version from `package.json`, the build's commit and date, the copyright and licence from `LICENSE` in short and in full, and the open-source parts). Submenus open on hover or click and follow the selection (one with nothing to do greys out and opens nothing), deeper levels too (Element › Set motion path ›); a submenu stays inside the window, moving up or opening to the left when it must, and scrolls only when it is taller than the window; it is placed against the window, so even then the next level flies out beside it. A submenu stays open until the pointer settles on another item of the same list (a short delay), so crossing the gap, a scrollbar or a corner of a neighbouring item never closes it. The arrow keys, Enter and Esc work throughout. Every item shows its shortcut.
+**Main menu** (☰, left of the logo), laid out like SVGator's: _New project_, _Open_, **Open recent ▸** · **Edit ▸** (undo, redo, cut, copy, paste, paste in place, duplicate, delete, select all, deselect all; keyframes when keyframes are selected; **Select same ▸** fill, stroke, stroke width, font or kind of layer: every visible, unlocked layer sharing that value with the selected one, compared at the playhead, inside groups too) · **Element ▸** (the right-click menu's layer commands: group, ungroup, delete, center origin, motion path, hyperlink, convert to path, export selection, booleans, masks, align, arrange, hide, lock, rotate, flip) · **Animate ▸** (the properties the selection can animate, with their ⇧ keys) · _Save_, _Save as_, _Import files_, _Export SVG_ · **View ▸** (zoom, rulers, guides, grids, snapping, bones, collapse sections, dark theme; ticks show what is on) · **Help ▸** (keyboard shortcuts, open the sample scene, the website when the editor runs from the site's `editor/` folder, and **About SVGcinema**: the version from `package.json`, the build's commit and date, the copyright and licence from `LICENSE` in short and in full, and the open-source parts). Submenus open on hover or click and follow the selection (one with nothing to do greys out and opens nothing), deeper levels too (Element › Set motion path ›); a submenu stays inside the window, moving up or opening to the left when it must, and scrolls only when it is taller than the window; it is placed against the window, so even then the next level flies out beside it. A submenu stays open until the pointer settles on another item of the same list (a short delay), so crossing the gap, a scrollbar or a corner of a neighbouring item never closes it. The arrow keys, Enter and Esc work throughout. Every item shows its shortcut.
 
 **Selecting on the canvas:** click a layer (the outermost one; Ctrl+click picks inside a group, Shift+click adds or removes). Drag from an empty spot for a **marquee**: every top-level layer it touches is selected when you let go (each gets a dashed outline while you drag); Shift adds them to the selection or takes them out, Ctrl picks the shapes inside groups. A click on an empty spot deselects. Alt+drag a layer drags a copy, leaving the original (one undo step). Ctrl+A selects every top-level layer that is shown and unlocked (every keyframe while you work in the timeline); Ctrl+Shift+A deselects.
 
@@ -193,13 +195,13 @@ The interface's own text (labels, menus, the layer list) can't be highlighted, s
 - **Sections** open and close: click a section's heading (or its chevron). Closed sections stay closed for every layer and after a reload.
 - **Keyframe toggles:** every animatable property has its own row and its own ◆, so colour and opacity, for example, animate separately. The ◆ shows three states, explained in the Transforms heading: a grey outline when the property isn't animated, amber with an amber label when it is, and filled amber when there is a keyframe at the playhead. Click it to add or remove the keyframe at the playhead.
 - **Align bar** at the top: align left / centre / right / top / middle / bottom, distribute horizontally / vertically. One layer aligns to the canvas, several align to each other; distributing needs three or more. Below it, the boolean operations (union, subtract, intersect, exclude) for two or more shapes or paths; with fewer selected they grey out and a note says what they need.
-- **Text:** content, position and measured size.
+- **Text:** content (spell-checked by the browser, here and when typing on the canvas), position and measured size. **Convert to shapes** turns the letters into one path layer (same name, place, style and animation) when the font is a Google Font or a font on this computer; basic font stacks look different on every computer, so they can't. Hebrew is drawn in its right-to-left order; Arabic-script text, whose letters join, can't be converted yet.
 - **Size** (rectangles, ellipses, images and paths, including polygons, stars and lines): width and height, animatable with its own ◆. The shape grows and shrinks around its origin (put the origin on an edge or corner with the anchor grid to grow it from there). Unlike Scale, Size changes the shape itself, so the stroke width stays the same. The link toggle beside the fields keeps the proportions, as for Scale (on by default for images, off for shapes). Text and groups use Scale.
 - **Shape settings** (at the top for these shapes): polygon _Sides_; star _Points_ and _Ratio_ (inner / outer radius); corner _Radius_ for rectangles, polygons and stars (capped so corners never overlap, and animatable: the runtime rebuilds the rounded path every frame); line _From_ / _To_, each keyable on its own so a line can grow or swing. Polygons and stars keep their settings until their nodes are edited by hand or they get Morph keyframes; then they are plain paths.
 - **Number fields:** drag the label at the left of any number field (the X in X 162) left or right to change the value: one unit per pixel, Shift ×10, Alt ×0.1 (finer steps for small units such as seconds). A drag is one undo step; a plain click on the label puts the caret in the field. Toggles beside a pair of fields (keep proportions, rotate along the path, centre origin) have a column of their own, so every pair of fields keeps the same width.
 - **Transforms:** position, scale (with a keep-proportions link), skew X/Y, rotate as turns + degrees (with a _rotate along the motion path_ toggle when the layer has one), origin, anchor grid, flip.
 - **Motion path:** _Set motion path_ makes the layer follow a path, rectangle or ellipse over the whole animation (one keyframe per point, timed for an even speed). _Even speed along curves_ moves along each curved segment at a constant speed (by its length, as SVGator does) instead of following the curve's own spacing. On the canvas, drag a segment of the path to curve it, drag its handles to fine-tune, double-click a segment to straighten it. **Path node** (below it) edits the keyframe at the playhead, or the one before it: its type (straight, mirrored, asymmetric, disconnected) and position; ‹ › step between nodes. Alt-drag a handle to move it alone.
-- **Text appearance:** font (basic stacks, 31 Google Fonts including Hebrew ones, and fonts on this computer — Chrome/Edge can list them after you allow it; elsewhere type a font name), style (weight × italic), bold / italic / underline / overline / strikethrough, size, letter spacing, alignment, line height, and **Keep width**: when on, the box keeps its width and lines break to fit it.
+- **Text appearance:** font (basic stacks, 31 Google Fonts including Hebrew ones, and fonts on this computer — Chrome/Edge can list them after you allow it; elsewhere type a font name), style (weight × italic), bold / italic / underline / overline / strikethrough, size, letter spacing, alignment, **direction** (left to right / right to left: automatic from the first letter until you pick one; the Align buttons stay as you see them, and right-to-left text starts at the right, so it grows leftwards as you type), **case** (as typed, UPPERCASE, lowercase, Capitalise Each Word: the typed text is kept, only its display changes), line height, and **Keep width**: when on, the box keeps its width and lines break to fit it.
 - **Fill & stroke:** each colour row has a swatch, an eyedropper and the value as text (a colour, `none`, or _Linear_ / _Radial_ for a gradient). Click the swatch to open the colour window. Its top row picks the type: _None_, _Solid_, _Linear_ or _Radial_.
   - **Colour:** saturation/brightness area, hue and opacity sliders, an eyedropper (in browsers that support it), and Hex / R G B / A fields. Changes show live; clicking outside or pressing Esc closes the window as one undo step.
   - **Gradient editor:** drag stops along the bar and click it to add one. The colour part edits the selected stop. A stop has a colour, opacity and position. Linear gradients have an angle; radial ones have a centre and radius.
@@ -214,7 +216,7 @@ The interface's own text (labels, menus, the layer list) can't be highlighted, s
 **Right-click menu** (on the canvas or in the Layers panel), modelled on SVGator's:
 
 - **Copy / Paste:** Cut, Copy, Paste, Paste in place, Duplicate.
-- **Layer commands:** Group, Ungroup, Delete, Center origin, Animate, Set motion path, Hyperlink, Convert to path, Export selection.
+- **Layer commands:** Group, Ungroup, Delete, Center origin, Animate, Set motion path, Hyperlink, Convert to path (Convert to shapes for text), Export selection.
 - **Masks:** Create clipping path, Create mask, Release mask.
 - **Placement:** Align, Arrange, Lock, Rotate 90°, Flip horizontal / vertical.
 
@@ -281,6 +283,12 @@ The guides are saved with the project; the other view settings are remembered in
 - **Images** embedded in the file go to Assets and become image layers (sized as the browser draws them).
 - **Clip paths and masks** become clipping and mask groups (SVG masks mask by brightness).
 - **Filters:** a blur or a drop shadow becomes an editable filter; other filters, patterns, markers and text on a path are kept as they are. Anything that couldn't be made editable is listed in a short report after the import.
+
+**Open recent** lists the last 8 projects you opened or saved, newest first, with when. In Chrome and Edge an entry opens the file itself (the browser may ask for permission again; a file that was moved or deleted drops off the list). Elsewhere, where the browser can't reopen files, it keeps a copy of the project as it was when last opened or saved (the newest 4 copies), and Save then writes a new file. The list stays in this browser; _Clear the list_ empties it.
+
+**File names in any language:** the project name (Hebrew, Russian, Japanese…) is used as typed for the `.SVGcinema` file and the exported `.svg`; only the characters file systems refuse (`\ / : * ? " < > |`) are left out. Code identifiers (component names in the embed code) still use a plain Latin form.
+
+**Less motion:** the Export dialog's _Less motion_ setting decides what visitors who ask their system for reduced motion see: _Play normally_ (the default, adds nothing), _Show the first frame_ or _Show the last frame_. The JS player then holds that frame and doesn't start (whatever the trigger); a CSS export pauses every animation on it (a few bytes of CSS). Shape morphs in a CSS export are held with the CSS `d` property, which Safari ignores, so there they keep playing.
 
 **SVGs exported by SVGcinema:** tick _Include the editable project_ in the Export dialog (off by default; it shows how much it adds, about a third more for a typical JS export before compression). The project goes into the SVG's metadata, the pictures stay the SVG's own, and opening the SVG in SVGcinema brings back the exact project (layers, keyframes, settings); exporting it again gives the same file. Added to another project, its layers come in a group. Without it, an exported SVG opens as its artwork (the first frame), not animated.
 

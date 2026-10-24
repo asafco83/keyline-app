@@ -77,6 +77,24 @@ function shapeAnimated(l: Layer) {
   const T = l.t;
   return !!(T.d || T.p0 || T.p1 || (T.rad && l.shape) || (T.sz && l.type === 'path') || pathPinAnimated(l));
 }
+/**
+ * Visitors who ask for less motion see one still frame: every animation is held, paused, on its first
+ * or last frame. Shapes animated with SMIL (see smilShapes) are held with the CSS `d` property, which
+ * wins over SMIL in Chrome and Firefox (Safari keeps playing them).
+ */
+function reducedCSS(anim: Layer[], pre: string, svgId: string, rm: 'first' | 'last', run: number) {
+  let hold = '';
+  if (smilShapes()) {
+    const t = rm === 'first' ? 0 : doc.dur;
+    anim.forEach(l => {
+      if (shapeAnimated(l)) hold += `#${pre}${l.id}-s{d:path("${H.dstr(H.comp(l, t).d)}")}`;
+    });
+  }
+  return (
+    `@media (prefers-reduced-motion:reduce){#${svgId} *{animation-play-state:paused!important;animation-direction:normal!important;` +
+    `animation-iteration-count:1!important;animation-fill-mode:both!important;animation-delay:${rm === 'first' ? '0s' : -r3(run) + 's'}!important}${hold}}`
+  );
+}
 /** a mesh matrix for CSS: enough digits that neighbouring triangles still meet */
 const cssMat = (m: number[]) => `matrix(${m.map((v, i) => (i < 4 ? Math.round(v * 1e5) / 1e5 : r3(v))).join(',')})`;
 /** SMIL timing for the document's playback settings, and the frames (sampled at 0 … dur) arranged
@@ -343,12 +361,22 @@ export function cssFor(anim: Layer[], pre: string, svgId: string, wraps: Wrap[] 
     const id = `${pre}${l.id}-w`;
     css += kfBlock(id, fr, N) + `#${id}{transform-box:view-box;transform-origin:0 0;animation:${id} ${run}}`;
   });
-  if (doc.ex.trigger === 'hover')
-    css +=
+  const rm = doc.ex.rm === 'first' || doc.ex.rm === 'last' ? doc.ex.rm : null;
+  if (doc.ex.trigger === 'hover') {
+    const h =
       doc.ex.out === 'start'
         ? `#${svgId}:not(:hover) *{animation:none!important}`
         : `#${svgId}:not(:hover) *{animation-play-state:paused!important}`;
+    css += rm ? `@media (prefers-reduced-motion:no-preference){${h}}` : h;
+  }
+  if (rm) css += reducedCSS(anim, pre, svgId, rm, doc.dur / spd);
   return css;
+}
+/** visitors who ask for less motion: hold one frame (doc time 0, or just before the end) and don't
+ *  start; the code after it (the trigger) runs only for everyone else */
+export function reducedJS(rm: string | undefined) {
+  if (rm !== 'first' && rm !== 'last') return '';
+  return `if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)P.seekTo(${rm === 'first' ? 0 : Math.max(0, Math.round(doc.dur * 1000) - 1)});else{`;
 }
 export function triggerJS(t: string, out: string, base: number) {
   const pre =
@@ -633,7 +661,7 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
           return o;
         }),
       };
-      out += `<script><![CDATA[\n(function(){var CinEngine=${CinEngine.toString()};\nvar s=document.getElementById(${JSON.stringify(svgId)});if(!s)return;var P=CinEngine(${JSON.stringify(data)},s);s.player=s.svgatorPlayer=P;P.stop();${triggerJS(ex.trigger, ex.out, /reverse/.test(doc.dir) ? -1 : 1)}})();\n]]><\/script>`;
+      out += `<script><![CDATA[\n(function(){var CinEngine=${CinEngine.toString()};\nvar s=document.getElementById(${JSON.stringify(svgId)});if(!s)return;var P=CinEngine(${JSON.stringify(data)},s);s.player=s.svgatorPlayer=P;P.stop();${reducedJS(ex.rm)}${triggerJS(ex.trigger, ex.out, /reverse/.test(doc.dir) ? -1 : 1)}${ex.rm === 'first' || ex.rm === 'last' ? '}' : ''}})();\n]]><\/script>`;
     }
   }
   H.lookup(id => layerById(id));

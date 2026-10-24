@@ -9,6 +9,7 @@ import { assetURL, blobToData, saveAssets } from './assets';
 import { markClean, persistFile, updateFileInfo } from './file-state';
 import { confirmDiscard } from './guard';
 import { readZip } from './zip';
+import { addRecent } from './recent';
 import { artLabel, fit, frame } from '../render/stage';
 import { docField } from '../ui/inspector';
 import { renderTimeline } from '../ui/timeline';
@@ -79,6 +80,7 @@ export async function loadProjectFile(f: File, handle: FileSystemFileHandle | nu
         assets[a.id] = o;
       }
       applyProject(d, assets, { name: f.name, handle: handle || null });
+      addRecent(f.name, handle || null, handle ? null : f);
       const missing = idx.length - Object.keys(assets).length;
       toast(`Opened ${f.name}${missing ? ` (${missing} image${missing > 1 ? 's' : ''} missing)` : ''}.`);
       return true;

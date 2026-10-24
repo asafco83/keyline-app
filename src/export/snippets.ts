@@ -3,7 +3,7 @@ import { $, clamp, r3 } from '../core/constants';
 import { save } from '../core/history';
 import { doc } from '../core/state';
 import { syncExportUI } from './dialog';
-import { slug, updateExport } from './images';
+import { fileName, slug, updateExport } from './images';
 import { outDims } from './size';
 import { toast } from '../io/open';
 
@@ -20,7 +20,8 @@ export const FW_NOTES: Record<string, string> = {
 export function snippet(fw: string): string {
   const ex = doc.ex,
     css = ex.mode === 'css',
-    file = slug(doc.name) + '.svg',
+    // the downloaded file's name, kept in any language; characters that break a URL are escaped
+    file = (fileName(doc.name) + '.svg').replace(/[ #%'()&]/g, encodeURIComponent),
     pre =
       (String(ex.prefix || 'cin')
         .toLowerCase()
@@ -111,6 +112,13 @@ export function init(): void {
   });
   $('#xFill').addEventListener('change', (e: Event) => {
     doc.ex.fill = (e.target as any).value;
+    save();
+    updateExport();
+  });
+  $('#xRm').addEventListener('change', (e: Event) => {
+    const v = (e.target as any).value;
+    if (v === 'first' || v === 'last') doc.ex.rm = v;
+    else delete doc.ex.rm;
     save();
     updateExport();
   });

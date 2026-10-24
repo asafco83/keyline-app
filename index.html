@@ -104,7 +104,7 @@
           </svg>
         </div>
         <span class="sep"></span>
-        <input class="pname" id="pname" aria-label="Project name" spellcheck="false" />
+        <input class="pname" id="pname" aria-label="Project name" spellcheck="false" dir="auto" />
         <span class="fileinfo" id="fileInfo"></span>
         <div class="sp"></div>
         <button class="btn ghost ib" id="bUndo" aria-label="Undo" title="Undo (Ctrl+Z)"></button>
@@ -405,6 +405,14 @@
                 <option value="backwards">Return to the first frame</option>
               </select>
             </div>
+            <div class="row" title="Visitors can ask for less motion in their system settings">
+              <span class="rl">Less motion</span
+              ><select class="sel" id="xRm" aria-label="For visitors who prefer less motion">
+                <option value="play">Play normally</option>
+                <option value="first">Show the first frame</option>
+                <option value="last">Show the last frame</option>
+              </select>
+            </div>
             <div class="row">
               <span class="rl">Speed</span
               ><label class="nf"><span>×</span><input id="xSpeed" inputmode="decimal" /></label>
@@ -660,6 +668,10 @@
       <div class="lm-it">
         <button role="menuitem" id="bOpen"><span>Open…</span><kbd>Ctrl O</kbd></button>
       </div>
+      <div class="lm-it has-sub" data-sub="recent">
+        <button role="menuitem" aria-haspopup="true"><span>Open recent</span><i class="lm-arrow">▸</i></button>
+        <div class="ctx lm-sub" role="menu" aria-label="Open recent"></div>
+      </div>
       <hr />
       <div class="lm-it has-sub" data-sub="edit">
         <button role="menuitem" aria-haspopup="true"><span>Edit</span><i class="lm-arrow">▸</i></button>
@@ -715,7 +727,9 @@
           <div class="row nk">
             <span class="rl">File name</span>
             <div class="rf">
-              <input class="txt" id="sName" spellcheck="false" /><span class="chip" style="align-self: center"
+              <input class="txt" id="sName" spellcheck="false" dir="auto" /><span
+                class="chip"
+                style="align-self: center"
                 >.SVGcinema</span
               >
             </div>

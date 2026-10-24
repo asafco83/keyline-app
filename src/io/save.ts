@@ -1,8 +1,9 @@
 // SVGcinema — io/save
 import { $ } from '../core/constants';
 import { ASSETS, S, doc } from '../core/state';
-import { slug } from '../export/images';
+import { fileName } from '../export/images';
 import { markClean, persistFile } from './file-state';
+import { addRecent } from './recent';
 import { toast } from './open';
 import { buildProject, usedAssetIds } from './zip';
 import { kb } from '../ui/inspector';
@@ -68,6 +69,7 @@ export async function saveProject() {
     try {
       await writeHandle(S.file.handle, blob);
       markClean();
+      addRecent(S.file.name, S.file.handle as any, null);
       toast('Saved ' + S.file.name);
       return true;
     } catch (e) {
@@ -82,6 +84,7 @@ export async function saveProject() {
     S.file = { name: got, handle: null };
     persistFile();
     markClean();
+    addRecent(got, null, blob);
     toast('Downloaded ' + got + '. Browsers can’t overwrite downloads, so this is a fresh copy.');
     return true;
   }
@@ -95,7 +98,7 @@ export function saveProjectAs(): Promise<boolean> {
       used = usedAssetIds(),
       unused = Object.keys(ASSETS).filter(id => !used.has(id)),
       size = (ids: string[]) => ids.reduce((s, id) => s + (ASSETS[id].size || 0), 0);
-    $('#sName').value = S.file && S.file.name ? S.file.name.replace(/\.svgcinema(\.zip)?$/i, '') : slug(doc.name);
+    $('#sName').value = S.file && S.file.name ? S.file.name.replace(/\.svgcinema(\.zip)?$/i, '') : fileName(doc.name);
     $('#sAll').checked = S.saveAll !== false;
     $('#sAll').closest('label').hidden = !unused.length;
     $('#sStats').innerHTML =
@@ -131,9 +134,7 @@ export function init(): void {
     if (e.key === 'Enter') $('#sGo').click();
   });
   $('#sGo').addEventListener('click', async () => {
-    const name = ($('#sName').value.trim() || slug(doc.name))
-      .replace(/\.svgcinema(\.zip)?$/i, '')
-      .replace(/[\\/:*?"<>|]+/g, '-');
+    const name = fileName(($('#sName').value.trim() || doc.name).replace(/\.svgcinema(\.zip)?$/i, ''));
     S.saveAll = $('#sAll').checked;
     const blob = await buildProject(S.saveAll);
     if (canPick()) {
@@ -147,6 +148,7 @@ export function init(): void {
         S.file = { name: handle.name, handle };
         persistFile();
         markClean();
+        addRecent(handle.name, handle, null);
         toast('Saved ' + handle.name);
         endSave(true);
         return;
@@ -159,6 +161,7 @@ export function init(): void {
       S.file = { name: got, handle: null };
       persistFile();
       markClean();
+      addRecent(got, null, blob);
       toast('Saved ' + got + ' to your downloads.');
       endSave(true);
     } else endSave(false);

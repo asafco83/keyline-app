@@ -23,12 +23,16 @@ import { colf, gnum, krow, nrow, num, renderInspector } from './inspector';
 import { isLine, liveShape, setShape } from '../tools/shapes';
 import { type ShapeParams, maxCornerRadius } from '../geometry/nodes';
 import { renderStage } from '../render/stage';
+import { textDir, visualAnchor } from '../render/text-layout';
+import { textConvertible } from '../core/layer-ops';
 
 const PAINTED = ['rect', 'ellipse', 'path', 'text'];
 const I = {
   link: ic('<path d="M9 15l6-6M10 6.5l1.5-1.5a4 4 0 015.7 5.7L15.7 12M8.3 12l-1.5 1.5a4 4 0 005.7 5.7L14 17.5"/>'),
   pick: ICON.eyedropper,
   swap: ic('<path d="M7 4v13M4 14l3 3 3-3M17 20V7M14 10l3-3 3 3"/>'),
+  dirL: ic('<path d="M10 3v11M14 3v11M16 3H9.5a3 3 0 000 6H10M5 19h14M16 16l3 3-3 3"/>'),
+  dirR: ic('<path d="M10 3v11M14 3v11M16 3H9.5a3 3 0 000 6H10M19 19H5M8 16l-3 3 3 3"/>'),
   alignL: ic('<path d="M4 5h16M4 10h10M4 15h16M4 20h10"/>'),
   alignC: ic('<path d="M4 5h16M7 10h10M4 15h16M7 20h10"/>'),
   alignR: ic('<path d="M4 5h16M10 10h10M4 15h16M10 20h10"/>'),
@@ -262,13 +266,22 @@ const tbtnAct = (act: string, val: string, on: boolean, icon: string, label: str
 
 export function textSection(l: Layer) {
   const G = l.geo;
-  return `<section class="sec"><h3>Text</h3><textarea class="ta" data-g="text" id="g-text" rows="${Math.min(6, Math.max(2, String(G.text || '').split('\n').length))}" aria-label="Text">${esc(G.text)}</textarea>
+  return `<section class="sec"><h3>Text</h3><textarea class="ta" data-g="text" id="g-text" spellcheck="true" dir="${textDir(G)}" rows="${Math.min(6, Math.max(2, String(G.text || '').split('\n').length))}" aria-label="Text">${esc(G.text)}</textarea>
     ${nrow('Position', `<label class="nf"><span>X</span><input id="g-x" data-g="x" inputmode="decimal" aria-label="X"></label><label class="nf"><span>Y</span><input id="g-y" data-g="y" inputmode="decimal" aria-label="Y"></label>`)}
     ${nrow('Size', `<label class="nf ro"><span>W</span><input id="bb-w" data-bb="w" readonly tabindex="-1" aria-label="Width"></label><label class="nf ro"><span>H</span><input id="bb-h" data-bb="h" readonly tabindex="-1" aria-label="Height"></label>`)}
+    ${textConvertible(l) ? '<div class="btns"><button class="btn" data-act="topath" id="txToPath">Convert to shapes</button></div>' : ''}
   </section>`;
 }
+const CASES: Array<[string, string, string]> = [
+  ['', 'Aa', 'As typed'],
+  ['upper', 'AB', 'Uppercase'],
+  ['lower', 'ab', 'Lowercase'],
+  ['title', 'Ab', 'Capitalise each word'],
+];
 export function textAppearanceSection(l: Layer) {
   const G = l.geo,
+    va = visualAnchor(G),
+    dir = textDir(G),
     wf = webFont(G.family),
     known = !!wf || FONTS.some(f => f[0] === G.family),
     w = String(G.weight || '400'),
@@ -310,7 +323,8 @@ export function textAppearanceSection(l: Layer) {
       ${tbtn('bold', '', +w >= 600, '<b>B</b>', 'Bold')}${tbtn('italic', '', !!G.italic, '<i>I</i>', 'Italic')}${tbtn('deco', 'underline', has('underline'), '<u>U</u>', 'Underline')}${tbtn('deco', 'overline', has('overline'), '<span style="text-decoration:overline">O</span>', 'Overline')}${tbtn('deco', 'line-through', has('line-through'), '<s>S</s>', 'Strikethrough')}
     </div></div>
     ${nrow('Size', `<label class="nf"><span>pt</span><input id="g-size" data-g="size" inputmode="decimal" aria-label="Font size"></label><label class="nf"><span>↔</span><input id="g-ls" data-g="ls" inputmode="decimal" aria-label="Letter spacing"><em>px</em></label>`)}
-    ${nrow('Align', `<div class="btns tight">${tbtn('anchor', 'start', (G.anchor || 'start') === 'start', I.alignL, 'Align left')}${tbtn('anchor', 'middle', G.anchor === 'middle', I.alignC, 'Align center')}${tbtn('anchor', 'end', G.anchor === 'end', I.alignR, 'Align right')}</div>`)}
+    ${nrow('Align', `<div class="btns tight">${tbtn('anchor', 'start', va === 'start', I.alignL, 'Align left')}${tbtn('anchor', 'middle', va === 'middle', I.alignC, 'Align center')}${tbtn('anchor', 'end', va === 'end', I.alignR, 'Align right')}</div><div class="btns tight" role="group" aria-label="Direction">${tbtn('dir', 'ltr', dir === 'ltr', I.dirL, 'Left to right')}${tbtn('dir', 'rtl', dir === 'rtl', I.dirR, 'Right to left')}</div>`)}
+    ${nrow('Case', `<div class="btns tight" role="group" aria-label="Letter case">${CASES.map(([v, t, lab]) => tbtn('tcase', v, (G.tcase || '') === v, `<span class="tx-case">${t}</span>`, lab)).join('')}</div>`)}
     ${nrow('Box width', `${tbtn('wrap', '', !!G.wrap, I.keepW, 'Keep width while typing (wrap lines)')}<label class="nf${G.wrap ? '' : ' ro'}" title="${G.wrap ? 'Lines break to stay inside this width' : 'Turn on Keep width to fix the box width'}"><span>W</span><input id="g-ww" data-g="ww" inputmode="decimal" aria-label="Box width"${G.wrap ? '' : ' disabled'}><em>px</em></label>`)}
     ${String(G.text || '').includes('\n') || G.wrap ? nrow('Line height', `<label class="nf"><span>×</span><input id="g-lh" data-g="lh" inputmode="decimal" aria-label="Line height"></label>`) : ''}
   </section>`;
@@ -591,10 +605,20 @@ export function propsToggle(b: HTMLElement, l: Layer) {
     set.has(v) ? set.delete(v) : set.add(v);
     G.deco = [...set].join(' ');
     if (!G.deco) delete G.deco;
-  } else if (k === 'anchor') G.anchor = v;
-  else if (k === 'wrap') {
+  } else if (k === 'anchor') {
+    // the buttons are visual (left / centre / right); the anchor is logical, so right-to-left text swaps it
+    const rtl = textDir(G) === 'rtl';
+    G.anchor = rtl && v !== 'middle' ? (v === 'start' ? 'end' : 'start') : v;
+  } else if (k === 'dir') {
+    if (textDir(G) !== v && G.anchor !== 'middle') G.anchor = G.anchor === 'end' ? 'start' : 'end'; // keeps the alignment on screen
+    G.dir = v;
+  } else if (k === 'tcase') {
+    if (v) G.tcase = v;
+    else delete G.tcase;
+  } else if (k === 'wrap') {
     // keep the text where it is: with a fixed box the anchor sits inside the box, not at x
-    const shift = (on: boolean) => (G.anchor === 'middle' ? G.ww / 2 : G.anchor === 'end' ? G.ww : 0) * (on ? 1 : -1);
+    const va = visualAnchor(G),
+      shift = (on: boolean) => (va === 'middle' ? G.ww / 2 : va === 'end' ? G.ww : 0) * (on ? 1 : -1);
     if (!G.wrap) {
       let w = 0;
       try {

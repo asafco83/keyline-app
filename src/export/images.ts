@@ -320,6 +320,18 @@ export function slug(s: unknown) {
       .replace(/^-|-$/g, '') || 'animation'
   );
 }
+/** a file name as the person typed it (any language): only the characters file systems refuse are
+ *  dropped, with control characters and leading / trailing dots and spaces */
+export function fileName(s: unknown, fallback = 'animation') {
+  return (
+    String(s || '')
+      .normalize('NFC')
+      .replace(/[\u0000-\u001f\u007f\\/:*?"<>|]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .replace(/^[\s.]+|[\s.]+$/g, '')
+      .slice(0, 120) || fallback
+  );
+}
 export async function saveFile(name: string, data: BlobPart, type: string) {
   if ((window as any).claude && (window as any).claude.use) {
     let dl = null;
@@ -431,6 +443,6 @@ export function init(): void {
   });
   $('#xDl').addEventListener('click', async () => {
     await expReady();
-    saveFile(slug(doc.name) + '.svg', lastExport, 'image/svg+xml');
+    saveFile(fileName(doc.name) + '.svg', lastExport, 'image/svg+xml');
   });
 }

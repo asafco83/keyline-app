@@ -219,6 +219,8 @@ export interface ExportSettings {
   hi: boolean;
   /** web fonts: converted to outlines (default) or embedded */
   fonts?: 'outline' | 'embed';
+  /** visitors who ask their system for less motion: play anyway (default), or show one still frame */
+  rm?: 'play' | 'first' | 'last';
   /** carry the editable project inside the SVG (opening the SVG in SVGcinema restores it) */
   proj?: boolean;
 }

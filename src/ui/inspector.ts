@@ -64,6 +64,7 @@ import { dragWin } from './timeline';
 import { poseRowFor, rigGaps, rigPopover } from '../tools/rig';
 import { removeAllPins, removePin } from '../tools/pins';
 import { drawOverlay } from '../render/overlay';
+import { textDir } from '../render/text-layout';
 
 export function num(f: string, lab: string, unit?: string) {
   return `<label class="nf"><span data-scrub="${f}">${lab}</span><input id="i-${f.replace(/[:.]/g, '_')}" data-f="${f}" inputmode="decimal" spellcheck="false" aria-label="${lab}">${unit ? `<em>${unit}</em>` : ''}</label>`;
@@ -639,6 +640,7 @@ export function init(): void {
         ed = beginEdit();
       if (['text', 'family', 'weight', 'anchor', 'deco'].includes(g)) {
         l.geo[g] = t.value;
+        if (g === 'text') t.dir = textDir(l.geo);
         const wf = g === 'family' && webFont(t.value);
         if (wf) {
           l.geo.weight = String(pickWeight(wf, l.geo.weight));

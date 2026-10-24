@@ -1,5 +1,5 @@
 // SVGcinema — export/dialog
-import { facesFor, isLocalFamily, isRTL, webFont } from '../render/fonts';
+import { facesFor, isLocalFamily, needsShaping, webFont } from '../render/fonts';
 import { $, fmt } from '../core/constants';
 import { S, doc } from '../core/state';
 import { kb } from '../ui/inspector';
@@ -59,7 +59,7 @@ export function syncExportUI() {
   $('#xFonts')
     .querySelectorAll('button')
     .forEach((b: HTMLElement) => b.classList.toggle('on', b.dataset.v === fm));
-  const rtl = fm === 'outline' && wf.some(l => isRTL(l.geo.text));
+  const rtl = fm === 'outline' && wf.some(l => needsShaping(l.geo.text));
   const missing = [
     ...new Set(wf.filter(l => isLocalFamily(l.geo.family) && !facesFor(l.geo).length).map(l => l.geo.family)),
   ];
@@ -67,7 +67,7 @@ export function syncExportUI() {
   $('#xFontNote').textContent =
     (fm === 'outline'
       ? 'Text is converted to shapes: it looks identical everywhere and needs no font download, but can’t be selected or read by screen readers.' +
-        (rtl ? ' Right-to-left text is embedded instead, so it keeps its letter order.' : '')
+        (rtl ? ' Arabic-script text is embedded instead, so its letters join.' : '')
       : 'The font files are embedded (only the alphabets your text uses). Text stays selectable; best for longer text.') +
     (missing.length
       ? ` ${missing.join(', ')} ${missing.length > 1 ? 'are fonts' : 'is a font'} on this computer that this page can't read yet: pick it again in the Font list (“Show fonts on this computer…”) to convert or embed it. Until then the SVG only names it, so it shows only where it's installed.`
@@ -95,6 +95,7 @@ export function syncExportUI() {
   $('#xIt').value = String(doc.it || 0);
   $('#xDir').value = doc.dir || 'normal';
   $('#xFill').value = ex.fill || 'forwards';
+  $('#xRm').value = ex.rm || 'play';
   $('#xFps').value = String(ex.fps || 0);
   const sp = $('#xSpeed');
   if (sp !== document.activeElement) sp.value = fmt(ex.speed || 1);
