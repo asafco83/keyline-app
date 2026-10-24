@@ -111,8 +111,11 @@ export function openAnimMenu() {
   m.hidden = false;
   btn.setAttribute('aria-expanded', 'true');
   // open upwards from the button, kept inside the window
-  const r = btn.getBoundingClientRect(),
-    mr = m.getBoundingClientRect();
+  const r = btn.getBoundingClientRect();
+  // never over the button: taller than the room above it, the menu scrolls
+  m.style.maxHeight = Math.max(160, r.top - 10) + 'px';
+  m.style.overflowY = 'auto';
+  const mr = m.getBoundingClientRect();
   m.style.left = Math.max(4, Math.min(r.left, innerWidth - mr.width - 4)) + 'px';
   m.style.top = Math.max(4, r.top - mr.height - 6) + 'px';
   const first = m.querySelector<HTMLElement>('button');
