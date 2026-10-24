@@ -100,7 +100,7 @@ async def main():
         await pg.select_option('#fx-add','blur')
         check('filters CSS note', 'CSS exports' in await ev("[...document.querySelectorAll('#insp .sec')].find(s=>s.querySelector('h3').textContent.startsWith('Filters')).textContent"))
         # fonts
-        await pg.select_option('#g-family','Heebo')
+        await pg.click('#g-family'); await pg.locator('#fontPop .fp-opt[data-font="Heebo"]').first.click()
         await pg.wait_for_timeout(800)
         # web fonts come from jsDelivr: without network these checks are skipped, not failed
         net=await ev("fetch('https://cdn.jsdelivr.net/npm/@fontsource/heebo@5.0.0/package.json').then(r=>r.ok,()=>false)")

@@ -15,8 +15,8 @@ import { INSP } from '../core/dom';
 import { beginEdit, setProp, setTime } from '../core/history';
 import { type NodeType, currentNode, nodeType, setNodePos, setNodeType } from '../tools/motion-path';
 import { S, layerById } from '../core/state';
-import { WEB_FONTS } from '../model/font-catalog';
-import { localFamilies, localFontsSupported, localLoaded, pickWeight, webFont } from '../render/fonts';
+import { familyCSS, localFamilies, pickWeight, webFont } from '../render/fonts';
+import { fontLabel } from './font-picker';
 import { FILTERS, addFilter, fxKey, removeFilter, syncFa } from '../model/filters';
 import { H9 } from '../tools/edit-tools';
 import { colf, gnum, krow, nrow, num, renderInspector } from './inspector';
@@ -297,19 +297,11 @@ export function textAppearanceSection(l: Layer) {
           ]
         : [[v + '|0', n]],
   );
-  const opt = (v: string, t: string) =>
-    `<option value="${esc(v)}"${v === G.family ? ' selected' : ''}>${esc(t)}</option>`;
-  const locals = localFamilies().filter(n => !WEB_FONTS.some(f => f.family === n)),
+  const locals = localFamilies().filter(n => !webFont(n)),
     isLocal = !wf && locals.includes(G.family),
     other = !wf && !isLocal && !FONTS.some(f => f[0] === G.family);
-  const fontSel = `<select class="sel" data-g="family" id="g-family" aria-label="Font">
-      <optgroup label="Basic">${FONTS.map(f => opt(f[0], f[1])).join('')}</optgroup>
-      <optgroup label="Google Fonts">${WEB_FONTS.map(f => opt(f.family, f.family)).join('')}</optgroup>
-      <optgroup label="On this computer">${locals.map(n => opt(n, n)).join('')}${other ? opt(G.family, String(G.family).split(',')[0]) : ''}${
-        localFontsSupported() && !localLoaded()
-          ? `<option value="__local__">${locals.length ? 'Refresh fonts on this computer…' : 'Show fonts on this computer…'}</option>`
-          : ''
-      }<option value="__custom__">Type a font name…</option></optgroup></select>`;
+  // the font list opens from this button (ui/font-picker); the name shows in the font itself
+  const fontSel = `<button class="fontbtn" id="g-family" data-fontpick aria-haspopup="dialog" aria-expanded="false" aria-label="Font: ${esc(fontLabel(G.family))}"><span style="font-family:${esc(familyCSS(G.family))}${G.italic ? ';font-style:italic' : ''}">${esc(fontLabel(G.family))}</span><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 3.5l3 3 3-3"/></svg></button>`;
   const custom = S.fontCustom
     ? nrow(
         'Font name',
