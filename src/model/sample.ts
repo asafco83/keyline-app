@@ -105,6 +105,27 @@ export function sampleDoc(): any {
     [1, [1, 1], 'ease'],
   ];
 
+  // Sparkle — a symbol: two instances share the same pulsing dot, the second one starts 0.4 s later
+  const sparkle = (name: string, x: number, y: number, off: number) => {
+    const g = mkLayer('group', name, {}, NOFILL);
+    g.parent = night.id;
+    g.sym = 'sparkle';
+    g.b.pos = [x, y];
+    if (off) g.symOff = off;
+    const dot = mkLayer('ellipse', 'Dot', { cx: 0, cy: 0, rx: 2.5, ry: 2.5 }, { fill: '#FFF4CF', stk: 'none', sw: 0 });
+    dot.parent = g.id;
+    dot.o = [0, 0];
+    dot.t.scl = [
+      [off, [1, 1], 'inOutSine'],
+      [off + 0.6, [1.8, 1.8], 'inOutSine'],
+      [off + 1.2, [1, 1], 'ease'],
+    ];
+    return [g, dot];
+  };
+  const spark1 = sparkle('Sparkle', 150, 60, 0),
+    spark2 = sparkle('Sparkle 2', 470, 70, 0.4);
+  d.symbols = { sparkle: { name: 'Sparkle' } };
+
   // Sunrise — a group moved up as one; Glow: radial gradient, animated blur filter, screen blending
   const sunG = mkLayer('group', 'Sunrise', {}, NOFILL);
   const glow = mkLayer(
@@ -518,6 +539,8 @@ export function sampleDoc(): any {
     starA,
     starB,
     starC,
+    ...spark1,
+    ...spark2,
     sunG,
     glow,
     rays,

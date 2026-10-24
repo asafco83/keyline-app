@@ -1,4 +1,6 @@
 // SVGcinema — ui/layers-panel
+import { SYM_IC } from './symbols-ui';
+import { instanceCount } from '../core/symbols';
 import { syncLayerActions } from './animate-menu';
 import type { Layer } from '../model/types';
 import { $, H, ICON, NOFILL, TICON, clone, esc, r2, r3 } from '../core/constants';
@@ -98,7 +100,7 @@ export function renderLayers() {
           : '';
         return `<div class="lp-row${S.selSet.has(l.id) ? ' sel' : ''}${l.hid ? ' hid' : ''}" draggable="true" tabindex="0" role="treeitem" aria-selected="${S.selSet.has(l.id)}" aria-level="${d + 1}" data-lid="${l.id}" style="padding-left:${4 + d * 18}px">${guides ? `<span class="lp-guides" aria-hidden="true">${guides}</span>` : ''}
       ${grp && n ? `<button class="tl-ic" data-la="exp" aria-label="${open ? 'Collapse' : 'Expand'} ${esc(l.name)}">${open ? ICON.down : ICON.right}</button>${clip}` : `<span class="lp-sp">${clip}</span>`}
-      <span class="lp-ty" title="${l.type}">${TICON[l.type] || TICON.raw}</span><span class="lp-name" title="${esc(l.name)}">${nameHTML(l.name)}</span>${l.mask ? `<span class="lp-mask" title="${l.mask === 'clip' ? 'Clip group: the Clip path folder clips the layers below it' : 'Mask group: the Masks folder masks the layers below it'}">${l.mask === 'clip' ? 'CLIP' : 'MASK'}</span>` : l.maskSrc ? '<span class="lp-mask ic" title="The layers in this folder are the mask">' + MASK_IC + '</span>' : ''}${l.link ? `<span class="lp-link" title="Links to ${esc(l.link.url)}">🔗</span>` : ''}
+      <span class="lp-ty${l.sym ? ' sym' : ''}" title="${l.sym ? 'Symbol instance' : l.type}">${l.sym ? SYM_IC : TICON[l.type] || TICON.raw}</span><span class="lp-name" title="${esc(l.name)}">${nameHTML(l.name)}</span>${l.sym ? `<span class="lp-symn" title="${instanceCount(l.sym)} instances of this symbol">×${instanceCount(l.sym)}</span>` : ''}${l.mask ? `<span class="lp-mask" title="${l.mask === 'clip' ? 'Clip group: the Clip path folder clips the layers below it' : 'Mask group: the Masks folder masks the layers below it'}">${l.mask === 'clip' ? 'CLIP' : 'MASK'}</span>` : l.maskSrc ? '<span class="lp-mask ic" title="The layers in this folder are the mask">' + MASK_IC + '</span>' : ''}${l.link ? `<span class="lp-link" title="Links to ${esc(l.link.url)}">🔗</span>` : ''}
       <button class="tl-ic${l.hid ? '' : ' vis-hide'}" data-la="hid" aria-label="${l.hid ? 'Show' : 'Hide'} ${esc(l.name)}">${l.hid ? ICON.eyeoff : ICON.eye}</button>
       <button class="tl-ic${l.lock ? '' : ' vis-hide'}" data-la="lock" aria-label="${l.lock ? 'Unlock' : 'Lock'} ${esc(l.name)}">${l.lock ? ICON.lock : ICON.unlock}</button>
       ${hasTracks(l) ? '<i class="lp-anim" title="Has keyframes"></i>' : '<i class="lp-anim none" aria-hidden="true"></i>'}</div>`;

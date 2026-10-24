@@ -10,6 +10,7 @@ import { loadProjectFile, toast } from './open';
 import { importSVG } from './svg-import';
 import { addLayer } from '../tools/shapes';
 import { kb } from '../ui/inspector';
+import { renderSymbols } from '../ui/symbols-ui';
 
 export const IDB = {
   db: null as IDBDatabase | null,
@@ -262,6 +263,7 @@ export function usage(id: string) {
   return doc.layers.filter(l => l.type === 'image' && l.geo.asset === id).length;
 }
 export function renderAssets() {
+  renderSymbols();
   const ids = Object.keys(ASSETS),
     total = ids.reduce((s, id) => s + (ASSETS[id].size || 0), 0);
   $('#aInfo').textContent = ids.length ? `${ids.length} file${ids.length > 1 ? 's' : ''} · ${kb(total)}` : '';

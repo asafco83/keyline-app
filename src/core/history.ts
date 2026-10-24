@@ -1,4 +1,6 @@
 // SVGcinema — core/history
+import { syncSymbols } from './symbols';
+import { renderSymbols } from '../ui/symbols-ui';
 import type { Layer, PropKey, Tool } from '../model/types';
 import { $, H, HINTS, hintHTML, baseOf, clamp, clone, isFrozen, propLabel, r3, setBase, valueAt } from './constants';
 import { toast } from '../io/open';
@@ -35,6 +37,8 @@ export function beginEdit() {
   return {
     end(o?: { insp?: boolean }) {
       o = o || {};
+      // symbol instances share their contents: carry an edit in one to the others
+      if (doc.symbols && syncSymbols(S.symEdit)) o.insp = true;
       if (JSON.stringify(doc) !== snap) {
         S.undo.push(snap);
         if (S.undo.length > 150) S.undo.shift();
@@ -50,6 +54,7 @@ export function commit(o?: { insp?: boolean }) {
   renderLayers();
   renderTimeline();
   if (o && o.insp) renderInspector();
+  renderSymbols();
   frame();
 }
 export function undo() {

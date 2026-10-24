@@ -147,6 +147,10 @@ export interface Layer {
   maskSrc?: boolean;
   /** hyperlink: clicking the layer in the exported SVG opens it */
   link?: { url: string; target: '_blank' | '_self' };
+  /** a group that is an instance of this symbol (doc.symbols) */
+  sym?: string;
+  /** a symbol instance: its contents' animation starts this many seconds later */
+  symOff?: number;
   /** curved motion path */
   sm: boolean;
   /** even speed along curved motion-path segments (by length); off: by the curve's own parameter */
@@ -247,6 +251,8 @@ export interface Doc {
   layers: Layer[];
   ezPresets: EasingPreset[];
   ex: ExportSettings;
+  /** symbols: id → name (and the contents' signature, see core/symbols) */
+  symbols?: Record<string, { name: string; sig?: string }>;
 }
 
 export interface Asset {
@@ -353,6 +359,8 @@ export interface EditorState {
   sclLock?: boolean;
   /** keep size proportions in the inspector (shapes; images use lockAR) */
   szLock?: boolean;
+  /** the symbol instance being edited (isolation mode) */
+  symEdit?: string | null;
   /** the Presets window's preview on the timeline (core/presets PresetPlan) */
   presetPv?: {
     spans: Array<{ lid: string; t0: number; t1: number; props: string[] }>;

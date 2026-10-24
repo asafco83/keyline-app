@@ -1,4 +1,5 @@
 // SVGcinema — tools/stage-input
+import { enterSymbol, exitSymbol, isoChain } from '../ui/symbols-ui';
 import { gradHandleDrag } from './gradient-handles';
 import { startTextEdit } from './text-edit';
 import { panDrag } from './hand';
@@ -46,6 +47,16 @@ export function insideBox(l: Layer, p: XY) {
   }
   return true;
 }
+/** the layers under a point, innermost first, ignoring symbol isolation */
+function rawChain(target: any): string[] {
+  const was = S.symEdit;
+  S.symEdit = null;
+  try {
+    return hitChain(target);
+  } finally {
+    S.symEdit = was;
+  }
+}
 export function hitChain(target: any): string[] {
   const chain: string[] = [];
   let g = target.closest && target.closest('g[data-lid], g[data-dw]');
@@ -61,7 +72,8 @@ export function hitChain(target: any): string[] {
     } else chain.push(g.dataset.lid);
     g = g.parentElement && g.parentElement.closest('g[data-lid], g[data-dw]');
   }
-  return chain;
+  // editing a symbol: only what is inside the instance can be picked
+  return isoChain(chain);
 }
 export function endDrag(e: PointerEvent) {
   if (S.drag) {
@@ -127,7 +139,8 @@ function dupDrag(l: Layer, p0: XY) {
 const dragLayer = (l: Layer, p: XY, e: PointerEvent) => (e.altKey ? dupDrag(l, p) : moveDrag(l, p));
 
 let lastSeg: { id: string; i: number; t: number } | null = null,
-  lastText: { id: string; t: number; x: number; y: number } | null = null;
+  lastText: { id: string; t: number; x: number; y: number } | null = null,
+  lastPress: { t: number; x: number; y: number } | null = null;
 export function init(): void {
   WRAP.addEventListener('pointerdown', (e: PointerEvent) => {
     if (e.button !== 0 && e.button !== 1) return;
@@ -231,6 +244,29 @@ export function init(): void {
       lastSeg = { id: sl.id, i, t: now };
       return segmentDrag(sl, i, p);
     }
+    // a double press (the canvas is redrawn after a press, so no dblclick event comes): on a symbol
+    // instance it edits the symbol; while editing one, on an empty spot it ends that
+    if (t === 'select') {
+      const now = Date.now(),
+        dbl =
+          !!lastPress && now - lastPress.t < 400 && Math.hypot(e.clientX - lastPress.x, e.clientY - lastPress.y) < 5;
+      lastPress = { t: now, x: e.clientX, y: e.clientY };
+      if (dbl) {
+        const inst =
+          !S.symEdit &&
+          rawChain(e.target)
+            .map(id => layerById(id))
+            .find(x => x && x.sym);
+        if (inst) {
+          lastPress = null;
+          return enterSymbol(inst);
+        }
+        if (S.symEdit && !hitChain(e.target).length) {
+          lastPress = null;
+          return exitSymbol();
+        }
+      }
+    }
     const chain = hitChain(e.target);
     if (chain.length) {
       const nb = chain.filter(c => {
@@ -320,6 +356,15 @@ export function init(): void {
       const [i, j, part] = nd.dataset.node.split(',').map(Number);
       if (part === 0) toggleSmooth(i, j);
       return;
+    }
+    // a symbol instance: double-click edits the symbol; while editing, a double-click outside ends it
+    if (S.tool === 'select') {
+      // (the canvas captures the pointer, so the event's target is the canvas: look under the pointer)
+      const under = document.elementFromPoint(e.clientX, e.clientY) || e.target,
+        raw = rawChain(under),
+        inst = !S.symEdit && raw.map(id => layerById(id)).find(x => x && x.sym);
+      if (inst) return enterSymbol(inst);
+      if (S.symEdit && !hitChain(under).length) return exitSymbol();
     }
     const chain = hitChain(e.target),
       idx = chain.indexOf(S.sel);

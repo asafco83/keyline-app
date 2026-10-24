@@ -397,6 +397,30 @@ export function triggerJS(t: string, out: string, base: number) {
   if (t === 'api') return pre;
   return pre + 'P.play();';
 }
+/** symbol instances that can be written as a <use> of an earlier instance: id → that instance's id.
+ *  Only visible, unmasked, unpinned instances with the same time offset share. */
+export function symbolUses(prep: Layer[]): Record<string, string> {
+  const byId: Record<string, Layer> = {};
+  prep.forEach(l => (byId[l.id] = l));
+  const hidden = (l: Layer) => {
+    let p: Layer | undefined = l,
+      g = 0;
+    while (p && g++ < 100) {
+      if (p.hid) return true;
+      p = p.parent ? byId[p.parent] : undefined;
+    }
+    return false;
+  };
+  const first: Record<string, string> = {},
+    out: Record<string, string> = {};
+  prep.forEach(l => {
+    if (!l.sym || l.mask || (l.pins && l.pins.length) || hidden(l)) return;
+    const key = l.sym + '@' + (l.symOff || 0);
+    if (!first[key]) first[key] = l.id;
+    else out[l.id] = first[key];
+  });
+  return out;
+}
 export function idMapFor(prep: Layer[]) {
   const map: Record<string, string> = {},
     used = new Set<string>();
@@ -462,7 +486,7 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
     });
     src = doc.layers.filter(l => keep.has(l.id));
   }
-  const prep = src.map(l => {
+  let prep = src.map(l => {
     const c = clone(l);
     for (const k in c.t) {
       if (!c.t[k].length) {
@@ -481,6 +505,21 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
       (l.pins || []).forEach(p => p.bone && (p.bone = m[p.bone]));
       if (l.dord) l.dord = l.dord.map(id => m[id] || id);
     });
+  }
+  // symbols (JS export): an instance with the same time offset as an earlier visible one is written as
+  // a <use> of that one's contents, which the player animates for both
+  const useOf = ex.mode === 'css' ? {} : symbolUses(prep);
+  if (Object.keys(useOf).length) {
+    const drop = new Set<string>(),
+      walk = (id: string) =>
+        prep.forEach(c => {
+          if (c.parent === id) {
+            drop.add(c.id);
+            walk(c.id);
+          }
+        });
+    Object.keys(useOf).forEach(walk);
+    prep = prep.filter(l => !drop.has(l.id));
   }
   const byId: Record<string, Layer> = {};
   prep.forEach(l => (byId[l.id] = l));
@@ -563,7 +602,11 @@ export function buildExport(imgs: Record<string, OptImage> | null) {
     fonts: ex.fonts === 'embed' ? 'embed' : 'outline',
     faces: new Set<string>(),
   };
-  const body = markup(prep, null, ctx);
+  let body = markup(prep, null, ctx);
+  for (const id in useOf) {
+    const re = new RegExp(`(<g [^>]*id="${(pre + id).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-s"[^>]*>)</g>`);
+    body = body.replace(re, `$1<use href="#${pre}${useOf[id]}-s"/></g>`);
+  }
   const faceCSS = fontFaceCSS(ctx.faces);
   const syms = Object.keys(used)
     .map(id => {
