@@ -1,4 +1,5 @@
 // SVGcinema — ui/timeline
+import { graphNames, graphSVG, graphTrack, graphable } from './graph';
 import type { Keyframe, Layer, PropKey } from '../model/types';
 import { $, ICON, clamp, clone, esc, fmt, isFrozen, layerTracks, propLabel, r3 } from '../core/constants';
 import { TLB, TLS } from '../core/dom';
@@ -52,7 +53,8 @@ export function renderTimeline() {
         ? `<i class="pv-span" style="left:${sp.t0 * S.pps}px;width:${Math.max(2, (sp.t1 - sp.t0) * S.pps)}px"></i>`
         : '';
     },
-    pvRep = new Set(pv ? pv.replaced : []);
+    pvRep = new Set(pv ? pv.replaced : []),
+    gt = graphTrack();
   for (const l of list) {
     const tracks = layerTracks(l),
       ex = S.exp[l.id] !== false;
@@ -112,9 +114,16 @@ export function renderTimeline() {
           keys += `<button class="kf${S.keys.has(q) ? ' sel' : ''}${q[2] === 'hold' ? ' hold' : ''}${pvRep.has(q) ? ' rep' : ''}" data-lid="${l.id}" data-prop="${k}" data-i="${i}" style="left:${q[0] * S.pps}px" aria-label="${propLabel(l, k)} keyframe at ${fmt(q[0])}s" title="${propLabel(l, k)} · ${fmt(q[0])}s · ${esc(easeLabel(q[2]))}"></button>`;
         }
         const nm = propLabel(l, k);
-        h += `<div class="tl-row tl-prop${fz ? ' frozen' : ''}${S.selSet.has(l.id) ? ' sel' : ''}" data-lid="${l.id}" data-prop="${k}"><div class="tl-name"><button class="tl-ic tl-fz${fz ? ' on' : ''}" data-act="freeze" aria-pressed="${fz}" aria-label="${fz ? 'Unfreeze' : 'Freeze'} ${nm}" title="${fz ? `Frozen: ${nm} holds its value and its keyframes are not used. Click to unfreeze.` : `Freeze ${nm}: hold its current value and set the keyframes aside`}">${ICON.freeze}</button><span class="tl-pname">${nm}</span>
+        const ctrls = `<button class="tl-ic tl-fz${fz ? ' on' : ''}" data-act="freeze" aria-pressed="${fz}" aria-label="${fz ? 'Unfreeze' : 'Freeze'} ${nm}" title="${fz ? `Frozen: ${nm} holds its value and its keyframes are not used. Click to unfreeze.` : `Freeze ${nm}: hold its current value and set the keyframes aside`}">${ICON.freeze}</button><span class="tl-pname">${nm}</span>
         <button class="kb" data-act="key" ${fz ? 'disabled ' : ''}aria-label="Add or remove ${nm} keyframe at playhead"></button>
-        <button class="tl-ic tl-x" data-act="rmtrack" aria-label="Remove ${nm} animation">${ICON.x}</button></div>
+        <button class="tl-ic tl-x" data-act="rmtrack" aria-label="Remove ${nm} animation">${ICON.x}</button>`;
+        // the graph editor opens this track into a value graph
+        if (gt && gt.l === l && gt.k === k && !fz) {
+          h += `<div class="tl-row tl-prop tl-graph${S.selSet.has(l.id) ? ' sel' : ''}" data-lid="${l.id}" data-prop="${k}"><div class="tl-name">${graphNames(l, k, `<div class="gr-ctl">${ctrls}</div>`)}</div>
+          <div class="tl-lane" data-act="lane" style="width:${LW}px">${out}${graphSVG(l, k, W, LW)}</div></div>`;
+          continue;
+        }
+        h += `<div class="tl-row tl-prop${fz ? ' frozen' : ''}${S.selSet.has(l.id) ? ' sel' : ''}${gt && graphable(l, k) ? '' : gt ? ' no-graph' : ''}" data-lid="${l.id}" data-prop="${k}"><div class="tl-name">${ctrls}</div>
         <div class="tl-lane" data-act="lane" style="width:${LW}px">${out}${fz ? '' : pvSpan(l.id, k)}${segs}${keys}</div></div>`;
       }
   }
