@@ -112,7 +112,12 @@ export function sampleDoc(): any {
     g.sym = 'sparkle';
     g.b.pos = [x, y];
     if (off) g.symOff = off;
-    const dot = mkLayer('ellipse', 'Sparkle dot', { cx: 0, cy: 0, rx: 2.5, ry: 2.5 }, { fill: '#FFF4CF', stk: 'none', sw: 0 });
+    const dot = mkLayer(
+      'ellipse',
+      'Sparkle dot',
+      { cx: 0, cy: 0, rx: 2.5, ry: 2.5 },
+      { fill: '#FFF4CF', stk: 'none', sw: 0 },
+    );
     dot.parent = g.id;
     dot.o = [0, 0];
     dot.t.scl = [
