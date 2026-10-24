@@ -12,8 +12,6 @@ Gradients and trim path have been taken off this list and are being built.
 
 ## Workflow
 
-- **Animation presets**: fade, slide, pop, bounce and similar effects, applied in one click.
-- **Onion skin**: faint copies of nearby frames on the canvas while animating.
 - **Graph editor**: value and speed curves across keyframes, beyond per-keyframe easing.
 - **Symbols / library**: reusable components, like SVGator's "Save to library".
 - **Path tools**: outline stroke (stroke → fill), offset path, simplify, reverse path direction.

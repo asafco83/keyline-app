@@ -25,6 +25,8 @@ import { init as initViewMenu } from './ui/view-menu';
 import { init as initGuides } from './render/guides';
 import { init as initPicker } from './ui/color-picker';
 import { init as initFontPicker } from './ui/font-picker';
+import { init as initPresets } from './ui/presets-panel';
+import { init as initOnion } from './ui/onion';
 import { initTheme } from './ui/theme';
 import { init as initRanges } from './ui/ranges';
 import { initScaleBar } from './tools/bone-edit';
@@ -50,6 +52,8 @@ initViewMenu(); // ui/view-menu
 initGuides(); // render/guides
 initPicker(); // ui/color-picker
 initFontPicker(); // ui/font-picker
+initPresets(); // ui/presets-panel
+initOnion(); // ui/onion
 init2(); // ui/layers-panel
 init3(); // ui/timeline
 initTlResize(); // ui/tl-resize (drag the timeline's top edge)

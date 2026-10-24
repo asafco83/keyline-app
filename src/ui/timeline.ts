@@ -44,6 +44,15 @@ export function renderTimeline() {
   let h = `<div class="tl-row tl-ruler"><div class="tl-name">Animated layers</div><div class="tl-lane" id="ruler" style="width:${LW}px">${ticks(W, span)}</div></div>`;
   if (!list.length)
     h += `<div class="tl-empty">Layers with keyframes appear here. Click ◆ beside a property in the inspector, or use Animate in the Layers panel, to start animating it. After that, changing it at any point in time adds a keyframe there.</div>`;
+  // the Presets window's preview: its span on each layer, and the keyframes it would replace
+  const pv = S.presetPv,
+    pvSpan = (lid: string, k?: string) => {
+      const sp = pv && pv.spans.find(x => x.lid === lid && (!k || x.props.includes(k)));
+      return sp
+        ? `<i class="pv-span" style="left:${sp.t0 * S.pps}px;width:${Math.max(2, (sp.t1 - sp.t0) * S.pps)}px"></i>`
+        : '';
+    },
+    pvRep = new Set(pv ? pv.replaced : []);
   for (const l of list) {
     const tracks = layerTracks(l),
       ex = S.exp[l.id] !== false;
@@ -63,7 +72,7 @@ export function renderTimeline() {
           : ''
       }
       <span class="tl-lname" data-act="sel" title="Double-click to rename">${esc(l.name)}</span><span class="tl-type">${l.type}</span></div>
-      <div class="tl-lane" data-act="lane" style="width:${LW}px">${out}<div class="tl-bar" style="width:${W}px"></div>${times
+      <div class="tl-lane" data-act="lane" style="width:${LW}px">${out}<div class="tl-bar" style="width:${W}px"></div>${pvSpan(l.id)}${times
         .map(t => {
           const kat = live.flatMap(k => l.t[k].filter(q => Math.abs(q[0] - t) < 0.004));
           return `<button class="sdot${kat.length && kat.every(q => S.keys.has(q)) ? ' sel' : ''}" data-lid="${l.id}" data-t="${t}" style="left:${t * S.pps}px" aria-label="All ${esc(l.name)} keyframes at ${fmt(t)}s" title="${fmt(t)}s · all keyframes"></button>`;
@@ -100,13 +109,13 @@ export function renderTimeline() {
           }
           if (nx && JSON.stringify(q[1]) !== JSON.stringify(nx[1]))
             segs += `<i class="seg${q[2] === 'hold' ? ' hold' : ''}" data-lid="${l.id}" data-prop="${k}" data-i="${i}" style="left:${q[0] * S.pps}px;width:${(nx[0] - q[0]) * S.pps}px" title="${esc(easeLabel(q[2]))} · click to edit easing"></i>`;
-          keys += `<button class="kf${S.keys.has(q) ? ' sel' : ''}${q[2] === 'hold' ? ' hold' : ''}" data-lid="${l.id}" data-prop="${k}" data-i="${i}" style="left:${q[0] * S.pps}px" aria-label="${propLabel(l, k)} keyframe at ${fmt(q[0])}s" title="${propLabel(l, k)} · ${fmt(q[0])}s · ${esc(easeLabel(q[2]))}"></button>`;
+          keys += `<button class="kf${S.keys.has(q) ? ' sel' : ''}${q[2] === 'hold' ? ' hold' : ''}${pvRep.has(q) ? ' rep' : ''}" data-lid="${l.id}" data-prop="${k}" data-i="${i}" style="left:${q[0] * S.pps}px" aria-label="${propLabel(l, k)} keyframe at ${fmt(q[0])}s" title="${propLabel(l, k)} · ${fmt(q[0])}s · ${esc(easeLabel(q[2]))}"></button>`;
         }
         const nm = propLabel(l, k);
         h += `<div class="tl-row tl-prop${fz ? ' frozen' : ''}${S.selSet.has(l.id) ? ' sel' : ''}" data-lid="${l.id}" data-prop="${k}"><div class="tl-name"><button class="tl-ic tl-fz${fz ? ' on' : ''}" data-act="freeze" aria-pressed="${fz}" aria-label="${fz ? 'Unfreeze' : 'Freeze'} ${nm}" title="${fz ? `Frozen: ${nm} holds its value and its keyframes are not used. Click to unfreeze.` : `Freeze ${nm}: hold its current value and set the keyframes aside`}">${ICON.freeze}</button><span class="tl-pname">${nm}</span>
         <button class="kb" data-act="key" ${fz ? 'disabled ' : ''}aria-label="Add or remove ${nm} keyframe at playhead"></button>
         <button class="tl-ic tl-x" data-act="rmtrack" aria-label="Remove ${nm} animation">${ICON.x}</button></div>
-        <div class="tl-lane" data-act="lane" style="width:${LW}px">${out}${segs}${keys}</div></div>`;
+        <div class="tl-lane" data-act="lane" style="width:${LW}px">${out}${fz ? '' : pvSpan(l.id, k)}${segs}${keys}</div></div>`;
       }
   }
   TLB.innerHTML =

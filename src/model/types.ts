@@ -353,6 +353,12 @@ export interface EditorState {
   sclLock?: boolean;
   /** keep size proportions in the inspector (shapes; images use lockAR) */
   szLock?: boolean;
+  /** the Presets window's preview on the timeline (core/presets PresetPlan) */
+  presetPv?: {
+    spans: Array<{ lid: string; t0: number; t1: number; props: string[] }>;
+    replaced: Keyframe[];
+    dur: number;
+  } | null;
   ezDir: string;
   tab: string;
   snap: boolean;

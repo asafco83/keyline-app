@@ -207,6 +207,7 @@ function tabs(): Tab[] {
           r('Front grid', 'Alt G'),
           r('Bones', 'Alt B'),
           r('Pins', 'Alt P'),
+          r('Onion skin', 'Alt O'),
         ),
       ],
     },

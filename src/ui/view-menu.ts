@@ -1,6 +1,7 @@
 // SVGcinema — ui/view-menu
 // The snapping (magnet) and grid menus in the canvas bar, and their shortcuts:
 // Alt+S snapping on/off, Alt+R rulers, Alt+L guides, Alt+B bones, Alt+P pins, Alt+G the front grid.
+import { toggleOnion } from './onion';
 import { $, ic } from '../core/constants';
 import { VIEW, type ViewPrefs, onView, setView } from '../core/view';
 import { drawBackGrid } from '../render/guides';
@@ -94,6 +95,10 @@ function toggle(k: string) {
     drawOverlay();
     return;
   }
+  if (k === 'onion') {
+    toggleOnion();
+    return;
+  }
   if (k === 'clearGuides') {
     const ed = beginEdit();
     doc.guides = { x: [], y: [] };
@@ -102,7 +107,7 @@ function toggle(k: string) {
   }
   setView({ [k]: !(VIEW as any)[k] } as Partial<ViewPrefs>);
 }
-/** Alt+S / Alt+R / Alt+L. Returns true when handled. */
+/** Alt+S / Alt+R / Alt+L / Alt+B / Alt+P / Alt+G / Alt+O. Returns true when handled. */
 export function viewShortcut(e: KeyboardEvent) {
   if (!e.altKey || e.ctrlKey || e.metaKey) return false;
   const k =
@@ -118,7 +123,9 @@ export function viewShortcut(e: KeyboardEvent) {
               ? 'pins'
               : e.code === 'KeyG'
                 ? 'gridFront'
-                : '';
+                : e.code === 'KeyO'
+                  ? 'onion'
+                  : '';
   if (!k) return false;
   toggle(k);
   return true;

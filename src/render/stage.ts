@@ -16,6 +16,7 @@ import { renderTools } from '../ui/tools-rail';
 import { restPoseView } from '../tools/bone-edit';
 import { ensureMeshes } from './mesh';
 import { rigArtwork } from '../model/draw-order';
+import { drawOnion } from '../ui/onion';
 
 let meshPass = 0;
 export function renderStage() {
@@ -136,6 +137,7 @@ export function frame() {
   if (eng) eng.apply(S.time);
   restPoseView();
   syncDrawOrder();
+  drawOnion();
   drawOverlay();
   updatePlayhead();
   refreshInspector();
